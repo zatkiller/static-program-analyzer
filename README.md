@@ -1,4 +1,4 @@
-# Team 00
+# Team 05
 
 > Please fill in this Readme with the required information, and delete this box.
 > 
@@ -17,8 +17,8 @@
 
 Item | Version
 -|-
-OS | Windows 10
-Toolchain | Microsoft Visual Studio Enterprise 2019 Version 16.11.0
+OS | Fedora 34
+Toolchain | Cmake 3.20.2
 C++ Standard | C++17
 
 ### Additional Build Instructions
@@ -29,4 +29,9 @@ No additional instructions required.
 
 Name | Mobile | Email | Development OS/Toolchain
 -:|:-:|:-|-|
-John Doe | 99887766 | john@doe.com | Windows 10/Visual Studio 2019
+Li Bailin | 9863166 | bailinx@hotmail.com | Windows 10/Visual Studio 2022
+| | |
+| | |
+| | |
+| | |
+| | |
