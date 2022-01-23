@@ -29,7 +29,7 @@ No additional instructions required.
 
 Name | Mobile | Email | Development OS/Toolchain
 -:|:-:|:-|-|
-Li Bailin | 9863166 | bailinx@hotmail.com | Windows 10/Visual Studio 2022
+Li Bailin | 98636166 | bailinx@hotmail.com | Windows 10/Visual Studio 2022
 | | |
 | | |
 | | |
