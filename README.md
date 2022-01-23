@@ -31,7 +31,7 @@ Name | Mobile | Email | Development OS/Toolchain
 -:|:-:|:-|-|
 Li Bailin | 98636166 | bailinx@hotmail.com | Windows 10/Visual Studio 2022
 Nay Lin Han | 90044957 | jamesliu09@gmail.com | Windows 10/Visual Studio 2022
-| | |
+Teo Jun Xiong | 91683815 | teojunxiong97@gmail.com | Windows 10/Visual Studio 2022
 | | |
 | | |
 | | |
