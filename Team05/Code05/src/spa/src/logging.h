@@ -29,8 +29,7 @@ public:
         return *this;
     }
 
-    Logger(Level level) {
-        this->level = level;
+    Logger(Level level = Level::INFO) : level(level) {
         this->oss << this->getHeader();
     }
 
