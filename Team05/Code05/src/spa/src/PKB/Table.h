@@ -10,6 +10,6 @@ class Table {
 public:
 	// TODO: replace <int> with <PKBField>
 	virtual bool contains(std::vector<int> queries) = 0; 
-	virtual bool insert(std::vector<int> params) = 0;
+	// virtual bool insert(std::vector<int> params) = 0;
 	virtual ~Table();
 };
