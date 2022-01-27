@@ -20,12 +20,12 @@ public:
 		return true;
 	}
 
-	bool operator == (const StatementRow& row) {
-		return equal(row);
+	bool operator == (const StatementRow& row) const {
+		return type == row.type && lineNumber == row.lineNumber;
 	}
 
-	bool operator < (const StatementRow& row) {
-		return !equal(row);
+	bool operator < (const StatementRow& row) const {
+		return !(type == row.type && lineNumber == row.lineNumber);
 	}
 
 private:
