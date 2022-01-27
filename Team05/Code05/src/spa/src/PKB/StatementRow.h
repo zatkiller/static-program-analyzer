@@ -27,8 +27,22 @@ public:
 			// TODO: update based on PKBField implementation
 			// return queries.at(0).type == type && queries.at(0).v == lineNumber;
 		}
+	}
 
+	bool equal(const StatementRow& row) {
+		if (type != row.type || lineNumber != row.lineNumber) {
+			return false;
+		}
 
+		return true;
+	}
+
+	bool operator == (const StatementRow& row) {
+		return equal(row);
+	}
+
+	bool operator < (const StatementRow& row) {
+		return !equal(row);
 	}
 
 private:
