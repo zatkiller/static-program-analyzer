@@ -7,7 +7,7 @@
 #include "Table.h"
 #include "StatementRow.h"
 
-class StatementTable : Table {
+class StatementTable {
 public:
 	// TODO: replace <int> with <PKBField>
 	bool contains(StatementType, int);

@@ -1,14 +1,10 @@
 #pragma once
 
 #include <stdio.h>
-#include <vector>
-#include <set>
 
-#include "../logging.h"
-#include "Row.h"
 #include "StatementType.h"
 
-class StatementRow : Row {
+class StatementRow{
 public:
 	StatementRow(StatementType, int);
 
