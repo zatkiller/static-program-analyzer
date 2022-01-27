@@ -9,9 +9,8 @@
 
 class Table {
 public:
-	// TODO: replace <int,int> with <PKBType, String>
-	// perhaps can create a union for String and int (PKBValue)?
-	virtual bool contains(std::vector<std::pair<int, int>> params) = 0; // each pair is a (column, value)
+	// TODO: replace <int> with <PKBField>
+	virtual bool contains(std::vector<int> queries) = 0; 
 	virtual bool insert(std::vector<std::pair<int, int>> params) = 0;
 	virtual ~Table();
 
