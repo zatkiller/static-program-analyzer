@@ -9,9 +9,9 @@ class RelationshipTable {
 public:
 	// TODO: replace <int> with <PKBField>
 	// count of an item in a set can only be 0 or 1
-	RelationshipTable(int t);
-	virtual bool contains(int entity1, int entity2) = 0;
-	virtual void insert(int entity1, int entity2) = 0;
+	RelationshipTable(int);
+	virtual bool contains(int, int) = 0;
+	virtual void insert(int, int) = 0;
 	int getType();
 
 protected:
