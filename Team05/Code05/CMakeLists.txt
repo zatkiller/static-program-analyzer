@@ -21,14 +21,18 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
-set(AUTOTESTER_ROOT "${CMAKE_CURRENT_LIST_DIR}/lib/autotester/${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}")
 
-list(APPEND CMAKE_PREFIX_PATH "${AUTOTESTER_ROOT}")
-find_package(autotester REQUIRED)
+# build autotester only for non m1 machine.
+if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+    set(AUTOTESTER_ROOT "${CMAKE_CURRENT_LIST_DIR}/lib/autotester/${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}")
+    list(APPEND CMAKE_PREFIX_PATH "${AUTOTESTER_ROOT}")
+    find_package(autotester REQUIRED)
+    add_subdirectory(src/autotester)
+    #add_subdirectory(src/autotester_gui)
+endif()
+
 include_directories("${CMAKE_CURRENT_LIST_DIR}/lib")#include catch.hpp
 
 add_subdirectory(src/spa)
-add_subdirectory(src/autotester)
-#add_subdirectory(src/autotester_gui)
 add_subdirectory(src/unit_testing)
 add_subdirectory(src/integration_testing)
