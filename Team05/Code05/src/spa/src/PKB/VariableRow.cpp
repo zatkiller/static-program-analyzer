@@ -3,18 +3,14 @@
 #include <stdio.h>
 #include <string>
 
-class VariableRow {
-public:
-	VariableRow(std::string v): variableName(v) {}
+#include "VariableRow.h"
 
-	bool operator == (const VariableRow& row) const {
-		return variableName == row.variableName;
-	}
+VariableRow::VariableRow(std::string v) : variableName(v) {}
 
-	bool operator < (const VariableRow& row) const {
-		return !(variableName == row.variableName);
-	}
+bool VariableRow::operator == (const VariableRow& row) const {
+	return variableName == row.variableName;
+}
 
-private:
-	std::string variableName;
-};
+bool VariableRow::operator < (const VariableRow& row) const {
+	return !(variableName == row.variableName);
+}

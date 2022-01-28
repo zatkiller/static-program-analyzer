@@ -1,1 +1,3 @@
-enum class StatementType {Assignment, While, If, Read, Print, Call};
+enum class StatementType {
+	Assignment, While, If, Read, Print, Call
+};
