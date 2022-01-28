@@ -44,7 +44,7 @@ TEST_CASE("Token testing") {
 TEST_CASE("Lexer test") {
     SECTION("Positive test") {
         std::string source =
-            "procedure name {\n\
+            "procedure name{\n\
                 read y;\n\
                 x = y     + 1234;}\n";
 
@@ -64,9 +64,11 @@ TEST_CASE("Lexer test") {
         tokens.push(Token{TokenType::number, 1234});
         tokens.push(Token{TokenType::special, ';'});
         tokens.push(Token{TokenType::special, '}'});
+        tokens.push(Token{TokenType::eof, EOF});
 
         std::queue<Token> lexedTokens = Lexer(source).getTokens();
         
+
         REQUIRE(tokens.size() == lexedTokens.size());
         while (!tokens.empty()) {
             REQUIRE(lexedTokens.front() == tokens.front());

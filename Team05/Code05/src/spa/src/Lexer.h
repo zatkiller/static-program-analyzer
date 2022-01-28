@@ -16,7 +16,6 @@ enum class TokenType {
 struct Token {
     const TokenType type;
     const std::variant<char, std::string, int> value;
-
     bool operator==(const Token& o) const {
         return type == o.type && value == o.value;
     }
