@@ -9,8 +9,7 @@ void logQueue(std::queue<Token> q) {
     while (!q.empty()) {
         if (q.size() == 1) {
             std::visit([&](auto&& v) { oss << v; }, q.front().value);
-        }
-        else {
+        } else {
             std::visit([&](auto&& v) { oss << v << ", "; }, q.front().value);
         }
         q.pop();
@@ -19,7 +18,7 @@ void logQueue(std::queue<Token> q) {
 
     Logger(Level::DEBUG) << "Tokens: " << oss.str();
 }
-#endif _DEBUG
+#endif  // _DEBUG
 
 
 /**
@@ -27,7 +26,7 @@ void logQueue(std::queue<Token> q) {
  * This lex method currently has no failure conditions as all unrecognized symbols
  * are considered as special characters.
  */
-void Lexer::lex(std::string& source) {
+void Lexer::lex(const std::string& source) {
     Logger() << "Lexing the source code:\n" << source;
 
     char lastChar = ' ';
@@ -46,7 +45,7 @@ void Lexer::lex(std::string& source) {
             this->tokens.push(Token{TokenType::name, s});
             continue;
         }
-        
+
         // handle number
         if (isdigit(lastChar)) {
             std::string s;
@@ -69,7 +68,7 @@ void Lexer::lex(std::string& source) {
 
 #ifdef _DEBUG
     logQueue(this->tokens);
-#endif _DEBUG
+#endif  // _DEBUG
 }
 
 std::queue<Token>& Lexer::getTokens() {

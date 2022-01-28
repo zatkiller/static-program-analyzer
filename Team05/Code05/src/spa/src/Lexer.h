@@ -8,9 +8,9 @@
 
 enum class TokenType {
     eof,
-    name,    // [a-zA-Z][a-zA-Z0-9]*
-    number,  // [0-9]+
-    special, // special characters like +-*/><=;
+    name,     // [a-zA-Z][a-zA-Z0-9]*
+    number,   // [0-9]+
+    special,  // special characters like +-*/><=;
 };
 
 struct Token {
@@ -25,9 +25,9 @@ struct Token {
 class Lexer {
 private:
     std::queue<Token> tokens;
-    void lex(std::string& source);
+    void lex(const std::string& source);
 public:
-    Lexer(std::string& source) {
+    explicit Lexer(const std::string& source) {
         this->lex(source);
     }
     std::queue<Token>& getTokens();
