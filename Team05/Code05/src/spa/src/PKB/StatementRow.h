@@ -4,11 +4,10 @@
 
 #include "StatementType.h"
 
-class StatementRow{
+class StatementRow {
 public:
 	StatementRow(StatementType, int);
 
-	bool equal(const StatementRow&);
 	bool operator == (const StatementRow&) const;
 	bool operator < (const StatementRow&) const;
 

@@ -8,14 +8,6 @@ class StatementRow {
 public:
 	StatementRow(StatementType t, int l) : type(t), lineNumber(l) {}
 
-	bool equal(const StatementRow& row) {
-		if (type != row.type || lineNumber != row.lineNumber) {
-			return false;
-		}
-
-		return true;
-	}
-
 	bool operator == (const StatementRow& row) const {
 		return type == row.type && lineNumber == row.lineNumber;
 	}

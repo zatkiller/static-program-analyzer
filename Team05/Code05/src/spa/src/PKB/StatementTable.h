@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdio.h>
-#include <vector>
 #include <set>
 
 #include "Table.h"
