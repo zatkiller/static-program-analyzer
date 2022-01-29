@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <tuple>
 
 #include "StatementRow.h"
 
@@ -11,5 +12,5 @@ bool StatementRow::operator == (const StatementRow& row) const {
 }
 
 bool StatementRow::operator < (const StatementRow& row) const {
-	return !(type == row.type && lineNumber == row.lineNumber);
+	return std::tie(type, lineNumber) < std::tie(row.type, row.lineNumber);
 }

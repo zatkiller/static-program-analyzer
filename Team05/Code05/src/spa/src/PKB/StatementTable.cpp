@@ -13,3 +13,7 @@ bool StatementTable::contains(StatementType type, int lineNumber) {
 void StatementTable::insert(StatementType type, int lineNumber) {
 	rows.insert(StatementRow(type, lineNumber));
 }
+
+int StatementTable::getSize() {
+	return rows.size();
+}
