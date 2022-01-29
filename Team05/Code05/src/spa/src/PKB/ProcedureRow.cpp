@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <tuple>
 
 #include "ProcedureRow.h"
 
@@ -11,5 +12,5 @@ bool ProcedureRow::operator == (const ProcedureRow& row) const {
 }
 
 bool ProcedureRow::operator < (const ProcedureRow& row) const {
-	return !(procedureName == row.procedureName);
+	return std::tie(procedureName) < std::tie(row.procedureName);
 }

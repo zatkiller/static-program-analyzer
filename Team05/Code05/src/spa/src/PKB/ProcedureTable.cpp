@@ -14,3 +14,7 @@ bool ProcedureTable::contains(std::string procedureName) {
 void ProcedureTable::insert(std::string procedureName) {
 	rows.insert(ProcedureRow(procedureName));
 }
+
+int ProcedureTable::getSize() {
+	return rows.size();
+}

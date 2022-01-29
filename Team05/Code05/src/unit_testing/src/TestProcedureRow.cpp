@@ -19,9 +19,4 @@ TEST_CASE("ProcedureRow operator testing") {
     REQUIRE(row1 == row2);
 
     REQUIRE_FALSE(row1 == row3);
-
-    TEST_LOG << "Test ProcedureRow <";
-    REQUIRE(row1 < row3);
-    REQUIRE_FALSE(row1 < row1);
-    REQUIRE_FALSE(row1 < row2);
 }
