@@ -5,6 +5,7 @@
 #include "RelationshipTable.h"
 
 RelationshipTable::RelationshipTable(int t) : type(t) {}
+
 int RelationshipTable::getType() {
 	return type;
 }
