@@ -14,6 +14,7 @@ public:
 	virtual bool contains(int, int) = 0;
 	virtual void insert(int, int) = 0;
 	int getType();
+	int getSize();
 
 protected:
 	std::set<RelationshipRow> rows;

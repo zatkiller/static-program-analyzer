@@ -5,12 +5,12 @@
 
 #include "RelationshipTable.h"
 
-class ModifiesRelationshipTable : RelationshipTable {
+class ModifiesRelationshipTable : public RelationshipTable {
 public:
-	ModifiesRelationshipTable(int);
+	ModifiesRelationshipTable();
 
 	// TODO: replace <int> with <PKBField>
 	// count of an item in a set can only be 0 or 1
-	bool contains(int entity1, int entity2);
-	void insert(int entity1, int entity2);
+	bool contains(int, int);
+	void insert(int, int);
 };

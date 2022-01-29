@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <tuple>
 
 #include "RelationshipRow.h"
 
@@ -11,5 +12,6 @@ bool RelationshipRow::operator == (const RelationshipRow& row) const {
 };
 
 bool RelationshipRow::operator < (const RelationshipRow & row) const {
-	return !(entity1 == row.entity1 && entity2 == row.entity2);
+	//return !(entity1 == row.entity1 && entity2 == row.entity2);
+	return std::tie(entity1, entity2) < std::tie(row.entity1, row.entity2);
 };
