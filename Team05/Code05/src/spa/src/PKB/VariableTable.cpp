@@ -14,3 +14,7 @@ bool VariableTable::contains(std::string variableName) {
 void VariableTable::insert(std::string variableName) {
 	rows.insert(VariableRow(variableName));
 }
+
+int VariableTable::getSize() {
+	return rows.size();
+}
