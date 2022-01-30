@@ -1,7 +1,5 @@
 #include "parser.h"
 
-#include "query.h"
-
 Token Parser::getNextToken() {
     return lexer.getNextToken();
 }
@@ -27,16 +25,23 @@ Token Parser::peekAndCheckNextToken(TokenType tt) {
     return token;
 }
 
-void Parser::parseDeclarations() {
+void Parser::parseDeclaration(Query &queryObj, DESIGN_ENTITY de) {
+    Token variable = getAndCheckNextToken(TokenType::Identifier);
+    queryObj.addDeclaration(variable.getText(), de);
+}
+
+void Parser::parseDeclarations(Query &queryObj) {
     Token token = getAndCheckNextToken(TokenType::Identifier);
     auto iterator = designEntityMap.find(token.getText());
     if (iterator == designEntityMap.end())
         throw "No such design entity!";
 
     DESIGN_ENTITY designEntity = iterator->second;
+    parseDeclaration(queryObj, designEntity);
     // Parse and add single declaration to Query Object
 }
 
 void Parser::parsePql(std::string query) {
-    parseDeclarations();
+    Query queryObj;
+    parseDeclarations(queryObj);
 };

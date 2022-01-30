@@ -1,5 +1,6 @@
 #include <string>
 
+#include "query.h"
 #include "lexer.h"
 
 struct Parser {
@@ -12,5 +13,6 @@ struct Parser {
     Token peekAndCheckNextToken(TokenType);
 
     void parsePql(std::string);
-    void parseDeclarations();
+    void parseDeclarations(Query&);
+    void parseDeclaration(Query&, DESIGN_ENTITY);
 };

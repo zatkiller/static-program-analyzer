@@ -30,5 +30,7 @@ struct Query {
     std::unordered_map<std::string, DESIGN_ENTITY> declarations;
     std::vector<std::string> variables;
     // Need to add clauses
+
+    void addDeclaration(std::string, DESIGN_ENTITY);
 };
 
