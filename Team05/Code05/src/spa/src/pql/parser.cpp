@@ -5,6 +5,10 @@
 Token Parser::getNextToken() {
     return lexer.getNextToken();
 }
+Token Parser::peekNextToken() {
+    return lexer.peekNextToken();
+}
+
 
 void Parser::checkType(Token token, TokenType tokenType) {
     if (token.getTokenType() != tokenType)
@@ -17,6 +21,12 @@ Token Parser::getAndCheckNextToken(TokenType tt) {
     return token;
 }
 
+Token Parser::peekAndCheckNextToken(TokenType tt) {
+    Token token = peekNextToken();
+    checkType(token, tt);
+    return token;
+}
+
 void Parser::parseDeclarations() {
     Token token = getAndCheckNextToken(TokenType::Identifier);
     auto iterator = designEntityMap.find(token.getText());
@@ -24,7 +34,6 @@ void Parser::parseDeclarations() {
         throw "No such design entity!";
 
     DESIGN_ENTITY designEntity = iterator->second;
-
 
 }
 
