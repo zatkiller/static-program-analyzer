@@ -1,4 +1,8 @@
-//
-// Created by 杨悦Helen on 30/1/22.
-//
+#include "QueryObject.h"
 
+QueryObject::QueryObject {
+    declarations = {};
+    select = {};
+    suchthat = {};
+    pattern = {};
+};
