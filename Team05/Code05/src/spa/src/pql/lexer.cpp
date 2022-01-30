@@ -67,16 +67,22 @@ Token Lexer::getNextToken() {
 Token Lexer::getNextReservedToken() {
     eatWhitespace();
 
+    Token token;
     if (hasPrefix("Select")) {
-        return Token {"Select", TokenType::Select};
+        token = Token {"Select", TokenType::Select};
     } else if (hasPrefix("Modifies")) {
-        return Token {"Modifies", TokenType::Modifies};
+        token =  Token {"Modifies", TokenType::Modifies};
     } else if (hasPrefix("Uses")) {
-        return Token {"Uses", TokenType::Uses};
+        token = Token {"Uses", TokenType::Uses};
     } else if (hasPrefix("pattern")) {
-        return Token {"pattern", TokenType::Pattern};
+        token =  Token {"pattern", TokenType::Pattern};
+    } else if (hasPrefix("such that")) {
+        token =  Token {"such that", TokenType::SuchThat};
     } else {
-        return Token {"", TokenType::Invalid};
+        token = Token {"", TokenType::Invalid};
     }
+
+    text.erase(0, token.getText().length());
+    return token;
 }
 
