@@ -1,4 +1,5 @@
-//
-// Created by 杨悦Helen on 30/1/22.
-//
+#include "evaluator.h"
 
+std::string evaluate(Query query) {
+    
+}

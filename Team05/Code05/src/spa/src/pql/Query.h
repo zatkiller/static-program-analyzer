@@ -1,7 +1,5 @@
-#ifndef INC_21S2_CP_SPA_TEAM_05_QUERYOBJECT_H
-#define INC_21S2_CP_SPA_TEAM_05_QUERYOBJECT_H
-
-#endif //INC_21S2_CP_SPA_TEAM_05_QUERYOBJECT_H
+#include <string>
+#include <vector>
 
 enum class DesignEntity {
     STMT,
