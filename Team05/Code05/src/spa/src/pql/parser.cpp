@@ -36,7 +36,7 @@ Token Parser::peekAndCheckNextToken(TokenType tt) {
     return token;
 }
 
-void Parser::parseDeclaration(Query &queryObj, DESIGN_ENTITY de) {
+void Parser::parseDeclaration(Query &queryObj, DesignEntity de) {
     Token variable = getAndCheckNextToken(TokenType::Identifier);
     queryObj.addDeclaration(variable.getText(), de);
 }
@@ -47,7 +47,7 @@ void Parser::parseDeclarations(Query &queryObj) {
     if (iterator == designEntityMap.end())
         throw "No such design entity!";
 
-    DESIGN_ENTITY designEntity = iterator->second;
+    DesignEntity designEntity = iterator->second;
     parseDeclaration(queryObj, designEntity);
     // Parse and add single declaration to Query Object
 

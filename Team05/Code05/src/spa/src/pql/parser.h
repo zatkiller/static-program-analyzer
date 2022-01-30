@@ -20,5 +20,5 @@ struct Parser {
     Query parsePql(std::string);
 
     void parseDeclarations(Query&);
-    void parseDeclaration(Query&, DESIGN_ENTITY);
+    void parseDeclaration(Query&, DesignEntity);
 };

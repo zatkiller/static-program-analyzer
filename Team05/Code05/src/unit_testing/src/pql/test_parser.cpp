@@ -41,11 +41,11 @@ TEST_CASE("Test Parser parseDeclarations method on single Design Entity") {
 
     parser.parseDeclarations(queryObj);
 
-    REQUIRE(queryObj.declarations.count("a") > 0);
-    REQUIRE(queryObj.declarations.find("a")->second == DESIGN_ENTITY::ASSIGN);
+    REQUIRE(queryObj.hasDeclaration("a"));
+    REQUIRE(queryObj.getDeclarationDesignEntity("a") == DesignEntity::ASSIGN);
 
-    REQUIRE(queryObj.declarations.count("a1") > 0);
-    REQUIRE(queryObj.declarations.find("a1")->second == DESIGN_ENTITY::ASSIGN);
+    REQUIRE(queryObj.hasDeclaration("a"));
+    REQUIRE(queryObj.getDeclarationDesignEntity("a1") == DesignEntity::ASSIGN);
 }
 
 TEST_CASE("Test Parser parseDeclarations method on multiple Design Entity") {
@@ -58,14 +58,14 @@ TEST_CASE("Test Parser parseDeclarations method on multiple Design Entity") {
 
     parser.parseDeclarations(queryObj);
 
-    REQUIRE(queryObj.declarations.count("a") > 0);
-    REQUIRE(queryObj.declarations.find("a")->second == DESIGN_ENTITY::ASSIGN);
+    REQUIRE(queryObj.hasDeclaration("a"));
+    REQUIRE(queryObj.getDeclarationDesignEntity("a") == DesignEntity::ASSIGN);
 
     parser.parseDeclarations(queryObj);
 
-    REQUIRE(queryObj.declarations.count("v") > 0);
-    REQUIRE(queryObj.declarations.find("v")->second == DESIGN_ENTITY::VARIABLE);
+    REQUIRE(queryObj.hasDeclaration("v"));
+    REQUIRE(queryObj.getDeclarationDesignEntity("v") == DesignEntity::VARIABLE);
 
-    REQUIRE(queryObj.declarations.count("v1") > 0);
-    REQUIRE(queryObj.declarations.find("v1")->second == DESIGN_ENTITY::VARIABLE);
+    REQUIRE(queryObj.hasDeclaration("v1"));
+    REQUIRE(queryObj.getDeclarationDesignEntity("v1") == DesignEntity::VARIABLE);
 }
