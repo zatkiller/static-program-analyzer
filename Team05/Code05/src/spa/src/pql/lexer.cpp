@@ -2,6 +2,10 @@
 
 #include "lexer.h"
 
+std::string Lexer::getText() {
+    return text;
+}
+
 void Lexer::eatWhitespace() {
     while (text.length() > 0 && (isspace(text[0])|| text[0] == '\n'))
         text.erase(0, 1);
