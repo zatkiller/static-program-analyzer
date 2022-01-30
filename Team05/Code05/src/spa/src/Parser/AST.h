@@ -6,8 +6,6 @@
 
 namespace AST {
 
-	#define StmtLst std::vector<std::unique_ptr<Statement>>
-	
 	class Procedure;
 	class Statement;
 	class Expr;
@@ -15,6 +13,8 @@ namespace AST {
 	class BinExpr;
 	class Var;
 	class Const;
+
+	typedef std::vector<std::unique_ptr<Statement>> StmtLst;
 
 	class ASTNode {
 	public:
