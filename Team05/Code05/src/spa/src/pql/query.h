@@ -14,7 +14,7 @@ enum class DESIGN_ENTITY {
     PROCEDURE
 };
 
-std::unordered_map<std::string, DESIGN_ENTITY> designEntityMap = {
+static std::unordered_map<std::string, DESIGN_ENTITY> designEntityMap = {
         { "stmt", DESIGN_ENTITY::STMT },
         { "read", DESIGN_ENTITY::READ } ,
         { "print", DESIGN_ENTITY::PRINT },

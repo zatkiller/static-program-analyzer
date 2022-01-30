@@ -7,6 +7,13 @@ Token Parser::peekNextToken() {
     return lexer.peekNextToken();
 }
 
+Token Parser::getNextReservedToken() {
+    return lexer.getNextReservedToken();
+}
+Token Parser::peekNextReservedToken() {
+    return lexer.peekNextReservedToken();
+}
+
 
 void Parser::checkType(Token token, TokenType tokenType) {
     if (token.getTokenType() != tokenType)
@@ -39,9 +46,28 @@ void Parser::parseDeclarations(Query &queryObj) {
     DESIGN_ENTITY designEntity = iterator->second;
     parseDeclaration(queryObj, designEntity);
     // Parse and add single declaration to Query Object
+
+    while (peekNextToken().getTokenType() == TokenType::Comma) {
+        token = getAndCheckNextToken(TokenType::Comma);
+        parseDeclaration(queryObj, designEntity);
+    }
+
+    getAndCheckNextToken(TokenType::Semicolon);
 }
 
+void Parser::addPql(std::string query) {
+    lexer = Lexer(query);
+};
+
 void Parser::parsePql(std::string query) {
+    addPql(query);
     Query queryObj;
-    parseDeclarations(queryObj);
+
+    for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::Eof; token = peekNextReservedToken()) {
+        if (token.getTokenType() == TokenType::Select) {
+            // Parse query here
+        } else {
+            parseDeclarations(queryObj);
+        }
+    }
 };
