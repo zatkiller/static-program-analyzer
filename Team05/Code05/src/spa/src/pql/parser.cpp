@@ -1,5 +1,9 @@
 #include "parser.h"
 
+std::string Parser::getParsedText() {
+    return lexer.text;
+}
+
 Token Parser::getNextToken() {
     return lexer.getNextToken();
 }
@@ -59,15 +63,18 @@ void Parser::addPql(std::string query) {
     lexer = Lexer(query);
 };
 
-void Parser::parsePql(std::string query) {
+Query Parser::parsePql(std::string query) {
     addPql(query);
     Query queryObj;
 
     for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::Eof; token = peekNextReservedToken()) {
         if (token.getTokenType() == TokenType::Select) {
             // Parse query here
+            break;
         } else {
             parseDeclarations(queryObj);
         }
     }
+
+    return queryObj;
 };

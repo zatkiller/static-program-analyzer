@@ -59,10 +59,16 @@ struct Lexer {
 
     bool hasPrefix(std::string prefix);
 
+    std::string getText();
+
     Token getNextToken();
     Token getNextReservedToken();
     Token peekNextToken();
     Token peekNextReservedToken();
+
+    bool operator==(const Lexer &o) const {
+        return this->text == o.text;
+    }
 };
 
 

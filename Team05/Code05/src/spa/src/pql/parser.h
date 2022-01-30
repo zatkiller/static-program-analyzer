@@ -14,8 +14,11 @@ struct Parser {
     Token getAndCheckNextToken(TokenType);
     Token peekAndCheckNextToken(TokenType);
 
+    std::string getParsedText();
+
     void addPql(std::string);
-    void parsePql(std::string);
+    Query parsePql(std::string);
+
     void parseDeclarations(Query&);
     void parseDeclaration(Query&, DESIGN_ENTITY);
 };
