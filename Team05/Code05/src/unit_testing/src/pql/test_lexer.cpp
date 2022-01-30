@@ -49,3 +49,18 @@ TEST_CASE("Lexer eatWhitespace") {
     lexer2.eatWhitespace();
     REQUIRE(lexer2.text.length() == 0);
 }
+
+TEST_CASE("Lexer peekNextToken") {
+    std::string testQuery = "assign a; \n Select a such that Uses (a, v) pattern a (v, _)";
+
+    Lexer lexer(testQuery);
+
+    REQUIRE(lexer.peekNextToken() == Token{"assign", TokenType::Identifier});
+    REQUIRE(lexer.getNextToken() == Token{"assign", TokenType::Identifier});
+
+    REQUIRE(lexer.getNextToken() == Token{"a", TokenType::Identifier});
+    REQUIRE(lexer.getNextToken().getText() == ";");
+
+    REQUIRE(lexer.peekNextReservedToken() == Token{"Select", TokenType::Select});
+    REQUIRE(lexer.getNextReservedToken() == Token{"Select", TokenType::Select});
+}
