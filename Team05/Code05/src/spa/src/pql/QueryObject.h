@@ -35,9 +35,19 @@ struct Pattern {
     std::pair<std::string, std::string> params;
 };
 
-struct QueryObject {
+class QueryObject {
+private:
     std::unordered_map<std::string, DesignEntity> declarations;
     std::vector<std::string> select;
     std::vector<RelRef> suchthat;
     std::vector<Pattern> pattern;
+public:
+    std::unordered_map<std::string, DesignEntity> getDeclarations();
+    std::vector<std::string> getSelect();
+    std::vector<RelRef> getSuchthat();
+    std::vector<Pattern> getPattern();
+    void setDeclarations(std::unordered_map<std::string, DesignEntity> declarations);
+    void setSelect(std::vector<std::string> select);
+    void setSuchthat(std::vector<RelRef> suchthat);
+    void setPattern(std::vector<Pattern> pattern);
 };
