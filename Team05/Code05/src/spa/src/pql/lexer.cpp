@@ -78,3 +78,16 @@ Token Lexer::getNextReservedToken() {
     return token;
 }
 
+Token Lexer::peekNextToken() {
+    std::string copy = text;
+    Token token = getNextToken();
+    text = copy;
+    return token;
+}
+
+Token Lexer::peekNextReservedToken() {
+    std::string copy = text;
+    Token token = getNextReservedToken();
+    text = copy;
+    return token;
+}
