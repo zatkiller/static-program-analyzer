@@ -68,7 +68,7 @@ TEST_CASE("AST Test") {
         auto relExpr1 = std::make_unique<RelExpr>(RelOp::GT, std::move(constVal10), std::move(constVal5));
         auto relExpr2 = std::make_unique<RelExpr>(RelOp::EQ, std::move(v4), std::move(v5));
         auto condExpr = std::make_unique<CondBinExpr>(CondOp::AND, std::move(relExpr1), std::move(relExpr2));
-        auto vect = std::vector<std::unique_ptr<Statement>>();
+        auto vect = StmtLst();
         vect.push_back(std::move(readStmt));
         vect.push_back(std::move(printStmt));
         auto whileStmt = std::make_unique<While>(22, std::move(condExpr), std::move(vect));
@@ -76,9 +76,9 @@ TEST_CASE("AST Test") {
         //     read v2;
         // } else {
         // }
-        auto vect2 = std::vector<std::unique_ptr<Statement>>();
+        auto vect2 = StmtLst();
         vect2.push_back(std::move(readStmt2));
-        auto vect3 = std::vector<std::unique_ptr<Statement>>();
+        auto vect3 = StmtLst();
         auto ifStmt = std::make_unique<If>(80, std::move(condExpr), std::move(vect2), std::move(vect3));
         // assign
         auto assignStmt = std::make_unique<Assign>(42, std::move(v6), std::make_unique<Const>(69));
