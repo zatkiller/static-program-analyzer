@@ -28,6 +28,7 @@ static std::unordered_map<std::string, DesignEntity> designEntityMap = {
 };
 
 enum class RelRefType {
+    INVALID,
     FOLLOWS,
     FOLLOWST,
     PARENT,
@@ -36,14 +37,36 @@ enum class RelRefType {
     USESS
 };
 
+struct StmtRef {
+};
+
+struct EntRef{
+
+};
+
+// Abstract class
 struct RelRef {
-    RelRefType type;
-    std::pair<std::string, std::string> params;
+    RelRefType type = RelRefType::INVALID;
+    virtual ~RelRef() {};
+};
+
+struct Modifies : RelRef {
+    RelRefType type = RelRefType::MODIFIESS;
+
+    EntRef modified;
+    StmtRef modifiesStmt;
+};
+
+struct Uses : RelRef {
+    RelRefType type = RelRefType::USESS;
+
+    EntRef used;
+    StmtRef useStmt;
 };
 
 struct Pattern {
-    std::string syn_assign;
-    std::pair<std::string, std::string> params;
+    std::string synonym;
+    std::pair<EntRef, std::string> params;
 };
 
 class Query {
