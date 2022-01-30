@@ -57,12 +57,12 @@ struct Lexer {
 
     void eatWhitespace();
 
-    bool isLetter(char c);
-    bool isDigit(char c);
     bool hasPrefix(std::string prefix);
 
     Token getNextToken();
     Token getNextReservedToken();
+    Token peekNextToken();
+    Token peekNextReservedToken();
 };
 
 
