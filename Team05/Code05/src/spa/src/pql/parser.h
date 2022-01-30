@@ -5,5 +5,9 @@
 struct Parser {
     Lexer lexer;
 
-    void parsePql(std::string query);
+    Token getNextToken();
+    void parsePql(std::string);
+    void parseDeclarations();
+    void checkType(Token, TokenType);
+    Token getAndCheckNextToken(TokenType);
 };
