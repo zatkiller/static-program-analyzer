@@ -34,7 +34,7 @@ void Parser::parseDeclarations() {
         throw "No such design entity!";
 
     DESIGN_ENTITY designEntity = iterator->second;
-
+    // Parse and add single declaration to Query Object
 }
 
 void Parser::parsePql(std::string query) {
