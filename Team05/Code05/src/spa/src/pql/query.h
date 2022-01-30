@@ -27,6 +27,56 @@ static std::unordered_map<std::string, DesignEntity> designEntityMap = {
         { "procedure", DesignEntity::PROCEDURE }
 };
 
+enum class StmtRefType {
+    NOT_INITIALIZED,
+    DECLARATION,
+    LINE_NO,
+    WILDCARD
+};
+
+struct StmtRef {
+    StmtRefType type = StmtRefType::NOT_INITIALIZED;
+    std::string declaration;
+    int lineNo;
+
+    void setType(StmtRefType);
+    void setDeclaration(std::string);
+    void setLineNo(int);
+
+    void getType();
+    void getDeclaration();
+    void getLineNo();
+
+    bool isDeclaration();
+    bool isLineNo();
+    bool isWildcard();
+};
+
+enum class EntRefType {
+    NOT_INITIALIZED,
+    DECLARATION,
+    VARIABLE_NAME,
+    WILDCARD
+};
+
+struct EntRef{
+    EntRefType type = EntRefType::NOT_INITIALIZED;
+    std::string declaration;
+    std::string variable;
+
+    void setType(EntRefType);
+    void setDeclaration(std::string);
+    void setVariableName(std::string);
+
+    void getType();
+    void getDeclaration();
+    void getVariableName();
+
+    bool isDeclaration();
+    bool isVarName();
+    bool isWildcard();
+};
+
 enum class RelRefType {
     INVALID,
     FOLLOWS,
@@ -35,13 +85,6 @@ enum class RelRefType {
     PARRENTT,
     MODIFIESS,
     USESS
-};
-
-struct StmtRef {
-};
-
-struct EntRef{
-
 };
 
 // Abstract class
