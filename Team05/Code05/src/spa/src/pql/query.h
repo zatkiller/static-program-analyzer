@@ -27,7 +27,58 @@ static std::unordered_map<std::string, DesignEntity> designEntityMap = {
         { "procedure", DesignEntity::PROCEDURE }
 };
 
+enum class StmtRefType {
+    NOT_INITIALIZED,
+    DECLARATION,
+    LINE_NO,
+    WILDCARD
+};
+
+struct StmtRef {
+    StmtRefType type = StmtRefType::NOT_INITIALIZED;
+    std::string declaration;
+    int lineNo;
+
+    void setType(StmtRefType);
+    void setDeclaration(std::string);
+    void setLineNo(int);
+
+    void getType();
+    void getDeclaration();
+    void getLineNo();
+
+    bool isDeclaration();
+    bool isLineNo();
+    bool isWildcard();
+};
+
+enum class EntRefType {
+    NOT_INITIALIZED,
+    DECLARATION,
+    VARIABLE_NAME,
+    WILDCARD
+};
+
+struct EntRef{
+    EntRefType type = EntRefType::NOT_INITIALIZED;
+    std::string declaration;
+    std::string variable;
+
+    void setType(EntRefType);
+    void setDeclaration(std::string);
+    void setVariableName(std::string);
+
+    void getType();
+    void getDeclaration();
+    void getVariableName();
+
+    bool isDeclaration();
+    bool isVarName();
+    bool isWildcard();
+};
+
 enum class RelRefType {
+    INVALID,
     FOLLOWS,
     FOLLOWST,
     PARENT,
@@ -36,14 +87,29 @@ enum class RelRefType {
     USESS
 };
 
+// Abstract class
 struct RelRef {
-    RelRefType type;
-    std::pair<std::string, std::string> params;
+    RelRefType type = RelRefType::INVALID;
+    virtual ~RelRef() {};
+};
+
+struct Modifies : RelRef {
+    RelRefType type = RelRefType::MODIFIESS;
+
+    EntRef modified;
+    StmtRef modifiesStmt;
+};
+
+struct Uses : RelRef {
+    RelRefType type = RelRefType::USESS;
+
+    EntRef used;
+    StmtRef useStmt;
 };
 
 struct Pattern {
-    std::string syn_assign;
-    std::pair<std::string, std::string> params;
+    std::string synonym;
+    std::pair<EntRef, std::string> params;
 };
 
 class Query {
