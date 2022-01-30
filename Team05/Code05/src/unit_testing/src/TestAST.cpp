@@ -1,5 +1,4 @@
 
-#include "TNode.h"
 #include "Parser/AST.h"
 #include <iostream>
 #include <vector>
@@ -11,8 +10,6 @@ using namespace AST;
 void require(bool b) {
     REQUIRE(b);
 }
-
-// https://github.com/catchorg/Catch2/blob/devel/docs/tutorial.md
 
 TEST_CASE("AST Test") {
     // Construction test
