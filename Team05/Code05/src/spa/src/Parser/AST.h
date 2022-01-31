@@ -13,8 +13,7 @@ namespace AST {
 	class BinExpr;
 	class Var;
 	class Const;
-
-	typedef std::vector<std::unique_ptr<Statement>> StmtLst;
+	class StmtLst;
 
 	class ASTNode {
 	public:
@@ -35,6 +34,15 @@ namespace AST {
 		Program(std::unique_ptr<Procedure> procedure) :
 			procedure(std::move(procedure)) {}
 	};	
+
+	class StmtLst : public ASTNode {
+	private:
+		std::vector<std::unique_ptr<Statement>> list;
+	public:
+		StmtLst(
+			std::vector<std::unique_ptr<Statement>>& list
+		) : list(std::move(list)) {};
+	};
 
 	/**
 	 * Represents a procedure in the AST.
