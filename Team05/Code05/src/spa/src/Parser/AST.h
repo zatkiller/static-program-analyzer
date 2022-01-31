@@ -65,6 +65,8 @@ namespace AST {
 		virtual void visit(const RelExpr& node) = 0;
 		virtual void visit(const CondBinExpr& node) = 0;
 		virtual void visit(const NotCondExpr& node) = 0;
+		virtual void enterContainer(int number) = 0;
+		virtual void exitContainer() = 0;
 	};
 
 
@@ -111,11 +113,12 @@ namespace AST {
 	private:
 		int stmtNo;
 	public:
-		~Statement() {}
+		~Statement() {};
 		Statement(int stmtNo) : stmtNo(stmtNo) {};
-		int getStmtNo() {
+
+		const int getStmtNo() const {
 			return stmtNo;
-		}
+		};
 	};
 
 	/**
@@ -216,8 +219,14 @@ namespace AST {
 		void accept(ASTNodeVisitor& visitor) const {
 			visitor.visit(*this);
 			condExpr->accept(visitor);
+
+			visitor.enterContainer(getStmtNo());
 			thenBlk.accept(visitor);
+			visitor.exitContainer();
+
+			visitor.enterContainer(getStmtNo());
 			elseBlk.accept(visitor);
+			visitor.exitContainer();
 		}
 	};
 
@@ -243,7 +252,10 @@ namespace AST {
 		void accept(ASTNodeVisitor& visitor) const {
 			visitor.visit(*this);
 			condExpr->accept(visitor);
+
+			visitor.enterContainer(getStmtNo());
 			stmtLst.accept(visitor);
+			visitor.exitContainer();
 		}
 	};
 
@@ -271,6 +283,10 @@ namespace AST {
 			var->accept(visitor);
 			expr->accept(visitor);
 		}
+
+		const Var getLHS() const {
+			return *var;
+		}
 	};
 
 
@@ -279,14 +295,18 @@ namespace AST {
 	 * Base class for 'Read and 'Print' statements.
 	 */
 	class IO : public Statement {
-	public:
+	private:
 		std::unique_ptr<Var> var;
+
+	public:
 		IO(
 			int stmtNo,
 			std::unique_ptr<Var> var
 		) :
 			Statement(stmtNo),
 			var(std::move(var)) {};
+
+		const Var getVar() const { return *var; }
 	};
 
 	/**
@@ -299,7 +319,7 @@ namespace AST {
 		using IO::IO;
 		void accept(ASTNodeVisitor& visitor) const {
 			visitor.visit(*this);
-			this->var->accept(visitor);
+			this->getVar().accept(visitor);
 		}
 	};
 
@@ -313,7 +333,7 @@ namespace AST {
 		using IO::IO;
 		void accept(ASTNodeVisitor& visitor) const {
 			visitor.visit(*this);
-			this->var->accept(visitor);
+			this->getVar().accept(visitor);
 		}
 	};
 

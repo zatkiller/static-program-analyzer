@@ -83,6 +83,7 @@ namespace AST {
          *
          */
         SECTION("whileBlk walking test") {
+            Logger() << "walking simple while AST";
             auto relExpr = makeRelExpr(RelOp::GT, Var("v1"), Const(11)); // v1 > 11;
             auto stmtlst = readPrintLst(2, "v1", 3, "v3");
             auto whileBlk = makeWhile(1, std::move(relExpr), std::move(stmtlst));
@@ -95,21 +96,21 @@ namespace AST {
 
         // Construct a more complex AST;
         /**
-         * procedure main {
-         *     read x;
-         *     sum = 0;
-         *     while (x > 0) {
-         *         print x;
-         *         remainder = x % 2;
-         *         digit = x % 10;
-         *         if (remainder == 0) then {
-         *             sum = sum + digit
-         *         } else {
+         *      procedure main {
+         *    1      read x;
+         *    2      sum = 0;
+         *    3      while (x > 0) {
+         *    4          print x;
+         *    5          remainder = x % 2;
+         *    6          digit = x % 10;
+         *    7          if (remainder == 0) then {
+         *    8              sum = sum + digit
+         *               } else {
          *             
-         *         }
-         *         x = x / 10;
-         *     }
-         *     print sum;
+         *               }
+         *    9          x = x / 10;
+         *           }
+         *   10      print sum;
          * }
          * 
          */
