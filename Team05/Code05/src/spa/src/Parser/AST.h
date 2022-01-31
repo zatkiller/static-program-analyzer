@@ -287,8 +287,6 @@ namespace AST {
 		) :
 			Statement(stmtNo),
 			var(std::move(var)) {};
-
-		virtual void accept(IOVisitor& visitor) const = 0;
 	};
 
 	/**
@@ -299,9 +297,6 @@ namespace AST {
 	class Read : public IO {
 	public:
 		using IO::IO;
-		void accept(IOVisitor& visitor) const {
-			visitor.visitRead(*this);
-		}
 		void accept(ASTNodeVisitor& visitor) const {
 			visitor.visit(*this);
 			this->var->accept(visitor);
@@ -316,9 +311,6 @@ namespace AST {
 	class Print : public IO {
 	public:
 		using IO::IO;
-		void accept(IOVisitor& visitor) const {
-			visitor.visitPrint(*this);
-		}
 		void accept(ASTNodeVisitor& visitor) const {
 			visitor.visit(*this);
 			this->var->accept(visitor);

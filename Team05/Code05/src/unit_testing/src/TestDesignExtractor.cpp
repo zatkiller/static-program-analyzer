@@ -74,15 +74,6 @@ namespace AST {
 
 
     TEST_CASE("Design extractor Test") {
-        SECTION("IO statement visitor test") {
-            std::unique_ptr<IO> read1 = makeRead(1,"v1");
-            std::unique_ptr<IO> print1 = makePrint(1, "v1");
-
-            VariableExtractor ve;
-            print1->accept(ve);
-            read1->accept(ve);
-        }
-
         // Construct a simple AST;
         /**
          * while (v1 > 11) {
