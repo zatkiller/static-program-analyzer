@@ -7,21 +7,42 @@
 
 namespace AST {
 
-	class Procedure;
-	class Statement;
+	// Abstract classes
+	class ASTNode;
 	class Expr;
+	class Statement;
+	class IO;
 	class CondExpr;
-	class BinExpr;
-	class Var;
-	class Const;
-	class StmtLst;
 
+	// Concrete Classes
+	class Program;
+	class Procedure;
+
+	// statements
+	class StmtLst;
+	class If;
+	class While;
 	class Read;
 	class Print;
+	class Assign;
+
+	// expressions
+	class Var;
+	class Const;
+	class BinExpr;
+
+	// conditional expressions
+	class RelExpr;
+	class CondBinExpr;
+	class NotCondExpr;
 
 	struct IOVisitor {
 		virtual void visitRead(const Read& node) = 0;
 		virtual void visitPrint(const Print& node) = 0;
+	};
+
+	struct ASTNodeVisitor {
+
 	};
 
 
