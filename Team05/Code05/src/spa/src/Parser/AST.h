@@ -97,9 +97,7 @@ namespace AST {
 		Var(const std::string& varName) : varName(varName) {};
 		const std::string& getVarName() const { return varName; }
 		void setVarName(std::string& name) { this->varName = name; };
-		void accept(ASTNodeVisitor& visitor) const {
-			visitor.visit(*this);
-		}
+		void accept(ASTNodeVisitor& visitor) const;
 	};
 
 
@@ -147,12 +145,7 @@ namespace AST {
 			std::vector<std::unique_ptr<Statement>>& list
 		) : list(std::move(list)) {};
 
-		void accept(ASTNodeVisitor& visitor) const {
-			visitor.visit(*this);
-			for (auto& s : list) {
-				s->accept(visitor);
-			}
-		}
+		void accept(ASTNodeVisitor& visitor) const;
 	};
 
 	/**
@@ -169,10 +162,7 @@ namespace AST {
 			StmtLst stmtLst) :
 			procName(procName), stmtLst(std::move(stmtLst)) {}
 
-		void accept(ASTNodeVisitor& visitor) const {
-			visitor.visit(*this);
-			stmtLst.accept(visitor);
-		}
+		void accept(ASTNodeVisitor& visitor) const;
 	};
 
 	/**
@@ -188,10 +178,7 @@ namespace AST {
 		Program(std::unique_ptr<Procedure> procedure) :
 			procedure(std::move(procedure)) {}
 
-		void accept(ASTNodeVisitor& visitor) const {
-			visitor.visit(*this);
-			procedure->accept(visitor);
-		}
+		void accept(ASTNodeVisitor& visitor) const;
 	};
 
 	/**
@@ -216,18 +203,7 @@ namespace AST {
 			thenBlk(std::move(thenBlk)),
 			elseBlk(std::move(elseBlk)) {}
 
-		void accept(ASTNodeVisitor& visitor) const {
-			visitor.visit(*this);
-			condExpr->accept(visitor);
-
-			visitor.enterContainer(getStmtNo());
-			thenBlk.accept(visitor);
-			visitor.exitContainer();
-
-			visitor.enterContainer(getStmtNo());
-			elseBlk.accept(visitor);
-			visitor.exitContainer();
-		}
+		void accept(ASTNodeVisitor& visitor) const;
 	};
 
 	/**
@@ -249,14 +225,7 @@ namespace AST {
 			condExpr(std::move(condExpr)),
 			stmtLst(std::move(stmtLst)) {}
 
-		void accept(ASTNodeVisitor& visitor) const {
-			visitor.visit(*this);
-			condExpr->accept(visitor);
-
-			visitor.enterContainer(getStmtNo());
-			stmtLst.accept(visitor);
-			visitor.exitContainer();
-		}
+		void accept(ASTNodeVisitor& visitor) const;
 	};
 
 	/**

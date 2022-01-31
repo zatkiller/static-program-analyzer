@@ -82,15 +82,18 @@ namespace AST {
          * }
          *
          */
+        
+        auto pkb = std::make_shared<PKBStub>();
+
         SECTION("whileBlk walking test") {
             Logger() << "walking simple while AST";
             auto relExpr = makeRelExpr(RelOp::GT, Var("v1"), Const(11)); // v1 > 11;
             auto stmtlst = readPrintLst(2, "v1", 3, "v3");
             auto whileBlk = makeWhile(1, std::move(relExpr), std::move(stmtlst));
-            TreeWalker tw;
-            whileBlk->accept(tw);
+            VariableExtractor ve(pkb);
+            whileBlk->accept(ve);
             // variable extractions
-            REQUIRE(tw.vars == std::set<std::string>({ "v1", "v3" }));
+            REQUIRE(ve.getVars() == std::set<std::string>({"v1", "v3"}));
         }
         
 
@@ -146,11 +149,11 @@ namespace AST {
             auto program = std::make_unique<Program>(makeProcedure("main", StmtLst(std::move(proclst))));
 
 
-            TreeWalker tw;
-            program->accept(tw);
+            VariableExtractor ve(pkb);
+            program->accept(ve);
 
             std::set<std::string> expectedVars = { "x", "remainder", "digit", "sum" };
-            REQUIRE(tw.vars == expectedVars);
+            REQUIRE(ve.getVars() == expectedVars);
         }
     }
 
