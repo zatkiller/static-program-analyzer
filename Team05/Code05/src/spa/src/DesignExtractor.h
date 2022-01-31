@@ -12,6 +12,7 @@ public:
 
 class TreeWalker : public AST::ASTNodeVisitor {
 public:
+	std::vector<std::string> nodeWalked;
 	void visit(const AST::Program& node) override;
 	void visit(const AST::Procedure& node) override;
 	void visit(const AST::StmtLst& node) override;

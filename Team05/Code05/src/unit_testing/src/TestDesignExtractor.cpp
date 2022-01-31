@@ -37,7 +37,7 @@ namespace AST {
     }
 
     auto readPrintLst = [](int num1, std::string v1, int num2, std::string v2) {
-        return makeStatementLst(std::move(makeRead(num1, makeVar(v1))), std::move(makeRead(num2, makeVar(v2))));
+        return makeStatementLst(std::move(makeRead(num1, makeVar(v1))), std::move(makePrint(num2, makeVar(v2))));
     };
 
     auto makeWhile = [](int num, std::unique_ptr<CondExpr> cond, StmtLst& blk) {
@@ -66,6 +66,10 @@ namespace AST {
         auto stmtlst = readPrintLst(2, "v1", 3, "v1");
         auto whileBlk = makeWhile(1, std::move(relExpr), std::move(stmtlst));
 
+        SECTION("whileBlk walking test") {
+            TreeWalker tw;
+            whileBlk->accept(tw);
+        }
         
     }
 
