@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <iostream>
 
 namespace AST {
 
@@ -15,10 +16,60 @@ namespace AST {
 	class Const;
 	class StmtLst;
 
+
 	class ASTNode {
 	public:
 		// TODO: visiter method to be added
 		virtual ~ASTNode() {}
+	};
+
+	/**
+	 * Base class for Var/Const/BinExpr in the AST.
+	 * Identified by:
+	 *  expr | term | factor
+	 * where:
+	 *  expr: expr ‘+’ term | expr ‘-’ term | term
+	 *  term: term ‘*’ factor | term ‘/’ factor | term ‘%’ factor | factor
+	 *  factor: var_name | const_value | ‘(’ expr ‘)’
+	 */
+	class Expr : public ASTNode {
+	public:
+		virtual ~Expr() {}
+	};
+
+	/**
+	 * Represents a statement in the AST.
+	 * Base class for: 'read', 'print', 'while', 'if' and 'assign' statements.
+	 * Identified by:
+	 *  read | print | while | if | assign
+	 */
+	class Statement : public ASTNode {
+	private:
+		int stmtNo;
+	public:
+		~Statement() {}
+		Statement(int stmtNo) : stmtNo(stmtNo) {};
+		int getStmtNo() {
+			return stmtNo;
+		}
+	};
+
+	/**
+	 * Represents a conditional expression in the AST
+	 * Identified by:
+	 *  cond_expr | rel_expr | rel_factor
+	 * where:
+	 *  cond_expr: rel_expr | '!' '(' cond_expr ')' |
+	 *    '(' cond_expr ')' '&&' '(' cond_expr ')' |
+	 *    '(' cond_expr ')' '||' '(' cond_expr ')'
+	 *  rel_expr: rel_factor '>' rel_factor | rel_factor '>=' rel_factor |
+	 *    rel_factor '<' rel_factor | rel_factor '<' rel_factor |
+	 *    rel_factor '==' rel_factor | rel_factor '!=' rel_factor
+	 *  rel_factor: var_name | const_value | expr
+	 */
+	class CondExpr : public ASTNode {
+	public:
+		virtual ~CondExpr() {}
 	};
 
 	/**
@@ -57,20 +108,6 @@ namespace AST {
 		Procedure(const std::string& procName, 
 			StmtLst stmtLst) :
 			procName(procName), stmtLst(std::move(stmtLst)) {}
-	};
-
-	/**
-	 * Represents a statement in the AST.
-	 * Base class for: 'read', 'print', 'while', 'if' and 'assign' statements.
-	 * Identified by:
-	 *  read | print | while | if | assign
-	 */
-	class Statement : public ASTNode {
-	private:
-		int stmtNo;
-	public:
-		~Statement() {}
-		Statement(int stmtNo) : stmtNo(stmtNo) {}
 	};
 
 	/**
@@ -137,6 +174,20 @@ namespace AST {
 	};
 
 	/**
+	* Represents a variable in the AST.
+	* Identified by:
+	*  var_name
+	*/
+	class Var : public Expr {
+	private:
+		std::string varName;
+	public:
+		Var(const std::string& varName) : varName(varName) {};
+		std::string& getVarName() { return varName; }
+		void setVarName(std::string& name) { this->varName = name; };
+	};
+
+	/**
 	 * Represents an input/output statement in the AST.
 	 * Base class for 'Read and 'Print' statements.
 	 */
@@ -145,11 +196,11 @@ namespace AST {
 		std::unique_ptr<Var> var;
 	public:
 		IO(
-			int stmtNo, 
+			int stmtNo,
 			std::unique_ptr<Var> var
-		) : 
+		) :
 			Statement(stmtNo),
-			var(std::move(var)) {}
+			var(std::move(var)) {};
 	};
 
 	/**
@@ -171,33 +222,6 @@ namespace AST {
 	};
 
 	/**
-	 * Base class for Var/Const/BinExpr in the AST.
-	 * Identified by:
-	 *  expr | term | factor
-	 * where:
-	 *  expr: expr ‘+’ term | expr ‘-’ term | term
-	 *  term: term ‘*’ factor | term ‘/’ factor | term ‘%’ factor | factor
-	 *  factor: var_name | const_value | ‘(’ expr ‘)’
-	 */
-	class Expr : public ASTNode {
-	public:
-		virtual ~Expr() {}
-	};
-
-	/**
-	 * Represents a variable in the AST.
-	 * Identified by:
-	 *  var_name
-	 */
-	class Var : public Expr {
-	private:
-		std::string varName;
-	public:
-		Var(const std::string& varName) : varName(varName) {};
-		std::string& getVarName() { return varName; }
-	};
-
-	/**
 	 * Represents a const in the AST.
 	 * Identified by:
 	 *  const_value
@@ -206,7 +230,7 @@ namespace AST {
 	private:
 		int constValue;
 	public:
-		Const(int constValue) : constValue(constValue) {};
+		explicit Const(int constValue) : constValue(constValue) {};
 	};
 
 	/**
@@ -239,24 +263,6 @@ namespace AST {
 			Op(Op), 
 			LHS(std::move(LHS)), 
 			RHS(std::move(RHS)) {}
-	};
-
-	/**
-	 * Represents a conditional expression in the AST
-	 * Identified by:
-	 *  cond_expr | rel_expr | rel_factor
-	 * where:
-	 *  cond_expr: rel_expr | '!' '(' cond_expr ')' |
-	 *    '(' cond_expr ')' '&&' '(' cond_expr ')' |
-	 *    '(' cond_expr ')' '||' '(' cond_expr ')'
-	 *  rel_expr: rel_factor '>' rel_factor | rel_factor '>=' rel_factor | 
-	 *    rel_factor '<' rel_factor | rel_factor '<' rel_factor | 
-	 *    rel_factor '==' rel_factor | rel_factor '!=' rel_factor
-	 *  rel_factor: var_name | const_value | expr
-	 */
-	class CondExpr : public ASTNode {
-	public:
-		virtual ~CondExpr() {}
 	};
 
 	/**
