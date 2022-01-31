@@ -7,6 +7,15 @@
 
 namespace AST {
 
+	struct ASTNodeVisitor;
+
+	class ASTNode {
+	public:
+		// TODO: visiter method to be added
+		virtual ~ASTNode() {};
+		virtual void accept(ASTNodeVisitor& visitor) const = 0;
+	};
+
 	// Abstract classes
 	class ASTNode;
 	class Expr;
@@ -42,15 +51,23 @@ namespace AST {
 	};
 
 	struct ASTNodeVisitor {
-
+		virtual void visit(const Program& node) = 0;
+		virtual void visit(const Procedure& node) = 0;
+		virtual void visit(const StmtLst& node) = 0;
+		virtual void visit(const If& node) = 0;
+		virtual void visit(const While& node) = 0;
+		virtual void visit(const Read& node) = 0;
+		virtual void visit(const Print& node) = 0;
+		virtual void visit(const Assign& node) = 0;
+		virtual void visit(const Var& node) = 0;
+		virtual void visit(const Const& node) = 0;
+		virtual void visit(const BinExpr& node) = 0;
+		virtual void visit(const RelExpr& node) = 0;
+		virtual void visit(const CondBinExpr& node) = 0;
+		virtual void visit(const NotCondExpr& node) = 0;
 	};
 
 
-	class ASTNode {
-	public:
-		// TODO: visiter method to be added
-		virtual ~ASTNode() {}
-	};
 
 	/**
 	 * Base class for Var/Const/BinExpr in the AST.
@@ -63,8 +80,26 @@ namespace AST {
 	 */
 	class Expr : public ASTNode {
 	public:
-		virtual ~Expr() {}
+		virtual ~Expr() {};
 	};
+
+	/**
+	* Represents a variable in the AST.
+	* Identified by:
+	*  var_name
+	*/
+	class Var : public Expr {
+	private:
+		std::string varName;
+	public:
+		Var(const std::string& varName) : varName(varName) {};
+		std::string& getVarName() { return varName; }
+		void setVarName(std::string& name) { this->varName = name; };
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+		}
+	};
+
 
 	/**
 	 * Represents a statement in the AST.
@@ -101,6 +136,42 @@ namespace AST {
 		virtual ~CondExpr() {}
 	};
 
+	class StmtLst : public ASTNode {
+	private:
+		std::vector<std::unique_ptr<Statement>> list;
+	public:
+		StmtLst(
+			std::vector<std::unique_ptr<Statement>>& list
+		) : list(std::move(list)) {};
+
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			for (auto& s : list) {
+				s->accept(visitor);
+			}
+		}
+	};
+
+	/**
+	 * Represents a procedure in the AST.
+	 * Identified by:
+	 *  'procedure' procName stmtlst
+	 */
+	class Procedure : public ASTNode {
+	private:
+		std::string procName;
+		StmtLst stmtLst;
+	public:
+		Procedure(const std::string& procName,
+			StmtLst stmtLst) :
+			procName(procName), stmtLst(std::move(stmtLst)) {}
+
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			stmtLst.accept(visitor);
+		}
+	};
+
 	/**
 	 * Represents the Program in the AST.
 	 * Program contains a single Procedure.
@@ -113,30 +184,11 @@ namespace AST {
 	public: 
 		Program(std::unique_ptr<Procedure> procedure) :
 			procedure(std::move(procedure)) {}
-	};	
 
-	class StmtLst : public ASTNode {
-	private:
-		std::vector<std::unique_ptr<Statement>> list;
-	public:
-		StmtLst(
-			std::vector<std::unique_ptr<Statement>>& list
-		) : list(std::move(list)) {};
-	};
-
-	/**
-	 * Represents a procedure in the AST.
-	 * Identified by: 
-	 *  'procedure' procName stmtlst
-	 */
-	class Procedure : public ASTNode {
-	private:
-		std::string procName;
-		StmtLst stmtLst;
-	public:
-		Procedure(const std::string& procName, 
-			StmtLst stmtLst) :
-			procName(procName), stmtLst(std::move(stmtLst)) {}
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			procedure->accept(visitor);
+		}
 	};
 
 	/**
@@ -160,6 +212,13 @@ namespace AST {
 			condExpr(std::move(condExpr)),
 			thenBlk(std::move(thenBlk)),
 			elseBlk(std::move(elseBlk)) {}
+
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			condExpr->accept(visitor);
+			thenBlk.accept(visitor);
+			elseBlk.accept(visitor);
+		}
 	};
 
 	/**
@@ -180,6 +239,12 @@ namespace AST {
 			Statement(stmtNo),
 			condExpr(std::move(condExpr)),
 			stmtLst(std::move(stmtLst)) {}
+
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			condExpr->accept(visitor);
+			stmtLst.accept(visitor);
+		}
 	};
 
 	/**
@@ -200,30 +265,22 @@ namespace AST {
 			Statement(stmtNo),
 			var(std::move(var)), 
 			expr(std::move(expr)) {}
+
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			var->accept(visitor);
+			expr->accept(visitor);
+		}
 	};
 
-	/**
-	* Represents a variable in the AST.
-	* Identified by:
-	*  var_name
-	*/
-	class Var : public Expr {
-	private:
-		std::string varName;
-	public:
-		Var(const std::string& varName) : varName(varName) {};
-		std::string& getVarName() { return varName; }
-		void setVarName(std::string& name) { this->varName = name; };
-	};
 
 	/**
 	 * Represents an input/output statement in the AST.
 	 * Base class for 'Read and 'Print' statements.
 	 */
 	class IO : public Statement {
-	private:
-		std::unique_ptr<Var> var;
 	public:
+		std::unique_ptr<Var> var;
 		IO(
 			int stmtNo,
 			std::unique_ptr<Var> var
@@ -245,6 +302,10 @@ namespace AST {
 		void accept(IOVisitor& visitor) const {
 			visitor.visitRead(*this);
 		}
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			this->var->accept(visitor);
+		}
 	};
 
 	/**
@@ -258,6 +319,10 @@ namespace AST {
 		void accept(IOVisitor& visitor) const {
 			visitor.visitPrint(*this);
 		}
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			this->var->accept(visitor);
+		}
 	};
 
 	/**
@@ -269,7 +334,10 @@ namespace AST {
 	private:
 		int constValue;
 	public:
-		explicit Const(int constValue) : constValue(constValue) {};
+		Const(int constValue) : constValue(constValue) {};
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+		}
 	};
 
 	/**
@@ -302,6 +370,12 @@ namespace AST {
 			Op(Op), 
 			LHS(std::move(LHS)), 
 			RHS(std::move(RHS)) {}
+
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			LHS->accept(visitor);
+			RHS->accept(visitor);
+		}
 	};
 
 	/**
@@ -336,6 +410,12 @@ namespace AST {
 			Op(Op), 
 			LHS(std::move(LHS)), 
 			RHS(std::move(RHS)) {}
+
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			LHS->accept(visitor);
+			RHS->accept(visitor);
+		}
 	};
 
 	/**
@@ -365,6 +445,12 @@ namespace AST {
 			Op(Op), 
 			LHS(std::move(LHS)), 
 			RHS(std::move(RHS)) {}
+
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			LHS->accept(visitor);
+			RHS->accept(visitor);
+		}
 	};
 
 	/**
@@ -381,6 +467,11 @@ namespace AST {
 			std::unique_ptr<CondExpr> condExpr
 		) : 
 			condExpr(std::move(condExpr)) {}
+
+		void accept(ASTNodeVisitor& visitor) const {
+			visitor.visit(*this);
+			condExpr->accept(visitor);
+		}
 	};
 
 }
