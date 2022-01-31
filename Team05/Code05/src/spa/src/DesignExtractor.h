@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Parser/Ast.h"
+#include <set>
+#include <stack>
 
 
 class VariableExtractor : public AST::IOVisitor {
@@ -13,6 +15,8 @@ public:
 class TreeWalker : public AST::ASTNodeVisitor {
 public:
 	std::vector<std::string> nodeWalked;
+	std::set<std::string> vars;
+
 	void visit(const AST::Program& node) override;
 	void visit(const AST::Procedure& node) override;
 	void visit(const AST::StmtLst& node) override;

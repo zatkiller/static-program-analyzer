@@ -14,6 +14,7 @@ int DesignExtractor () {
 
 void VariableExtractor::visitRead(const AST::Read& node) {
 	Logger() << "Read variable extraction";
+	
 }
 
 void VariableExtractor::visitPrint(const AST::Print& node) {
@@ -62,8 +63,9 @@ void TreeWalker::visit(const AST::Assign& node) {
 }
 
 void TreeWalker::visit(const AST::Var& node) {
-	Logger() << "Var node";
+	Logger() << "Var node: " << node.getVarName();
 	this->nodeWalked.push_back("Var");
+	this->vars.insert(node.getVarName());
 }
 
 void TreeWalker::visit(const AST::Const& node) {

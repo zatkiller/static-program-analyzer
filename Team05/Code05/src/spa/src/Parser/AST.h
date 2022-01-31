@@ -93,7 +93,7 @@ namespace AST {
 		std::string varName;
 	public:
 		Var(const std::string& varName) : varName(varName) {};
-		std::string& getVarName() { return varName; }
+		const std::string& getVarName() const { return varName; }
 		void setVarName(std::string& name) { this->varName = name; };
 		void accept(ASTNodeVisitor& visitor) const {
 			visitor.visit(*this);
