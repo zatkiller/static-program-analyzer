@@ -16,6 +16,14 @@ namespace AST {
 	class Const;
 	class StmtLst;
 
+	class Read;
+	class Print;
+
+	struct IOVisitor {
+		virtual void visitRead(const Read& node) = 0;
+		virtual void visitPrint(const Print& node) = 0;
+	};
+
 
 	class ASTNode {
 	public:
@@ -201,6 +209,8 @@ namespace AST {
 		) :
 			Statement(stmtNo),
 			var(std::move(var)) {};
+
+		virtual void accept(IOVisitor& visitor) const = 0;
 	};
 
 	/**
@@ -209,7 +219,11 @@ namespace AST {
 	 *  'read' var_name;
 	 */
 	class Read : public IO {
+	public:
 		using IO::IO;
+		void accept(IOVisitor& visitor) const {
+			visitor.visitRead(*this);
+		}
 	};
 
 	/**
@@ -218,7 +232,11 @@ namespace AST {
 	 *  'print' var_name;
 	 */
 	class Print : public IO {
+	public:
 		using IO::IO;
+		void accept(IOVisitor& visitor) const {
+			visitor.visitPrint(*this);
+		}
 	};
 
 	/**

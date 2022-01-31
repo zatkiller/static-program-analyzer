@@ -3,11 +3,10 @@
 #include "Parser/Ast.h"
 
 
-class VariableExtractor : public AST::Visitor {
+class VariableExtractor : public AST::IOVisitor {
 	std::vector<AST::Var> vars;
 public:
-	void visit(AST::Read victim);
-	void visit(AST::Print victim);
-	void visit(AST::Statement victim);
+	void visitRead(const AST::Read& node) override;
+	void visitPrint(const AST::Print& node) override;
 };
 

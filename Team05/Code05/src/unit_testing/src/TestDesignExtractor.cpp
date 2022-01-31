@@ -1,10 +1,12 @@
-#include "Parser/AST.h"
 #include <iostream>
 #include <vector>
 #include <cstdarg>
 #include <stdio.h>
 
 #include "catch.hpp"
+#include "Parser/AST.h"
+#include "DesignExtractor.h"
+
 
 namespace AST {
     using std::move;
@@ -34,15 +36,23 @@ namespace AST {
         return std::make_unique<RelExpr>(op, std::make_unique<T>(LHS), std::make_unique<K>(RHS));
     }
 
+    auto readPrintLst = [](int num1, std::string v1, int num2, std::string v2) {
+        return makeStatementLst(std::move(makeRead(num1, makeVar(v1))), std::move(makeRead(num2, makeVar(v2))));
+    };
+
+    auto makeWhile = [](int num, std::unique_ptr<CondExpr> cond, StmtLst& blk) {
+        return std::make_unique<While>(num, std::move(cond), std::move(blk));
+    };
 
     TEST_CASE("Design extractor Test") {
-        auto readPrintLst = [](int num1, std::string v1, int num2, std::string v2) {
-            return makeStatementLst(std::move(makeRead(num1, makeVar(v1))), std::move(makeRead(num2, makeVar(v2))));
-        };
+        SECTION("IO statement visitor test") {
+            std::unique_ptr<IO> read1 = makeRead(1, makeVar("v1"));
+            std::unique_ptr<IO> print1 = makePrint(1, makeVar("v1"));
 
-        auto makeWhile = [](int num, std::unique_ptr<CondExpr> cond, StmtLst& blk) {
-            return std::make_unique<While>(num, std::move(cond), std::move(blk));
-        };
+            VariableExtractor ve;
+            print1->accept(ve);
+            read1->accept(ve);
+        }
 
         // Construct a simple AST;
         /**
@@ -56,7 +66,7 @@ namespace AST {
         auto stmtlst = readPrintLst(2, "v1", 3, "v1");
         auto whileBlk = makeWhile(1, std::move(relExpr), std::move(stmtlst));
 
-
+        
     }
 
 }
