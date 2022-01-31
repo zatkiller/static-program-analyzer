@@ -9,10 +9,9 @@
 #include <memory>
 
 
-using ssTable = std::set<std::pair<std::string, std::string>>;
-using isTable = std::set<std::pair<int, std::string>>;
-using sTable = std::set<std::string>;
-using Table = std::variant<ssTable, isTable, sTable>;
+using muTable = std::set<std::pair<std::variant<std::string, int>, std::string>>;  // modifies or uses table
+using sTable = std::set<std::string>; // string only table
+using Table = std::variant<muTable, sTable>;
 
 class PKBStub {
 public:
@@ -20,8 +19,7 @@ public:
 
 	PKBStub() {
 		tables["variables"].emplace<sTable>();
-		tables["modifies"].emplace<ssTable>();
-		tables["modifies"].emplace<isTable>();
+		tables["modifies"].emplace<muTable>();
 	}
 
 	// Placeholder method for interfacing with PKB
@@ -48,7 +46,7 @@ public:
 	virtual void visit(const AST::RelExpr& node) override {};
 	virtual void visit(const AST::CondBinExpr& node) override {};
 	virtual void visit(const AST::NotCondExpr& node) override {};
-	virtual void enterContainer(int number) override {};
+	virtual void enterContainer(std::variant<int, std::string> containerId) override {};
 	virtual void exitContainer() override {};
 };
 
@@ -57,8 +55,28 @@ class VariableExtractor : public TreeWalker {
 public:
 	VariableExtractor(std::shared_ptr<PKBStub> pkb) : pkb(pkb) {};
 	void visit(const AST::Var& node) override;
-	std::set<std::string> getVars() {
+	sTable getVars() {
 		return std::get<std::set<std::string>>(pkb->tables["variables"]);
+	}
+};
+
+class ModifiesExtractor : public TreeWalker {
+	std::shared_ptr<PKBStub> pkb;
+	std::deque<int> containerNumber;
+	std::string currentProcedureName;
+
+	void cascadeToContainer(std::string &varName);
+
+public:
+	ModifiesExtractor(std::shared_ptr<PKBStub> pkb) : pkb(pkb) {};
+
+	void visit(const AST::Read& node) override;
+	void visit(const AST::Assign& node) override;
+	void enterContainer(std::variant<int, std::string> containerId) override;
+	void exitContainer() override;
+
+	muTable getModifies() {
+		return std::get<muTable>(pkb->tables["modifies"]);
 	}
 };
 

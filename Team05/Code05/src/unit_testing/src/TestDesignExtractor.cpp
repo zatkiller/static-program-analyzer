@@ -87,7 +87,7 @@ namespace AST {
 
         SECTION("whileBlk walking test") {
             Logger() << "walking simple while AST";
-            auto relExpr = makeRelExpr(RelOp::GT, Var("v1"), Const(11)); // v1 > 11;
+            auto relExpr = makeRelExpr(RelOp::GT, Var("v1"), Const(11)); // v1 > 11
             auto stmtlst = readPrintLst(2, "v1", 3, "v3");
             auto whileBlk = makeWhile(1, std::move(relExpr), std::move(stmtlst));
             VariableExtractor ve(pkb);
@@ -149,11 +149,39 @@ namespace AST {
             auto program = std::make_unique<Program>(makeProcedure("main", StmtLst(std::move(proclst))));
 
 
-            VariableExtractor ve(pkb);
-            program->accept(ve);
+            SECTION("Variable extractor test") {
+                VariableExtractor ve(pkb);
+                program->accept(ve);
 
-            std::set<std::string> expectedVars = { "x", "remainder", "digit", "sum" };
-            REQUIRE(ve.getVars() == expectedVars);
+                std::set<std::string> expectedVars = { "x", "remainder", "digit", "sum" };
+                REQUIRE(ve.getVars() == expectedVars);
+            }
+
+            SECTION("Modifies extractor test") {
+                ModifiesExtractor me(pkb);
+                program->accept(me);
+
+                muTable m;
+
+                m.insert(std::make_pair<>("main", "x"));
+                m.insert(std::make_pair<>("main", "sum"));
+                m.insert(std::make_pair<>("main", "remainder"));
+                m.insert(std::make_pair<>("main", "digit"));
+                m.insert(std::make_pair<>(1, "x"));
+                m.insert(std::make_pair<>(2, "sum"));
+                m.insert(std::make_pair<>(3, "digit"));
+                m.insert(std::make_pair<>(3, "remainder"));
+                m.insert(std::make_pair<>(3, "sum"));
+                m.insert(std::make_pair<>(3, "x"));
+                m.insert(std::make_pair<>(5, "remainder"));
+                m.insert(std::make_pair<>(6, "digit"));
+                m.insert(std::make_pair<>(7, "sum"));
+                m.insert(std::make_pair<>(8, "sum"));
+                m.insert(std::make_pair<>(9, "x"));
+
+                REQUIRE(me.getModifies() == m);
+            }
+            
         }
     }
 

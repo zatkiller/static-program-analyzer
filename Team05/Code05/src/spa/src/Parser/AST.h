@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <iostream>
+#include <variant>
 
 namespace AST {
 
@@ -65,7 +65,7 @@ namespace AST {
 		virtual void visit(const RelExpr& node) = 0;
 		virtual void visit(const CondBinExpr& node) = 0;
 		virtual void visit(const NotCondExpr& node) = 0;
-		virtual void enterContainer(int number) = 0;
+		virtual void enterContainer(std::variant<int, std::string> number) = 0;
 		virtual void exitContainer() = 0;
 	};
 

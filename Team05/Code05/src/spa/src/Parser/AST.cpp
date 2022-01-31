@@ -14,6 +14,7 @@ void StmtLst::accept(ASTNodeVisitor& visitor) const {
 }
 
 void Procedure::accept(ASTNodeVisitor& visitor) const {
+    visitor.enterContainer(procName);
     visitor.visit(*this);
     stmtLst.accept(visitor);
 }
