@@ -28,13 +28,17 @@ public:
 	void insert(std::string tableName, std::pair<std::string, std::string> relationship);
 };
 
-// one day I may be brave enough to use templates like https://www.foonathan.net/2017/12/visitors/
-// classic visitor design pattern will suffice for now.
-class TreeWalker : public AST::ASTNodeVisitor {
-public:
+/**
+ * A foundation for all design extractor. Performs depth-first traversal on the AST and do nothing.
+ * Children classes can inherit this class and override the specific methods that they want to perform
+ * actions at.
+ */
+struct TreeWalker : public AST::ASTNodeVisitor {
+	// one day I may be brave enough to use templates like https://www.foonathan.net/2017/12/visitors/
+	// classic visitor design pattern will suffice for now.
 	virtual void visit(const AST::Program& node) override {};
-	void visit(const AST::Procedure& node) override {};
-	void visit(const AST::StmtLst& node) override {};
+	virtual void visit(const AST::Procedure& node) override {};
+	virtual void visit(const AST::StmtLst& node) override {};
 	virtual void visit(const AST::If& node) override {};
 	virtual void visit(const AST::While& node) override {};
 	virtual void visit(const AST::Read& node) override {};
@@ -50,25 +54,34 @@ public:
 	virtual void exitContainer() override {};
 };
 
-class VariableExtractor : public TreeWalker {
+
+/**
+ * Base class of all design extractors. Adds a PKB adaptor during construction
+ */
+class Extractor : public TreeWalker {
+protected:
 	std::shared_ptr<PKBStub> pkb;
 public:
-	VariableExtractor(std::shared_ptr<PKBStub> pkb) : pkb(pkb) {};
+	Extractor(std::shared_ptr<PKBStub> pkb) : pkb(pkb) {};
+};
+
+class VariableExtractor : public Extractor {
+public:
+	using Extractor::Extractor;
 	void visit(const AST::Var& node) override;
 	sTable getVars() {
 		return std::get<std::set<std::string>>(pkb->tables["variables"]);
 	}
 };
 
-class ModifiesExtractor : public TreeWalker {
-	std::shared_ptr<PKBStub> pkb;
+class ModifiesExtractor : public Extractor {
 	std::deque<int> containerNumber;
 	std::string currentProcedureName;
 
 	void cascadeToContainer(std::string &varName);
 
 public:
-	ModifiesExtractor(std::shared_ptr<PKBStub> pkb) : pkb(pkb) {};
+	using Extractor::Extractor;
 
 	void visit(const AST::Read& node) override;
 	void visit(const AST::Assign& node) override;
