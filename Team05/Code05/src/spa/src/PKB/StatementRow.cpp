@@ -5,12 +5,12 @@
 
 #include "StatementRow.h"
 
-StatementRow::StatementRow(StatementType t, int l) : type(t), lineNumber(l) {}
+StatementRow::StatementRow(StatementType t, int stmtNum) : stmt{stmtNum, t} {}
 
 bool StatementRow::operator == (const StatementRow& row) const {
-	return type == row.type && lineNumber == row.lineNumber;
+	return stmt == row.stmt;
 }
 
 bool StatementRow::operator < (const StatementRow& row) const {
-	return std::tie(type, lineNumber) < std::tie(row.type, row.lineNumber);
+	return stmt < row.stmt;
 }

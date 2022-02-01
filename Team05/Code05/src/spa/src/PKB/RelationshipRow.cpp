@@ -3,9 +3,10 @@
 #include <stdio.h>
 #include <tuple>
 
+#include "PKBField.h"
 #include "RelationshipRow.h"
 
-RelationshipRow::RelationshipRow(int e1, int e2): entity1(e1), entity2(e2) {};
+RelationshipRow::RelationshipRow(PKBField e1, PKBField e2): entity1(e1), entity2(e2) {};
 
 bool RelationshipRow::operator == (const RelationshipRow& row) const {
 	return entity1 == row.entity1 && entity2 == row.entity2;

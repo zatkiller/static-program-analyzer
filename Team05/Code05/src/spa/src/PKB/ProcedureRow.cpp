@@ -3,9 +3,10 @@
 #include <stdio.h>
 #include <tuple>
 
+#include "PKBDataTypes.h"
 #include "ProcedureRow.h"
 
-ProcedureRow::ProcedureRow(std::string p) : procedureName(p) {}
+ProcedureRow::ProcedureRow(PROC_NAME p) : procedureName(p) {}
 
 bool ProcedureRow::operator == (const ProcedureRow& row) const {
 	return procedureName == row.procedureName;

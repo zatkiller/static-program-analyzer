@@ -6,7 +6,7 @@
 
 #include "VariableRow.h"
 
-VariableRow::VariableRow(std::string v) : variableName(v) {}
+VariableRow::VariableRow(VAR_NAME v) : variableName(v) {}
 
 bool VariableRow::operator == (const VariableRow& row) const {
 	return variableName == row.variableName;

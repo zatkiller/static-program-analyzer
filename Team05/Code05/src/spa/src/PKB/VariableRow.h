@@ -3,13 +3,15 @@
 #include <stdio.h>
 #include <string>
 
+#include "PKBDataTypes.h"
+
 class VariableRow {
 public:
-	VariableRow(std::string);
+	VariableRow(VAR_NAME);
 
 	bool operator == (const VariableRow&) const;
 	bool operator < (const VariableRow&) const;
 
 private:
-	std::string variableName;
+	VAR_NAME variableName;
 };

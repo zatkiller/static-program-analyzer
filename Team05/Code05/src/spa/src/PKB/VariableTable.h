@@ -4,13 +4,13 @@
 #include <set>
 
 #include "VariableRow.h"
+#include "PKBDataTypes.h"
 
 class VariableTable {
 public:
-	// TODO: replace <int> with <PKBField>
 	// count of an item in a set can only be 0 or 1
-	bool contains(std::string);
-	void insert(std::string variableName);
+	bool contains(VAR_NAME);
+	void insert(VAR_NAME variableName);
 	int getSize();
 
 private:

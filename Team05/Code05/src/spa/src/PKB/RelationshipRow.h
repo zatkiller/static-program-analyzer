@@ -2,15 +2,16 @@
 
 #include <stdio.h>
 
+#include "PKBField.h"
+
 class RelationshipRow {
 public:
-	RelationshipRow(int, int);
+	RelationshipRow(PKBField, PKBField);
 
 	bool operator == (const RelationshipRow&) const;
 	bool operator < (const RelationshipRow&) const;
 
 private:
-	// TODO: change to PKBField
-	int entity1;
-	int entity2;
+	PKBField entity1;
+	PKBField entity2;
 };

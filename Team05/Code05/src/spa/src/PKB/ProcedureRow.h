@@ -3,13 +3,15 @@
 #include <stdio.h>
 #include <string>
 
+#include "PKBDataTypes.h"
+
 class ProcedureRow {
 public:
-	ProcedureRow(std::string);
+	ProcedureRow(PROC_NAME);
 
 	bool operator == (const ProcedureRow&) const;
 	bool operator < (const ProcedureRow&) const;
 
 private:
-	std::string procedureName;
+	PROC_NAME procedureName;
 };

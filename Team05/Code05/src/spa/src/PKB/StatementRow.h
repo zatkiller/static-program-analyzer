@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "StatementType.h"
+#include "PKBDataTypes.h"
 
 class StatementRow {
 public:
@@ -12,6 +13,5 @@ public:
 	bool operator < (const StatementRow&) const;
 
 private:
-	StatementType type;
-	int lineNumber;
+	STMT_LO stmt;
 };

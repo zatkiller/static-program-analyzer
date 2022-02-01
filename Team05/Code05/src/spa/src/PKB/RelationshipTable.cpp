@@ -4,9 +4,9 @@
 
 #include "RelationshipTable.h"
 
-RelationshipTable::RelationshipTable(int t) : type(t) {}
+RelationshipTable::RelationshipTable(PKBRelationship rsType) : type(rsType) {}
 
-int RelationshipTable::getType() {
+PKBRelationship RelationshipTable::getType() {
 	return type;
 }
 

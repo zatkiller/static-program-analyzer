@@ -8,8 +8,8 @@
 class StatementTable {
 public:
 	// TODO: replace <int> with <PKBField>
-	bool contains(StatementType, int);
-	void insert(StatementType, int);
+	bool contains(STMT_LO stmt);
+	void insert(STMT_LO stmt);
 	int getSize();
 
 private:
