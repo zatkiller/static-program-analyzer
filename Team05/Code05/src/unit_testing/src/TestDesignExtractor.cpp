@@ -8,6 +8,7 @@
 #include "DesignExtractor.h"
 #include "logging.h"
 
+#define TEST_LOG Logger() << "TestDesignExtractor.cpp "
 
 namespace AST {
     using std::move;
@@ -74,6 +75,7 @@ namespace AST {
 
 
     TEST_CASE("Design extractor Test") {
+        TEST_LOG << "Testing Design Extractor";
         // Construct a simple AST;
         /**
          * while (v1 > 11) {
@@ -86,7 +88,7 @@ namespace AST {
         auto pkb = std::make_shared<PKBStub>();
 
         SECTION("whileBlk walking test") {
-            Logger() << "walking simple while AST";
+            TEST_LOG << "Walking simple while AST";
             auto relExpr = makeRelExpr(RelOp::GT, Var("v1"), Const(11));  // v1 > 11
             auto stmtlst = readPrintLst(2, "v1", 3, "v3");
             auto whileBlk = makeWhile(1, std::move(relExpr), std::move(stmtlst));
@@ -118,7 +120,7 @@ namespace AST {
          * 
          */
         SECTION("Complex AST test") {
-            Logger() << "Walking complex AST Tree";
+            TEST_LOG << "Walking complex AST Tree";
 
             std::vector<std::unique_ptr<Statement>> proclst;
             proclst.push_back(makeRead(1, "x"));
