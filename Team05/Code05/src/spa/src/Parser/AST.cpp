@@ -1,6 +1,6 @@
 #include "AST.h"
 
-using namespace AST;
+namespace AST {
 
 void Var::accept(ASTNodeVisitor& visitor) const {
     visitor.visit(*this);
@@ -24,7 +24,7 @@ void Program::accept(ASTNodeVisitor& visitor) const {
     procedure->accept(visitor);
 }
 
-void If::accept(ASTNodeVisitor & visitor) const {
+void If::accept(ASTNodeVisitor& visitor) const {
     visitor.visit(*this);
     condExpr->accept(visitor);
 
@@ -45,3 +45,5 @@ void While::accept(ASTNodeVisitor& visitor) const {
     stmtLst.accept(visitor);
     visitor.exitContainer();
 }
+
+}  // namespace AST

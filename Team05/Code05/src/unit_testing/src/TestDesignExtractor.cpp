@@ -24,7 +24,7 @@ namespace AST {
 
     std::unique_ptr<Print> makePrint(int num, std::string name) {
         return std::make_unique<Print>(num, makeBasic<Var>(name));
-    };
+    }
 
     std::unique_ptr<Assign> makeAssign(int num, std::string lhs, std::unique_ptr<Expr> rhs) {
         return std::make_unique<Assign>(num, makeBasic<Var>(lhs), std::move(rhs));
@@ -38,22 +38,22 @@ namespace AST {
     template <typename T, typename K>
     std::unique_ptr<RelExpr> makeRelExpr(RelOp op, T LHS, K RHS) {
         return std::make_unique<RelExpr>(op, std::make_unique<T>(LHS), std::make_unique<K>(RHS));
-    };
+    }
 
     template <typename T, typename K>
     std::unique_ptr<Assign> makeAssign(int num, T LHS, K RHS) {
         return std::make_unique<Assign>(num, std::make_unique<T>(LHS), std::move(RHS));
-    };
+    }
 
     template <typename T, typename K>
     std::unique_ptr<BinExpr> makeBinExpr(BinOp op, T LHS, K RHS) {
         return std::make_unique<BinExpr>(op, std::make_unique<T>(LHS), std::make_unique<K>(RHS));
-    };
+    }
 
     template <typename T, typename K>
     std::unique_ptr<Assign> makeAssignBinExpr(int num, Var LHS, BinOp op, T BLHS, K BRHS) {
         return makeAssign(num, LHS, makeBinExpr(op, BLHS, BRHS));
-    };
+    }
 
     auto readPrintLst = [](int num1, std::string v1, int num2, std::string v2) {
         auto read = makeRead(num1, v1);
@@ -82,12 +82,12 @@ namespace AST {
          * }
          *
          */
-        
+
         auto pkb = std::make_shared<PKBStub>();
 
         SECTION("whileBlk walking test") {
             Logger() << "walking simple while AST";
-            auto relExpr = makeRelExpr(RelOp::GT, Var("v1"), Const(11)); // v1 > 11
+            auto relExpr = makeRelExpr(RelOp::GT, Var("v1"), Const(11));  // v1 > 11
             auto stmtlst = readPrintLst(2, "v1", 3, "v3");
             auto whileBlk = makeWhile(1, std::move(relExpr), std::move(stmtlst));
             VariableExtractor ve(pkb);
@@ -95,7 +95,7 @@ namespace AST {
             // variable extractions
             REQUIRE(ve.getVars() == std::set<std::string>({"v1", "v3"}));
         }
-        
+
 
         // Construct a more complex AST;
         /**
@@ -123,7 +123,7 @@ namespace AST {
             std::vector<std::unique_ptr<Statement>> proclst;
             proclst.push_back(makeRead(1, "x"));
             proclst.push_back(makeAssign(2, Var("sum"), makeBasic<Const>(0)));
-             
+
             std::vector<std::unique_ptr<Statement>> whileLst;
             whileLst.push_back(makePrint(4, "x"));
             whileLst.push_back(makeAssignBinExpr(5, Var("remainder"), BinOp::MOD, Var("x"), Const(2)));
@@ -181,8 +181,8 @@ namespace AST {
 
                 REQUIRE(me.getModifies() == m);
             }
-            
         }
     }
 
-}
+}  // namespace AST
+

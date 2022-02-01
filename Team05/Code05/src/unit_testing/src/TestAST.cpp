@@ -1,20 +1,18 @@
-
-#include "Parser/AST.h"
 #include <iostream>
 #include <vector>
 
 #include "catch.hpp"
-
-using namespace AST;
+#include "Parser/AST.h"
 
 void require(bool b) {
     REQUIRE(b);
 }
 
+namespace AST {
 TEST_CASE("AST Test") {
     // Construction test
     INFO("Constructing the AST");
-    
+
     auto v1 = std::make_unique<Var>("v1");
     auto v2 = std::make_unique<Var>("v2");
     auto v3 = std::make_unique<Var>("v3");
@@ -27,7 +25,7 @@ TEST_CASE("AST Test") {
     auto constVal5 = std::make_unique<Const>(5);
 
     SECTION("Assign construction") {
-        auto assign = std::make_unique<Assign>(1, std::move(v1), std::move(v2)); // v1 = v2
+        auto assign = std::make_unique<Assign>(1, std::move(v1), std::move(v2));  // v1 = v2
     };
 
     SECTION("Binary Expression construction") {
@@ -44,7 +42,7 @@ TEST_CASE("AST Test") {
         auto relExpr1 = std::make_unique<RelExpr>(RelOp::GT, std::move(constVal10), std::move(constVal5));
         // v1 == v2
         auto relExpr2 = std::make_unique<RelExpr>(RelOp::EQ, std::move(v1), std::move(v2));
-        // (10 > 5) && (v1 == v2) 
+        // (10 > 5) && (v1 == v2)
         auto condExpr = std::make_unique<CondBinExpr>(CondOp::AND, std::move(relExpr1), std::move(relExpr2));
     };
 
@@ -55,7 +53,7 @@ TEST_CASE("AST Test") {
         // print
         auto printStmt = std::make_unique<Print>(21, std::move(v3));
     }
-    
+
     SECTION("Statement Construction") {
         auto readStmt = std::make_unique<Read>(20, std::move(v1));
         auto readStmt2 = std::make_unique<Read>(69, std::move(v2));
@@ -93,5 +91,5 @@ TEST_CASE("AST Test") {
 
     // require(1 == 1);
 }
-
+}  // namespace AST
 

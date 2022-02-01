@@ -1,16 +1,10 @@
-#include<stdio.h>
+#include <stdio.h>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "PKB.h"
 #include "DesignExtractor.h"
 #include "logging.h"
-
-int DesignExtractor () {
-    return 0;
-}
-
 
 void PKBStub::insert(std::string tableName, std::string value) {
     Logger() << "Inserting into " << tableName << " " << value;
@@ -27,8 +21,7 @@ void PKBStub::insert(std::string tableName, std::pair<int, std::string> relation
     auto table = std::get_if<muTable>(&tables[tableName]);
     if (table) {
         table->insert(relationship);
-    }
-    else {
+    } else {
         Logger() << "Accessing wrong table";
     }
 }
@@ -38,25 +31,22 @@ void PKBStub::insert(std::string tableName, std::pair<std::string, std::string> 
     auto table = std::get_if<muTable>(&tables[tableName]);
     if (table) {
         table->insert(relationship);
-    }
-    else {
+    } else {
         Logger() << "Accessing wrong table";
     }
 }
 
 void VariableExtractor::visit(const AST::Var& node) {
-    //insert("Variables", node.getVarName());
     pkb->insert("variables", node.getVarName());
 }
 
-void ModifiesExtractor::cascadeToContainer(std::string &varName) {
+void ModifiesExtractor::cascadeToContainer(const std::string& varName) {
     for (auto stmtNo : containerNumber) {
         pkb->insert("modifies", std::make_pair<>(stmtNo, varName));
     }
     if (!currentProcedureName.empty()) {
         pkb->insert("modifies", std::make_pair<>(currentProcedureName, varName));
     }
-    
 }
 
 void ModifiesExtractor::visit(const AST::Read& node) {
