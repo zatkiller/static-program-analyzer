@@ -11,68 +11,6 @@
 #define TEST_LOG Logger() << "TestDesignExtractor.cpp "
 
 namespace AST {
-    using std::move;
-
-    // for making Var and const
-    template <typename T, typename K>
-    std::unique_ptr<T> makeBasic(K v) {
-        return std::make_unique<T>(v);
-    }
-
-    std::unique_ptr<Read> makeRead(int num, std::string name) {
-        return std::make_unique<Read>(num, makeBasic<Var>(name));
-    }
-
-    std::unique_ptr<Print> makePrint(int num, std::string name) {
-        return std::make_unique<Print>(num, makeBasic<Var>(name));
-    }
-
-    std::unique_ptr<Assign> makeAssign(int num, std::string lhs, std::unique_ptr<Expr> rhs) {
-        return std::make_unique<Assign>(num, makeBasic<Var>(lhs), std::move(rhs));
-    }
-
-
-    StmtLst makeStatementLst(std::vector<std::unique_ptr<Statement>> vect) {
-        return StmtLst(std::move(vect));
-    }
-
-    template <typename T, typename K>
-    std::unique_ptr<RelExpr> makeRelExpr(RelOp op, T LHS, K RHS) {
-        return std::make_unique<RelExpr>(op, std::make_unique<T>(LHS), std::make_unique<K>(RHS));
-    }
-
-    template <typename T, typename K>
-    std::unique_ptr<Assign> makeAssign(int num, T LHS, K RHS) {
-        return std::make_unique<Assign>(num, std::make_unique<T>(LHS), std::move(RHS));
-    }
-
-    template <typename T, typename K>
-    std::unique_ptr<BinExpr> makeBinExpr(BinOp op, T LHS, K RHS) {
-        return std::make_unique<BinExpr>(op, std::make_unique<T>(LHS), std::make_unique<K>(RHS));
-    }
-
-    template <typename T, typename K>
-    std::unique_ptr<Assign> makeAssignBinExpr(int num, Var LHS, BinOp op, T BLHS, K BRHS) {
-        return makeAssign(num, LHS, makeBinExpr(op, BLHS, BRHS));
-    }
-
-    auto readPrintLst = [](int num1, std::string v1, int num2, std::string v2) {
-        auto read = makeRead(num1, v1);
-        auto print = makePrint(num2, v2);
-        std::vector<std::unique_ptr<Statement>> vect;
-        vect.push_back(std::move(read));
-        vect.push_back(std::move(print));
-        return makeStatementLst(std::move(vect));
-    };
-
-    auto makeWhile = [](int num, std::unique_ptr<CondExpr> cond, StmtLst& blk) {
-        return std::make_unique<While>(num, std::move(cond), std::move(blk));
-    };
-
-    auto makeProcedure = [](std::string name, StmtLst& blk) {
-        return std::make_unique<Procedure>(name, std::move(blk));
-    };
-
 
     TEST_CASE("Design extractor Test") {
         TEST_LOG << "Testing Design Extractor";
@@ -80,7 +18,7 @@ namespace AST {
         /**
          * while (v1 > 11) {
          *     read v1;
-         *	   print v1;
+         *	   print v3;
          * }
          *
          */
@@ -89,9 +27,12 @@ namespace AST {
 
         SECTION("whileBlk walking test") {
             TEST_LOG << "Walking simple while AST";
-            auto relExpr = makeRelExpr(RelOp::GT, Var("v1"), Const(11));  // v1 > 11
-            auto stmtlst = readPrintLst(2, "v1", 3, "v3");
-            auto whileBlk = makeWhile(1, std::move(relExpr), std::move(stmtlst));
+            auto relExpr = make<RelExpr>(RelOp::GT, make<Var>("v1"), make<Const>(11));  // v1 > 11
+            auto stmtlst = makeStmts(
+                make<Read>(2, make<Var>("v1")), 
+                make<Print>(3, make<Var>("v3"))
+            );
+            auto whileBlk = make<While>(1, std::move(relExpr), std::move(stmtlst));
             auto ve = std::make_shared<VariableExtractor>(pkb);
             whileBlk->accept(ve);
             // variable extractions
@@ -111,45 +52,35 @@ namespace AST {
          *    7          if (remainder == 0) then {
          *    8              sum = sum + digit
          *               } else {
-         *             
+         *    9               print x;
          *               }
-         *    9          x = x / 10;
+         *   10          x = x / 10;
          *           }
-         *   10      print sum;
+         *   11      print sum;
          * }
          * 
          */
         SECTION("Complex AST test") {
             TEST_LOG << "Walking complex AST Tree";
 
-            std::vector<std::unique_ptr<Statement>> proclst;
-            proclst.push_back(makeRead(1, "x"));
-            proclst.push_back(makeAssign(2, Var("sum"), makeBasic<Const>(0)));
+            auto procedure = make<Procedure>("main", makeStmts(
+                make<Read>(1, make<Var>("x")),
+                make<Assign>(2, make<Var>("sum"), make<Const>(0)),
+                make<While>(3, make<RelExpr>(RelOp::GT, make<Var>("x"), make<Const>(0)), makeStmts(
+                    make<Print>(4, make<Var>("x")),
+                    make<Assign>(5, make<Var>("remainder"), make<BinExpr>(BinOp::MOD, make<Var>("x"), make<Const>(2))),
+                    make<Assign>(6, make<Var>("digit"), make<BinExpr>(BinOp::MOD, make<Var>("x"), make<Const>(10))),
+                    make<If>(7, make<RelExpr>(RelOp::EQ, make<Var>("remainder"), make<Const>(0)), makeStmts(
+                        make<Assign>(8, make<Var>("sum"), make<BinExpr>(BinOp::PLUS, make<Var>("sum"), make<Var>("digit")))
+                    ), makeStmts(
+                        make<Print>(9, make<Var>("x"))
+                    )),
+                    make<Assign>(10, make<Var>("x"), make<BinExpr>(BinOp::DIVIDE, make<Var>("x"), make<Const>(10)))
+                )),
+                make<Print>(11, make<Var>("x"))
+            ));
 
-            std::vector<std::unique_ptr<Statement>> whileLst;
-            whileLst.push_back(makePrint(4, "x"));
-            whileLst.push_back(makeAssignBinExpr(5, Var("remainder"), BinOp::MOD, Var("x"), Const(2)));
-            whileLst.push_back(makeAssignBinExpr(6, Var("digit"), BinOp::MOD, Var("x"), Const(10)));
-
-            std::vector<std::unique_ptr<Statement>> thenLst;
-            std::vector<std::unique_ptr<Statement>> elseLst;
-            thenLst.push_back(makeAssignBinExpr(8, Var("sum"), BinOp::MOD, Var("sum"), Var("digit")));
-
-            whileLst.push_back(std::make_unique<If>(7,
-                makeRelExpr(RelOp::EQ, Var("remainder"), Const(0)),
-                StmtLst(std::move(thenLst)),
-                StmtLst(std::move(elseLst))
-                ));
-            whileLst.push_back(makeAssignBinExpr(9, Var("x"), BinOp::DIVIDE, Var("x"), Const(10)));
-
-            auto whileCond = makeRelExpr(RelOp::GT, Var("x"), Const(0));
-            auto whileStmt = makeWhile(3, std::move(whileCond), StmtLst(std::move(whileLst)));
-            proclst.push_back(std::move(whileStmt));
-
-            proclst.push_back(makePrint(10, "sum"));
-
-            auto program = std::make_unique<Program>(makeProcedure("main", StmtLst(std::move(proclst))));
-
+            auto program = std::make_unique<Program>(std::move(procedure));
 
             SECTION("Variable extractor test") {
                 auto ve = std::make_shared<VariableExtractor>(pkb);
@@ -179,7 +110,7 @@ namespace AST {
                 m.insert(std::make_pair<>(6, "digit"));
                 m.insert(std::make_pair<>(7, "sum"));
                 m.insert(std::make_pair<>(8, "sum"));
-                m.insert(std::make_pair<>(9, "x"));
+                m.insert(std::make_pair<>(10, "x"));
 
                 REQUIRE(me->getModifies() == m);
             }
