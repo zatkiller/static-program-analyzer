@@ -422,4 +422,33 @@ public:
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
+
+template <class T, typename K>
+std::unique_ptr<T> make(K arg) {
+    return std::make_unique<T>(arg);
+}
+
+template <class T, typename K, typename H>
+std::unique_ptr<T> make(K arg1, H arg2) {
+    return std::make_unique<T>(arg1, std::move(arg2));
+}
+
+template <class T, typename K, typename H, typename V>
+std::unique_ptr<T> make(K arg1, H arg2, V arg3) {
+    return std::make_unique<T>(arg1, std::move(arg2), std::move(arg3));
+}
+
+template <class T, typename K, typename H, typename V, typename Z>
+std::unique_ptr<T> make(K arg1, H arg2, V arg3, Z arg4) {
+    return std::make_unique<T>(arg1, std::move(arg2), std::move(arg3), std::move(arg4));
+}
+
+template <typename ... Ts>
+StmtLst makeStmts(Ts &&... ts) {
+    std::unique_ptr<Statement> stmtArr[] = { std::move(ts)... };
+    auto lst = std::vector<std::unique_ptr<Statement>>{ std::make_move_iterator(std::begin(stmtArr)), std::make_move_iterator(std::end(stmtArr)) };
+
+    return StmtLst(lst);
+}
+
 }  // namespace AST
