@@ -52,7 +52,6 @@ void Parser::parseDeclarations(Query &queryObj) {
     // Parse and add single declaration to Query Object
 
     while (peekNextToken().getTokenType() == TokenType::Comma) {
-        token = getAndCheckNextToken(TokenType::Comma);
         parseDeclaration(queryObj, designEntity);
     }
 

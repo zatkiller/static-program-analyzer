@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <iterator>
 
-#include <query.h>
+#include "query.h"
 
 std::set<int> processSuchthat(std::vector<RelRef>, DesignEntity);
 
