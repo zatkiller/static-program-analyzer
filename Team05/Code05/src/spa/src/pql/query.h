@@ -44,9 +44,9 @@ struct StmtRef {
     void setDeclaration(std::string);
     void setLineNo(int);
 
-    void getType();
-    void getDeclaration();
-    void getLineNo();
+    StmtRefType getType();
+    std::string getDeclaration();
+    int getLineNo();
 
     bool isDeclaration();
     bool isLineNo();
@@ -69,9 +69,9 @@ struct EntRef{
     void setDeclaration(std::string);
     void setVariableName(std::string);
 
-    void getType();
-    void getDeclaration();
-    void getVariableName();
+    EntRefType getType();
+    std::string getDeclaration();
+    std::string getVariableName();
 
     bool isDeclaration();
     bool isVarName();
@@ -110,7 +110,17 @@ struct Uses : RelRef {
 
 struct Pattern {
     std::string synonym;
-    std::pair<EntRef, std::string> params;
+    EntRef lhs;
+    std::string expression;
+
+    void setSynonym(std::string);
+    void setLhs(EntRef);
+    void setExpression(std::string);
+
+    std::string getSynonym();
+    EntRef getEntRef();
+    std::string getExpression();
+
 };
 
 class Query {
