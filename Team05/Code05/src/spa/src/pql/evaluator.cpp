@@ -7,15 +7,13 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
     //only one clause for now
     for (auto r : clauses) {
         RelRefType type = r.get()->getType();
-        if (type != RelRefType::INVALID) {
-            continue;
-        } else {
+        if (type == RelRefType::INVALID) {
             throw std::runtime_error("Relationship invalid");
         }
 
         if (type == RelRefType::MODIFIESS) {
-            RelRef* relRefPtr = r.get();
-            Modifies* modifiesPtr = dynamic_pointer_cast<Modifies>(relRefPtr);
+            std::shared_ptr<Modifies> mPtr = std::dynamic_pointer_cast<Modifies>(r);
+            Modifies* modifiesPtr = mPtr.get();
             Modifies m = *modifiesPtr;
             EntRef modified = m.modified;
             StmtRef stmt = m.modifiesStmt;
@@ -42,10 +40,10 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
                 throw std::runtime_error("Statement Reference has incorrect format in Modifeis relationship");
             }
             // TODO: modifies when PKB API is defined (support one clause only)
-            result = getRelationship(stmt, modified,  PKBRelationship::MODIFIES, returnType);
+            //result = getRelationship(stmt, modified,  PKBRelationship::MODIFIES, returnType);
         } else if (type == RelRefType::USESS) {
-            RelRef* relRefPtr = r.get();
-            Uses* usesPtr = std::dynamic_pointer_cast<Uses>(relRefPtr);
+            std::shared_ptr<Uses> uPtr = std::dynamic_pointer_cast<Uses>(r);
+            Uses* usesPtr = uPtr.get();
             Uses u = *usesPtr;
             EntRef used = u.used;
             StmtRef stmt = u.useStmt;
@@ -73,10 +71,10 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
             }
             // TODO: modifies when PKB API is defined
             //PKBReturnType can be the DesignEntity
-            result = getRelationship(stmt, used, PKBRelationship::USES, returnType);
+            //result = getRelationship(stmt, used, PKBRelationship::USES, returnType);
         }
-        return result;
     }
+    return result;
 }
 
 //Replace int by PKBField
@@ -97,15 +95,15 @@ std::set<int> processPattern(std::vector<Pattern> patterns, DesignEntity returnT
         }
 
         std::string pattern = "(" + lhsString + " , " + rhs + ")";
-        result = match(pattern, returnType);
+        //result = match(pattern, returnType);
     }
     return result;
 }
 
 //replace int by PKBField
 std::string processResult(std::set<int> queryResult) {
-    std::string stringResult;
-    for (auto r :: queryResult) {
+    std::string stringResult = "";
+    for (auto r : queryResult) {
         stringResult += std::to_string(r);
     }
     return stringResult;
@@ -117,7 +115,7 @@ std::string evaluate(Query query) {
     std::vector<std::shared_ptr<RelRef>> suchthat = query.getSuchthat();
     std::vector<Pattern> pattern = query.getPattern();
 
-    DesignEntity returnType = getDeclarationDesignEntity(variable[0]);
+    DesignEntity returnType = query.getDeclarationDesignEntity(variable[0]);
     //TODO: replace int with PKBField
     std::set<int> suchthatResult;
     std::set<int> patternResult;
@@ -132,7 +130,7 @@ std::string evaluate(Query query) {
 
     if (suchthat.empty() && pattern.empty()) {
         // Mock API call
-        queryResult = PKB::getAll(returnType);
+        //queryResult = PKB::getAll(returnType);
     } else {
         int size = std::min(suchthatResult.size(), patternResult.size());
         std::vector<int> v1(size);
