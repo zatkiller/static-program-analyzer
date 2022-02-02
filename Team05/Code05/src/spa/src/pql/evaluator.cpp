@@ -6,7 +6,7 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
     std::set<int> result;
     //only one clause for now
     for (auto r : clauses) {
-        RelRefType type = r->getType();
+        RelRefType type = r.get()->getType();
         if (type != RelRefType::INVALID) {
             continue;
         } else {
@@ -14,7 +14,9 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
         }
 
         if (type == RelRefType::MODIFIESS) {
-            Modifies m = *r;
+            RelRef* relRefPtr = r.get();
+            Modifies* modifiesPtr = dynamic_pointer_cast<Modifies>(relRefPtr);
+            Modifies m = *modifiesPtr;
             EntRef modified = m.modified;
             StmtRef stmt = m.modifiesStmt;
             EntRefType entType = modified.getType();
@@ -42,7 +44,9 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
             // TODO: modifies when PKB API is defined (support one clause only)
             result = getRelationship(stmt, modified,  PKBRelationship::MODIFIES, returnType);
         } else if (type == RelRefType::USESS) {
-            Uses u = *r;
+            RelRef* relRefPtr = r.get();
+            Uses* usesPtr = std::dynamic_pointer_cast<Uses>(relRefPtr);
+            Uses u = *usesPtr;
             EntRef used = u.used;
             StmtRef stmt = u.useStmt;
             EntRefType entType = used.getType();
@@ -107,7 +111,6 @@ std::string processResult(std::set<int> queryResult) {
     return stringResult;
 }
 
-//select s
 std::string evaluate(Query query) {
 //    std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
     std::vector<std::string> variable = query.getVariable();
