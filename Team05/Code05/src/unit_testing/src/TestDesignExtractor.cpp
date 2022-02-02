@@ -92,10 +92,10 @@ namespace AST {
             auto relExpr = makeRelExpr(RelOp::GT, Var("v1"), Const(11));  // v1 > 11
             auto stmtlst = readPrintLst(2, "v1", 3, "v3");
             auto whileBlk = makeWhile(1, std::move(relExpr), std::move(stmtlst));
-            VariableExtractor ve(pkb);
+            auto ve = std::make_shared<VariableExtractor>(pkb);
             whileBlk->accept(ve);
             // variable extractions
-            REQUIRE(ve.getVars() == std::set<std::string>({"v1", "v3"}));
+            REQUIRE(ve->getVars() == std::set<std::string>({"v1", "v3"}));
         }
 
 
@@ -152,15 +152,15 @@ namespace AST {
 
 
             SECTION("Variable extractor test") {
-                VariableExtractor ve(pkb);
+                auto ve = std::make_shared<VariableExtractor>(pkb);
                 program->accept(ve);
 
                 std::set<std::string> expectedVars = { "x", "remainder", "digit", "sum" };
-                REQUIRE(ve.getVars() == expectedVars);
+                REQUIRE(ve->getVars() == expectedVars);
             }
 
             SECTION("Modifies extractor test") {
-                ModifiesExtractor me(pkb);
+                auto me = std::make_shared<ModifiesExtractor>(pkb);
                 program->accept(me);
 
                 muTable m;
@@ -181,7 +181,7 @@ namespace AST {
                 m.insert(std::make_pair<>(8, "sum"));
                 m.insert(std::make_pair<>(9, "x"));
 
-                REQUIRE(me.getModifies() == m);
+                REQUIRE(me->getModifies() == m);
             }
         }
     }

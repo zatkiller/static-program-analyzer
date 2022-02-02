@@ -2,91 +2,91 @@
 
 namespace AST {
 
-void Var::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void Var::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
 }
 
-void StmtLst::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void StmtLst::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
     for (auto& s : list) {
         s->accept(visitor);
     }
 }
 
-void Procedure::accept(ASTNodeVisitor& visitor) const {
-    visitor.enterContainer(procName);
-    visitor.visit(*this);
+void Procedure::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->enterContainer(procName);
+    visitor->visit(*this);
     stmtLst.accept(visitor);
 }
 
-void Program::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void Program::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
     procedure->accept(visitor);
 }
 
-void If::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void If::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
     condExpr->accept(visitor);
 
-    visitor.enterContainer(getStmtNo());
+    visitor->enterContainer(getStmtNo());
     thenBlk.accept(visitor);
-    visitor.exitContainer();
+    visitor->exitContainer();
 
-    visitor.enterContainer(getStmtNo());
+    visitor->enterContainer(getStmtNo());
     elseBlk.accept(visitor);
-    visitor.exitContainer();
+    visitor->exitContainer();
 }
 
-void While::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void While::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
     condExpr->accept(visitor);
 
-    visitor.enterContainer(getStmtNo());
+    visitor->enterContainer(getStmtNo());
     stmtLst.accept(visitor);
-    visitor.exitContainer();
+    visitor->exitContainer();
 }
 
 
-void Assign::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void Assign::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
     var->accept(visitor);
     expr->accept(visitor);
 }
 
-void Read::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void Read::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
     this->getVar().accept(visitor);
 }
 
-void Print::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void Print::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
     this->getVar().accept(visitor);
 }
 
-void Const::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void Const::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
 }
 
-void BinExpr::accept(ASTNodeVisitor & visitor) const {
-    visitor.visit(*this);
+void BinExpr::accept(std::shared_ptr <ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
     LHS->accept(visitor);
     RHS->accept(visitor);
 }
 
-void RelExpr::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void RelExpr::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
     LHS->accept(visitor);
     RHS->accept(visitor);
 }
 
-void CondBinExpr::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void CondBinExpr::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
     LHS->accept(visitor);
     RHS->accept(visitor);
 }
 
-void NotCondExpr::accept(ASTNodeVisitor& visitor) const {
-    visitor.visit(*this);
+void NotCondExpr::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    visitor->visit(*this);
     condExpr->accept(visitor);
 }
 

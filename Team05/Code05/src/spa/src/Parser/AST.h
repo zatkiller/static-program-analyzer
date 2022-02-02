@@ -13,7 +13,7 @@ struct ASTNodeVisitor;
 class ASTNode {
 public:
     virtual ~ASTNode() {}
-    virtual void accept(ASTNodeVisitor& visitor) const = 0;
+    virtual void accept(std::shared_ptr<ASTNodeVisitor> visitor) const = 0;
 };
 
 // Abstract classes
@@ -92,7 +92,7 @@ public:
     explicit Var(const std::string& varName) : varName(varName) {}
     const std::string& getVarName() const { return varName; }
     void setVarName(std::string& name) { this->varName = name; }
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 
@@ -139,7 +139,7 @@ public:
     explicit StmtLst(std::vector<std::unique_ptr<Statement>>& list)
     : list(std::move(list)) {}
 
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 /**
@@ -156,7 +156,7 @@ public:
         StmtLst stmtLst) :
         procName(procName), stmtLst(std::move(stmtLst)) {}
 
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 /**
@@ -172,7 +172,7 @@ public:
     explicit Program(std::unique_ptr<Procedure> procedure) :
         procedure(std::move(procedure)) {}
 
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 /**
@@ -197,7 +197,7 @@ public:
         thenBlk(std::move(thenBlk)),
         elseBlk(std::move(elseBlk)) {}
 
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 /**
@@ -219,7 +219,7 @@ public:
         condExpr(std::move(condExpr)),
         stmtLst(std::move(stmtLst)) {}
 
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 /**
@@ -241,7 +241,7 @@ public:
         var(std::move(var)), 
         expr(std::move(expr)) {}
 
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 
     const Var getLHS() const {
         return *var;
@@ -275,7 +275,7 @@ public:
 class Read : public IO {
 public:
     using IO::IO;
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 
 };
 
@@ -287,7 +287,7 @@ public:
 class Print : public IO {
 public:
     using IO::IO;
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 /**
@@ -300,7 +300,7 @@ private:
     int constValue;
 public:
     Const(int constValue) : constValue(constValue) {}
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 /**
@@ -334,7 +334,7 @@ public:
         LHS(std::move(LHS)), 
         RHS(std::move(RHS)) {}
 
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 /**
@@ -370,7 +370,7 @@ public:
         LHS(std::move(LHS)), 
         RHS(std::move(RHS)) {}
 
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 /**
@@ -401,7 +401,7 @@ public:
         LHS(std::move(LHS)), 
         RHS(std::move(RHS)) {}
 
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 /**
@@ -419,7 +419,7 @@ public:
     ) : 
         condExpr(std::move(condExpr)) {}
 
-    void accept(ASTNodeVisitor& visitor) const;
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
 }  // namespace AST
