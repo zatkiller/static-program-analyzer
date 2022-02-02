@@ -5,6 +5,14 @@
 #include <iostream>
 
 TEST_CASE("Testing Parser") {
+
+    std::string fail = "procedure a {\
+        while (c !! b) {\
+            read c; \
+        }\
+    }";
+    REQUIRE(Parser().parse(fail) == nullptr);
+
     std::string testCode = "procedure computeAverage {\
         read num1;\
         read num2;\
@@ -13,7 +21,8 @@ TEST_CASE("Testing Parser") {
         ave = sum / 3;\
         print ave;\
     }";
-    Parser().parse(testCode);
+    REQUIRE(Parser().parse(testCode) != nullptr);
+    
 
     std::string testCode2 = "procedure printAscending {\
         read num1;\
@@ -31,7 +40,7 @@ TEST_CASE("Testing Parser") {
         print num2;\
         print noSwap;\
     }";
-    Parser().parse(testCode2);
+    REQUIRE(Parser().parse(testCode2) != nullptr);
 
     std::string generatedCode1 = "procedure Y5Gw {\
     if ((0 >= 758) && (!(34 >= 5))) then {\
@@ -46,8 +55,7 @@ TEST_CASE("Testing Parser") {
     }\
     \
     }";
-    Parser().parse(generatedCode1);
-
+    REQUIRE(Parser().parse(generatedCode1) != nullptr);
 
     std::string generatedCode2 = "procedure h7JOVeUY {\
  JqVi =  72 % (556 - ix70);\
@@ -89,5 +97,5 @@ BpZjf =   (0 - 3241) / (xS8Y5myR % (TW0P)) + (7753) % (5582 + A000 - e5k575j4 % 
 BPs82 =  (2) % (263 - 9374) * ((814) + (0 + o9y0Nxi) % A000 - 0 / 035) % (53 - 272 % 7 - 801 * A000) * (03 % (lGUy - 59));\
 \
 }";
-    Parser().parse(generatedCode2);
+    REQUIRE(Parser().parse(generatedCode2) != nullptr);
 }

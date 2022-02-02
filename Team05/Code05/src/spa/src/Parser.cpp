@@ -543,5 +543,7 @@ unique_ptr<AST::Program> Parser::parse(const string& source) {
         return parseProgram(lexedTokens);
     }
     catch (invalid_argument ex) {
+        cout << "exception caught";
+        return unique_ptr<AST::Program>();
     }
 }
