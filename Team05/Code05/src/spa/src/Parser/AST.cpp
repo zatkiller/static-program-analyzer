@@ -46,4 +46,49 @@ void While::accept(ASTNodeVisitor& visitor) const {
     visitor.exitContainer();
 }
 
+
+void Assign::accept(ASTNodeVisitor& visitor) const {
+    visitor.visit(*this);
+    var->accept(visitor);
+    expr->accept(visitor);
+}
+
+void Read::accept(ASTNodeVisitor& visitor) const {
+    visitor.visit(*this);
+    this->getVar().accept(visitor);
+}
+
+void Print::accept(ASTNodeVisitor& visitor) const {
+    visitor.visit(*this);
+    this->getVar().accept(visitor);
+}
+
+void Const::accept(ASTNodeVisitor& visitor) const {
+    visitor.visit(*this);
+}
+
+void BinExpr::accept(ASTNodeVisitor & visitor) const {
+    visitor.visit(*this);
+    LHS->accept(visitor);
+    RHS->accept(visitor);
+}
+
+void RelExpr::accept(ASTNodeVisitor& visitor) const {
+    visitor.visit(*this);
+    LHS->accept(visitor);
+    RHS->accept(visitor);
+}
+
+void CondBinExpr::accept(ASTNodeVisitor& visitor) const {
+    visitor.visit(*this);
+    LHS->accept(visitor);
+    RHS->accept(visitor);
+}
+
+void NotCondExpr::accept(ASTNodeVisitor& visitor) const {
+    visitor.visit(*this);
+    condExpr->accept(visitor);
+}
+
+
 }  // namespace AST

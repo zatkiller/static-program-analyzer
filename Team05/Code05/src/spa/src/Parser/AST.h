@@ -246,11 +246,7 @@ public:
         var(std::move(var)), 
         expr(std::move(expr)) {}
 
-    void accept(ASTNodeVisitor& visitor) const {
-        visitor.visit(*this);
-        var->accept(visitor);
-        expr->accept(visitor);
-    }
+    void accept(ASTNodeVisitor& visitor) const;
 
     const Var getLHS() const {
         return *var;
@@ -284,10 +280,8 @@ public:
 class Read : public IO {
 public:
     using IO::IO;
-    void accept(ASTNodeVisitor& visitor) const {
-        visitor.visit(*this);
-        this->getVar().accept(visitor);
-    }
+    void accept(ASTNodeVisitor& visitor) const;
+
 };
 
 /**
@@ -298,10 +292,7 @@ public:
 class Print : public IO {
 public:
     using IO::IO;
-    void accept(ASTNodeVisitor& visitor) const {
-        visitor.visit(*this);
-        this->getVar().accept(visitor);
-    }
+    void accept(ASTNodeVisitor& visitor) const;
 };
 
 /**
@@ -314,9 +305,7 @@ private:
     int constValue;
 public:
     Const(int constValue) : constValue(constValue) {}
-    void accept(ASTNodeVisitor& visitor) const {
-        visitor.visit(*this);
-    }
+    void accept(ASTNodeVisitor& visitor) const;
 };
 
 /**
@@ -350,11 +339,7 @@ public:
         LHS(std::move(LHS)), 
         RHS(std::move(RHS)) {}
 
-    void accept(ASTNodeVisitor& visitor) const {
-        visitor.visit(*this);
-        LHS->accept(visitor);
-        RHS->accept(visitor);
-    }
+    void accept(ASTNodeVisitor& visitor) const;
 };
 
 /**
@@ -390,11 +375,7 @@ public:
         LHS(std::move(LHS)), 
         RHS(std::move(RHS)) {}
 
-    void accept(ASTNodeVisitor& visitor) const {
-        visitor.visit(*this);
-        LHS->accept(visitor);
-        RHS->accept(visitor);
-    }
+    void accept(ASTNodeVisitor& visitor) const;
 };
 
 /**
@@ -425,11 +406,7 @@ public:
         LHS(std::move(LHS)), 
         RHS(std::move(RHS)) {}
 
-    void accept(ASTNodeVisitor& visitor) const {
-        visitor.visit(*this);
-        LHS->accept(visitor);
-        RHS->accept(visitor);
-    }
+    void accept(ASTNodeVisitor& visitor) const;
 };
 
 /**
@@ -447,10 +424,7 @@ public:
     ) : 
         condExpr(std::move(condExpr)) {}
 
-    void accept(ASTNodeVisitor& visitor) const {
-        visitor.visit(*this);
-        condExpr->accept(visitor);
-    }
+    void accept(ASTNodeVisitor& visitor) const;
 };
 
 }  // namespace AST
