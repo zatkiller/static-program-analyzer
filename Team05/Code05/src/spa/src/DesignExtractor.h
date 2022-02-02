@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "Parser/Ast.h"
+#include "Parser/AST.h"
 
 using muTable = std::set<std::pair<std::variant<std::string, int>, std::string>>;  // modifies or uses table
 using sTable = std::set<std::string>;  // string only table
