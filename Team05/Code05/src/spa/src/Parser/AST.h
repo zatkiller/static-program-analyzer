@@ -45,11 +45,6 @@ class RelExpr;
 class CondBinExpr;
 class NotCondExpr;
 
-struct IOVisitor {
-    virtual void visitRead(const Read& node) = 0;
-    virtual void visitPrint(const Print& node) = 0;
-};
-
 struct ASTNodeVisitor {
     virtual void visit(const Program& node) = 0;
     virtual void visit(const Procedure& node) = 0;
