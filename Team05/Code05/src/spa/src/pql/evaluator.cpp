@@ -1,12 +1,12 @@
 #include "evaluator.h"
 
 //Replace int by PKBField
-std::set<int> processSuchthat(std::vector<RelRef> clauses, DesignEntity returnType) {
+std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, DesignEntity returnType) {
     //TODO: Modifies when PKBResponse is definded Replace int with PKBFields
     std::set<int> result;
     //only one clause for now
     for (auto r : clauses) {
-        RelRefType type = r.type;
+        RelRefType type = r->getType();
         if (type != RelRefType::INVALID) {
             continue;
         } else {
@@ -14,9 +14,9 @@ std::set<int> processSuchthat(std::vector<RelRef> clauses, DesignEntity returnTy
         }
 
         if (type == RelRefType::MODIFIESS) {
-
-            EntRef modified = r.modified;
-            StmtRef stmt = r.modifiesStmt;
+            Modifies m = *r;
+            EntRef modified = m.modified;
+            StmtRef stmt = m.modifiesStmt;
             EntRefType entType = modified.getType();
             StmtRefType stmtType = stmt.getType();
 
@@ -42,8 +42,9 @@ std::set<int> processSuchthat(std::vector<RelRef> clauses, DesignEntity returnTy
             // TODO: modifies when PKB API is defined (support one clause only)
             result = getRelationship(stmt, modified,  PKBRelationship::MODIFIES, returnType);
         } else if (type == RelRefType::USESS) {
-            EntRef used = r.used;
-            StmtRef stmt = r.useStmt;
+            Uses u = *r;
+            EntRef used = u.used;
+            StmtRef stmt = u.useStmt;
             EntRefType entType = used.getType();
             StmtRefType stmtType = stmt.getType();
 
@@ -110,7 +111,7 @@ std::string processResult(std::set<int> queryResult) {
 std::string evaluate(Query query) {
 //    std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
     std::vector<std::string> variable = query.getVariable();
-    std::vector<RelRef> suchthat = query.getSuchthat();
+    std::vector<std::shared_ptr<RelRef>> suchthat = query.getSuchthat();
     std::vector<Pattern> pattern = query.getPattern();
 
     DesignEntity returnType = getDeclarationDesignEntity(variable[0]);
