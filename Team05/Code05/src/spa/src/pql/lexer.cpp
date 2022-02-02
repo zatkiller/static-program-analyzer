@@ -20,6 +20,20 @@ Token Lexer::getNextToken() {
 
     if (text.length() == 0) {
         return Token{"", TokenType::Eof};
+    } else if (text[0] == '"') {
+        // Remove opening "
+        text.erase(0, 1);
+
+        int charCount = 0;
+        while (text.length() > 0 && text[charCount] != '"')
+            charCount++;
+
+        std::string strValue = text.substr(charCount);
+
+        // Remove closing "
+        text.erase(0, 1);
+
+        return Token { strValue, TokenType::String };
     } else if (isalpha(text[0])) {
         int charCount = 0;
         while (text.length() > 0 && (isalpha(text[charCount]) || isdigit(text[charCount])))
@@ -39,25 +53,25 @@ Token Lexer::getNextToken() {
 
         return Token { number, TokenType::Number};
     } else {
-        Token token;
-        std::string value = text.substr(0, 1);
-        if (text[0] == ';') {
-            token = {value, TokenType::Semicolon};
-        } else if (text[0] == '(') {
-            token = {value, TokenType::OpeningParan};
-        } else if (text[0] == ')') {
-            token = {value, TokenType::ClosingParan};
-        } else if (text[0] == '_') {
-            token = {value, TokenType::Underscore};
-        } else if (text[0] == ',') {
-            token = {value, TokenType::Comma};
-        } else {
-            token = {"", TokenType::Invalid};
-        }
+            Token token;
+            std::string value = text.substr(0, 1);
+            if (text[0] == ';') {
+                token = {value, TokenType::Semicolon};
+            } else if (text[0] == '(') {
+                token = {value, TokenType::OpeningParan};
+            } else if (text[0] == ')') {
+                token = {value, TokenType::ClosingParan};
+            } else if (text[0] == '_') {
+                token = {value, TokenType::Underscore};
+            } else if (text[0] == ',') {
+                token = {value, TokenType::Comma};
+            } else {
+                token = {"", TokenType::Invalid};
+            }
 
-        text.erase(0, 1);
-        return token;
-    }
+            text.erase(0, 1);
+            return token;
+        }
 }
 
 Token Lexer::getNextReservedToken() {

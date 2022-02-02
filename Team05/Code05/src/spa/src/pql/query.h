@@ -1,6 +1,9 @@
+#pragma once
+
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <memory>
 
 enum class DesignEntity {
     STMT,
@@ -15,17 +18,7 @@ enum class DesignEntity {
     PROCEDURE
 };
 
-static std::unordered_map<std::string, DesignEntity> designEntityMap = {
-        { "stmt", DesignEntity::STMT },
-        { "read", DesignEntity::READ } ,
-        { "print", DesignEntity::PRINT },
-        { "while", DesignEntity::WHILE },
-        { "if", DesignEntity::IF },
-        { "assign", DesignEntity::ASSIGN },
-        { "variable", DesignEntity::VARIABLE },
-        { "constant", DesignEntity::CONSTANT },
-        { "procedure", DesignEntity::PROCEDURE }
-};
+extern std::unordered_map<std::string, DesignEntity> designEntityMap;
 
 enum class StmtRefType {
     NOT_INITIALIZED,
@@ -90,21 +83,25 @@ enum class RelRefType {
 // Abstract class
 struct RelRef {
     RelRefType type = RelRefType::INVALID;
+    RelRef() {}
+    RelRef(RelRefType type) : type(type) {}
     virtual ~RelRef() {};
+    virtual RelRefType getType() {return type;}
 };
 
 struct Modifies : RelRef {
-    RelRefType type = RelRefType::MODIFIESS;
 
+    Modifies() : RelRef(RelRefType::MODIFIESS) {}
     EntRef modified;
     StmtRef modifiesStmt;
 };
 
 struct Uses : RelRef {
-    RelRefType type = RelRefType::USESS;
+    Uses() : RelRef(RelRefType::USESS) {}
 
     EntRef used;
     StmtRef useStmt;
+    RelRefType getType() {return type;}
 };
 
 struct Pattern {
@@ -126,20 +123,21 @@ class Query {
 private:
     std::unordered_map<std::string, DesignEntity> declarations;
     std::vector<std::string> variable;
-    std::vector<RelRef> suchthat;
+    std::vector<std::shared_ptr<RelRef>> suchthat;
     std::vector<Pattern> pattern;
 public:
     std::unordered_map<std::string, DesignEntity> getDeclarations();
     std::vector<std::string> getVariable();
-    std::vector<RelRef> getSuchthat();
+    std::vector<std::shared_ptr<RelRef>> getSuchthat();
     std::vector<Pattern> getPattern();
 
-    void addDeclaration(std::string, DesignEntity);
     bool hasDeclaration(std::string name);
-    DesignEntity getDeclarationDesignEntity(std::string name);
+    bool hasVariable(std::string var);
 
-    void setDeclarations(std::unordered_map<std::string, DesignEntity> declarations);
-    void setVariable(std::vector<std::string> select);
-    void setSuchthat(std::vector<RelRef> suchthat);
-    void setPattern(std::vector<Pattern> pattern);
+    void addDeclaration(std::string, DesignEntity);
+    void addVariable(std::string var);
+    void addSuchthat(std::shared_ptr<RelRef>);
+    void addPattern(Pattern pattern);
+
+    DesignEntity getDeclarationDesignEntity(std::string name);
 };

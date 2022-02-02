@@ -1,7 +1,25 @@
+#include <algorithm>
+
 #include "query.h"
+
+std::unordered_map<std::string, DesignEntity> designEntityMap = {
+        { "stmt", DesignEntity::STMT },
+        { "read", DesignEntity::READ } ,
+        { "print", DesignEntity::PRINT },
+        { "while", DesignEntity::WHILE },
+        { "if", DesignEntity::IF },
+        { "assign", DesignEntity::ASSIGN },
+        { "variable", DesignEntity::VARIABLE },
+        { "constant", DesignEntity::CONSTANT },
+        { "procedure", DesignEntity::PROCEDURE }
+};
 
 bool Query::hasDeclaration(std::string name) {
     return declarations.count(name) > 0;
+}
+
+bool Query::hasVariable(std::string var) {
+    return std::find(variable.begin(), variable.end(), var) != variable.end();
 }
 
 DesignEntity Query::getDeclarationDesignEntity(std::string name) {
@@ -17,7 +35,7 @@ std::vector<std::string> Query::getVariable() {
     return variable;
 }
 
-std::vector<RelRef> Query::getSuchthat() {
+std::vector<std::shared_ptr<RelRef>> Query::getSuchthat() {
     return suchthat;
 }
 
@@ -32,21 +50,19 @@ void Query::addDeclaration(std::string var, DesignEntity de) {
     declarations.insert({var, de});
 }
 
-void Query::setDeclarations(std::unordered_map<std::string, DesignEntity> declarations) {
-    declarations = declarations;
+
+void Query::addVariable(std::string var) {
+    variable.push_back(var);
 }
 
-void Query::setVariable(std::vector<std::string> variable) {
-    variable = variable;
+void Query::addSuchthat(std::shared_ptr<RelRef> rel) {
+    suchthat.push_back(rel);
 }
 
-void Query::setSuchthat(std::vector<RelRef> suchthat) {
-    suchthat = suchthat;
+void Query::addPattern(Pattern p) {
+    pattern.push_back(p);
 }
 
-void Query::setPattern(std::vector<Pattern> pattern) {
-    pattern = pattern;
-}
 
 void EntRef::setType(EntRefType entType) {
     type = entType;
