@@ -1,6 +1,6 @@
 #include "evaluator.h"
 
-//Replace int with PKBField
+//Replace int by PKBField
 std::set<int> processSuchthat(std::vector<RelRef> clauses, DesignEntity returnType) {
     //TODO: Modifies when PKBResponse is definded Replace int with PKBFields
     std::set<int> result;
@@ -75,25 +75,67 @@ std::set<int> processSuchthat(std::vector<RelRef> clauses, DesignEntity returnTy
 
 //Replace int with PKBField
 std::set<int> processPattern(std::vector<Pattern> patterns, DesignEntity returnType) {
+    std::set<int> result;
     for (auto p : patterns) {
+        EntRef lhs = p.getEntRef();
+        std::string rhs = p.getExpression();
 
+        // modify when pattern is defined in PKB
+        std::string lhsString;
+        if (lhs.isWildcard()) {
+            lhsString = "_";
+        } else if (lhs.isDeclaration()) {
+            lhsString = lhs.getDeclaration();
+        } else if (lhs.isVarName()) {
+            lhsString = lhs.getVariableName();
+        }
+
+        std::string pattern = "(" + lhsString + " , " + rhs + ")";
+        result = match(pattern, returnType)
     }
+}
+
+//replace int by PKBField
+std::string processResult(std::set<int> queryResult) {
+    std::string stringResult;
+    for (auto r :: queryResult) {
+        stringResult += std::to_string(r);
+    }
+    return stringResult;
 }
 
 //select s
 std::string evaluate(Query query) {
-    std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
+//    std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
     std::vector<std::string> variable = query.getVariable();
     std::vector<RelRef> suchthat = query.getSuchthat();
     std::vector<Pattern> pattern = query.getPattern();
 
     DesignEntity returnType = getDeclarationDesignEntity(variable[0]);
+    //TODO: replace int with PKBField
     std::set<int> suchthatResult;
+    std::set<int> patternResult;
+    std::set<int> queryResult;
     if (!suchthat.empty()) {
         suchthatResult = processSuchthat(suchthat, returnType);
     }
 
     if (!pattern.empty()) {
-        processPattern(pattern, returnType);
+        patternResult = processPattern(pattern, returnType);
     }
+
+    if (suchthat.empty() && pattern.empty()) {
+        // Mock API call
+        queryResult = PKB::getAll(returnType);
+    } else {
+        int size = std::min(suchthatResult.size(), patternResult.size());
+        std::vector<int> v1(size);
+        std::vector<int>::iterator it, ls;
+        ls = std::set_intersection(suchthatResult.begin(), suchthatResult.end(), patternResult.begin(), patternResult.end(), v1.begin());
+        for (it = v1.begin(); it != ls; ++it) {
+            queryResult.insert(*it);
+        }
+    }
+
+    return processResult(queryResult);
 }
