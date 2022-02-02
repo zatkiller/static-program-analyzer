@@ -1,5 +1,10 @@
 #include "pql/parser.h"
 #include "catch.hpp"
+#include <memory>
+#include "logging.h"
+#include <vector>
+
+#define TEST_LOG Logger() << "TestLexer.cpp"
 
 TEST_CASE("Test Parser peekNext and getNext") {
     std::string testQuery = "assign a; \n Select a such that Uses (a, v) pattern a (v, _)";
@@ -68,4 +73,67 @@ TEST_CASE("Test Parser parseDeclarations method on multiple Design Entity") {
 
     REQUIRE(queryObj.hasDeclaration("v1"));
     REQUIRE(queryObj.getDeclarationDesignEntity("v1") == DesignEntity::VARIABLE);
+
+    REQUIRE(queryObj.getVariable().size() == 0);
+}
+
+TEST_CASE("Test Parser parseSelectFields") {
+    std::string testQuery = "assign a; \n Select a such that Uses (a, v) pattern a (v, _)";
+
+    Parser parser;
+    parser.addPql(testQuery);
+
+    Query queryObj;
+
+    parser.parseDeclarations(queryObj);
+    parser.parseSelectFields(queryObj);
+
+    REQUIRE(queryObj.hasVariable("a"));
+    REQUIRE(queryObj.getSuchthat().size() == 0);
+}
+
+TEST_CASE("Test Parse such that for Uses") {
+    std::string testQuery = "assign a; \n Select a such that Uses (a, _) pattern a (v, _)";
+
+    Parser parser;
+    parser.addPql(testQuery);
+
+    Query queryObj;
+
+    parser.parseDeclarations(queryObj);
+    parser.parseSelectFields(queryObj);
+    parser.parseSuchThat(queryObj);
+
+    std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
+    REQUIRE(relRefPtr->getType() == RelRefType::USESS);
+
+    std::shared_ptr<Uses> usesPtr = std::dynamic_pointer_cast<Uses>(relRefPtr);
+    REQUIRE(usesPtr->useStmt.declaration == "a");
+    REQUIRE(usesPtr->useStmt.isDeclaration());
+    REQUIRE(usesPtr->used.isWildcard());
+
+    REQUIRE(queryObj.getPattern().size() == 0);
+}
+
+TEST_CASE("Test Parse such that for MOdifies") {
+    std::string testQuery = "assign a; \n Select a such that Modifies (a, _) pattern a (v, _)";
+
+    Parser parser;
+    parser.addPql(testQuery);
+
+    Query queryObj;
+
+    parser.parseDeclarations(queryObj);
+    parser.parseSelectFields(queryObj);
+    parser.parseSuchThat(queryObj);
+
+    std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
+    REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
+
+    std::shared_ptr<Modifies> modifiesPtr = std::dynamic_pointer_cast<Modifies>(relRefPtr);
+    REQUIRE(modifiesPtr->modifiesStmt.declaration == "a");
+    REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
+    REQUIRE(modifiesPtr->modified.isWildcard());
+
+    REQUIRE(queryObj.getPattern().size() == 0);
 }

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <vector>
 
@@ -26,11 +28,6 @@ enum class TokenType {
     Pattern,
     Assign,
 
-    //Relationship variables
-    Value,
-    StmtNum,
-    VarName,
-    ProcName
 };
 
 struct Token {
