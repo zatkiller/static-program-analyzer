@@ -1,7 +1,6 @@
 
-#include "Lexer.h"
+#include "Parser/Lexer.h"
 #include "logging.h"
-#include <iostream>
 
 #include "catch.hpp"
 
@@ -39,6 +38,20 @@ TEST_CASE("Token testing") {
     REQUIRE_FALSE(number == diffNumber);
     REQUIRE_FALSE(special == diffSpecial);
 
+    TEST_LOG << "Testing token assignment";
+    // Assign test
+    name2 = diffName;
+    REQUIRE_FALSE(name == name2);
+    REQUIRE(name2 == diffName);
+
+    number2 = diffNumber;
+    REQUIRE_FALSE(number == number2);
+    REQUIRE(number2 == diffNumber);
+
+    special2 = diffSpecial;
+    REQUIRE_FALSE(special == special2);
+    REQUIRE(special2 == diffSpecial);
+
 }
 
 TEST_CASE("Lexer test") {
@@ -66,13 +79,13 @@ TEST_CASE("Lexer test") {
         tokens.push(Token{TokenType::special, '}'});
         tokens.push(Token{TokenType::eof, EOF});
 
-        std::queue<Token> lexedTokens = Lexer(source).getTokens();
+        std::deque<Token> lexedTokens = Lexer(source).getTokens();
         
 
         REQUIRE(tokens.size() == lexedTokens.size());
         while (!tokens.empty()) {
             REQUIRE(lexedTokens.front() == tokens.front());
-            lexedTokens.pop();
+            lexedTokens.pop_front();
             tokens.pop();
         }
     }

@@ -14,7 +14,7 @@ void require(bool b) {
 TEST_CASE("AST Test") {
     // Construction test
     INFO("Constructing the AST");
-    
+
     auto v1 = std::make_unique<Var>("v1");
     auto v2 = std::make_unique<Var>("v2");
     auto v3 = std::make_unique<Var>("v3");
@@ -55,7 +55,7 @@ TEST_CASE("AST Test") {
         // print
         auto printStmt = std::make_unique<Print>(21, std::move(v3));
     }
-    
+
     SECTION("Statement Construction") {
         auto readStmt = std::make_unique<Read>(20, std::move(v1));
         auto readStmt2 = std::make_unique<Read>(69, std::move(v2));
@@ -93,5 +93,4 @@ TEST_CASE("AST Test") {
 
     // require(1 == 1);
 }
-
 
