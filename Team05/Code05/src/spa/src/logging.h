@@ -29,7 +29,7 @@ public:
         return *this;
     }
 
-    Logger(Level level = Level::INFO) : level(level) {
+    explicit Logger(Level level = Level::INFO) : level(level) {
         this->oss << this->getHeader();
     }
 
@@ -42,8 +42,7 @@ public:
         default:
             std::cout << this->oss.str() << std::endl;
             break;
-        }
-        
+        }        
     }
 
 private:
