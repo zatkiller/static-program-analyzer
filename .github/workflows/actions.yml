@@ -50,7 +50,7 @@ jobs:
       fail-fast: true
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/python2@v2
+      - uses: actions/setup-python@v2
       - run: pip install cpplint
       - name: Linting the Code
         run: cpplint --recursive Team05/Code05/src/spa Team05/Code05/src/unit_testing Team05/Code05/src/integration_testing
