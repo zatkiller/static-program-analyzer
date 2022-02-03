@@ -300,6 +300,36 @@ unique_ptr<AST::CondExpr> parseRelExpr(deque<Token>& tokens) {
     return make_unique<AST::RelExpr>(relOp, move(lhsExpr), move(rhsExpr));
 }
 
+/**
+ * To identify if bracketted expression is part of a condExpr or Expr.
+ * E.g. while( (x+1) > 1) vs while ((x > 1) && (y < x))
+ */
+bool isCondExpr(deque<Token>& tokens) {
+    int openBrCount = 0;
+    for (auto& v : tokens) {
+        if (v.type == TokenType::special) {
+            char sym = get<char>(v.value);
+            switch (sym) {
+            case '(':
+                openBrCount++;
+                break;
+            case ')':
+                openBrCount--;
+                break;
+            }
+            if (openBrCount == 0 && sym != ')') {
+                if (sym == '&' || sym == '|') {
+                    return true;
+                }
+                return false;
+            } else if (openBrCount < 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 unique_ptr<AST::CondExpr> parseCondExpr(deque<Token>& tokens) {
     // Token currToken = getNextToken(tokens);
     Token currToken = tokens.front();
@@ -314,32 +344,7 @@ unique_ptr<AST::CondExpr> parseCondExpr(deque<Token>& tokens) {
             condExprResult = make_unique<AST::NotCondExpr>(move(parseCondExpr(tokens)));
             checkAndConsume(')', tokens);
         } else if (tokenVal == '(') {
-            int openBrCount = 0;
-            bool isCondExpr = false;
-            for (auto& v : tokens) {
-                if (v.type == TokenType::special) {
-                    char sym = get<char>(v.value);
-                    switch (sym) {
-                    case '(':
-                        openBrCount++;
-                        break;
-                    case ')':
-                        openBrCount--;
-                        break;
-                    }
-                    if (openBrCount == 0 && sym != ')') {
-                        if (sym == '&' || sym == '|') {
-                            isCondExpr = true;
-                            break;
-                        }
-                        break;
-                    } else if (openBrCount < 0) {
-                        isCondExpr = true;
-                        break;
-                    }
-                }
-            }
-            if (isCondExpr) {
+            if (isCondExpr(tokens)) {
                 checkAndConsume('(', tokens);  // consume the '('
                 condExprResult = move(parseCondExpr(tokens));  // consume condExpr
                 checkAndConsume(')', tokens);
