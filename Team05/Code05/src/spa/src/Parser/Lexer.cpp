@@ -1,9 +1,10 @@
-#include <Lexer.h>
 #include <iterator>
+
 #include "logging.h"
+#include "Lexer.h"
 
 #ifdef _DEBUG
-void logQueue(std::queue<Token> q) {
+void logQueue(std::deque<Token> q) {
     std::ostringstream oss;
     oss << "[";
     while (!q.empty()) {
@@ -12,7 +13,7 @@ void logQueue(std::queue<Token> q) {
         } else {
             std::visit([&](auto&& v) { oss << v << ", "; }, q.front().value);
         }
-        q.pop();
+        q.pop_front();
     }
     oss << "]";
 
@@ -42,7 +43,7 @@ void Lexer::lex(const std::string& source) {
                 it++; lastChar = *it;
                 s.push_back(lastChar);
             }
-            this->tokens.push(Token{TokenType::name, s});
+            this->tokens.push_back(Token{TokenType::name, s});
             continue;
         }
 
@@ -55,22 +56,22 @@ void Lexer::lex(const std::string& source) {
                 s.push_back(lastChar);
             }
             int number = strtod(s.c_str(), nullptr);
-            this->tokens.push(Token{TokenType::number, number});
+            this->tokens.push_back(Token{TokenType::number, number});
             continue;
         }
 
         // handle special
-        this->tokens.push(Token{TokenType::special, lastChar});
+        this->tokens.push_back(Token{TokenType::special, lastChar});
     }
 
     // Add EOF to token queue to mark the end
-    this->tokens.push(Token{TokenType::eof, EOF});
+    this->tokens.push_back(Token{TokenType::eof, EOF});
 
 #ifdef _DEBUG
     logQueue(this->tokens);
 #endif  // _DEBUG
 }
 
-std::queue<Token>& Lexer::getTokens() {
+std::deque<Token>& Lexer::getTokens() {
     return tokens;
 }

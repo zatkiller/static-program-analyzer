@@ -14,21 +14,26 @@ enum class TokenType {
 };
 
 struct Token {
-    const TokenType type;
-    const std::variant<char, std::string, int> value;
+    TokenType type;
+    std::variant<char, std::string, int> value;
     bool operator==(const Token& o) const {
         return type == o.type && value == o.value;
+    }
+    Token& operator=(const Token& other) {
+        this->type = other.type;
+        this->value = other.value;
+        return *this;
     }
 };
 
 
 class Lexer {
 private:
-    std::queue<Token> tokens;
+    std::deque<Token> tokens;
     void lex(const std::string& source);
 public:
     explicit Lexer(const std::string& source) {
         this->lex(source);
     }
-    std::queue<Token>& getTokens();
+    std::deque<Token>& getTokens();
 };
