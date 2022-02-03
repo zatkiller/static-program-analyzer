@@ -13,6 +13,13 @@ TEST_CASE("Testing Parser") {
     }";
     REQUIRE(Parser().parse(fail) == nullptr);
 
+    std::string fail2 = "procedure a {\
+        while (c > b)) {\
+            read c; \
+        }\
+    }";
+    REQUIRE(Parser().parse(fail) == nullptr);
+
     std::string testCode = "procedure computeAverage {\
         read num1;\
         read num2;\

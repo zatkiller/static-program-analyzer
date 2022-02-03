@@ -32,6 +32,13 @@ unique_ptr<AST::Statement> parseReadStmt(deque<Token>& tokens);
 unique_ptr<AST::Statement> parsePrintStmt(deque<Token>& tokens);
 unique_ptr<AST::Statement> parseAssignStmt(unique_ptr<AST::Var> varName, deque<Token>& tokens);
 
+void throwUnexpectedToken(char c) {
+    std::ostringstream oss;
+    oss << "'" << c << "'" << " Expected";
+    Logger(Level::ERROR) << oss.str();
+    throw invalid_argument(oss.str());
+}
+
 Token getNextToken(deque<Token>& tokens) {
     Token token = tokens.front();
     tokens.pop_front();
@@ -168,48 +175,11 @@ AST::BinOp parseBinOp(deque<Token>& tokens) {
     }
 }
 
-void checkOpenBracket(deque<Token>& tokens) {
+void checkAndConsume(char c, deque<Token>& tokens) {
     Token currToken = getNextToken(tokens);  // consume '('
-    char* openBracket = get_if<char>(&currToken.value);
-    if (!openBracket || *openBracket != '(') {
-        Logger(Level::ERROR) << "'(' Expected";
-        throw invalid_argument("'(' expected!");
-    }
-}
-
-void checkClosedBracket(deque<Token>& tokens) {
-    Token currToken = getNextToken(tokens);  // consume ')'
-    char* openBracket = get_if<char>(&currToken.value);
-    if (!openBracket || *openBracket != ')') {
-        Logger(Level::ERROR) << "')' Expected";
-        throw invalid_argument("')' expected!");
-    }
-}
-
-void checkOpenBrace(deque<Token>& tokens) {
-    Token currToken = getNextToken(tokens);  // consume '('
-    char* openBracket = get_if<char>(&currToken.value);
-    if (!openBracket || *openBracket != '{') {
-        Logger(Level::ERROR) << "'{' Expected";
-        throw invalid_argument("'{' expected!");
-    }
-}
-
-void checkClosedBrace(deque<Token>& tokens) {
-    Token currToken = getNextToken(tokens);  // consume ')'
-    char* openBracket = get_if<char>(&currToken.value);
-    if (!openBracket || *openBracket != '}') {
-        Logger(Level::ERROR) << "'}' Expected";
-        throw invalid_argument("'}' expected!");
-    }
-}
-
-void checkSemiColon(deque<Token>& tokens) {
-    Token currToken = getNextToken(tokens);
-    char* semicolon = get_if<char>(&currToken.value);
-    if (!semicolon) {
-        Logger(Level::ERROR) << "';' Expected";
-        throw invalid_argument("';' expected!");
+    char* v = get_if<char>(&currToken.value);
+    if (!v || *v != c) {
+        throwUnexpectedToken(c);
     }
 }
 
@@ -340,9 +310,9 @@ unique_ptr<AST::CondExpr> parseCondExpr(deque<Token>& tokens) {
         if (tokenVal == '!') {
             // This means: "!(condExpr)"
             tokens.pop_front();  // consume the '!'
-            checkOpenBracket(tokens);
+            checkAndConsume('(', tokens);
             condExprResult = make_unique<AST::NotCondExpr>(move(parseCondExpr(tokens)));
-            checkClosedBracket(tokens);
+            checkAndConsume(')', tokens);
         } else if (tokenVal == '(') {
             int openBrCount = 0;
             bool isCondExpr = false;
@@ -370,9 +340,9 @@ unique_ptr<AST::CondExpr> parseCondExpr(deque<Token>& tokens) {
                 }
             }
             if (isCondExpr) {
-                checkOpenBracket(tokens);  // consume the '('
+                checkAndConsume('(', tokens);  // consume the '('
                 condExprResult = move(parseCondExpr(tokens));  // consume condExpr
-                checkClosedBracket(tokens);
+                checkAndConsume(')', tokens);
             } else {
                 return move(parseRelExpr(tokens));
             }
@@ -435,7 +405,7 @@ unique_ptr<AST::Statement> parseReadStmt(deque<Token>& tokens) {
         Logger(Level::ERROR) << "Name Expected";
         throw invalid_argument("Name expected!");;
     }
-    checkSemiColon(tokens);
+    checkAndConsume(';', tokens);
     auto var = make_unique<AST::Var>(*varName);
     return make_unique<AST::Read>(lineNo, move(var));
 }
@@ -448,7 +418,7 @@ unique_ptr<AST::Statement> parsePrintStmt(deque<Token>& tokens) {
         Logger(Level::ERROR) << "Name Expected";
         throw invalid_argument("Name expected!");;
     }
-    checkSemiColon(tokens);
+    checkAndConsume(';', tokens);
     auto var = make_unique<AST::Var>(*varName);
     return make_unique<AST::Print>(lineNo, move(var));
 }
@@ -462,18 +432,18 @@ unique_ptr<AST::Statement> parseAssignStmt(unique_ptr<AST::Var> var, deque<Token
         throw invalid_argument("'=' expected!");;
     }
     auto rhsExpr = parseExpr(tokens);
-    checkSemiColon(tokens);
+    checkAndConsume(';', tokens);
     return make_unique<AST::Assign>(lineNo, move(var), move(rhsExpr));
 }
 
 unique_ptr<AST::Statement> parseWhileStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
-    checkOpenBracket(tokens);
+    checkAndConsume('(', tokens);
     auto condExprResult = parseCondExpr(tokens);
-    checkClosedBracket(tokens);
-    checkOpenBrace(tokens);
+    checkAndConsume(')', tokens);
+    checkAndConsume('{', tokens);
     auto stmtLstResult = parseStmtLst(tokens);
-    checkClosedBrace(tokens);
+    checkAndConsume('}', tokens);
     return make_unique<AST::While>(
         lineNo, move(condExprResult), move(stmtLstResult)
         );
@@ -481,9 +451,9 @@ unique_ptr<AST::Statement> parseWhileStmt(deque<Token>& tokens) {
 
 unique_ptr<AST::Statement> parseIfStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
-    checkOpenBracket(tokens);
+    checkAndConsume('(', tokens);
     auto condExprResult = parseCondExpr(tokens);
-    checkClosedBracket(tokens);
+    checkAndConsume(')', tokens);
     // check for 'then'
     Token currToken = getNextToken(tokens);
     string* thenStr = get_if<string>(&currToken.value);
@@ -491,9 +461,9 @@ unique_ptr<AST::Statement> parseIfStmt(deque<Token>& tokens) {
         Logger(Level::ERROR) << "\"then\" Expected";
         throw invalid_argument("\"then\" expected!");
     }
-    checkOpenBrace(tokens);
+    checkAndConsume('{', tokens);
     auto thenStmtLst = parseStmtLst(tokens);
-    checkClosedBrace(tokens);
+    checkAndConsume('}', tokens);
     // check for 'else'
     currToken = getNextToken(tokens);
     string* elseStr = get_if<string>(&currToken.value);
@@ -501,9 +471,9 @@ unique_ptr<AST::Statement> parseIfStmt(deque<Token>& tokens) {
         Logger(Level::ERROR) << "\"else\" Expected";
         throw invalid_argument("\"else\" expected!");
     }
-    checkOpenBrace(tokens);
+    checkAndConsume('{', tokens);
     auto elseStmtLst = parseStmtLst(tokens);
-    checkClosedBrace(tokens);
+    checkAndConsume('}', tokens);
     return make_unique<AST::If>(
         lineNo,
         move(condExprResult),
@@ -519,9 +489,9 @@ unique_ptr<AST::Procedure> parseProcedure(deque<Token>& tokens) {
         throw invalid_argument("Name expected!");
     }
     string procName = get<string>(currToken.value);
-    checkOpenBrace(tokens);
+    checkAndConsume('{', tokens);
     auto stmtLst = parseStmtLst(tokens);
-    checkClosedBrace(tokens);
+    checkAndConsume('}', tokens);
     return make_unique<AST::Procedure>(move(procName), move(stmtLst));
 }
 
@@ -543,7 +513,7 @@ unique_ptr<AST::Program> Parser::parse(const string& source) {
         return parseProgram(lexedTokens);
     }
     catch (invalid_argument ex) {
-        cout << "exception caught";
+        Logger(Level::ERROR) << "exception caught: " << ex.what();
         return unique_ptr<AST::Program>();
     }
 }
