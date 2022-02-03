@@ -17,7 +17,7 @@ void logQueue(std::deque<Token> q) {
     }
     oss << "]";
 
-    Logger(Level::DEBUG) << "Tokens: " << oss.str();
+    Logger(Level::DEBUG) << "Lexer.cpp " << "Tokens: " << oss.str();
 }
 #endif  // _DEBUG
 
@@ -28,7 +28,7 @@ void logQueue(std::deque<Token> q) {
  * are considered as special characters.
  */
 void Lexer::lex(const std::string& source) {
-    Logger() << "Lexing the source code:\n" << source;
+    Logger() << "Lexer.cpp " << "Lexing the source code:\n" << source;
 
     char lastChar = ' ';
     for (auto it = source.begin(); it != source.end(); it++) {

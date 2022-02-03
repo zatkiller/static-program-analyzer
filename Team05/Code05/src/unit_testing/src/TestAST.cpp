@@ -1,16 +1,14 @@
-
-#include "Parser/AST.h"
 #include <iostream>
 #include <vector>
 
 #include "catch.hpp"
-
-using namespace AST;
+#include "Parser/AST.h"
 
 void require(bool b) {
     REQUIRE(b);
 }
 
+namespace AST {
 TEST_CASE("AST Test") {
     // Construction test
     INFO("Constructing the AST");
@@ -27,7 +25,7 @@ TEST_CASE("AST Test") {
     auto constVal5 = std::make_unique<Const>(5);
 
     SECTION("Assign construction") {
-        auto assign = std::make_unique<Assign>(1, std::move(v1), std::move(v2)); // v1 = v2
+        auto assign = std::make_unique<Assign>(1, std::move(v1), std::move(v2));  // v1 = v2
     };
 
     SECTION("Binary Expression construction") {
@@ -44,7 +42,7 @@ TEST_CASE("AST Test") {
         auto relExpr1 = std::make_unique<RelExpr>(RelOp::GT, std::move(constVal10), std::move(constVal5));
         // v1 == v2
         auto relExpr2 = std::make_unique<RelExpr>(RelOp::EQ, std::move(v1), std::move(v2));
-        // (10 > 5) && (v1 == v2) 
+        // (10 > 5) && (v1 == v2)
         auto condExpr = std::make_unique<CondBinExpr>(CondOp::AND, std::move(relExpr1), std::move(relExpr2));
     };
 
@@ -88,9 +86,39 @@ TEST_CASE("AST Test") {
         auto assignStmt = std::make_unique<Assign>(42, std::move(v6), std::make_unique<Const>(69));
     }
 
-    SUCCEED("No errors thrown during object construction");
-    // Access modifier test
+    SECTION("Factory Construction") {
+        auto var = make<Var>("abdc");
+        auto readmake = make<Read>(1, make<Var>("aaa"));
+        auto binOp = make<BinExpr>(BinOp::PLUS, make<Const>(1), make<Var>("x"));
+        auto stmt = makeStmts(make<Read>(1, make<Var>("aaa")), make<Print>(2, make<Var>("aaa")));
 
-    // require(1 == 1);
+
+        /**
+         * if (x > 10) then {
+         *      read y;
+         *      print x;
+         *      y = x - y;
+         * } else {
+         *      read z;
+         *      print v;
+         *      v = z - x;
+         * }
+         */
+        auto ifThenElse = make<If>(1, make<RelExpr>(RelOp::GT, make<Var>("x"), make<Const>(10)),
+            makeStmts(
+                make<Read>(2, make<Var>("y")),
+                make<Print>(3, make<Var>("x")),
+                make<Assign>(4, make<Var>("y"), make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Var>("y")))
+            ),
+            makeStmts(
+                make<Read>(5, make<Var>("z")),
+                make<Print>(6, make<Var>("v")),
+                make<Assign>(7, make<Var>("v"), make<BinExpr>(BinOp::MINUS, make<Var>("z"), make<Var>("x")))
+            ));
+
+    }
+
+    SUCCEED("No errors thrown during object construction");
 }
+}  // namespace AST
 
