@@ -5,7 +5,6 @@
 #include <iostream>
 
 TEST_CASE("Testing Parser") {
-
     std::string fail = "procedure a {\
         while (c !! b) {\
             read c; \

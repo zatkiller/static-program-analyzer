@@ -1,11 +1,10 @@
 #pragma once
-#include <queue>
+#include <deque>
 
 #include "Parser/AST.h"
 #include "Lexer.h"
 
 class Parser {
 public:
-    std::unique_ptr<AST::Program> Parser::parse(const std::string& source); //main method that parses the source code
+    std::unique_ptr<AST::Program> parse(const std::string& source); //main method that parses the source code
 };
-

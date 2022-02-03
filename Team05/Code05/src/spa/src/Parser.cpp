@@ -183,27 +183,14 @@ void checkAndConsume(char c, deque<Token>& tokens) {
     }
 }
 
-unique_ptr<AST::Expr> PostFixExprParser(deque<Token> queue) {
-    std::stack<unique_ptr<AST::Expr>> stack;
-    while (!queue.empty()) {
-        Token currToken = queue.front();
-        if (currToken.type == TokenType::name) {
-            unique_ptr<AST::Expr> var = parseVariableExpr(queue);
-            stack.push(move(var));
-        } else if (currToken.type == TokenType::number) {
-            unique_ptr<AST::Expr> num = parseConstExpr(queue);
-            stack.push(move(num));
-        } else {
-            // special char
-            AST::BinOp binOp = parseBinOp(queue);
-            auto lhsExpr = move(stack.top());
-            stack.pop();
-            auto rhsExpr = move(stack.top());
-            stack.pop();
-            stack.push(make_unique<AST::BinExpr>(binOp, move(lhsExpr), move(rhsExpr)));
-        }
+AST::BinOp charToBinOp(char c) {
+    switch (c) {
+    case '+': return AST::BinOp::PLUS;
+    case '-': return AST::BinOp::MINUS;
+    case '*': return AST::BinOp::MULT;
+    case '/': return AST::BinOp::DIVIDE;
+    case '%': return AST::BinOp::MOD;
     }
-    return move(stack.top());
 }
 
 unique_ptr<AST::Expr> shuntingYardParser(deque<Token>& tokens) {
@@ -214,77 +201,99 @@ unique_ptr<AST::Expr> shuntingYardParser(deque<Token>& tokens) {
     binOpPrecedence['*'] = 20;
     binOpPrecedence['/'] = 20;
     binOpPrecedence['%'] = 20;
-    deque<Token> queue;
-    std::stack<Token> stack;
-    bool flag = true;
-    while (flag) {
-        Token currToken = tokens.front();
-        if (currToken.type == TokenType::number || currToken.type == TokenType::name) {
-            queue.push_back(currToken);
-            tokens.pop_front();
-        } else if (currToken.type == TokenType::special) {
-            char* specialChar = get_if<char>(&currToken.value);
-            if (!specialChar) {
-                Logger(Level::ERROR) << "Char Expected";
-                throw invalid_argument("Char expected!");
-            }
 
-            if (*specialChar == '+' || *specialChar == '-') {
-                // check other operators currently on the stack
-                while (!stack.empty()) {
-                    Token topToken = stack.top();
-                    char* topChar = get_if<char>(&topToken.value);
-                    if (!topChar) {
-                        Logger(Level::ERROR) << "Char Expected";
-                        throw invalid_argument("Char expected!");
-                    }
-                    if (*topChar == '(' || binOpPrecedence[*topChar] < binOpPrecedence[*specialChar]) {
-                        break;
-                    }
-                    stack.pop();
-                    queue.push_back(topToken);
-                }
-                stack.push(currToken);
-                tokens.pop_front();
-            } else if (*specialChar == '*' || *specialChar == '/' || *specialChar == '%' || *specialChar == '(') {
-                // for '(' or the highest priority operators, we just push it onto the stack
-                stack.push(currToken);
-                tokens.pop_front();
-            } else if (*specialChar == ')') {
-                bool hasOpenParen = false;
-                while (!stack.empty()) {
-                    Token topToken = stack.top();
-                    char* topChar = get_if<char>(&topToken.value);
-                    if (!topChar) {
-                        Logger(Level::ERROR) << "Char Expected";
-                        throw invalid_argument("Char expected!");
-                    }
-                    if (*topChar == '(') {
-                        hasOpenParen = true;
-                        stack.pop();  // consume the '('
-                        tokens.pop_front();  // consume the ')'
-                        break;
-                    }
-                    stack.pop();
-                    queue.push_back(topToken);
-                }
-                flag = hasOpenParen;
-            } else {
-                // ';' or other unrecognised symbols like condOp
-                flag = false;
-            }
-        } else {
+    std::stack<std::unique_ptr<AST::Expr>> operands;
+    deque<Token> queue;
+    std::stack<char> operators;
+
+    auto popAndPush = [&]() {
+        // Pop 2 from operands, make BinExpr with symbol.
+        char top = operators.top();
+        auto expr1 = move(operands.top());
+        operands.pop();
+        auto expr2 = move(operands.top());
+        operands.pop();
+        operands.push(make_unique<AST::BinExpr>(charToBinOp(top), move(expr2), move(expr1)));
+        operators.pop();
+    };
+
+    bool isEnd = false;
+    do {
+        Token currToken = tokens.front();
+        switch (currToken.type) {
+        case TokenType::eof:
             Logger(Level::ERROR) << "Unexpected Termination";
             throw invalid_argument("Unexpected Termination!");
+            break;
+        case TokenType::number:
+            operands.push(make_unique<AST::Const>(std::get<int>(currToken.value)));
+            tokens.pop_front();
+            break;
+        case TokenType::name:
+            operands.push(make_unique<AST::Var>(std::get<std::string>(currToken.value)));
+            tokens.pop_front();
+            break;
+        case TokenType::special:
+        
+            char symbol = std::get<char>(currToken.value);
+            // if the symbol is not in binOpPrecedence or brackets, terminate
+            if (binOpPrecedence.find(symbol) == binOpPrecedence.end() && symbol != '(' && symbol != ')') {
+                isEnd = true;
+                break;
+            }
+
+            // If the symbol is of high precedence, we push it onto the stack first.
+            if (symbol == '*' || symbol == '/' || symbol == '%' || symbol == '(') {
+                operators.push(symbol);
+                tokens.pop_front();
+            }
+            else if (symbol == '+' || symbol == '-') {
+                while (!operators.empty()) {
+                    char top = operators.top();
+                    if (top == '(' || binOpPrecedence[top] < binOpPrecedence[symbol]) {
+                        break;
+                    }
+
+                    // Pop 2 from operands, make BinExpr with symbol.
+                    popAndPush();
+                }
+                operators.push(symbol);
+                tokens.pop_front();
+            }
+            else if (symbol == ')') {
+                // assume this is the closing bracket unless there is matching open bracket in the stack.
+                isEnd = true;
+                while (!operators.empty()) {
+                    char top = operators.top();
+                    if (top == '(') {
+                        operators.pop();
+                        tokens.pop_front();
+                        isEnd = false;
+                        break;
+                    }
+                    // Pop 2 from operands, make BinExpr with symbol.
+                    popAndPush();
+                }
+            }
+            else {
+                // If it's not a symbol we are expecting, exit.
+                isEnd = true;
+                break;
+            }
+            break;
         }
-    }
+    } while (!isEnd);
 
-    while (!stack.empty()) {
-        queue.push_back(stack.top());
-        stack.pop();
+    while (!operators.empty()) {
+        popAndPush();
     }
-
-    return PostFixExprParser(queue);
+    
+    if (operands.size() != 1) {
+        Logger(Level::ERROR) << "Some parsing error";
+        throw invalid_argument("Unexpected Termination!");
+    }
+    
+    return move(operands.top());
 }
 
 unique_ptr<AST::Expr> parseExpr(deque<Token>& tokens) {
