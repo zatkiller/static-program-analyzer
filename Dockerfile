@@ -1,6 +1,7 @@
-FROM fedora:34
+FROM ghcr.io/rootkie/fedoracmake34:main
+
 # install dependencies
-RUN dnf -y update && dnf -y install make cmake automake gcc-c++ gcc zip gdb
+# RUN dnf -y update && dnf -y install make cmake automake gcc-c++ gcc zip gdb
 
 WORKDIR /Team05
 ADD Team05 .

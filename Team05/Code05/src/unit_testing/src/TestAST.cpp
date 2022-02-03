@@ -8,6 +8,7 @@ void require(bool b) {
     REQUIRE(b);
 }
 
+
 namespace AST {
 TEST_CASE("AST Test") {
     // Construction test
