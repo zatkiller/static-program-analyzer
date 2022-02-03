@@ -6,11 +6,12 @@
 #include <queue>
 #include <vector>
 #include <variant>
+#include <utility>
 
 #include "Lexer.h"
 #include "Parser.h"
 #include "logging.h"
-#include "Parser/AST.h"
+#include "AST.h"
 
 using std::make_unique;
 using std::move;
@@ -234,7 +235,7 @@ unique_ptr<AST::Expr> shuntingYardParser(deque<Token>& tokens) {
             tokens.pop_front();
             break;
         case TokenType::special:
-        
+
             char symbol = std::get<char>(currToken.value);
             // if the symbol is not in binOpPrecedence or brackets, terminate
             if (binOpPrecedence.find(symbol) == binOpPrecedence.end() && symbol != '(' && symbol != ')') {
@@ -246,8 +247,7 @@ unique_ptr<AST::Expr> shuntingYardParser(deque<Token>& tokens) {
             if (symbol == '*' || symbol == '/' || symbol == '%' || symbol == '(') {
                 operators.push(symbol);
                 tokens.pop_front();
-            }
-            else if (symbol == '+' || symbol == '-') {
+            } else if (symbol == '+' || symbol == '-') {
                 while (!operators.empty()) {
                     char top = operators.top();
                     if (top == '(' || binOpPrecedence[top] < binOpPrecedence[symbol]) {
@@ -259,8 +259,7 @@ unique_ptr<AST::Expr> shuntingYardParser(deque<Token>& tokens) {
                 }
                 operators.push(symbol);
                 tokens.pop_front();
-            }
-            else if (symbol == ')') {
+            } else if (symbol == ')') {
                 // assume this is the closing bracket unless there is matching open bracket in the stack.
                 isEnd = true;
                 while (!operators.empty()) {
@@ -274,8 +273,7 @@ unique_ptr<AST::Expr> shuntingYardParser(deque<Token>& tokens) {
                     // Pop 2 from operands, make BinExpr with symbol.
                     popAndPush();
                 }
-            }
-            else {
+            } else {
                 // If it's not a symbol we are expecting, exit.
                 isEnd = true;
                 break;
@@ -287,12 +285,12 @@ unique_ptr<AST::Expr> shuntingYardParser(deque<Token>& tokens) {
     while (!operators.empty()) {
         popAndPush();
     }
-    
+
     if (operands.size() != 1) {
         Logger(Level::ERROR) << "Some parsing error";
         throw invalid_argument("Unexpected Termination!");
     }
-    
+
     return move(operands.top());
 }
 
@@ -371,7 +369,7 @@ unique_ptr<AST::CondExpr> parseCondExpr(deque<Token>& tokens) {
     }
 
     // Peek and check if we have another cond_expr,
-    // i.e. ‘(’ cond_expr ‘)’ ‘&&’ ‘(’ cond_expr ‘)’ or ‘(’ cond_expr ‘)’ ‘||’ ‘(’ cond_expr ‘)’
+    // i.e. '(' cond_expr ')' '&&' '(' cond_expr ')' or '(' cond_expr ')' '||' '(' cond_expr ')'
     Token checkNextCond = tokens.front();
     char* condSymbol = get_if<char>(&checkNextCond.value);
     if (!condSymbol || (*condSymbol != '&' && *condSymbol != '|')) {

@@ -1,11 +1,12 @@
 
 #include <iostream>
 
+#define UNIT_TEST
+
 #include "catch.hpp"
 #include "Parser/AST.h"
 #include "Parser/Lexer.h"
 #include "Parser/Parser.h"
-
 
 TEST_CASE("Testing Parser") {
     std::string fail = "procedure a {\
