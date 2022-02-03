@@ -5,7 +5,7 @@
 
 #include "catch.hpp"
 #include "Parser/AST.h"
-#include "DesignExtractor.h"
+#include "DesignExtractor/DesignExtractor.h"
 #include "logging.h"
 
 #define TEST_LOG Logger() << "TestDesignExtractor.cpp "
