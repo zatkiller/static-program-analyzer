@@ -86,39 +86,39 @@ TEST_CASE("AST Test") {
         auto assignStmt = std::make_unique<Assign>(42, std::move(v6), std::make_unique<Const>(69));
     }
 
-    SUCCEED("No errors thrown during object construction");
+    SECTION("Factory Construction") {
+        auto var = make<Var>("abdc");
+        auto readmake = make<Read>(1, make<Var>("aaa"));
+        auto binOp = make<BinExpr>(BinOp::PLUS, make<Const>(1), make<Var>("x"));
+        auto stmt = makeStmts(make<Read>(1, make<Var>("aaa")), make<Print>(2, make<Var>("aaa")));
 
 
-    auto var = make<Var>("abdc");
-    auto readmake = make<Read>(1, make<Var>("aaa"));
-    auto binOp = make<BinExpr>(BinOp::PLUS, make<Const>(1), make<Var>("x"));
-    auto stmt = makeStmts(make<Read>(1, make<Var>("aaa")), make<Print>(2, make<Var>("aaa")));
-
-
-    /**
-     * if (x > 10) then {
-     *      read y;
-     *      print x;
-     *      y = x - y;
-     * } else {
-     *      read z;
-     *      print v;
-     *      v = z - x;
-     * }
-     */
-    auto ifThenElse = make<If>(1, make<RelExpr>(RelOp::GT, make<Var>("x"), make<Const>(10)),
-        makeStmts(
-            make<Read>(2, make<Var>("y")),
-            make<Print>(3, make<Var>("x")),
-            make<Assign>(4, make<Var>("y"), make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Var>("y")))
+        /**
+         * if (x > 10) then {
+         *      read y;
+         *      print x;
+         *      y = x - y;
+         * } else {
+         *      read z;
+         *      print v;
+         *      v = z - x;
+         * }
+         */
+        auto ifThenElse = make<If>(1, make<RelExpr>(RelOp::GT, make<Var>("x"), make<Const>(10)),
+            makeStmts(
+                make<Read>(2, make<Var>("y")),
+                make<Print>(3, make<Var>("x")),
+                make<Assign>(4, make<Var>("y"), make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Var>("y")))
             ),
-        makeStmts(
-            make<Read>(5, make<Var>("z")),
-            make<Print>(6, make<Var>("v")),
-            make<Assign>(7, make<Var>("v"), make<BinExpr>(BinOp::MINUS, make<Var>("z"), make<Var>("x")))
+            makeStmts(
+                make<Read>(5, make<Var>("z")),
+                make<Print>(6, make<Var>("v")),
+                make<Assign>(7, make<Var>("v"), make<BinExpr>(BinOp::MINUS, make<Var>("z"), make<Var>("x")))
             ));
 
+    }
 
+    SUCCEED("No errors thrown during object construction");
 }
 }  // namespace AST
 

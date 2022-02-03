@@ -6,35 +6,35 @@
 #include "DesignExtractor.h"
 #include "logging.h"
 
-#define INFO Logger() << "DesignExtractor.cpp "
+#define DEBUG Logger(Level::DEBUG) << "DesignExtractor.cpp "
 
 void PKBStub::insert(std::string tableName, std::string value) {
-    INFO << "Inserting into " << tableName << " " << value;
+    DEBUG << "Inserting into " << tableName << " " << value;
     auto table = std::get_if<sTable>(&tables[tableName]);
     if (table) {
         table->insert(value);
     } else {
-        INFO << "Accessing wrong table";
+        DEBUG << "Accessing wrong table";
     }
 }
 
 void PKBStub::insert(std::string tableName, std::pair<int, std::string> relationship) {
-    INFO << "Inserting into " << tableName << " (" << relationship.first << "," << relationship.second << ")";
+    DEBUG << "Inserting into " << tableName << " (" << relationship.first << "," << relationship.second << ")";
     auto table = std::get_if<muTable>(&tables[tableName]);
     if (table) {
         table->insert(relationship);
     } else {
-        INFO << "Accessing wrong table";
+        DEBUG << "Accessing wrong table";
     }
 }
 
 void PKBStub::insert(std::string tableName, std::pair<std::string, std::string> relationship) {
-    INFO << "Inserting into " << tableName << " (" << relationship.first << "," << relationship.second << ")";
+    DEBUG << "Inserting into " << tableName << " (" << relationship.first << "," << relationship.second << ")";
     auto table = std::get_if<muTable>(&tables[tableName]);
     if (table) {
         table->insert(relationship);
     } else {
-        INFO << "Accessing wrong table";
+        DEBUG << "Accessing wrong table";
     }
 }
 
