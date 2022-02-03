@@ -1,6 +1,7 @@
-#include <Lexer.h>
 #include <iterator>
+
 #include "logging.h"
+#include "Lexer.h"
 
 #ifdef _DEBUG
 void logQueue(std::deque<Token> q) {

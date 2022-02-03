@@ -1,5 +1,5 @@
 
-#include "Lexer.h"
+#include "Parser/Lexer.h"
 #include "logging.h"
 
 #include "catch.hpp"

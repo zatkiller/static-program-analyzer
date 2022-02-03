@@ -1,8 +1,11 @@
-#include <Parser.h>
-#include <Lexer.h>
-#include <Parser/AST.h>
-#include "catch.hpp"
+
 #include <iostream>
+
+#include "catch.hpp"
+#include "Parser/AST.h"
+#include "Parser/Lexer.h"
+#include "Parser/Parser.h"
+
 
 TEST_CASE("Testing Parser") {
     std::string fail = "procedure a {\

@@ -1,7 +1,7 @@
 #pragma once
 #include <deque>
 
-#include "Parser/AST.h"
+#include "AST.h"
 #include "Lexer.h"
 
 class Parser {
