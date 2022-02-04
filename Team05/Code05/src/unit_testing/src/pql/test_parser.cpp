@@ -12,11 +12,11 @@ TEST_CASE("Test Parser peekNext and getNext") {
     Parser parser;
     parser.addPql(testQuery);
 
-    REQUIRE(parser.peekNextToken() == Token{"assign", TokenType::Identifier});
-    REQUIRE(parser.peekAndCheckNextToken(TokenType::Identifier) == Token{"assign", TokenType::Identifier});
+    REQUIRE(parser.peekNextToken() == Token{"assign", TokenType::IDENTIFIER});
+    REQUIRE(parser.peekAndCheckNextToken(TokenType::IDENTIFIER) == Token{"assign", TokenType::IDENTIFIER});
 
-    REQUIRE(parser.getNextToken() == Token{"assign", TokenType::Identifier});
-    REQUIRE(parser.getAndCheckNextToken(TokenType::Identifier) == Token{"a", TokenType::Identifier});
+    REQUIRE(parser.getNextToken() == Token{"assign", TokenType::IDENTIFIER});
+    REQUIRE(parser.getAndCheckNextToken(TokenType::IDENTIFIER) == Token{"a", TokenType::IDENTIFIER});
 }
 
 TEST_CASE("Test Parser addPql on generating new Lexer") {

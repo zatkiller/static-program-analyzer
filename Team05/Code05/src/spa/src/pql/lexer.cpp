@@ -22,7 +22,7 @@ Token Lexer::getNextToken() {
     eatWhitespace();
 
     if (text.length() == 0) {
-        return Token{"", TokenType::Eof};
+        return Token{"", TokenType::END_OF_FILE};
     } else if (text[0] == '"') {
 
         auto pos1 = text.find("\"");
@@ -32,7 +32,7 @@ Token Lexer::getNextToken() {
 
         text.erase(0, num_chars + 1);
 
-        return Token { strValue, TokenType::String };
+        return Token { strValue, TokenType::STRING };
     } else if (isalpha(text[0])) {
         int charCount = 0;
 
@@ -42,7 +42,7 @@ Token Lexer::getNextToken() {
         std::string identifier = text.substr(0, charCount);
         text.erase(0, charCount);
 
-        return Token { identifier, TokenType::Identifier};
+        return Token { identifier, TokenType::IDENTIFIER};
     } else if (isdigit(text[0])) {
         int charCount = 0;
         while (text.length() > 0 && (isdigit(text[charCount])))
@@ -51,22 +51,22 @@ Token Lexer::getNextToken() {
         std::string number = text.substr(charCount);
         text.erase(0, charCount);
 
-        return Token { number, TokenType::Number};
+        return Token { number, TokenType::NUMBER};
     } else {
             Token token;
             std::string value = text.substr(0, 1);
             if (text[0] == ';') {
-                token = {value, TokenType::Semicolon};
+                token = {value, TokenType::SEMICOLON};
             } else if (text[0] == '(') {
-                token = {value, TokenType::OpeningParan};
+                token = {value, TokenType::OPENING_PARAN};
             } else if (text[0] == ')') {
-                token = {value, TokenType::ClosingParan};
+                token = {value, TokenType::CLOSING_PARAN};
             } else if (text[0] == '_') {
-                token = {value, TokenType::Underscore};
+                token = {value, TokenType::UNDERSCORE};
             } else if (text[0] == ',') {
-                token = {value, TokenType::Comma};
+                token = {value, TokenType::COMMA};
             } else {
-                token = {"", TokenType::Invalid};
+                token = {"", TokenType::INVALID};
             }
 
             text.erase(0, 1);
@@ -79,17 +79,17 @@ Token Lexer::getNextReservedToken() {
 
     Token token;
     if (hasPrefix("Select")) {
-        token = Token {"Select", TokenType::Select};
+        token = Token {"Select", TokenType::SELECT};
     } else if (hasPrefix("Modifies")) {
-        token =  Token {"Modifies", TokenType::Modifies};
+        token =  Token {"Modifies", TokenType::MODIFIES};
     } else if (hasPrefix("Uses")) {
-        token = Token {"Uses", TokenType::Uses};
+        token = Token {"Uses", TokenType::USES};
     } else if (hasPrefix("pattern")) {
-        token =  Token {"pattern", TokenType::Pattern};
+        token =  Token {"pattern", TokenType::PATTERN};
     } else if (hasPrefix("such that")) {
-        token =  Token {"such that", TokenType::SuchThat};
+        token =  Token {"such that", TokenType::SUCH_THAT};
     } else {
-        token = Token {"", TokenType::Invalid};
+        token = Token {"", TokenType::INVALID};
     }
 
     text.erase(0, token.getText().length());

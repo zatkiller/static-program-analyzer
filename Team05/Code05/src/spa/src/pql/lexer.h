@@ -4,30 +4,28 @@
 #include <vector>
 
 enum class TokenType {
-    Eof,
-    Invalid,
+    END_OF_FILE,
+    INVALID,
 
-    Underscore,
-    Semicolon,
-    Comma,
-    Period,
-    OpeningParan,
-    ClosingParan,
+    UNDERSCORE,
+    SEMICOLON,
+    COMMA,
+    PERIOD,
+    OPENING_PARAN,
+    CLOSING_PARAN,
 
-    Identifier,
-    Number,
-    String,
+    IDENTIFIER,
+    NUMBER,
+    STRING,
 
     // Relationships
-    Uses,
-    Modifies,
+    USES,
+    MODIFIES,
 
     // Reserved Keywords
-    Select,
-    SuchThat,
-    Pattern,
-    Assign,
-
+    SELECT,
+    SUCH_THAT,
+    PATTERN
 };
 
 struct Token {
