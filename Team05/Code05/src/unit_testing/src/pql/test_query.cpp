@@ -15,6 +15,9 @@ TEST_CASE("StmtRef") {
     StmtRef stmtRef3 = StmtRef::ofDeclaration("a");
     REQUIRE(stmtRef3.isDeclaration());
     REQUIRE(stmtRef3.getDeclaration() == "a");
+
+    REQUIRE(!(stmtRef1 == stmtRef2));
+    REQUIRE(stmtRef1 == stmtRef1);
 }
 
 TEST_CASE("EntRef") {
@@ -31,6 +34,9 @@ TEST_CASE("EntRef") {
     EntRef entRef3 = EntRef::ofDeclaration("a");
     REQUIRE(entRef3.isDeclaration());
     REQUIRE(entRef3.getDeclaration() == "a");
+
+    REQUIRE(entRef1 == entRef1);
+    REQUIRE(!(entRef1 == entRef2));
 }
 
 TEST_CASE("Modifies") {
@@ -48,20 +54,29 @@ TEST_CASE("Pattern") {
     REQUIRE(p.getSynonym() == "h");
     REQUIRE(p.getEntRef().getType() == EntRefType::WILDCARD);
     REQUIRE(p.getExpression() == "_x_");
+
+    Pattern p2 = {"g", EntRef::ofWildcard(), "_x_"};
+    REQUIRE(!(p == p2));
+    REQUIRE(p2 == p2);
 }
 
-TEST_CASE("Query hasDeclaration") {
+TEST_CASE("Query") {
     Query query = Query{};
-    REQUIRE(!query.hasDeclaration("a"));
-
     query.addDeclaration("a", DesignEntity::STMT);
     REQUIRE(query.hasDeclaration("a"));
-}
-
-TEST_CASE("Query hasVariable") {
-    Query query = Query{};
-    REQUIRE(!query.hasVariable("a"));
 
     query.addVariable("a");
     REQUIRE(query.hasVariable("a"));
+
+    std::shared_ptr<Modifies> ptr = std::make_shared<Modifies>();
+    query.addSuchthat(ptr);
+    REQUIRE(!query.getSuchthat().empty());
+    REQUIRE(query.getSuchthat()[0] == ptr);
+
+    Pattern p = Pattern {"a", EntRef::ofWildcard(), "_x_"};
+    query.addPattern(p);
+    REQUIRE(!query.getPattern().empty());
+    REQUIRE(query.getPattern()[0] == p);
+
+    REQUIRE(query.getDeclarationDesignEntity("a") == DesignEntity::STMT);
 }

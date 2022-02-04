@@ -29,8 +29,8 @@ enum class StmtRefType {
 
 struct StmtRef {
     StmtRefType type = StmtRefType::NOT_INITIALIZED;
-    std::string declaration;
-    int lineNo;
+    std::string declaration = "";
+    int lineNo = -1;
 
     static StmtRef ofDeclaration(std::string);
     static StmtRef ofLineNo(int);
@@ -43,6 +43,15 @@ struct StmtRef {
     bool isDeclaration();
     bool isLineNo();
     bool isWildcard();
+
+    bool operator==(const StmtRef &o) const {
+        if (type == StmtRefType::DECLARATION && o.type == StmtRefType::DECLARATION)
+            return declaration == o.declaration;
+        else if (type == StmtRefType::LINE_NO && o.type == StmtRefType::LINE_NO)
+            return lineNo == o.lineNo;
+
+        return type == StmtRefType::WILDCARD && o.type == StmtRefType::WILDCARD;
+    }
 };
 
 enum class EntRefType {
@@ -54,8 +63,8 @@ enum class EntRefType {
 
 struct EntRef{
     EntRefType type = EntRefType::NOT_INITIALIZED;
-    std::string declaration;
-    std::string variable;
+    std::string declaration = "";
+    std::string variable = "";
 
     static EntRef ofDeclaration(std::string);
     static EntRef ofVarName(std::string);
@@ -68,6 +77,15 @@ struct EntRef{
     bool isDeclaration();
     bool isVarName();
     bool isWildcard();
+
+    bool operator==(const EntRef &o) const {
+        if (type == EntRefType::DECLARATION && o.type == EntRefType::DECLARATION)
+            return declaration == o.declaration;
+        else if (type == EntRefType::VARIABLE_NAME && o.type == EntRefType::VARIABLE_NAME)
+            return variable == o.variable;
+
+        return type == EntRefType::WILDCARD && o.type == EntRefType::WILDCARD;
+    }
 };
 
 enum class RelRefType {
@@ -112,6 +130,10 @@ struct Pattern {
     std::string getSynonym();
     EntRef getEntRef();
     std::string getExpression();
+
+    bool operator==(const Pattern &o) const {
+        return (synonym == o.synonym) && (lhs == o.lhs) && (expression == o.expression);
+    }
 
 };
 

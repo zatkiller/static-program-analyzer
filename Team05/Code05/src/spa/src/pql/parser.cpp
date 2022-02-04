@@ -177,8 +177,6 @@ std::shared_ptr<RelRef> Parser::parseRelRef(Query &queryObj) {
     } else {
         throw "Don't recognize this relRef";
     }
-
-    return NULL;
 }
 
 std::string Parser::parseExpSpec() {
