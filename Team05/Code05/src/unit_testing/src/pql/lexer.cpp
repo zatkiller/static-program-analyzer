@@ -103,7 +103,7 @@ TEST_CASE("Lexer getNextToken") {
     REQUIRE(t1.getText() == "such that");
 }
 
-TEST_CASE("Lexer peekNextToken") {
+TEST_CASE("Lexer peekNextReservedToken") {
     Lexer lexer("Select Modifies Uses");
 
     auto t1 = lexer.peekNextReservedToken();
