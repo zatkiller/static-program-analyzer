@@ -1,0 +1,27 @@
+#pragma once
+
+#include <stdio.h>
+
+#include "StatementTable.h"
+#include "PKBField.h"
+
+// count of an item in a set can only be 0 or 1
+bool StatementTable::contains(PKBField field) {
+	if (field.tag != PKBType::STATEMENT) {
+		throw "Only statements are accepted!";
+	}
+	STMT_LO stmt = std::get<STMT_LO>(field.content);
+	return rows.count(StatementRow(stmt.type, stmt.statementNum)) == 1;
+}
+
+void StatementTable::insert(PKBField field) {
+	if (field.tag != PKBType::STATEMENT) {
+		throw "Only statements are accepted!";
+	}
+	STMT_LO stmt = std::get<STMT_LO>(field.content);
+	rows.insert(StatementRow(stmt.type, stmt.statementNum));
+}
+
+int StatementTable::getSize() {
+	return rows.size();
+}
