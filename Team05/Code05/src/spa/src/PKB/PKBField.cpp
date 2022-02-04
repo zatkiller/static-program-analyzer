@@ -5,6 +5,8 @@
 
 struct PKBField {
 	public:
+		PKBField() {}
+
 		bool operator == (const PKBField& other) const {
 			if (tag == other.tag && isConcrete == other.isConcrete) {
 				PKBType type = tag;
