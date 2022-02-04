@@ -10,9 +10,9 @@
  *
  */
 TEST_CASE("VariableRow operator testing") {
-    VariableRow row1{ "a" };
-    VariableRow row2{ "a" };
-    VariableRow row3{ "b" };
+    VariableRow row1{ VAR_NAME{"a"}};
+    VariableRow row2{ VAR_NAME{"a"} };
+    VariableRow row3{ VAR_NAME{"b"} };
 
     TEST_LOG << "Test VariableRow ==";
     REQUIRE(row1 == row1);
