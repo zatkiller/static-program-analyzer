@@ -116,7 +116,6 @@ TEST_CASE("AST Test") {
                 make<Print>(6, make<Var>("v")),
                 make<Assign>(7, make<Var>("v"), make<BinExpr>(BinOp::MINUS, make<Var>("z"), make<Var>("x")))
             ));
-
     }
 
     SUCCEED("No errors thrown during object construction");

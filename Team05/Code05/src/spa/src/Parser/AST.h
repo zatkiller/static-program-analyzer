@@ -276,7 +276,6 @@ class Read : public IO {
 public:
     using IO::IO;
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
-
 };
 
 /**
@@ -299,7 +298,7 @@ class Const : public Expr {
 private:
     int constValue;
 public:
-    Const(int constValue) : constValue(constValue) {}
+    explicit Const(int constValue) : constValue(constValue) {}
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 };
 
@@ -446,7 +445,9 @@ std::unique_ptr<T> make(K arg1, H arg2, V arg3, Z arg4) {
 template <typename ... Ts>
 StmtLst makeStmts(Ts &&... ts) {
     std::unique_ptr<Statement> stmtArr[] = { std::move(ts)... };
-    auto lst = std::vector<std::unique_ptr<Statement>>{ std::make_move_iterator(std::begin(stmtArr)), std::make_move_iterator(std::end(stmtArr)) };
+    auto lst = std::vector<std::unique_ptr<Statement>> { 
+        std::make_move_iterator(std::begin(stmtArr)), std::make_move_iterator(std::end(stmtArr))
+    };
 
     return StmtLst(lst);
 }

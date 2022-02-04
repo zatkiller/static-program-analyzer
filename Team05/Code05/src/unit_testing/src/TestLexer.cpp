@@ -51,15 +51,14 @@ TEST_CASE("Token testing") {
     special2 = diffSpecial;
     REQUIRE_FALSE(special == special2);
     REQUIRE(special2 == diffSpecial);
-
 }
 
 TEST_CASE("Lexer test") {
     SECTION("Positive test") {
-        std::string source =
-            "procedure name{\n\
-                read y;\n\
-                x = y     + 1234;}\n";
+        std::string source = R"(procedure name{
+                read y;
+                x = y     + 1234;})";
+
 
         std::queue<Token> tokens;
         tokens.push(Token{TokenType::name, "procedure"});

@@ -73,7 +73,8 @@ namespace AST {
                     make<Assign>(5, make<Var>("remainder"), make<BinExpr>(BinOp::MOD, make<Var>("x"), make<Const>(2))),
                     make<Assign>(6, make<Var>("digit"), make<BinExpr>(BinOp::MOD, make<Var>("x"), make<Const>(10))),
                     make<If>(7, make<RelExpr>(RelOp::EQ, make<Var>("remainder"), make<Const>(0)), makeStmts(
-                        make<Assign>(8, make<Var>("sum"), make<BinExpr>(BinOp::PLUS, make<Var>("sum"), make<Var>("digit")))
+                        make<Assign>(8, make<Var>("sum"), 
+                            make<BinExpr>(BinOp::PLUS, make<Var>("sum"), make<Var>("digit")))
                     ), makeStmts(
                         make<Print>(9, make<Var>("x"))
                     )),
