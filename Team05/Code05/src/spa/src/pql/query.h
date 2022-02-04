@@ -32,9 +32,9 @@ struct StmtRef {
     std::string declaration;
     int lineNo;
 
-    void setType(StmtRefType);
-    void setDeclaration(std::string);
-    void setLineNo(int);
+    static StmtRef ofDeclaration(std::string);
+    static StmtRef ofLineNo(int);
+    static StmtRef ofWildcard();
 
     StmtRefType getType();
     std::string getDeclaration();
@@ -57,9 +57,9 @@ struct EntRef{
     std::string declaration;
     std::string variable;
 
-    void setType(EntRefType);
-    void setDeclaration(std::string);
-    void setVariableName(std::string);
+    static EntRef ofDeclaration(std::string);
+    static EntRef ofVarName(std::string);
+    static EntRef ofWildcard();
 
     EntRefType getType();
     std::string getDeclaration();
@@ -86,7 +86,7 @@ struct RelRef {
     RelRef() {}
     RelRef(RelRefType type) : type(type) {}
     virtual ~RelRef() {};
-    virtual RelRefType getType() {return type;}
+    virtual RelRefType getType() { return type; }
 };
 
 struct Modifies : RelRef {
@@ -108,10 +108,6 @@ struct Pattern {
     std::string synonym;
     EntRef lhs;
     std::string expression;
-
-    void setSynonym(std::string);
-    void setLhs(EntRef);
-    void setExpression(std::string);
 
     std::string getSynonym();
     EntRef getEntRef();

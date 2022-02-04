@@ -131,14 +131,14 @@ StmtRef Parser::parseStmtRef(Query &queryObj) {
     TokenType type = token.getTokenType();
     StmtRef stmtRef;
     if (type == TokenType::Number) {
-        stmtRef.type = StmtRefType::LINE_NO;
+        int lineNo;
         std::stringstream ss(token.getText());
-        ss >> stmtRef.lineNo;
+        ss >> lineNo;
+        stmtRef = StmtRef::ofLineNo(lineNo);
     } else if (type == TokenType::Underscore) {
-        stmtRef.type = StmtRefType::WILDCARD;
+        stmtRef = StmtRef::ofWildcard();
     } else if (type == TokenType::Identifier) {
-        stmtRef.type = StmtRefType::DECLARATION;
-        stmtRef.declaration = token.getText();
+        stmtRef = StmtRef::ofDeclaration(token.getText());
     }
 
     return stmtRef;
@@ -149,13 +149,11 @@ EntRef Parser::parseEntRef(Query &queryObj) {
     TokenType type = token.getTokenType();
     EntRef entRef;
     if (type == TokenType::String) {
-        entRef.type = EntRefType::VARIABLE_NAME;
-        entRef.variable = token.getText();
+        entRef = EntRef::ofVarName(token.getText());
     } else if (type == TokenType::Underscore) {
-        entRef.type = EntRefType::WILDCARD;
+        entRef = EntRef::ofWildcard();
     } else if (type == TokenType::Identifier) {
-        entRef.type = EntRefType::DECLARATION;
-        entRef.declaration = token.getText();
+        entRef = EntRef::ofDeclaration(token.getText());
     }
 
     return entRef;
