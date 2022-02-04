@@ -10,7 +10,7 @@ std::string Lexer::getText() {
 }
 
 void Lexer::eatWhitespace() {
-    while (text.length() > 0 && (isspace(text[0]) || text[0] == '\n'))
+    while (text.length() > 0 && (isspace(text[0]) || text[0] == '\n' || text[0] == '\t'))
         text.erase(0, 1);
 }
 
