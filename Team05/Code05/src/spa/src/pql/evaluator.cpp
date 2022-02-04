@@ -1,4 +1,45 @@
 #include "evaluator.h"
+#include "../logging.h"
+
+#define DEBUG Logger(Level::DEBUG) << "evaluator.cpp "
+
+std::string PKBField::to_string() {
+    if(tag == PKBType::STMT_LO) {
+        return std::to_string(stmtLo);
+    } else if (tag == PKBType::VAR_NAME) {
+        return vName;
+    } else if (tag == PKBType::PROC_NAME) {
+        return pName;
+    } else {
+        return std::to_string(cName);
+    }
+}
+
+std::vector<PKBField> PKBStub::getAll(DesignEntity type) {
+    std::vector<PKBField> result;
+    if(type == DesignEntity::PROCEDURE) {
+
+    } else if (type == DesignEntity:: VARIABLE) {
+        std::set<std::string> varlist = {"a", "x", "y", "present"};
+        for (auto v : varlist) {
+            PKBField vf;
+            vf.tag = PKBType::VAR_NAME;
+            vf.isConcrete = false;
+            vf.vName = v;
+            result.push_back(vf);
+        }
+    } else {
+        std::set<int> stmtList = {1, 2, 3};
+        for (auto s : stmtList) {
+            PKBField sf;
+            sf.tag = PKBType::STMT_LO;
+            sf.isConcrete = false;
+            sf.stmtLo = s;
+            result.push_back(sf);
+        }
+    }
+    return result;
+}
 
 //Replace int by PKBField
 std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, DesignEntity returnType) {
@@ -101,11 +142,17 @@ std::set<int> processPattern(std::vector<Pattern> patterns, DesignEntity returnT
 }
 
 //replace int by PKBField
-std::string processResult(std::set<int> queryResult) {
+std::string processResult(std::vector<PKBField> queryResult) {
     std::string stringResult = "";
-    for (auto r : queryResult) {
-        stringResult += std::to_string(r);
+    for (int i = 0; i < queryResult.size(); i ++) {
+        if (i == queryResult.size() - 1) {
+            stringResult += queryResult[i].to_string();
+        } else {
+            stringResult = stringResult + queryResult[i].to_string() + ", ";
+        }
     }
+
+    DEBUG << "stringResult";
     return stringResult;
 }
 
@@ -119,26 +166,29 @@ std::string evaluate(Query query) {
     //TODO: replace int with PKBField
     std::set<int> suchthatResult;
     std::set<int> patternResult;
-    std::set<int> queryResult;
-    if (!suchthat.empty()) {
-        suchthatResult = processSuchthat(suchthat, returnType);
-    }
+    std::vector<PKBField> queryResult;
 
-    if (!pattern.empty()) {
-        patternResult = processPattern(pattern, returnType);
-    }
+    PKBStub pkb;
+
+//    if (!suchthat.empty()) {
+//        suchthatResult = processSuchthat(suchthat, returnType);
+//    }
+//
+//    if (!pattern.empty()) {
+//        patternResult = processPattern(pattern, returnType);
+//    }
 
     if (suchthat.empty() && pattern.empty()) {
-        // Mock API call
-        //queryResult = PKB::getAll(returnType);
+        queryResult = pkb.getAll(returnType);
+
     } else {
-        int size = std::min(suchthatResult.size(), patternResult.size());
-        std::vector<int> v1(size);
-        std::vector<int>::iterator it, ls;
-        ls = std::set_intersection(suchthatResult.begin(), suchthatResult.end(), patternResult.begin(), patternResult.end(), v1.begin());
-        for (it = v1.begin(); it != ls; ++it) {
-            queryResult.insert(*it);
-        }
+//        int size = std::min(suchthatResult.size(), patternResult.size());
+//        std::vector<int> v1(size);
+//        std::vector<int>::iterator it, ls;
+//        ls = std::set_intersection(suchthatResult.begin(), suchthatResult.end(), patternResult.begin(), patternResult.end(), v1.begin());
+//        for (it = v1.begin(); it != ls; ++it) {
+//            queryResult.insert(*it);
+//        }
     }
 
     return processResult(queryResult);
