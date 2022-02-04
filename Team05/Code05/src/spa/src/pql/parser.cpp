@@ -3,8 +3,6 @@
 #include "parser.h"
 #include "logging.h"
 
-#define LOGGER Logger(Level::DEBUG) << "parser.cpp: \n"
-
 std::string Parser::getParsedText() {
     return lexer.text;
 }
@@ -68,7 +66,7 @@ void Parser::parseDeclarations(Query &queryObj) {
     // Parse and add single declaration to Query Object
 
     while (peekNextToken().getTokenType() == TokenType::COMMA) {
-        token = getAndCheckNextToken(TokenType::COMMA);
+        getAndCheckNextToken(TokenType::COMMA);
         parseDeclaration(queryObj, designEntity);
     }
 
@@ -89,19 +87,6 @@ void Parser::parseSelectFields(Query &queryObj) {
         throw "Variable does not exist in declaration!";
 
     queryObj.addVariable(name);
-
-    Token nextToken = peekNextToken();
-
-    // Handle multiple select clause, might be needed for future iterations?;
-    while (nextToken.getTokenType() == TokenType::COMMA) {
-        t = getAndCheckNextToken(TokenType::IDENTIFIER);
-        name = t.getText();
-        if (!queryObj.hasDeclaration(name))
-            throw "Variable does not exist in declaration!";
-
-        queryObj.addVariable(name);
-        nextToken = peekNextToken();
-    }
 }
 
 bool Parser::isStmtRef(Token token, Query &queryObj) {
@@ -156,6 +141,7 @@ EntRef Parser::parseEntRef(Query &queryObj) {
         entRef = EntRef::ofDeclaration(token.getText());
     }
 
+    return entRef;
     return entRef;
 }
 
@@ -243,9 +229,12 @@ Query Parser::parsePql(std::string query) {
     for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::END_OF_FILE; token = peekNextReservedToken()) {
         if (token.getTokenType() != TokenType::SELECT) {
             // Parse delcarations first
+            Logger() << "DECLARE" << "\n";
+            Logger() << this->getParsedText() << "\n";
             parseDeclarations(queryObj);
         } else {
             // Start parsing the actual query
+            Logger() << "QUERY" << "\n";
             parseQuery(queryObj);
         }
     }

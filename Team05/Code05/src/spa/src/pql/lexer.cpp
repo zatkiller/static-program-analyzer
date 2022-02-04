@@ -22,7 +22,7 @@ Token Lexer::getNextToken() {
     eatWhitespace();
 
     if (text.length() == 0) {
-        return Token{"", TokenType::END_OF_FILE};
+        return Token{"EOF", TokenType::END_OF_FILE};
     } else if (text[0] == '"') {
 
         auto pos1 = text.find("\"");
@@ -78,7 +78,9 @@ Token Lexer::getNextReservedToken() {
     eatWhitespace();
 
     Token token;
-    if (hasPrefix("Select")) {
+    if (text.length() == 0) {
+        token = Token{"EOF", TokenType::END_OF_FILE};
+    } else if (hasPrefix("Select")) {
         token = Token {"Select", TokenType::SELECT};
     } else if (hasPrefix("Modifies")) {
         token =  Token {"Modifies", TokenType::MODIFIES};
