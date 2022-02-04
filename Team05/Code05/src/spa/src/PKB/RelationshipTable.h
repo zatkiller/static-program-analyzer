@@ -11,8 +11,8 @@ public:
 	// count of an item in a set can only be 0 or 1
 	RelationshipTable(PKBRelationship);
 
-	virtual bool contains(int, int) = 0;
-	virtual void insert(int, int) = 0;
+	virtual bool contains(PKBField, PKBField) = 0;
+	virtual void insert(PKBField, PKBField) = 0;
 	PKBRelationship getType();
 	int getSize();
 

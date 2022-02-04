@@ -3,13 +3,13 @@
 #include <stdio.h>
 #include <set>
 
+#include "PKBField.h"
 #include "StatementRow.h"
 
 class StatementTable {
 public:
-	// TODO: replace <int> with <PKBField>
-	bool contains(STMT_LO stmt);
-	void insert(STMT_LO stmt);
+	bool contains(PKBField);
+	void insert(PKBField);
 	int getSize();
 
 private:
