@@ -2,6 +2,7 @@
 
 namespace AST {
 
+// Victims
 void Var::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
     visitor->visit(*this);
 }
@@ -90,5 +91,105 @@ void NotCondExpr::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
     condExpr->accept(visitor);
 }
 
+// Equivalence Class Checks
+bool Var::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<Var const&>(o);
+    return this->varName == that.varName;
+}
+
+bool StmtLst::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<StmtLst const*>(&o);
+    if (list.size() != that->list.size()) return false;
+    for (int i = 0; i < list.size(); i++) {
+        if (!(*list[i] == *that->list[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Procedure::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<Procedure const*>(&o);
+    return (this->procName == that->procName) &&
+        (this->stmtLst == that->stmtLst);
+}
+
+bool Program::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<const Program*>(&o);
+    return *this->procedure == *that->procedure;
+}
+
+bool If::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<If const*>(&o);
+    return (*this->condExpr == *that->condExpr) &&
+        (this->thenBlk == that->thenBlk) &&
+        (this->elseBlk == that->elseBlk) &&
+        (this->getStmtNo() == that->getStmtNo());
+}
+
+bool While::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<While const*>(&o);
+    return (*this->condExpr == *that->condExpr) &&
+        (this->stmtLst == that->stmtLst) &&
+        (this->getStmtNo() == that->getStmtNo());
+}
+
+bool Assign::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<Assign const*>(&o);
+    return (*this->var == *that->var) &&
+        (*this->expr == *that->expr) &&
+        (this->getStmtNo() == that->getStmtNo());
+}
+
+bool IO::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<IO const*>(&o);
+    return *this->var == *that->var &&
+        (this->getStmtNo() == that->getStmtNo());
+}
+
+bool Const::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<Const const*>(&o);
+    return this->constValue == that->constValue;
+}
+
+bool BinExpr::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<BinExpr const*>(&o);
+    return (this->Op == that->Op) &&
+        (*this->LHS == *that->LHS) &&
+        (*this->RHS == *that->RHS);
+}
+
+bool RelExpr::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<RelExpr const*>(&o);
+    return (this->Op == that->Op) &&
+        (*this->LHS == *that->LHS) &&
+        (*this->RHS == *that->RHS);
+}
+
+bool CondBinExpr::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<CondBinExpr const*>(&o);
+    return (this->Op == that->Op) &&
+        (*this->LHS == *that->LHS) &&
+        (*this->RHS == *that->RHS);
+}
+
+bool NotCondExpr::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<NotCondExpr const*>(&o);
+    return (this->Op == that->Op) &&
+        (*this->condExpr == *that->condExpr);
+}
 
 }  // namespace AST

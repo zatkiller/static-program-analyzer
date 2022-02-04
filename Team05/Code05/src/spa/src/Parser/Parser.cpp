@@ -25,7 +25,7 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-int lineCount = 0;
+int lineCount = 1;
 AST::StmtLst parseStmtLst(deque<Token>& tokens);
 unique_ptr<AST::Statement> parseWhileStmt(deque<Token>& tokens);
 unique_ptr<AST::Statement> parseIfStmt(deque<Token>& tokens);
