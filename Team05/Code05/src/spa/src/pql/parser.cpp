@@ -142,7 +142,6 @@ EntRef Parser::parseEntRef(Query &queryObj) {
     }
 
     return entRef;
-    return entRef;
 }
 
 std::shared_ptr<RelRef> Parser::parseUses(Query &queryObj) {
@@ -229,12 +228,9 @@ Query Parser::parsePql(std::string query) {
     for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::END_OF_FILE; token = peekNextReservedToken()) {
         if (token.getTokenType() != TokenType::SELECT) {
             // Parse delcarations first
-            Logger() << "DECLARE" << "\n";
-            Logger() << this->getParsedText() << "\n";
             parseDeclarations(queryObj);
         } else {
             // Start parsing the actual query
-            Logger() << "QUERY" << "\n";
             parseQuery(queryObj);
         }
     }

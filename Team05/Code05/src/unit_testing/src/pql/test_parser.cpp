@@ -232,8 +232,129 @@ TEST_CASE("Parser parsePattern - string expression with wildcard") {
     REQUIRE(pattern.getExpression() == "_x_");
 }
 
+TEST_CASE("Parser isEntRef") {
+    Parser parser;
+    Query query;
+    Token token = { "", TokenType::STRING };
+    REQUIRE(parser.isEntRef(token, query));
+    token = {"", TokenType::PATTERN};
+    REQUIRE(!(parser.isEntRef(token, query)));
+}
+
+TEST_CASE("Parser isSmtRef") {
+    Parser parser;
+    Query query;
+    Token token = { "", TokenType::NUMBER };
+    REQUIRE(parser.isStmtRef(token, query));
+    token = {"", TokenType::PATTERN};
+    REQUIRE(!(parser.isEntRef(token, query)));
+}
+
+TEST_CASE("Parser parseStmtRef") {
+    Parser parser;
+    parser.addPql("3");
+    Query query;
+    StmtRef sr = parser.parseStmtRef(query);
+    REQUIRE(sr.isLineNo());
+    REQUIRE(sr.lineNo == 3);
+}
+
+TEST_CASE("Parser parseEntRef") {
+    Parser parser;
+    parser.addPql("\"x\"");
+    Query query;
+    EntRef er = parser.parseEntRef(query);
+    REQUIRE(er.isVarName());
+    REQUIRE(er.variable == "x");
+}
+
+TEST_CASE("Parser parseRelRefVariabels") {
+    Query queryObj;
+    Parser parser;
+    parser.lexer.text = "(3, \"x\")";
+    std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Modifies>(queryObj, &Modifies::modifiesStmt, &Modifies::modified);
+    REQUIRE(ptr.get()->getType() == RelRefType::MODIFIESS);
+
+    std::shared_ptr<Modifies> sharedPtr = std::dynamic_pointer_cast<Modifies>(ptr);
+    Modifies* mPtr = sharedPtr.get();
+    REQUIRE(mPtr->modifiesStmt.isLineNo());
+    REQUIRE(mPtr->modifiesStmt.lineNo == 3);
+    REQUIRE(mPtr->modified.isVarName());
+    REQUIRE(mPtr->modified.variable == "x");
+}
+
+TEST_CASE("Parser parseRelRef") {
+    Query queryObj;
+    Parser parser;
+    parser.lexer.text = "Uses(_,_)";
+    std::shared_ptr<RelRef> ptr = parser.parseRelRef(queryObj);
+    REQUIRE(ptr.get()->getType() == RelRefType::USESS);
+
+    std::shared_ptr<Uses> sharedPtr = std::dynamic_pointer_cast<Uses>(ptr);
+    Uses* uPtr = sharedPtr.get();
+    REQUIRE(uPtr->useStmt.isWildcard());
+    REQUIRE(uPtr->used.isWildcard());
+}
+
+TEST_CASE("Parser parseExpSpec") {
+    Query queryObj;
+    Parser parser;
+    parser.lexer.text = "_\"x\"_";
+    REQUIRE(parser.parseExpSpec() == "_x_");
+
+    parser.lexer.text = "\"x\"";
+    REQUIRE(parser.parseExpSpec() == "x");
+
+    parser.lexer.text = "_";
+    REQUIRE(parser.parseExpSpec() == "_");
+
+    parser.lexer.text = "_\"x\"";
+    REQUIRE(parser.parseExpSpec() == "_x");
+
+    parser.lexer.text = "\"x\"_";
+    REQUIRE(parser.parseExpSpec() == "x_");
+}
+
+TEST_CASE("Parser parseQuery") {
+    Parser parser;
+    parser.lexer.text = "Select c";
+    Query query;
+    query.addDeclaration("c", DesignEntity::CONSTANT);
+    parser.parseQuery(query);
+
+    REQUIRE(query.hasVariable("c"));
+
+    parser.lexer.text = "Select a such that Modifies (a, v1) pattern a1 (v, _\"x\"_)";
+    query = {};
+    query.addDeclaration("a", DesignEntity::ASSIGN);
+    query.addDeclaration("a1", DesignEntity::ASSIGN);
+    query.addDeclaration("v", DesignEntity::VARIABLE);
+    query.addDeclaration("v1", DesignEntity::VARIABLE);
+    parser.parseQuery(query);
+
+    REQUIRE(query.hasVariable("a"));
+
+    // Check such that
+    std::shared_ptr<RelRef> relRefPtr = (query.getSuchthat())[0];
+    REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
+
+    std::shared_ptr<Modifies> modifiesPtr = std::dynamic_pointer_cast<Modifies>(relRefPtr);
+    REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
+    REQUIRE(modifiesPtr->modifiesStmt.declaration == "a");
+    REQUIRE(modifiesPtr->modified.isDeclaration());
+    REQUIRE(modifiesPtr->modified.declaration == "v1");
+
+    // Check pattern
+    std::vector<Pattern> patterns = query.getPattern();
+    Pattern pattern = patterns[0];
+
+    REQUIRE(pattern.getSynonym() == "a1");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().declaration == "v");
+    REQUIRE(validDeclaration);
+    REQUIRE(pattern.getExpression() == "_x_");
+}
+
 TEST_CASE("Parser parsePql") {
-    Logger() << "HERE" << "\n";
     std::string testQuery = "assign a, a1; variable v; Select a such that Modifies (a, _) pattern a (v, _\"x\"_)";
 
     Parser parser;

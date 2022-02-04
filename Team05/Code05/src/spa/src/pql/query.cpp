@@ -1,6 +1,6 @@
 #include <algorithm>
 
-#include "query.h"
+#include "test_query.h"
 
 std::unordered_map<std::string, DesignEntity> designEntityMap = {
         { "stmt", DesignEntity::STMT },

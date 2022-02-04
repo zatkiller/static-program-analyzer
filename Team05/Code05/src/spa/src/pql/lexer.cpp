@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "logging.h"
-#include "lexer.h"
+#include "test_lexer.h"
 
 #define LOGGER Logger(Level::DEBUG) << "pql/lexer.cpp: \n"
 
