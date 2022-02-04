@@ -137,3 +137,72 @@ TEST_CASE("Test Parse such that for MOdifies") {
 
     REQUIRE(queryObj.getPattern().size() == 0);
 }
+TEST_CASE("Test Parse pattern wildcard expression") {
+    std::string testQuery = "assign a; \n Select a such that Modifies (a, _) pattern a (v, _)";
+
+    Parser parser;
+    parser.addPql(testQuery);
+
+    Query queryObj;
+
+    parser.parseDeclarations(queryObj);
+    parser.parseSelectFields(queryObj);
+    parser.parseSuchThat(queryObj);
+    parser.parsePattern(queryObj);
+
+    std::vector<Pattern> patterns = queryObj.getPattern();
+    Pattern pattern = patterns[0];
+
+    REQUIRE(pattern.getSynonym() == "a");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().declaration == "v");
+    REQUIRE(validDeclaration);
+    REQUIRE(pattern.getExpression() == "_");
+
+}
+
+TEST_CASE("Test Parse pattern string") {
+    std::string testQuery = "assign a; \n Select a such that Modifies (a, _) pattern a (v, \"x\")";
+
+    Parser parser;
+    parser.addPql(testQuery);
+
+    Query queryObj;
+
+    parser.parseDeclarations(queryObj);
+    parser.parseSelectFields(queryObj);
+    parser.parseSuchThat(queryObj);
+    parser.parsePattern(queryObj);
+
+    std::vector<Pattern> patterns = queryObj.getPattern();
+    Pattern pattern = patterns[0];
+
+    REQUIRE(pattern.getSynonym() == "a");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().declaration == "v");
+    REQUIRE(validDeclaration);
+    REQUIRE(pattern.getExpression() == "x");
+}
+
+TEST_CASE("Test Parse pattern string with wildcards") {
+    std::string testQuery = "assign a; \n Select a such that Modifies (a, _) pattern a (v, _\"x\"_)";
+
+    Parser parser;
+    parser.addPql(testQuery);
+
+    Query queryObj;
+
+    parser.parseDeclarations(queryObj);
+    parser.parseSelectFields(queryObj);
+    parser.parseSuchThat(queryObj);
+    parser.parsePattern(queryObj);
+
+    std::vector<Pattern> patterns = queryObj.getPattern();
+    Pattern pattern = patterns[0];
+
+    REQUIRE(pattern.getSynonym() == "a");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().declaration == "v");
+    REQUIRE(validDeclaration);
+    REQUIRE(pattern.getExpression() == "_x_");
+}
+
+
+

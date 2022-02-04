@@ -56,4 +56,7 @@ struct Parser {
     bool isEntRef(Token, Query &);
     StmtRef parseStmtRef(Query &);
     EntRef parseEntRef(Query &);
+
+    void parsePattern(Query&);
+    std::string parseExpSpec();
 };

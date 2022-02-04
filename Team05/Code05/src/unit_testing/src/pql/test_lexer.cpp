@@ -64,3 +64,20 @@ TEST_CASE("Lexer peekNextToken") {
     REQUIRE(lexer.peekNextReservedToken() == Token{"Select", TokenType::Select});
     REQUIRE(lexer.getNextReservedToken() == Token{"Select", TokenType::Select});
 }
+
+
+TEST_CASE("Lexer getNexToken where next token is a string") {
+    std::string testQuery = "\"x\"";
+    Lexer lexer(testQuery);
+
+    Token token = lexer.getNextToken();
+    REQUIRE(token.getTokenType() == TokenType::String);
+    REQUIRE(token.getText() == "x");
+
+    lexer.text="_\"x\"_";
+    REQUIRE(lexer.getNextToken().getTokenType() == TokenType::Underscore);
+    token = lexer.getNextToken();
+    REQUIRE(token.getTokenType() == TokenType::String);
+    REQUIRE(token.getText() == "x");
+    REQUIRE(lexer.getNextToken().getTokenType() == TokenType::Underscore);
+}

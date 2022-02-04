@@ -1,6 +1,9 @@
 #include <sstream>
 
 #include "parser.h"
+#include "logging.h"
+
+#define LOGGER Logger(Level::DEBUG) << "parser.cpp: \n"
 
 std::string Parser::getParsedText() {
     return lexer.text;
@@ -180,17 +183,61 @@ std::shared_ptr<RelRef> Parser::parseRelRef(Query &queryObj) {
     return NULL;
 }
 
+std::string Parser::parseExpSpec() {
+    std::string prefix = "", suffix = "", value = "";
+
+    if (peekNextToken().getTokenType() == TokenType::Underscore) {
+        getNextToken();
+        prefix = "_";
+    }
+
+    if (peekNextToken().getTokenType() == TokenType::String) {
+        Token t = getNextToken();
+        value = t.getText();
+    }
+
+    if (peekNextToken().getTokenType() == TokenType::Underscore) {
+        getNextToken();
+        suffix = "_";
+    }
+    return prefix + value + suffix;
+}
+
 void Parser::parseSuchThat(Query &queryObj) {
     getAndCheckNextReservedToken(TokenType::SuchThat);
     std::shared_ptr<RelRef> relRef = parseRelRef(queryObj);
     queryObj.addSuchthat(relRef);
 }
+void Parser::parsePattern(Query &queryObj) {
+    getAndCheckNextReservedToken(TokenType::Pattern);
+
+    Token t = getAndCheckNextToken(TokenType::Identifier);
+    std::string declarationName = t.getText();
+
+    if (queryObj.getDeclarationDesignEntity(declarationName) != DesignEntity::ASSIGN)
+        throw "Not an assignment!";
+
+    Pattern p;
+
+    p.synonym = declarationName;
+    getAndCheckNextToken(TokenType::OpeningParan);
+    p.lhs = parseEntRef(queryObj);
+    getAndCheckNextToken(TokenType::Comma);
+    p.expression = parseExpSpec();
+    getAndCheckNextToken(TokenType::ClosingParan);
+
+    queryObj.addPattern(p);
+}
+
 
 void Parser::parseQuery(Query &queryObj) {
     parseSelectFields(queryObj);
 
     if (peekNextReservedToken().getTokenType() == TokenType::SuchThat)
         parseSuchThat(queryObj);
+
+    if (peekNextReservedToken().getTokenType() == TokenType::Pattern)
+        parsePattern(queryObj);
 }
 
 Query Parser::parsePql(std::string query) {
