@@ -1,10 +1,8 @@
 #include "pql/parser.h"
 #include "catch.hpp"
 #include <memory>
-#include "logging.h"
 #include <vector>
 
-#define TEST_LOG Logger() << "TestLexer.cpp"
 
 TEST_CASE("Test Parser peekNext and getNext") {
     std::string testQuery = "assign a; \n Select a such that Uses (a, v) pattern a (v, _)";

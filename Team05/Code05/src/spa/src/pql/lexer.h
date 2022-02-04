@@ -10,7 +10,6 @@ enum class TokenType {
     UNDERSCORE,
     SEMICOLON,
     COMMA,
-    PERIOD,
     OPENING_PARAN,
     CLOSING_PARAN,
 

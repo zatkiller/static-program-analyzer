@@ -33,6 +33,15 @@ Token Lexer::getNextToken() {
         text.erase(0, num_chars + 1);
 
         return Token { strValue, TokenType::STRING };
+    } else if (isdigit(text[0])) {
+        int charCount = 0;
+        while (text.length() > 0 && (isdigit(text[charCount])))
+            charCount++;
+
+        std::string number = text.substr(0, charCount);
+        text.erase(0, charCount);
+
+        return Token { number, TokenType::NUMBER};
     } else if (isalpha(text[0])) {
         int charCount = 0;
 
@@ -43,15 +52,6 @@ Token Lexer::getNextToken() {
         text.erase(0, charCount);
 
         return Token { identifier, TokenType::IDENTIFIER};
-    } else if (isdigit(text[0])) {
-        int charCount = 0;
-        while (text.length() > 0 && (isdigit(text[charCount])))
-            charCount++;
-
-        std::string number = text.substr(charCount);
-        text.erase(0, charCount);
-
-        return Token { number, TokenType::NUMBER};
     } else {
             Token token;
             std::string value = text.substr(0, 1);
