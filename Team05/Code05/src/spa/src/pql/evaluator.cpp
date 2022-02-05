@@ -38,7 +38,7 @@ PKBResponse getAll(DesignEntity type) {
 //Replace int by PKBField
 std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, DesignEntity returnType) {
     //TODO: Modifies when PKBResponse is definded Replace int with PKBFields
-    std::set<int> result;
+    PKBResponse result;
     //only one clause for now
     for (auto r : clauses) {
         RelRefType type = r.get()->getType();
@@ -58,8 +58,6 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
                 //TODO: fill in when creating PKBField
             } else if (entType == EntRefType::WILDCARD) {
                 //TODO: fill in when creating PKBField
-            } else {
-                throw std::runtime_error("Entity Reference has incorrect format in Modifies relationship");
             }
 
             if (stmtType == StmtRefType::DECLARATION) {
@@ -68,8 +66,6 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
 
             } else if (stmtType == StmtRefType::WILDCARD) {
 
-            } else {
-                throw std::runtime_error("Statement Reference has incorrect format in Modifeis relationship");
             }
             // TODO: modifies when PKB API is defined (support one clause only)
             //result = getRelationship(stmt, modified,  PKBRelationship::MODIFIES, returnType);
