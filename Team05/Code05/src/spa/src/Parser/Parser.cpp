@@ -31,7 +31,7 @@ unique_ptr<AST::Statement> parseWhileStmt(deque<Token>& tokens);
 unique_ptr<AST::Statement> parseIfStmt(deque<Token>& tokens);
 unique_ptr<AST::Statement> parseReadStmt(deque<Token>& tokens);
 unique_ptr<AST::Statement> parsePrintStmt(deque<Token>& tokens);
-unique_ptr<AST::Statement> parseAssignStmt(unique_ptr<AST::Var> varName, deque<Token>& tokens);
+unique_ptr<AST::Statement> parseAssignStmt(deque<Token>& tokens);
 
 void throwUnexpectedToken(char c) {
     std::ostringstream oss;
@@ -405,7 +405,7 @@ unique_ptr<AST::CondExpr> parseCondExpr(deque<Token>& tokens) {
 AST::StmtLst parseStmtLst(deque<Token>& tokens) {
     vector<unique_ptr<AST::Statement>> list;
     do {
-        Token currToken = getNextToken(tokens);
+        Token currToken = tokens.front();
         string* keyword = get_if<string>(&currToken.value);
         if (!keyword) {
             Logger(Level::ERROR) << "String Expected";
@@ -420,9 +420,7 @@ AST::StmtLst parseStmtLst(deque<Token>& tokens) {
         } else if (*keyword == "if") {
             list.push_back(move(parseIfStmt(tokens)));
         } else {
-            // assign, but currToken is the varName
-            auto var = make_unique<AST::Var>(*keyword);
-            list.push_back(move(parseAssignStmt(move(var), tokens)));
+            list.push_back(move(parseAssignStmt(tokens)));
         }
     } while (tokens.front().type != TokenType::special ||
         get<char>(tokens.front().value) != '}');
@@ -431,8 +429,14 @@ AST::StmtLst parseStmtLst(deque<Token>& tokens) {
 
 unique_ptr<AST::Statement> parseReadStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
-    Token currToken = getNextToken(tokens);
-    string* varName = get_if<string>(&currToken.value);
+    Token id = getNextToken(tokens);
+    if (id.type != TokenType::name || get<string>(id.value) != "read") {
+        Logger(Level::ERROR) << "read Expected";
+        throw invalid_argument("read expected!");;
+    }
+
+    Token varToken = getNextToken(tokens);
+    string* varName = get_if<string>(&varToken.value);
     if (!varName) {
         Logger(Level::ERROR) << "Name Expected";
         throw invalid_argument("Name expected!");;
@@ -444,8 +448,14 @@ unique_ptr<AST::Statement> parseReadStmt(deque<Token>& tokens) {
 
 unique_ptr<AST::Statement> parsePrintStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
-    Token currToken = getNextToken(tokens);
-    string* varName = get_if<string>(&currToken.value);
+    Token id = getNextToken(tokens);
+    if (id.type != TokenType::name || get<string>(id.value) != "print") {
+        Logger(Level::ERROR) << "print Expected";
+        throw invalid_argument("print expected!");;
+    }
+
+    Token varToken = getNextToken(tokens);
+    string* varName = get_if<string>(&varToken.value);
     if (!varName) {
         Logger(Level::ERROR) << "Name Expected";
         throw invalid_argument("Name expected!");;
@@ -455,8 +465,17 @@ unique_ptr<AST::Statement> parsePrintStmt(deque<Token>& tokens) {
     return make_unique<AST::Print>(lineNo, move(var));
 }
 
-unique_ptr<AST::Statement> parseAssignStmt(unique_ptr<AST::Var> var, deque<Token>& tokens) {
+unique_ptr<AST::Statement> parseAssignStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
+
+    Token varToken = getNextToken(tokens);
+    string* varName = get_if<string>(&varToken.value);
+    if (!varName) {
+        Logger(Level::ERROR) << "Var Expected";
+        throw invalid_argument("Var expected!");;
+    }
+    auto var = std::make_unique<AST::Var>(*varName);
+
     Token currToken = getNextToken(tokens);
     char* equalSign = get_if<char>(&currToken.value);
     if (!equalSign || *equalSign != '=') {
@@ -470,6 +489,13 @@ unique_ptr<AST::Statement> parseAssignStmt(unique_ptr<AST::Var> var, deque<Token
 
 unique_ptr<AST::Statement> parseWhileStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
+
+    Token id = getNextToken(tokens);
+    if (id.type != TokenType::name || get<string>(id.value) != "while") {
+        Logger(Level::ERROR) << "while Expected";
+        throw invalid_argument("while expected!");;
+    }
+
     checkAndConsume('(', tokens);
     auto condExprResult = parseCondExpr(tokens);
     checkAndConsume(')', tokens);
@@ -483,6 +509,13 @@ unique_ptr<AST::Statement> parseWhileStmt(deque<Token>& tokens) {
 
 unique_ptr<AST::Statement> parseIfStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
+
+    Token id = getNextToken(tokens);
+    if (id.type != TokenType::name || get<string>(id.value) != "if") {
+        Logger(Level::ERROR) << "if Expected";
+        throw invalid_argument("if expected!");;
+    }
+
     checkAndConsume('(', tokens);
     auto condExprResult = parseCondExpr(tokens);
     checkAndConsume(')', tokens);

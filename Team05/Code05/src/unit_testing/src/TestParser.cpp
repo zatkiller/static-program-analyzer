@@ -77,7 +77,6 @@ TEST_CASE("Testing Parser") {
                 Token{TokenType::number, 1}
             });
             REQUIRE(parseRelOp(tokens) == AST::RelOp::LT);
-
         }  // RelOp
         SECTION("parseCondOp") {
             tokens = std::deque<Token>({
@@ -163,8 +162,91 @@ TEST_CASE("Testing Parser") {
                     make<AST::Const>(8)
                 )
             );
-            REQUIRE(*ast == *expected);            
+            REQUIRE(*ast == *expected);
+
+
+            // Left associativity test
+            tokens = Lexer("4+3+2;").getTokens();
+            auto ast1 = shuntingYardParser(tokens);
+            tokens = Lexer("(4+3)+2;").getTokens();
+            auto ast2 = shuntingYardParser(tokens);
+            tokens = Lexer("4+(3+2);").getTokens();
+            auto ast3 = shuntingYardParser(tokens);
+            REQUIRE(*ast1 == *ast2);
+            REQUIRE(!(*ast1 == *ast3));
         }
+        SECTION("parseRelExpr") {
+            tokens = Lexer("1 > 2)").getTokens();
+            auto ast = parseRelExpr(tokens);
+            auto expected = make<AST::RelExpr>(
+                AST::RelOp::GT,
+                make<AST::Const>(1),
+                make<AST::Const>(2)
+            );
+            REQUIRE(*ast == *expected);
+
+            tokens = Lexer("x > y)").getTokens();
+            ast = parseRelExpr(tokens);
+            expected = make<AST::RelExpr>(
+                AST::RelOp::GT,
+                make<AST::Var>("x"),
+                make<AST::Var>("y")
+            );
+            REQUIRE(*ast == *expected);
+
+            tokens = Lexer("(x+1) > (y+2))").getTokens();
+            ast = parseRelExpr(tokens);
+            expected = make<AST::RelExpr>(
+                AST::RelOp::GT,
+                make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("x"), make<AST::Const>(1)),
+                make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("y"), make<AST::Const>(2))
+            );
+            REQUIRE(*ast == *expected);
+
+        }
+        SECTION("parseCondExpr") {
+            auto relExpr1 = []() {
+                return make<AST::RelExpr>(
+                    AST::RelOp::GT,
+                    make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("x"), make<AST::Const>(1)),
+                    make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("y"), make<AST::Const>(2))
+                );
+            };
+            auto relExpr2 = []() {
+                return make<AST::RelExpr>(
+                    AST::RelOp::GT,
+                    make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("z"), make<AST::Const>(1)),
+                    make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("t"), make<AST::Const>(2))
+                    );
+            };
+            
+            tokens = Lexer("((x+1)>(y+2))&&((z+1)>(t+2)))").getTokens();
+            std::unique_ptr<AST::CondExpr> ast = parseCondExpr(tokens);
+            std::unique_ptr<AST::CondExpr> expected = make<AST::CondBinExpr>(
+                AST::CondOp::AND,
+                relExpr1(),
+                relExpr2()
+            );
+            REQUIRE(*ast == *expected);
+
+            tokens = Lexer("((x+1)>(y+2))||((z+1)>(t+2)))").getTokens();
+            ast = parseCondExpr(tokens);
+            expected = make<AST::CondBinExpr>(
+                AST::CondOp::OR,
+                relExpr1(),
+                relExpr2()
+            );
+            REQUIRE(*ast == *expected);
+
+            tokens = Lexer("!((x+1)>(y+2)))").getTokens();
+            ast = parseCondExpr(tokens);
+            expected = std::make_unique<AST::NotCondExpr>(
+                relExpr1()
+            );
+            REQUIRE(*ast == *expected);
+        }
+
+
     }
 
     SECTION("Complete procedure test") {
@@ -185,10 +267,10 @@ TEST_CASE("Testing Parser") {
         REQUIRE(Parser().parse(fail2) == nullptr);
 
 
-        //std::string fail3 = R"(procedure 1a {
-        //    1x = 1y + 1z;
-        //})";
-        //REQUIRE(Parser().parse(fail3) == nullptr);
+        std::string fail3 = R"(procedure 1a {
+            1x = 1y + 1z;
+        })";
+        REQUIRE(Parser().parse(fail3) == nullptr);
 
         std::string testCode = R"(procedure computeAverage {
             read num1;
