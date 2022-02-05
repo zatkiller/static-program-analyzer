@@ -292,7 +292,7 @@ unique_ptr<AST::Expr> Parser::shuntingYardParser(deque<Token>& tokens) {
             }
             break;
         }
-    } while (!isEnd);
+    } while (!isEnd && tokens.front().type != TokenType::eof);
 
     while (!operators.empty()) {
         popAndPush();
@@ -342,6 +342,10 @@ bool isCondExpr(deque<Token>& tokens) {
                 }
                 return false;
             } else if (openBrCount < 0) {
+                return true;
+            }
+        } else if (v.type == TokenType::eof) {
+            if (openBrCount <= 0) {
                 return true;
             }
         }

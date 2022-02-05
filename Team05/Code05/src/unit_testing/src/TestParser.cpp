@@ -38,12 +38,12 @@ public:
             REQUIRE_THROWS(Parser().parseRelOp(tokens));
             tokens = std::deque<Token>({
                 Token{TokenType::special, '!'},
-                Token{TokenType::number, 1}
+                Token{TokenType::eof}
                 });
             REQUIRE_THROWS(Parser().parseRelOp(tokens));
             tokens = std::deque<Token>({
                 Token{TokenType::special, '='},
-                Token{TokenType::number, 1}
+                Token{TokenType::eof}
                 });
             REQUIRE_THROWS(Parser().parseRelOp(tokens));
 
@@ -70,12 +70,12 @@ public:
             REQUIRE(Parser().parseRelOp(tokens) == AST::RelOp::EQ);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '>'},
-                Token{TokenType::number, 1}
+                Token{TokenType::eof}
                 });
             REQUIRE(Parser().parseRelOp(tokens) == AST::RelOp::GT);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '<'},
-                Token{TokenType::number, 1}
+                Token{TokenType::eof}
                 });
             REQUIRE(Parser().parseRelOp(tokens) == AST::RelOp::LT);
         }  // RelOp
@@ -136,7 +136,7 @@ public:
             REQUIRE(Parser().parseBinOp(tokens) == AST::BinOp::MOD);
         }
         SECTION("Parser().shuntingYardParser") {
-            tokens = Lexer("4+x*2/(1-y)-6%8;").getTokens();
+            tokens = Lexer("4+x*2/(1-y)-6%8").getTokens();
             ast = Parser().shuntingYardParser(tokens);
             expected = make<AST::BinExpr>(
                 AST::BinOp::MINUS,
@@ -167,17 +167,17 @@ public:
 
 
             // Left associativity test
-            tokens = Lexer("4+3+2;").getTokens();
+            tokens = Lexer("4+3+2").getTokens();
             auto ast1 = Parser().shuntingYardParser(tokens);
-            tokens = Lexer("(4+3)+2;").getTokens();
+            tokens = Lexer("(4+3)+2").getTokens();
             auto ast2 = Parser().shuntingYardParser(tokens);
-            tokens = Lexer("4+(3+2);").getTokens();
+            tokens = Lexer("4+(3+2)").getTokens();
             auto ast3 = Parser().shuntingYardParser(tokens);
             REQUIRE(*ast1 == *ast2);
             REQUIRE(!(*ast1 == *ast3));
         }
         SECTION("Parser().parseRelExpr") {
-            tokens = Lexer("1 > 2)").getTokens();
+            tokens = Lexer("1 > 2").getTokens();
             ast = Parser().parseRelExpr(tokens);
             expected = make<AST::RelExpr>(
                 AST::RelOp::GT,
@@ -186,7 +186,7 @@ public:
                 );
             REQUIRE(*ast == *expected);
 
-            tokens = Lexer("x > y)").getTokens();
+            tokens = Lexer("x > y").getTokens();
             ast = Parser().parseRelExpr(tokens);
             expected = make<AST::RelExpr>(
                 AST::RelOp::GT,
@@ -195,7 +195,7 @@ public:
                 );
             REQUIRE(*ast == *expected);
 
-            tokens = Lexer("(x+1) > (y+2))").getTokens();
+            tokens = Lexer("(x+1) > (y+2)").getTokens();
             ast = Parser().parseRelExpr(tokens);
             expected = make<AST::RelExpr>(
                 AST::RelOp::GT,
@@ -221,7 +221,7 @@ public:
                     );
             };
 
-            tokens = Lexer("((x+1)>(y+2))&&((z+1)>(t+2)))").getTokens();
+            tokens = Lexer("((x+1)>(y+2))&&((z+1)>(t+2))").getTokens();
             std::unique_ptr<AST::CondExpr> ast = Parser().parseCondExpr(tokens);
             std::unique_ptr<AST::CondExpr> expected = make<AST::CondBinExpr>(
                 AST::CondOp::AND,
@@ -230,7 +230,7 @@ public:
                 );
             REQUIRE(*ast == *expected);
 
-            tokens = Lexer("((x+1)>(y+2))||((z+1)>(t+2)))").getTokens();
+            tokens = Lexer("((x+1)>(y+2))||((z+1)>(t+2))").getTokens();
             ast = Parser().parseCondExpr(tokens);
             expected = make<AST::CondBinExpr>(
                 AST::CondOp::OR,
@@ -239,7 +239,7 @@ public:
                 );
             REQUIRE(*ast == *expected);
 
-            tokens = Lexer("!((x+1)>(y+2)))").getTokens();
+            tokens = Lexer("!((x+1)>(y+2))").getTokens();
             ast = Parser().parseCondExpr(tokens);
             expected = std::make_unique<AST::NotCondExpr>(
                 relExpr1()
