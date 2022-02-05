@@ -5,29 +5,17 @@
 #include "catch.hpp"
 
 #define TEST_LOG Logger() << "TestPKB.cpp "
-#include <memory>
 
 /**
  * Ensures token structs and token type are correct.
  */
 TEST_CASE("PKB testing") {
-    //PKB pkb{};
+    std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+    PKBField field1{ PKBType::PROCEDURE, true, Content{PROC_NAME{"main"}} };
+    PKBField field2{ PKBType::VARIABLE, true, Content{VAR_NAME{"a"}} };
+    PKBField field3{ PKBType::VARIABLE, true, Content{VAR_NAME{"b"}} };
 
-   /* StatementType type1 = StatementType::Assignment;
-    StatementType type2 = StatementType::While;
-    int statementNumber1 = 1;
-    int statementNumber2 = 2;
+    TEST_LOG << "Test PKB#insertRelationship MODIFIES";
 
-    REQUIRE_FALSE(table.contains(type1, statementNumber1));
-
-    TEST_LOG << "Test duplicate StatementTable#insert";
-    table.insert(type1, statementNumber1);
-    table.insert(type1, statementNumber1);
-    REQUIRE(table.getSize() == 1);
-
-    TEST_LOG << "Test non-empty StatementTable#contains";
-    REQUIRE(table.contains(type1, statementNumber1));
-    REQUIRE_FALSE(table.contains(type2, statementNumber2));
-    REQUIRE_FALSE(table.contains(type1, statementNumber2));
-    REQUIRE_FALSE(table.contains(type2, statementNumber2));*/
+    pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field2);
 }

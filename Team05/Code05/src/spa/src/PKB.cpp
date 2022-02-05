@@ -7,10 +7,10 @@
 #include "TNode.h"
 
 PKB::PKB() {
-    statementTable = std::unique_ptr<StatementTable>();
-    variableTable = std::unique_ptr<VariableTable>();
-    procedureTable = std::unique_ptr<ProcedureTable>();
-    modifiesTable = std::unique_ptr<ModifiesRelationshipTable>();
+    statementTable = std::unique_ptr<StatementTable>(new StatementTable());
+    variableTable = std::unique_ptr<VariableTable>(new VariableTable());
+    procedureTable = std::unique_ptr<ProcedureTable>(new ProcedureTable());
+    modifiesTable = std::unique_ptr<ModifiesRelationshipTable>(new ModifiesRelationshipTable());
 }
 
 int PKB::setProcToAST(PROC p, TNode* r) {
