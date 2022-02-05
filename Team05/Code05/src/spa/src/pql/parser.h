@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "test_query.h"
-#include "test_lexer.h"
+#include "pql/query.h"
+#include "pql/lexer.h"
 
 struct Parser {
     Lexer lexer = Lexer("");

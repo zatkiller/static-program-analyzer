@@ -1,4 +1,4 @@
-#include "pql/test_query.h"
+#include "pql/query.h"
 #include "catch.hpp"
 
 TEST_CASE("StmtRef") {

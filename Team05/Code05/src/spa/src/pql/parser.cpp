@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include "parser.h"
+#include "pql/parser.h"
 #include "logging.h"
 
 std::string Parser::getParsedText() {

@@ -1,4 +1,4 @@
-#include "pql/test_lexer.h"
+#include "pql/lexer.h"
 #include "catch.hpp"
 
 TEST_CASE("Lexer getTexxt") {
