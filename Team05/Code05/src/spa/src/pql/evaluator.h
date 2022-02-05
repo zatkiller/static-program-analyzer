@@ -25,7 +25,7 @@ enum class PKBType {
 struct PKBField {
     PKBType tag; // const field members?
     bool isConcrete;
-    std::variant<, VAR_NAME, PROC_NAME, CONST> content;
+    std::variant<STMT_LO, VAR_NAME, PROC_NAME, CONST> content;
 
 
 public:
@@ -60,6 +60,10 @@ struct PKBStub {
     static PKBResponse getVariables();
     static PKBResponse getConst();
     static PKBResponse getProcedures();
+};
+
+enum class PKBRelationship {
+    MODIFIES, USES
 };
 
 PKBResponse getall(DesignEntity);

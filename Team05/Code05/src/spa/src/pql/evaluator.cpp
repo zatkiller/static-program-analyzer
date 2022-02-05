@@ -52,6 +52,18 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
             EntRefType entType = modified.getType();
             StmtRefType stmtType = stmt.getType();
 
+            if ((stmt.isWildcard() || stmt.isLineNo()) && (modified.isWildcard() || modified.isVarName())) {
+                //include PKB files
+                STMT_LO stmtLineNo;
+                stmtLineNo.statementNo = stmt.getLineNo();
+                PKBField stmtPKBField = PKBField(PKBType::STATEMENT, false, stmt.isWildcard() ? "_" : stmt.getLineNo());
+                PKBField moidifiedPKBField = PKBField(PKBType::VARIABLE, false, modified.isWildcard() ? "_" : modified.getVariableName());
+                hasRelationships = PKB::isRelationshipPresent(stmtPKBField, modified, PKBRelationship::MODIFIES);
+            } else if (stmt.isDeclaration() && modified.isDeclaration()) {
+
+            } else {
+
+            }
             if (entType == EntRefType::DECLARATION) {
                 //TODO: fill in when creating PKBField
             } else if (entType == EntRefType::VARIABLE_NAME) {
