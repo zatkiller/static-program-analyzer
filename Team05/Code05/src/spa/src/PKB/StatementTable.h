@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdio.h>
-#include <set>
+#include <unordered_set>
 
 #include "PKBField.h"
 #include "StatementRow.h"
@@ -13,5 +13,5 @@ public:
 	int getSize();
 
 private:
-	std::set<StatementRow> rows;
+	std::unordered_set<StatementRow, StatementRowHash> rows;
 };
