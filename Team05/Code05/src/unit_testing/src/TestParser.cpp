@@ -203,7 +203,6 @@ public:
                 make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("y"), make<AST::Const>(2))
                 );
             REQUIRE(*ast == *expected);
-
         }
         SECTION("Parser().parseCondExpr") {
             auto relExpr1 = []() {
@@ -352,7 +351,6 @@ public:
             );
             REQUIRE(*ast == *expected);
         }
-
         SECTION("Parser().parseProcedure") {
             tokens = Lexer(R"(
             procedure main {
@@ -411,8 +409,6 @@ TEST_CASE("Testing Parser") {
     }
 
     SECTION("Complete procedure test") {
-        
-
         std::string fail = R"(procedure a {
             while (c !! b) {
                 read c; 
@@ -518,6 +514,5 @@ BPs82 =  (2) % (263 - 9374) * ((814) + (0 + o9y0Nxi) % A000 - 0 / 035) % (53 - 2
 
 })";
         REQUIRE(Parser().parse(generatedCode2) != nullptr);
-    }
-    
+    }    
 }

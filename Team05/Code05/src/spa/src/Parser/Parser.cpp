@@ -546,8 +546,6 @@ unique_ptr<AST::Statement> Parser::parseIfStmt(deque<Token>& tokens) {
 }
 
 unique_ptr<AST::Procedure> Parser::parseProcedure(deque<Token>& tokens) {
-
-
     Token currToken = getNextToken(tokens);  // consume procedure
     if (currToken.type != TokenType::name || get<string>(currToken.value) != "procedure") {
         Logger(Level::ERROR) << "Procedure expected";

@@ -104,7 +104,7 @@ TEST_CASE("AST Test") {
         REQUIRE(*const1 == *const3);
         REQUIRE_FALSE(*const1 == *const2);
 
-        //BinOp
+        // BinOp
         auto binOp = make<BinExpr>(BinOp::PLUS, make<Const>(1), make<Var>("x"));
         auto binOp1 = make<BinExpr>(BinOp::MINUS, make<Const>(1), make<Var>("x"));
         auto binOp2 = make<BinExpr>(BinOp::PLUS, make<Const>(1), make<Var>("y"));
@@ -134,7 +134,7 @@ TEST_CASE("AST Test") {
         REQUIRE_FALSE(*printStmt == *printStmt1);
         REQUIRE_FALSE(*printStmt == *printStmt2);
 
-        //BinExpr
+        // BinExpr
         auto binExpr = make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Var>("y"));
         auto binExpr1 = make<BinExpr>(BinOp::DIVIDE, make<Var>("x"), make<Var>("y"));
         auto binExpr2 = make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Const>(69));
@@ -144,17 +144,21 @@ TEST_CASE("AST Test") {
         REQUIRE_FALSE(*binExpr == *binExpr1);
         REQUIRE_FALSE(*binExpr == *binExpr2);
 
-        //Assign
-        auto assnStmt = make<Assign>(1, make<Var>("aaa"), make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Var>("y")));
-        auto assnStmt1 = make<Assign>(1, make<Var>("bbb"), make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Const>(69)));
-        auto assnStmt2 = make<Assign>(2, make<Var>("aaa"), make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Var>("y")));
-        auto assnStmt3 = make<Assign>(1, make<Var>("aaa"), make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Var>("y")));
+        // Assign
+        auto assnStmt = make<Assign>(1, 
+            make<Var>("aaa"), make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Var>("y")));
+        auto assnStmt1 = make<Assign>(1, 
+            make<Var>("bbb"), make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Const>(69)));
+        auto assnStmt2 = make<Assign>(2, 
+            make<Var>("aaa"), make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Var>("y")));
+        auto assnStmt3 = make<Assign>(1, 
+            make<Var>("aaa"), make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Var>("y")));
         REQUIRE(*assnStmt == *assnStmt);
         REQUIRE(*assnStmt == *assnStmt3);
         REQUIRE_FALSE(*assnStmt == *assnStmt1);
         REQUIRE_FALSE(*assnStmt == *assnStmt2);
 
-        //StmtLst
+        // StmtLst
         auto stmtLst = makeStmts(
             make<Read>(2, make<Var>("y")),
             make<Print>(3, make<Var>("x")),
@@ -179,7 +183,7 @@ TEST_CASE("AST Test") {
         REQUIRE_FALSE(stmtLst == stmtLst1);
         REQUIRE_FALSE(stmtLst == stmtLst2);
 
-        //RelExpr
+        // RelExpr
         auto relExpr = make<RelExpr>(RelOp::GT, make<Var>("x"), make<Const>(10));
         auto relExpr1 = make<RelExpr>(RelOp::LT, make<Var>("x"), make<Const>(10));
         auto relExpr2 = make<RelExpr>(RelOp::GT, make<Var>("x"), make<Var>("y"));
@@ -190,7 +194,7 @@ TEST_CASE("AST Test") {
         REQUIRE_FALSE(*relExpr == *relExpr2);
 
 
-        //NotCondExpr
+        // NotCondExpr
         auto notCondExpr = std::make_unique<NotCondExpr>(make<RelExpr>(RelOp::GT, make<Var>("x"), make<Const>(10)));
         auto notCondExpr1 = std::make_unique<NotCondExpr>(make<RelExpr>(RelOp::LT, make<Var>("x"), make<Const>(10)));
         auto notCondExpr2 = std::make_unique<NotCondExpr>(make<RelExpr>(RelOp::GT, make<Var>("x"), make<Var>("y")));
@@ -200,7 +204,7 @@ TEST_CASE("AST Test") {
         REQUIRE_FALSE(*notCondExpr == *notCondExpr1);
         REQUIRE_FALSE(*notCondExpr == *notCondExpr2);
 
-        //CondBinExpr
+        // CondBinExpr
         auto condBinExpr = make<CondBinExpr>(CondOp::AND,
             make<RelExpr>(RelOp::GT, make<Var>("x"), make<Const>(10)),
             make<RelExpr>(RelOp::LT, make<Var>("y"), make<Const>(69)));
@@ -232,7 +236,7 @@ TEST_CASE("AST Test") {
             );
         };
 
-        //WhileStmt
+        // WhileStmt
         auto whileStmt1 = make<While>(1, genSampleCondExpr(CondOp::AND), genStmtLst());
         auto whileStmt2 = make<While>(2, genSampleCondExpr(CondOp::AND), genStmtLst());
         auto whileStmt3 = make<While>(1, genSampleCondExpr(CondOp::OR), genStmtLst());
