@@ -250,8 +250,21 @@ unique_ptr<AST::Expr> shuntingYardParser(deque<Token>& tokens) {
                 break;
             }
 
-            // If the symbol is of high precedence, we push it onto the stack first.
-            if (symbol == '*' || symbol == '/' || symbol == '%' || symbol == '(') {
+            // If the symbol is (, we push it onto stack and continue
+            if (symbol == '(') {
+                operators.push(symbol);
+                tokens.pop_front();
+            // If it's operators, we resolve what we can
+            } else if (symbol == '*' || symbol == '/' || symbol == '%') {
+                while (!operators.empty()) {
+                    char top = operators.top();
+                    if (top == '(' || binOpPrecedence[top] < binOpPrecedence[symbol]) {
+                        break;
+                    }
+
+                    // Pop 2 from operands, make BinExpr with symbol.
+                    popAndPush();
+                }
                 operators.push(symbol);
                 tokens.pop_front();
             } else if (symbol == '+' || symbol == '-') {

@@ -11,16 +11,17 @@
 TEST_CASE("Testing Parser") {
     SECTION("Unit testing") {
         std::deque<Token> tokens;
+        using AST::make;
         SECTION("parseConstExpr") {
             tokens = std::deque<Token>({ Token{TokenType::number, 5} });
             auto ast = parseConstExpr(tokens);
-            auto expected = AST::make<AST::Const>(5);
+            auto expected = make<AST::Const>(5);
             REQUIRE(*ast == *expected);
         }  // Const
         SECTION("parseVariableExpr") {
             tokens = std::deque<Token>({ Token{TokenType::name, "Variable11"} });
             auto ast = parseVariableExpr(tokens);
-            auto expected = AST::make<AST::Var>("Variable11");
+            auto expected = make<AST::Var>("Variable11");
             REQUIRE(*ast == *expected);
         };
         SECTION("parseRelOp") {
@@ -111,8 +112,59 @@ TEST_CASE("Testing Parser") {
                 Token{TokenType::special, '|'}
             });
             REQUIRE(parseCondOp(tokens) == AST::CondOp::OR);
+        }  // CondOp
+        SECTION("parseBinOp") {
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '+'}
+            });
+            REQUIRE(parseBinOp(tokens) == AST::BinOp::PLUS);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '-'}
+            });
+            REQUIRE(parseBinOp(tokens) == AST::BinOp::MINUS);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '/'}
+            });
+            REQUIRE(parseBinOp(tokens) == AST::BinOp::DIVIDE);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '*'}
+            });
+            REQUIRE(parseBinOp(tokens) == AST::BinOp::MULT);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '%'}
+            });
+            REQUIRE(parseBinOp(tokens) == AST::BinOp::MOD);
         }
-        
+        SECTION("shuntingYardParser") {
+            tokens = Lexer("4+x*2/(1-y)-6%8;").getTokens();
+            auto ast = shuntingYardParser(tokens);
+            auto expected = make<AST::BinExpr>(
+                AST::BinOp::MINUS,
+                make<AST::BinExpr>(
+                    AST::BinOp::PLUS,
+                    make<AST::Const>(4),
+                    make<AST::BinExpr>(
+                        AST::BinOp::DIVIDE,
+                        make<AST::BinExpr>(
+                            AST::BinOp::MULT,
+                            make<AST::Var>("x"),
+                            make<AST::Const>(2)
+                        ),
+                        make<AST::BinExpr>(
+                            AST::BinOp::MINUS,
+                            make<AST::Const>(1),
+                            make<AST::Var>("y")
+                        )
+                    )
+                ),
+                make<AST::BinExpr>(
+                    AST::BinOp::MOD,
+                    make<AST::Const>(6),
+                    make<AST::Const>(8)
+                )
+            );
+            REQUIRE(*ast == *expected);            
+        }
     }
 
     SECTION("Complete procedure test") {
