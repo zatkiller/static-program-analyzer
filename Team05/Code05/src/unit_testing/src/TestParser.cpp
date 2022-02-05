@@ -12,16 +12,17 @@ public:
     void test() {
         std::deque<Token> tokens;
         using AST::make;
+        std::unique_ptr<AST::ASTNode> ast, expected;
         SECTION("Parser().parseConstExpr") {
             tokens = std::deque<Token>({ Token{TokenType::number, 5} });
-            auto ast = Parser().parseConstExpr(tokens);
-            auto expected = make<AST::Const>(5);
+            ast = Parser().parseConstExpr(tokens);
+            expected = make<AST::Const>(5);
             REQUIRE(*ast == *expected);
         }  // Const
         SECTION("Parser().parseVariableExpr") {
             tokens = std::deque<Token>({ Token{TokenType::name, "Variable11"} });
-            auto ast = Parser().parseVariableExpr(tokens);
-            auto expected = make<AST::Var>("Variable11");
+            ast = Parser().parseVariableExpr(tokens);
+            expected = make<AST::Var>("Variable11");
             REQUIRE(*ast == *expected);
         };
         SECTION("Parser().parseRelOp") {
@@ -136,8 +137,8 @@ public:
         }
         SECTION("Parser().shuntingYardParser") {
             tokens = Lexer("4+x*2/(1-y)-6%8;").getTokens();
-            auto ast = Parser().shuntingYardParser(tokens);
-            auto expected = make<AST::BinExpr>(
+            ast = Parser().shuntingYardParser(tokens);
+            expected = make<AST::BinExpr>(
                 AST::BinOp::MINUS,
                 make<AST::BinExpr>(
                     AST::BinOp::PLUS,
@@ -177,8 +178,8 @@ public:
         }
         SECTION("Parser().parseRelExpr") {
             tokens = Lexer("1 > 2)").getTokens();
-            auto ast = Parser().parseRelExpr(tokens);
-            auto expected = make<AST::RelExpr>(
+            ast = Parser().parseRelExpr(tokens);
+            expected = make<AST::RelExpr>(
                 AST::RelOp::GT,
                 make<AST::Const>(1),
                 make<AST::Const>(2)
@@ -243,6 +244,162 @@ public:
             expected = std::make_unique<AST::NotCondExpr>(
                 relExpr1()
                 );
+            REQUIRE(*ast == *expected);
+        }
+        SECTION("Parser().parseReadStmt") {
+            tokens = Lexer("read v1;").getTokens();
+            ast = Parser().parseReadStmt(tokens);
+            expected = make<AST::Read>(1, make<AST::Var>("v1"));
+            REQUIRE(*ast == *expected);
+
+            tokens = Lexer("read 1v;").getTokens();
+            REQUIRE_THROWS(Parser().parseReadStmt(tokens));
+        }
+        SECTION("Parser().parsePrintStmt") {
+            tokens = Lexer("print v1;").getTokens();
+            ast = Parser().parsePrintStmt(tokens);
+            expected = make<AST::Print>(1, make<AST::Var>("v1"));
+            REQUIRE(*ast == *expected);
+
+            tokens = Lexer("read 1v;").getTokens();
+            REQUIRE_THROWS(Parser().parsePrintStmt(tokens));
+        }
+        SECTION("Parser().parseAssignStmt") {
+            tokens = Lexer("x = y;").getTokens();
+            ast = Parser().parseAssignStmt(tokens);
+            expected = make<AST::Assign>(
+                1,
+                make<AST::Var>("x"),
+                make<AST::Var>("y")
+            );
+            REQUIRE(*ast == *expected);
+
+            tokens = Lexer("x = y + 1;").getTokens();
+            ast = Parser().parseAssignStmt(tokens);
+            expected = make<AST::Assign>(
+                1,
+                make<AST::Var>("x"),
+                make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("y"), make<AST::Const>(1))
+            );
+            REQUIRE(*ast == *expected);
+
+            tokens = Lexer("2 = y + 1;").getTokens();
+            REQUIRE_THROWS(Parser().parseAssignStmt(tokens));
+        }
+        SECTION("Parser().parseStmtLst") {
+            tokens = Lexer(R"(
+                read v1;
+                print v1;
+                v2 = v1;
+            )").getTokens();
+
+            auto stmtlst = Parser().parseStmtLst(tokens);
+            auto expectedStmtlst = AST::makeStmts(
+                make<AST::Read>(1, make<AST::Var>("v1")),
+                make<AST::Print>(2, make<AST::Var>("v1")),
+                make<AST::Assign>(3, make<AST::Var>("v2"), make<AST::Var>("v1"))
+            );
+            REQUIRE(stmtlst == expectedStmtlst);
+        }
+        SECTION("Parser().parseWhileStmt") {
+            tokens = Lexer(R"(
+            while (x < 10) {
+                read v1;
+                print v1;
+                v2 = v1;
+            }
+            )").getTokens();
+
+            ast = Parser().parseWhileStmt(tokens);
+            auto genStmtlst = []() {
+                return AST::makeStmts(
+                    make<AST::Read>(2, make<AST::Var>("v1")),
+                    make<AST::Print>(3, make<AST::Var>("v1")),
+                    make<AST::Assign>(4, make<AST::Var>("v2"), make<AST::Var>("v1"))
+                );
+            };
+            expected = make<AST::While>(1,
+                make<AST::RelExpr>(AST::RelOp::LT, make<AST::Var>("x"), make <AST::Const>(10)),
+                genStmtlst()
+            );
+
+            REQUIRE(*ast == *expected);
+        }
+        SECTION("Parser().parseIfStmt") {
+            tokens = Lexer(R"(
+            if (x < 10) then {
+                read v1;
+                print v1;
+                v2 = v1;
+            } else {
+                read v1;
+                print v1;
+                v2 = v1;
+            }
+            )").getTokens();
+            ast = Parser().parseIfStmt(tokens);
+            auto genStmtlst = [](int i) {
+                return AST::makeStmts(
+                    make<AST::Read>(i+1, make<AST::Var>("v1")),
+                    make<AST::Print>(i+2, make<AST::Var>("v1")),
+                    make<AST::Assign>(i+3, make<AST::Var>("v2"), make<AST::Var>("v1"))
+                );
+            };
+            expected = make<AST::If>(1,
+                make<AST::RelExpr>(AST::RelOp::LT, make<AST::Var>("x"), make <AST::Const>(10)),
+                genStmtlst(1),
+                genStmtlst(4)
+            );
+            REQUIRE(*ast == *expected);
+        }
+
+        SECTION("Parser().parseProcedure") {
+            tokens = Lexer(R"(
+            procedure main {
+                read v1;
+                print v1;
+                v2 = v1;
+            }
+            )").getTokens();
+
+            ast = Parser().parseProcedure(tokens);
+            auto genStmtlst = []() {
+                return AST::makeStmts(
+                    make<AST::Read>(1, make<AST::Var>("v1")),
+                    make<AST::Print>(2, make<AST::Var>("v1")),
+                    make<AST::Assign>(3, make<AST::Var>("v2"), make<AST::Var>("v1"))
+                );
+            };
+            expected = make<AST::Procedure>(
+                "main",
+                genStmtlst()
+            );
+
+            REQUIRE(*ast == *expected);
+        }
+        SECTION("Parser().parseProgram") {
+            tokens = Lexer(R"(
+            procedure main {
+                read v1;
+                print v1;
+                v2 = v1;
+            }
+            )").getTokens();
+
+            ast = Parser().parseProgram(tokens);
+
+            auto genStmtlst = []() {
+                return AST::makeStmts(
+                    make<AST::Read>(1, make<AST::Var>("v1")),
+                    make<AST::Print>(2, make<AST::Var>("v1")),
+                    make<AST::Assign>(3, make<AST::Var>("v2"), make<AST::Var>("v1"))
+                );
+            };
+            expected = std::make_unique<AST::Program>(make<AST::Procedure>(
+                "main",
+                genStmtlst()
+            ));
+
             REQUIRE(*ast == *expected);
         }
     }

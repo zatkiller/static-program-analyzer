@@ -18,11 +18,11 @@ private:
     AST::RelOp parseRelOp(std::deque<Token>& tokens);
     AST::CondOp parseCondOp(std::deque<Token>& tokens);
     AST::BinOp parseBinOp(std::deque<Token>& tokens);
-    AST::StmtLst Parser::parseStmtLst(std::deque<Token>& tokens);
     std::unique_ptr<AST::Expr> shuntingYardParser(std::deque<Token>& tokens);
     std::unique_ptr<AST::CondExpr> parseRelExpr(std::deque<Token>& tokens);
     std::unique_ptr<AST::CondExpr> parseCondExpr(std::deque<Token>& tokens);
     std::unique_ptr<AST::Expr> Parser::parseExpr(std::deque<Token>& tokens);
+    AST::StmtLst Parser::parseStmtLst(std::deque<Token>& tokens);
     std::unique_ptr<AST::Statement> parseReadStmt(std::deque<Token>& tokens);
     std::unique_ptr<AST::Statement> Parser::parsePrintStmt(std::deque<Token>& tokens);
     std::unique_ptr<AST::Statement> Parser::parseAssignStmt(std::deque<Token>& tokens);

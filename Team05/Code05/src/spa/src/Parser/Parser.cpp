@@ -414,8 +414,10 @@ AST::StmtLst Parser::parseStmtLst(deque<Token>& tokens) {
         } else {
             list.push_back(move(parseAssignStmt(tokens)));
         }
-    } while (tokens.front().type != TokenType::special ||
-        get<char>(tokens.front().value) != '}');
+    } while (
+        (tokens.front().type != TokenType::special ||
+        get<char>(tokens.front().value) != '}') &&
+        tokens.front().type != TokenType::eof);
     return AST::StmtLst(list);
 }
 
@@ -540,7 +542,15 @@ unique_ptr<AST::Statement> Parser::parseIfStmt(deque<Token>& tokens) {
 }
 
 unique_ptr<AST::Procedure> Parser::parseProcedure(deque<Token>& tokens) {
-    Token currToken = getNextToken(tokens);  // consume name
+
+
+    Token currToken = getNextToken(tokens);  // consume procedure
+    if (currToken.type != TokenType::name || get<string>(currToken.value) != "procedure") {
+        Logger(Level::ERROR) << "Procedure expected";
+        throw invalid_argument("Procedure expected!");
+    }
+
+    currToken = getNextToken(tokens);  // consume name
     if (currToken.type != TokenType::name) {
         Logger(Level::ERROR) << "Name expected";
         throw invalid_argument("Name expected!");
@@ -553,7 +563,7 @@ unique_ptr<AST::Procedure> Parser::parseProcedure(deque<Token>& tokens) {
 }
 
 unique_ptr<AST::Program> Parser::parseProgram(deque<Token>& tokens) {
-    Token currToken = getNextToken(tokens);  // consume "procedure"
+    Token currToken = tokens.front();
     if (get<string>(currToken.value) != "procedure") {
         Logger(Level::ERROR) << "Procedure expected";
         throw invalid_argument("Procedure expected!");
