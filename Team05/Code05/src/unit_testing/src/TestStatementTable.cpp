@@ -11,22 +11,22 @@
  */
 TEST_CASE("StatementTable testing") {
     StatementTable table{};
-    PKBField test1{ PKBType::STATEMENT, true, Content{STMT_LO{1, StatementType::Assignment}} };
-    PKBField test2{ PKBType::STATEMENT, true, Content{STMT_LO{2, StatementType::Assignment}} };
-    PKBField test3{ PKBType::STATEMENT, true, Content{STMT_LO{1, StatementType::While}} };
-    PKBField test4{ PKBType::STATEMENT, true, Content{STMT_LO{2, StatementType::While}} };
-    
-    TEST_LOG << "Test empty StatementTable#contains";
-    REQUIRE_FALSE(table.contains(test1));
+
+    StatementType type1 = StatementType::Assignment;
+    StatementType type2 = StatementType::While; 
+    int statementNumber1 = 1;
+    int statementNumber2 = 2;
+  
+    REQUIRE_FALSE(table.contains(type1, statementNumber1));
 
     TEST_LOG << "Test duplicate StatementTable#insert";
-    table.insert(test1);
-    table.insert(test1);
+    table.insert(type1, statementNumber1);
+    table.insert(type1, statementNumber1);
     REQUIRE(table.getSize() == 1);
 
     TEST_LOG << "Test non-empty StatementTable#contains";
-    REQUIRE(table.contains(test1));
-    REQUIRE_FALSE(table.contains(test2));
-    REQUIRE_FALSE(table.contains(test3));
-    REQUIRE_FALSE(table.contains(test4));
+    REQUIRE(table.contains(type1, statementNumber1));
+    REQUIRE_FALSE(table.contains(type2, statementNumber2));
+    REQUIRE_FALSE(table.contains(type1, statementNumber2));
+    REQUIRE_FALSE(table.contains(type2, statementNumber2));
 }
