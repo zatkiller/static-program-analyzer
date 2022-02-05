@@ -25,14 +25,6 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-int lineCount = 1;
-AST::StmtLst parseStmtLst(deque<Token>& tokens);
-unique_ptr<AST::Statement> parseWhileStmt(deque<Token>& tokens);
-unique_ptr<AST::Statement> parseIfStmt(deque<Token>& tokens);
-unique_ptr<AST::Statement> parseReadStmt(deque<Token>& tokens);
-unique_ptr<AST::Statement> parsePrintStmt(deque<Token>& tokens);
-unique_ptr<AST::Statement> parseAssignStmt(deque<Token>& tokens);
-
 void throwUnexpectedToken(char c) {
     std::ostringstream oss;
     oss << "'" << c << "'" << " Expected";
@@ -49,7 +41,7 @@ Token getNextToken(deque<Token>& tokens) {
 /**
  * Parses constants
  */
-unique_ptr<AST::Expr> parseConstExpr(deque<Token>& tokens) {
+unique_ptr<AST::Expr> Parser::parseConstExpr(deque<Token>& tokens) {
     Token currToken = getNextToken(tokens);  // consume token
     return make_unique<AST::Const>(get<int>(currToken.value));
 }
@@ -57,12 +49,12 @@ unique_ptr<AST::Expr> parseConstExpr(deque<Token>& tokens) {
 /**
  * Parses variable names
  */
-unique_ptr<AST::Expr> parseVariableExpr(deque<Token>& tokens) {
+unique_ptr<AST::Expr> Parser::parseVariableExpr(deque<Token>& tokens) {
     Token currToken = getNextToken(tokens);  // consume token
     return make_unique<AST::Var>(get<string>(currToken.value));
 }
 
-AST::RelOp parseRelOp(deque<Token>& tokens) {
+AST::RelOp Parser::parseRelOp(deque<Token>& tokens) {
     Token relOpToken = getNextToken(tokens);
     char* relOp = get_if<char>(&relOpToken.value);
     if (!relOp) {
@@ -120,7 +112,7 @@ AST::RelOp parseRelOp(deque<Token>& tokens) {
     }
 }
 
-AST::CondOp parseCondOp(deque<Token>& tokens) {
+AST::CondOp Parser::parseCondOp(deque<Token>& tokens) {
     // either "&&" or "||"
     Token condOpToken = getNextToken(tokens);
     if (condOpToken.type != TokenType::special) {
@@ -158,7 +150,7 @@ AST::CondOp parseCondOp(deque<Token>& tokens) {
     }
 }
 
-AST::BinOp parseBinOp(deque<Token>& tokens) {
+AST::BinOp Parser::parseBinOp(deque<Token>& tokens) {
     Token currToken = getNextToken(tokens);
     char* binOp = get_if<char>(&currToken.value);
     if (!binOp) {
@@ -201,7 +193,7 @@ AST::BinOp charToBinOp(char c) {
     }
 }
 
-unique_ptr<AST::Expr> shuntingYardParser(deque<Token>& tokens) {
+unique_ptr<AST::Expr> Parser::shuntingYardParser(deque<Token>& tokens) {
     // converting from infix to postfix expr
     std::map<char, string> binOpPrecedence;
     binOpPrecedence['+'] = 10;
@@ -314,12 +306,12 @@ unique_ptr<AST::Expr> shuntingYardParser(deque<Token>& tokens) {
     return move(operands.top());
 }
 
-unique_ptr<AST::Expr> parseExpr(deque<Token>& tokens) {
+unique_ptr<AST::Expr> Parser::parseExpr(deque<Token>& tokens) {
     // can be a name | const | binExpr | '(' expr ')'
     return shuntingYardParser(tokens);
 }
 
-unique_ptr<AST::CondExpr> parseRelExpr(deque<Token>& tokens) {
+unique_ptr<AST::CondExpr> Parser::parseRelExpr(deque<Token>& tokens) {
     auto lhsExpr = parseExpr(tokens);
     // the symbols '>', '>=', '<', '<=', '==', '!='
     auto relOp = parseRelOp(tokens);
@@ -357,7 +349,7 @@ bool isCondExpr(deque<Token>& tokens) {
     return false;
 }
 
-unique_ptr<AST::CondExpr> parseCondExpr(deque<Token>& tokens) {
+unique_ptr<AST::CondExpr> Parser::parseCondExpr(deque<Token>& tokens) {
     // Token currToken = getNextToken(tokens);
     Token currToken = tokens.front();
     unique_ptr<AST::CondExpr> condExprResult;
@@ -402,7 +394,7 @@ unique_ptr<AST::CondExpr> parseCondExpr(deque<Token>& tokens) {
     return make_unique<AST::CondBinExpr>(condOp, move(condExprResult), move(rhsCondExprResult));
 }
 
-AST::StmtLst parseStmtLst(deque<Token>& tokens) {
+AST::StmtLst Parser::parseStmtLst(deque<Token>& tokens) {
     vector<unique_ptr<AST::Statement>> list;
     do {
         Token currToken = tokens.front();
@@ -427,7 +419,7 @@ AST::StmtLst parseStmtLst(deque<Token>& tokens) {
     return AST::StmtLst(list);
 }
 
-unique_ptr<AST::Statement> parseReadStmt(deque<Token>& tokens) {
+unique_ptr<AST::Statement> Parser::parseReadStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
     Token id = getNextToken(tokens);
     if (id.type != TokenType::name || get<string>(id.value) != "read") {
@@ -446,7 +438,7 @@ unique_ptr<AST::Statement> parseReadStmt(deque<Token>& tokens) {
     return make_unique<AST::Read>(lineNo, move(var));
 }
 
-unique_ptr<AST::Statement> parsePrintStmt(deque<Token>& tokens) {
+unique_ptr<AST::Statement> Parser::parsePrintStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
     Token id = getNextToken(tokens);
     if (id.type != TokenType::name || get<string>(id.value) != "print") {
@@ -465,7 +457,7 @@ unique_ptr<AST::Statement> parsePrintStmt(deque<Token>& tokens) {
     return make_unique<AST::Print>(lineNo, move(var));
 }
 
-unique_ptr<AST::Statement> parseAssignStmt(deque<Token>& tokens) {
+unique_ptr<AST::Statement> Parser::parseAssignStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
 
     Token varToken = getNextToken(tokens);
@@ -487,7 +479,7 @@ unique_ptr<AST::Statement> parseAssignStmt(deque<Token>& tokens) {
     return make_unique<AST::Assign>(lineNo, move(var), move(rhsExpr));
 }
 
-unique_ptr<AST::Statement> parseWhileStmt(deque<Token>& tokens) {
+unique_ptr<AST::Statement> Parser::parseWhileStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
 
     Token id = getNextToken(tokens);
@@ -507,7 +499,7 @@ unique_ptr<AST::Statement> parseWhileStmt(deque<Token>& tokens) {
         );
 }
 
-unique_ptr<AST::Statement> parseIfStmt(deque<Token>& tokens) {
+unique_ptr<AST::Statement> Parser::parseIfStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
 
     Token id = getNextToken(tokens);
@@ -547,7 +539,7 @@ unique_ptr<AST::Statement> parseIfStmt(deque<Token>& tokens) {
         );
 }
 
-unique_ptr<AST::Procedure> parseProcedure(deque<Token>& tokens) {
+unique_ptr<AST::Procedure> Parser::parseProcedure(deque<Token>& tokens) {
     Token currToken = getNextToken(tokens);  // consume name
     if (currToken.type != TokenType::name) {
         Logger(Level::ERROR) << "Name expected";
@@ -560,7 +552,7 @@ unique_ptr<AST::Procedure> parseProcedure(deque<Token>& tokens) {
     return make_unique<AST::Procedure>(move(procName), move(stmtLst));
 }
 
-unique_ptr<AST::Program> parseProgram(deque<Token>& tokens) {
+unique_ptr<AST::Program> Parser::parseProgram(deque<Token>& tokens) {
     Token currToken = getNextToken(tokens);  // consume "procedure"
     if (get<string>(currToken.value) != "procedure") {
         Logger(Level::ERROR) << "Procedure expected";

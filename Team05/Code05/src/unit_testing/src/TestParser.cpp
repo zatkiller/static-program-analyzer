@@ -1,142 +1,142 @@
 
 #include <iostream>
 
-#define UNIT_TEST
-
 #include "catch.hpp"
 #include "Parser/AST.h"
 #include "Parser/Lexer.h"
 #include "Parser/Parser.h"
 
-TEST_CASE("Testing Parser") {
-    SECTION("Unit testing") {
+
+class ParserUnitTest {
+public:
+    void test() {
         std::deque<Token> tokens;
         using AST::make;
-        SECTION("parseConstExpr") {
+        SECTION("Parser().parseConstExpr") {
             tokens = std::deque<Token>({ Token{TokenType::number, 5} });
-            auto ast = parseConstExpr(tokens);
+            auto ast = Parser().parseConstExpr(tokens);
             auto expected = make<AST::Const>(5);
             REQUIRE(*ast == *expected);
         }  // Const
-        SECTION("parseVariableExpr") {
+        SECTION("Parser().parseVariableExpr") {
             tokens = std::deque<Token>({ Token{TokenType::name, "Variable11"} });
-            auto ast = parseVariableExpr(tokens);
+            auto ast = Parser().parseVariableExpr(tokens);
             auto expected = make<AST::Var>("Variable11");
             REQUIRE(*ast == *expected);
         };
-        SECTION("parseRelOp") {
-            tokens = std::deque<Token> ({ 
+        SECTION("Parser().parseRelOp") {
+            tokens = std::deque<Token>({
                 Token{TokenType::special, '='},
-                Token{TokenType::special, '>'} 
-            });
-            REQUIRE_THROWS(parseRelOp(tokens));
-            tokens = std::deque<Token> ({
+                Token{TokenType::special, '>'}
+                });
+            REQUIRE_THROWS(Parser().parseRelOp(tokens));
+            tokens = std::deque<Token>({
                 Token{TokenType::special, '='},
                 Token{TokenType::special, '!'}
-            });
-            REQUIRE_THROWS(parseRelOp(tokens));
-            tokens = std::deque<Token> ({
+                });
+            REQUIRE_THROWS(Parser().parseRelOp(tokens));
+            tokens = std::deque<Token>({
                 Token{TokenType::special, '!'},
                 Token{TokenType::number, 1}
-            });
-            REQUIRE_THROWS(parseRelOp(tokens));
-            tokens = std::deque<Token> ({
+                });
+            REQUIRE_THROWS(Parser().parseRelOp(tokens));
+            tokens = std::deque<Token>({
                 Token{TokenType::special, '='},
                 Token{TokenType::number, 1}
-            });
-            REQUIRE_THROWS(parseRelOp(tokens));
+                });
+            REQUIRE_THROWS(Parser().parseRelOp(tokens));
 
 
             tokens = std::deque<Token>({
                 Token{TokenType::special, '>'},
                 Token{TokenType::special, '='}
-            });
-            REQUIRE(parseRelOp(tokens) == AST::RelOp::GTE);
+                });
+            REQUIRE(Parser().parseRelOp(tokens) == AST::RelOp::GTE);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '!'},
                 Token{TokenType::special, '='}
-            });
-            REQUIRE(parseRelOp(tokens) == AST::RelOp::NE);
+                });
+            REQUIRE(Parser().parseRelOp(tokens) == AST::RelOp::NE);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '<'},
                 Token{TokenType::special, '='}
-            });
-            REQUIRE(parseRelOp(tokens) == AST::RelOp::LTE);
+                });
+            REQUIRE(Parser().parseRelOp(tokens) == AST::RelOp::LTE);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '='},
                 Token{TokenType::special, '='}
-            });
-            REQUIRE(parseRelOp(tokens) == AST::RelOp::EQ);
+                });
+            REQUIRE(Parser().parseRelOp(tokens) == AST::RelOp::EQ);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '>'},
                 Token{TokenType::number, 1}
-            });
-            REQUIRE(parseRelOp(tokens) == AST::RelOp::GT);
+                });
+            REQUIRE(Parser().parseRelOp(tokens) == AST::RelOp::GT);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '<'},
                 Token{TokenType::number, 1}
-            });
-            REQUIRE(parseRelOp(tokens) == AST::RelOp::LT);
+                });
+            REQUIRE(Parser().parseRelOp(tokens) == AST::RelOp::LT);
         }  // RelOp
-        SECTION("parseCondOp") {
+        SECTION("Parser().parseCondOp") {
             tokens = std::deque<Token>({
                 Token{TokenType::special, '&'},
                 Token{TokenType::special, '|'}
-            });
-            REQUIRE_THROWS(parseCondOp(tokens));
+                });
+            REQUIRE_THROWS(Parser().parseCondOp(tokens));
             tokens = std::deque<Token>({
                 Token{TokenType::special, '|'},
                 Token{TokenType::special, '&'}
-            });
-            REQUIRE_THROWS(parseCondOp(tokens));
+                });
+            REQUIRE_THROWS(Parser().parseCondOp(tokens));
             tokens = std::deque<Token>({
                 Token{TokenType::special, '&'},
                 Token{TokenType::special, '!'}
-            });
-            REQUIRE_THROWS(parseCondOp(tokens));
+                });
+            REQUIRE_THROWS(Parser().parseCondOp(tokens));
             tokens = std::deque<Token>({
                 Token{TokenType::special, '|'},
                 Token{TokenType::special, '!'}
-            });
-            REQUIRE_THROWS(parseCondOp(tokens));
+                });
+            REQUIRE_THROWS(Parser().parseCondOp(tokens));
 
 
             tokens = std::deque<Token>({
                 Token{TokenType::special, '&'},
                 Token{TokenType::special, '&'}
-            });
-            REQUIRE(parseCondOp(tokens) == AST::CondOp::AND);
+                });
+            REQUIRE(Parser().parseCondOp(tokens) == AST::CondOp::AND);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '|'},
                 Token{TokenType::special, '|'}
-            });
-            REQUIRE(parseCondOp(tokens) == AST::CondOp::OR);
+                });
+            REQUIRE(Parser().parseCondOp(tokens) == AST::CondOp::OR);
         }  // CondOp
-        SECTION("parseBinOp") {
+        SECTION("Parser().parseBinOp") {
             tokens = std::deque<Token>({
                 Token{TokenType::special, '+'}
-            });
-            REQUIRE(parseBinOp(tokens) == AST::BinOp::PLUS);
+                });
+            REQUIRE(Parser().parseBinOp(tokens) == AST::BinOp::PLUS);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '-'}
-            });
-            REQUIRE(parseBinOp(tokens) == AST::BinOp::MINUS);
+                });
+            REQUIRE(Parser().parseBinOp(tokens) == AST::BinOp::MINUS);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '/'}
-            });
-            REQUIRE(parseBinOp(tokens) == AST::BinOp::DIVIDE);
+                });
+            REQUIRE(Parser().parseBinOp(tokens) == AST::BinOp::DIVIDE);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '*'}
-            });
-            REQUIRE(parseBinOp(tokens) == AST::BinOp::MULT);
+                });
+            REQUIRE(Parser().parseBinOp(tokens) == AST::BinOp::MULT);
             tokens = std::deque<Token>({
                 Token{TokenType::special, '%'}
-            });
-            REQUIRE(parseBinOp(tokens) == AST::BinOp::MOD);
+                });
+            REQUIRE(Parser().parseBinOp(tokens) == AST::BinOp::MOD);
         }
-        SECTION("shuntingYardParser") {
+        SECTION("Parser().shuntingYardParser") {
             tokens = Lexer("4+x*2/(1-y)-6%8;").getTokens();
-            auto ast = shuntingYardParser(tokens);
+            auto ast = Parser().shuntingYardParser(tokens);
             auto expected = make<AST::BinExpr>(
                 AST::BinOp::MINUS,
                 make<AST::BinExpr>(
@@ -148,69 +148,69 @@ TEST_CASE("Testing Parser") {
                             AST::BinOp::MULT,
                             make<AST::Var>("x"),
                             make<AST::Const>(2)
-                        ),
+                            ),
                         make<AST::BinExpr>(
                             AST::BinOp::MINUS,
                             make<AST::Const>(1),
                             make<AST::Var>("y")
+                            )
                         )
-                    )
-                ),
+                    ),
                 make<AST::BinExpr>(
                     AST::BinOp::MOD,
                     make<AST::Const>(6),
                     make<AST::Const>(8)
-                )
-            );
+                    )
+                );
             REQUIRE(*ast == *expected);
 
 
             // Left associativity test
             tokens = Lexer("4+3+2;").getTokens();
-            auto ast1 = shuntingYardParser(tokens);
+            auto ast1 = Parser().shuntingYardParser(tokens);
             tokens = Lexer("(4+3)+2;").getTokens();
-            auto ast2 = shuntingYardParser(tokens);
+            auto ast2 = Parser().shuntingYardParser(tokens);
             tokens = Lexer("4+(3+2);").getTokens();
-            auto ast3 = shuntingYardParser(tokens);
+            auto ast3 = Parser().shuntingYardParser(tokens);
             REQUIRE(*ast1 == *ast2);
             REQUIRE(!(*ast1 == *ast3));
         }
-        SECTION("parseRelExpr") {
+        SECTION("Parser().parseRelExpr") {
             tokens = Lexer("1 > 2)").getTokens();
-            auto ast = parseRelExpr(tokens);
+            auto ast = Parser().parseRelExpr(tokens);
             auto expected = make<AST::RelExpr>(
                 AST::RelOp::GT,
                 make<AST::Const>(1),
                 make<AST::Const>(2)
-            );
+                );
             REQUIRE(*ast == *expected);
 
             tokens = Lexer("x > y)").getTokens();
-            ast = parseRelExpr(tokens);
+            ast = Parser().parseRelExpr(tokens);
             expected = make<AST::RelExpr>(
                 AST::RelOp::GT,
                 make<AST::Var>("x"),
                 make<AST::Var>("y")
-            );
+                );
             REQUIRE(*ast == *expected);
 
             tokens = Lexer("(x+1) > (y+2))").getTokens();
-            ast = parseRelExpr(tokens);
+            ast = Parser().parseRelExpr(tokens);
             expected = make<AST::RelExpr>(
                 AST::RelOp::GT,
                 make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("x"), make<AST::Const>(1)),
                 make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("y"), make<AST::Const>(2))
-            );
+                );
             REQUIRE(*ast == *expected);
 
         }
-        SECTION("parseCondExpr") {
+        SECTION("Parser().parseCondExpr") {
             auto relExpr1 = []() {
                 return make<AST::RelExpr>(
                     AST::RelOp::GT,
                     make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("x"), make<AST::Const>(1)),
                     make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("y"), make<AST::Const>(2))
-                );
+                    );
             };
             auto relExpr2 = []() {
                 return make<AST::RelExpr>(
@@ -219,34 +219,38 @@ TEST_CASE("Testing Parser") {
                     make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("t"), make<AST::Const>(2))
                     );
             };
-            
+
             tokens = Lexer("((x+1)>(y+2))&&((z+1)>(t+2)))").getTokens();
-            std::unique_ptr<AST::CondExpr> ast = parseCondExpr(tokens);
+            std::unique_ptr<AST::CondExpr> ast = Parser().parseCondExpr(tokens);
             std::unique_ptr<AST::CondExpr> expected = make<AST::CondBinExpr>(
                 AST::CondOp::AND,
                 relExpr1(),
                 relExpr2()
-            );
+                );
             REQUIRE(*ast == *expected);
 
             tokens = Lexer("((x+1)>(y+2))||((z+1)>(t+2)))").getTokens();
-            ast = parseCondExpr(tokens);
+            ast = Parser().parseCondExpr(tokens);
             expected = make<AST::CondBinExpr>(
                 AST::CondOp::OR,
                 relExpr1(),
                 relExpr2()
-            );
+                );
             REQUIRE(*ast == *expected);
 
             tokens = Lexer("!((x+1)>(y+2)))").getTokens();
-            ast = parseCondExpr(tokens);
+            ast = Parser().parseCondExpr(tokens);
             expected = std::make_unique<AST::NotCondExpr>(
                 relExpr1()
-            );
+                );
             REQUIRE(*ast == *expected);
         }
+    }
+};
 
-
+TEST_CASE("Testing Parser") {
+    SECTION("Unit testing") {
+        ParserUnitTest().test();
     }
 
     SECTION("Complete procedure test") {
