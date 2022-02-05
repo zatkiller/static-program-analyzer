@@ -3,44 +3,38 @@
 
 #define DEBUG Logger(Level::DEBUG) << "evaluator.cpp "
 
-std::string PKBField::to_string() {
-    if(tag == PKBType::STMT_LO) {
-        return std::to_string(stmtLo);
-    } else if (tag == PKBType::VAR_NAME) {
-        return vName;
-    } else if (tag == PKBType::PROC_NAME) {
-        return pName;
-    } else {
-        return std::to_string(cName);
+std::string PKBFieldToString(PKBField pkbField) {
+    if(pkbField.tag == PKBType::STATEMENT || pkbField.tag == PKBType::CONST) {
+        return std::to_string(pkbField.content);
+    } else if (pkbField.tag == PKBType::VARIABLE || pkbField.tag == PKBType::PROCEDURE) {
+        return pkbField.content;
     }
 }
 
-std::vector<PKBField> PKBStub::getAll(DesignEntity type) {
-    std::vector<PKBField> result;
-    if(type == DesignEntity::PROCEDURE) {
+std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
+        {DesignEntity::STMT, StatementType::Statment},
+        {DesignEntity::ASSIGN, StatementType::Assignment},
+        {DesignEntity::WHILE, StatementType::While},
+        {DesignEntity::IF, StatementType::If},
+        {DesignEntity::READ, StatementType::Read},
+        {DesignEntity::PRINT, StatementType::Print},
+        {DesignEntity::CALL, StatementType::Call}
+};
 
-    } else if (type == DesignEntity:: VARIABLE) {
-        std::set<std::string> varlist = {"a", "x", "y", "present"};
-        for (auto v : varlist) {
-            PKBField vf;
-            vf.tag = PKBType::VAR_NAME;
-            vf.isConcrete = false;
-            vf.vName = v;
-            result.push_back(vf);
-        }
+PKBResponse getAll(DesignEntity type) {
+    PKBResponse result;
+    if (type == DesignEntity::PROCEDURE) {
+        result = PKBStub::getProcedures();
+    } else if (type == DesignEntity::CONSTANT) {
+        result = PKBStub::getConst();
+    } else if (type == DesignEntity::VARIABLE) {
+        result = PKBStub::getVariables();
     } else {
-        std::set<int> stmtList = {1, 2, 3};
-        for (auto s : stmtList) {
-            PKBField sf;
-            sf.tag = PKBType::STMT_LO;
-            sf.isConcrete = false;
-            sf.stmtLo = s;
-            result.push_back(sf);
-        }
+        StatementType sType = StatementTypeMap.find(type)->second;
+        result = PKBStub::getStatements(sType);
     }
     return result;
 }
-
 //Replace int by PKBField
 std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, DesignEntity returnType) {
     //TODO: Modifies when PKBResponse is definded Replace int with PKBFields
@@ -48,9 +42,6 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
     //only one clause for now
     for (auto r : clauses) {
         RelRefType type = r.get()->getType();
-        if (type == RelRefType::INVALID) {
-            throw std::runtime_error("Relationship invalid");
-        }
 
         if (type == RelRefType::MODIFIESS) {
             std::shared_ptr<Modifies> mPtr = std::dynamic_pointer_cast<Modifies>(r);
@@ -97,8 +88,6 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
                 //TODO: fill in when creating PKBField
             } else if (entType == EntRefType::WILDCARD) {
                 //TODO: fill in when creating PKBField
-            } else {
-                throw std::runtime_error("Entity Reference has incorrect format in Modifies relationship");
             }
 
             if (stmtType == StmtRefType::DECLARATION) {
@@ -107,8 +96,6 @@ std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, Desi
 
             } else if (stmtType == StmtRefType::WILDCARD) {
 
-            } else {
-                throw std::runtime_error("Statement Reference has incorrect format in Modifeis relationship");
             }
             // TODO: modifies when PKB API is defined
             //PKBReturnType can be the DesignEntity
@@ -142,16 +129,17 @@ std::set<int> processPattern(std::vector<Pattern> patterns, DesignEntity returnT
 }
 
 //replace int by PKBField
-std::string processResult(std::vector<PKBField> queryResult) {
+std::string processResult(PKBResponse queryResult) {
     std::string stringResult = "";
-    for (int i = 0; i < queryResult.size(); i ++) {
-        if (i == queryResult.size() - 1) {
-            stringResult += queryResult[i].to_string();
+    std::set<PKBField> content = queryResult.content;
+
+    for (int i = 0; i < content.size(); i ++) {
+        if (i == content.size() - 1) {
+            stringResult += PKBFieldToString(content[i]);
         } else {
-            stringResult = stringResult + queryResult[i].to_string() + ", ";
+            stringResult = PKBFieldToString(content[i]) + ", ";
         }
     }
-
     DEBUG << "stringResult";
     return stringResult;
 }
@@ -166,7 +154,7 @@ std::string evaluate(Query query) {
     //TODO: replace int with PKBField
     std::set<int> suchthatResult;
     std::set<int> patternResult;
-    std::vector<PKBField> queryResult;
+    PKBResponse queryResult;
 
     PKBStub pkb;
 
@@ -179,7 +167,7 @@ std::string evaluate(Query query) {
 //    }
 
     if (suchthat.empty() && pattern.empty()) {
-        queryResult = pkb.getAll(returnType);
+        queryResult = getAll(returnType);
 
     } else {
 //        int size = std::min(suchthatResult.size(), patternResult.size());

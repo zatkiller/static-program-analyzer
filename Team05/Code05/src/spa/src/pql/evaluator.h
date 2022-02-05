@@ -11,22 +11,38 @@
 
 #include "query.h"
 
-enum PKBType {
-    STMT_LO,
-    VAR_NAME,
-    PROC_NAME
+
+
+enum class StatementType {
+    Statement, Assignment, While, If, Read, Print, Call
 };
+
+enum class PKBType {
+    STATEMENT, VARIABLE, PROCEDURE, CONST
+};
+
 
 struct PKBField {
-    PKBType tag;
-    bool isConcrete; // true if IDENT is used (e.g. Modifies(s, ‘_’))
-    int stmtLo;
-    std::string vName;
-    std::string pName;
-    int cName;
+    PKBType tag; // const field members?
+    bool isConcrete;
+    std::variant<, VAR_NAME, PROC_NAME, CONST> content;
 
-    std::string to_string();
+
+public:
+    PKBField(PKBType type, bool concrete, Content c) : tag(type), isConcrete(concrete), content(c) {}
+    PKBField() {}
+
+    bool operator == (const PKBField&) const;
+    bool operator < (const PKBField&) const;
 };
+
+struct PKBResponse {
+    bool isContent;
+    union Response {
+        std::set<PKBField> content;
+        std::set<std::vector<PKBField>> contentList;
+    };
+}
 
 using sTable = std::set<std::pair<std::string, std::string>>;  // stmt tables
 using vTable = std::set<std::string>;  // variable tables
@@ -40,9 +56,15 @@ struct PKBStub {
     }
 
     // Placeholder method for interfacing with PKB
-    std::vector<PKBField> getAll(DesignEntity);
+    static PKBResponse getStatements(StatementType);
+    static PKBResponse getVariables();
+    static PKBResponse getConst();
+    static PKBResponse getProcedures();
 };
 
+PKBResponse getall(DesignEntity);
+
+std::string PKBFieldToString(PKBField);
 
 std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>>, DesignEntity);
 
