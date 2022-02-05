@@ -25,7 +25,7 @@ public:
 	static TNode* getRootAST(PROC p);
 
 	void insertStatement(StatementType, int);
-	void insertRelationship(PKBRelationship, PKBField, PKBField)
+	void insertRelationship(PKBRelationship, PKBField, PKBField);
 	//void insertAST();
 
 private:
