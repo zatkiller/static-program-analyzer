@@ -1,9 +1,7 @@
 #include <sstream>
 
-#include "parser.h"
+#include "pql/parser.h"
 #include "logging.h"
-
-#define LOGGER Logger(Level::DEBUG) << "parser.cpp: \n"
 
 std::string Parser::getParsedText() {
     return lexer.text;
@@ -53,12 +51,12 @@ Token Parser::peekAndCheckNextReservedToken(TokenType tokenType) {
 }
 
 void Parser::parseDeclaration(Query &queryObj, DesignEntity de) {
-    Token variable = getAndCheckNextToken(TokenType::Identifier);
+    Token variable = getAndCheckNextToken(TokenType::IDENTIFIER);
     queryObj.addDeclaration(variable.getText(), de);
 }
 
 void Parser::parseDeclarations(Query &queryObj) {
-    Token token = getAndCheckNextToken(TokenType::Identifier);
+    Token token = getAndCheckNextToken(TokenType::IDENTIFIER);
     auto iterator = designEntityMap.find(token.getText());
     if (iterator == designEntityMap.end())
         throw "No such design entity!";
@@ -67,12 +65,12 @@ void Parser::parseDeclarations(Query &queryObj) {
     parseDeclaration(queryObj, designEntity);
     // Parse and add single declaration to Query Object
 
-    while (peekNextToken().getTokenType() == TokenType::Comma) {
-        token = getAndCheckNextToken(TokenType::Comma);
+    while (peekNextToken().getTokenType() == TokenType::COMMA) {
+        getAndCheckNextToken(TokenType::COMMA);
         parseDeclaration(queryObj, designEntity);
     }
 
-    getAndCheckNextToken(TokenType::Semicolon);
+    getAndCheckNextToken(TokenType::SEMICOLON);
 }
 
 void Parser::addPql(std::string query) {
@@ -80,36 +78,23 @@ void Parser::addPql(std::string query) {
 }
 
 void Parser::parseSelectFields(Query &queryObj) {
-    getAndCheckNextReservedToken(TokenType::Select);
+    getAndCheckNextReservedToken(TokenType::SELECT);
 
-    Token t = getAndCheckNextToken(TokenType::Identifier);
+    Token t = getAndCheckNextToken(TokenType::IDENTIFIER);
     std::string name = t.getText();
 
     if (!queryObj.hasDeclaration(name))
         throw "Variable does not exist in declaration!";
 
     queryObj.addVariable(name);
-
-    Token nextToken = peekNextToken();
-
-    // Handle multiple select clause, might be needed for future iterations?;
-    while (nextToken.getTokenType() == TokenType::Comma) {
-        t = getAndCheckNextToken(TokenType::Identifier);
-        name = t.getText();
-        if (!queryObj.hasDeclaration(name))
-            throw "Variable does not exist in declaration!";
-
-        queryObj.addVariable(name);
-        nextToken = peekNextToken();
-    }
 }
 
 bool Parser::isStmtRef(Token token, Query &queryObj) {
     TokenType type = token.getTokenType();
-     if (type == TokenType::Number || type == TokenType::Underscore)
+     if (type == TokenType::NUMBER || type == TokenType::UNDERSCORE)
          return true;
 
-     if (type == TokenType::Identifier && queryObj.hasDeclaration(token.getText()))
+     if (type == TokenType::IDENTIFIER && queryObj.hasDeclaration(token.getText()))
          return true;
 
      return false;
@@ -117,10 +102,10 @@ bool Parser::isStmtRef(Token token, Query &queryObj) {
 
 bool Parser::isEntRef(Token token, Query &queryObj) {
     TokenType type = token.getTokenType();
-    if (type == TokenType::String || type == TokenType::Underscore)
+    if (type == TokenType::STRING || type == TokenType::UNDERSCORE)
         return true;
 
-    if (type == TokenType::Identifier && queryObj.hasDeclaration(token.getText()))
+    if (type == TokenType::IDENTIFIER && queryObj.hasDeclaration(token.getText()))
         return true;
 
     return false;
@@ -130,15 +115,15 @@ StmtRef Parser::parseStmtRef(Query &queryObj) {
     Token token = getNextToken();
     TokenType type = token.getTokenType();
     StmtRef stmtRef;
-    if (type == TokenType::Number) {
-        stmtRef.type = StmtRefType::LINE_NO;
+    if (type == TokenType::NUMBER) {
+        int lineNo;
         std::stringstream ss(token.getText());
-        ss >> stmtRef.lineNo;
-    } else if (type == TokenType::Underscore) {
-        stmtRef.type = StmtRefType::WILDCARD;
-    } else if (type == TokenType::Identifier) {
-        stmtRef.type = StmtRefType::DECLARATION;
-        stmtRef.declaration = token.getText();
+        ss >> lineNo;
+        stmtRef = StmtRef::ofLineNo(lineNo);
+    } else if (type == TokenType::UNDERSCORE) {
+        stmtRef = StmtRef::ofWildcard();
+    } else if (type == TokenType::IDENTIFIER) {
+        stmtRef = StmtRef::ofDeclaration(token.getText());
     }
 
     return stmtRef;
@@ -148,14 +133,12 @@ EntRef Parser::parseEntRef(Query &queryObj) {
     Token token = getNextToken();
     TokenType type = token.getTokenType();
     EntRef entRef;
-    if (type == TokenType::String) {
-        entRef.type = EntRefType::VARIABLE_NAME;
-        entRef.variable = token.getText();
-    } else if (type == TokenType::Underscore) {
-        entRef.type = EntRefType::WILDCARD;
-    } else if (type == TokenType::Identifier) {
-        entRef.type = EntRefType::DECLARATION;
-        entRef.declaration = token.getText();
+    if (type == TokenType::STRING) {
+        entRef = EntRef::ofVarName(token.getText());
+    } else if (type == TokenType::UNDERSCORE) {
+        entRef = EntRef::ofWildcard();
+    } else if (type == TokenType::IDENTIFIER) {
+        entRef = EntRef::ofDeclaration(token.getText());
     }
 
     return entRef;
@@ -172,31 +155,29 @@ std::shared_ptr<RelRef> Parser::parseModifies(Query &queryObj) {
 std::shared_ptr<RelRef> Parser::parseRelRef(Query &queryObj) {
     TokenType tokenType = getNextReservedToken().getTokenType();
 
-    if (tokenType == TokenType::Uses) {
+    if (tokenType == TokenType::USES) {
         return parseUses(queryObj);
-    } else if (tokenType == TokenType::Modifies) {
+    } else if (tokenType == TokenType::MODIFIES) {
         return parseModifies(queryObj);
     } else {
         throw "Don't recognize this relRef";
     }
-
-    return NULL;
 }
 
 std::string Parser::parseExpSpec() {
     std::string prefix = "", suffix = "", value = "";
 
-    if (peekNextToken().getTokenType() == TokenType::Underscore) {
+    if (peekNextToken().getTokenType() == TokenType::UNDERSCORE) {
         getNextToken();
         prefix = "_";
     }
 
-    if (peekNextToken().getTokenType() == TokenType::String) {
+    if (peekNextToken().getTokenType() == TokenType::STRING) {
         Token t = getNextToken();
         value = t.getText();
     }
 
-    if (peekNextToken().getTokenType() == TokenType::Underscore) {
+    if (peekNextToken().getTokenType() == TokenType::UNDERSCORE) {
         getNextToken();
         suffix = "_";
     }
@@ -204,14 +185,14 @@ std::string Parser::parseExpSpec() {
 }
 
 void Parser::parseSuchThat(Query &queryObj) {
-    getAndCheckNextReservedToken(TokenType::SuchThat);
+    getAndCheckNextReservedToken(TokenType::SUCH_THAT);
     std::shared_ptr<RelRef> relRef = parseRelRef(queryObj);
     queryObj.addSuchthat(relRef);
 }
 void Parser::parsePattern(Query &queryObj) {
-    getAndCheckNextReservedToken(TokenType::Pattern);
+    getAndCheckNextReservedToken(TokenType::PATTERN);
 
-    Token t = getAndCheckNextToken(TokenType::Identifier);
+    Token t = getAndCheckNextToken(TokenType::IDENTIFIER);
     std::string declarationName = t.getText();
 
     if (queryObj.getDeclarationDesignEntity(declarationName) != DesignEntity::ASSIGN)
@@ -220,11 +201,11 @@ void Parser::parsePattern(Query &queryObj) {
     Pattern p;
 
     p.synonym = declarationName;
-    getAndCheckNextToken(TokenType::OpeningParan);
+    getAndCheckNextToken(TokenType::OPENING_PARAN);
     p.lhs = parseEntRef(queryObj);
-    getAndCheckNextToken(TokenType::Comma);
+    getAndCheckNextToken(TokenType::COMMA);
     p.expression = parseExpSpec();
-    getAndCheckNextToken(TokenType::ClosingParan);
+    getAndCheckNextToken(TokenType::CLOSING_PARAN);
 
     queryObj.addPattern(p);
 }
@@ -233,10 +214,10 @@ void Parser::parsePattern(Query &queryObj) {
 void Parser::parseQuery(Query &queryObj) {
     parseSelectFields(queryObj);
 
-    if (peekNextReservedToken().getTokenType() == TokenType::SuchThat)
+    if (peekNextReservedToken().getTokenType() == TokenType::SUCH_THAT)
         parseSuchThat(queryObj);
 
-    if (peekNextReservedToken().getTokenType() == TokenType::Pattern)
+    if (peekNextReservedToken().getTokenType() == TokenType::PATTERN)
         parsePattern(queryObj);
 }
 
@@ -244,8 +225,8 @@ Query Parser::parsePql(std::string query) {
     addPql(query);
     Query queryObj;
 
-    for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::Eof; token = peekNextReservedToken()) {
-        if (token.getTokenType() != TokenType::Select) {
+    for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::END_OF_FILE; token = peekNextReservedToken()) {
+        if (token.getTokenType() != TokenType::SELECT) {
             // Parse delcarations first
             parseDeclarations(queryObj);
         } else {

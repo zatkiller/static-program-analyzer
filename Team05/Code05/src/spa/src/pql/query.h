@@ -29,12 +29,12 @@ enum class StmtRefType {
 
 struct StmtRef {
     StmtRefType type = StmtRefType::NOT_INITIALIZED;
-    std::string declaration;
-    int lineNo;
+    std::string declaration = "";
+    int lineNo = -1;
 
-    void setType(StmtRefType);
-    void setDeclaration(std::string);
-    void setLineNo(int);
+    static StmtRef ofDeclaration(std::string);
+    static StmtRef ofLineNo(int);
+    static StmtRef ofWildcard();
 
     StmtRefType getType();
     std::string getDeclaration();
@@ -43,6 +43,15 @@ struct StmtRef {
     bool isDeclaration();
     bool isLineNo();
     bool isWildcard();
+
+    bool operator==(const StmtRef &o) const {
+        if (type == StmtRefType::DECLARATION && o.type == StmtRefType::DECLARATION)
+            return declaration == o.declaration;
+        else if (type == StmtRefType::LINE_NO && o.type == StmtRefType::LINE_NO)
+            return lineNo == o.lineNo;
+
+        return type == StmtRefType::WILDCARD && o.type == StmtRefType::WILDCARD;
+    }
 };
 
 enum class EntRefType {
@@ -54,12 +63,12 @@ enum class EntRefType {
 
 struct EntRef{
     EntRefType type = EntRefType::NOT_INITIALIZED;
-    std::string declaration;
-    std::string variable;
+    std::string declaration = "";
+    std::string variable = "";
 
-    void setType(EntRefType);
-    void setDeclaration(std::string);
-    void setVariableName(std::string);
+    static EntRef ofDeclaration(std::string);
+    static EntRef ofVarName(std::string);
+    static EntRef ofWildcard();
 
     EntRefType getType();
     std::string getDeclaration();
@@ -68,6 +77,15 @@ struct EntRef{
     bool isDeclaration();
     bool isVarName();
     bool isWildcard();
+
+    bool operator==(const EntRef &o) const {
+        if (type == EntRefType::DECLARATION && o.type == EntRefType::DECLARATION)
+            return declaration == o.declaration;
+        else if (type == EntRefType::VARIABLE_NAME && o.type == EntRefType::VARIABLE_NAME)
+            return variable == o.variable;
+
+        return type == EntRefType::WILDCARD && o.type == EntRefType::WILDCARD;
+    }
 };
 
 enum class RelRefType {
@@ -86,7 +104,7 @@ struct RelRef {
     RelRef() {}
     RelRef(RelRefType type) : type(type) {}
     virtual ~RelRef() {};
-    virtual RelRefType getType() {return type;}
+    virtual RelRefType getType() { return type; }
 };
 
 struct Modifies : RelRef {
@@ -109,13 +127,13 @@ struct Pattern {
     EntRef lhs;
     std::string expression;
 
-    void setSynonym(std::string);
-    void setLhs(EntRef);
-    void setExpression(std::string);
-
     std::string getSynonym();
     EntRef getEntRef();
     std::string getExpression();
+
+    bool operator==(const Pattern &o) const {
+        return (synonym == o.synonym) && (lhs == o.lhs) && (expression == o.expression);
+    }
 
 };
 
