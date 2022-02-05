@@ -15,4 +15,13 @@ public:
 
 #ifdef UNIT_TEST
 // TODO(@NayLin_H99, @rootkie): Add testing
+
+std::unique_ptr<AST::Expr> parseConstExpr(std::deque<Token>& tokens);
+std::unique_ptr<AST::Expr> parseVariableExpr(std::deque<Token>& tokens);
+AST::RelOp parseRelOp(std::deque<Token>& tokens);
+AST::CondOp parseCondOp(std::deque<Token>& tokens);
+AST::BinOp parseBinOp(std::deque<Token>& tokens);
+std::unique_ptr<AST::Expr> shuntingYardParser(std::deque<Token>& tokens);
+
+
 #endif  // UNIT_TEST

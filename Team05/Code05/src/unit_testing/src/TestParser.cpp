@@ -9,65 +9,187 @@
 #include "Parser/Parser.h"
 
 TEST_CASE("Testing Parser") {
-    std::string fail = R"(procedure a {
-        while (c !! b) {
-            read c; 
-        }
-    })";
-    REQUIRE(Parser().parse(fail) == nullptr);
+    SECTION("Unit testing") {
+        std::deque<Token> tokens;
+        SECTION("parseConstExpr") {
+            tokens = std::deque<Token>({ Token{TokenType::number, 5} });
+            auto ast = parseConstExpr(tokens);
+            auto expected = AST::make<AST::Const>(5);
+            REQUIRE(*ast == *expected);
+        }  // Const
+        SECTION("parseVariableExpr") {
+            tokens = std::deque<Token>({ Token{TokenType::name, "Variable11"} });
+            auto ast = parseVariableExpr(tokens);
+            auto expected = AST::make<AST::Var>("Variable11");
+            REQUIRE(*ast == *expected);
+        };
+        SECTION("parseRelOp") {
+            tokens = std::deque<Token> ({ 
+                Token{TokenType::special, '='},
+                Token{TokenType::special, '>'} 
+            });
+            REQUIRE_THROWS(parseRelOp(tokens));
+            tokens = std::deque<Token> ({
+                Token{TokenType::special, '='},
+                Token{TokenType::special, '!'}
+            });
+            REQUIRE_THROWS(parseRelOp(tokens));
+            tokens = std::deque<Token> ({
+                Token{TokenType::special, '!'},
+                Token{TokenType::number, 1}
+            });
+            REQUIRE_THROWS(parseRelOp(tokens));
+            tokens = std::deque<Token> ({
+                Token{TokenType::special, '='},
+                Token{TokenType::number, 1}
+            });
+            REQUIRE_THROWS(parseRelOp(tokens));
 
-    std::string fail2 = R"(procedure a {
-        while (c > b)) {
-            read c;
-        }
-    })";
-    REQUIRE(Parser().parse(fail) == nullptr);
 
-    std::string testCode = R"(procedure computeAverage {
-        read num1;
-        read num2;
-        read num3;
-        sum = num1 + num2 + num3;
-        ave = sum / 3;
-        print ave;
-    })";
-    REQUIRE(Parser().parse(testCode) != nullptr);
-    
-    
-    std::string testCode2 = R"(procedure printAscending {
-        read num1;
-        read num2;
-        noSwap = 0;
-        if (num1 > num2) then{
-            temp = num1;
-            num1 = num2;
-            num2 = temp;
-        }
-        else {
-            noSwap = 1;
-        }
-        print num1;
-        print num2;
-        print noSwap;
-    })";
-    REQUIRE(Parser().parse(testCode2) != nullptr);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '>'},
+                Token{TokenType::special, '='}
+            });
+            REQUIRE(parseRelOp(tokens) == AST::RelOp::GTE);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '!'},
+                Token{TokenType::special, '='}
+            });
+            REQUIRE(parseRelOp(tokens) == AST::RelOp::NE);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '<'},
+                Token{TokenType::special, '='}
+            });
+            REQUIRE(parseRelOp(tokens) == AST::RelOp::LTE);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '='},
+                Token{TokenType::special, '='}
+            });
+            REQUIRE(parseRelOp(tokens) == AST::RelOp::EQ);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '>'},
+                Token{TokenType::number, 1}
+            });
+            REQUIRE(parseRelOp(tokens) == AST::RelOp::GT);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '<'},
+                Token{TokenType::number, 1}
+            });
+            REQUIRE(parseRelOp(tokens) == AST::RelOp::LT);
 
-    std::string generatedCode1 = R"(procedure Y5Gw {
-    if ((0 >= 758) && (!(34 >= 5))) then {
-        z955ACp = (6018) * E1IOMsY;
-        read y7633lWD;
-        qR84sPE9 = 3518 + mZ8pf;
-    } else {
-        while (!(!(63 >= 0))) {
-            print pGcpOwD;
-            Hv37 = 290 * (553) + 38 * 3;
+        }  // RelOp
+        SECTION("parseCondOp") {
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '&'},
+                Token{TokenType::special, '|'}
+            });
+            auto c = parseCondOp(tokens);
+            REQUIRE_THROWS(parseCondOp(tokens));
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '|'},
+                Token{TokenType::special, '&'}
+            });
+            REQUIRE_THROWS(parseCondOp(tokens));
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '&'},
+                Token{TokenType::special, '!'}
+            });
+            REQUIRE_THROWS(parseCondOp(tokens));
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '|'},
+                Token{TokenType::special, '!'}
+            });
+            REQUIRE_THROWS(parseCondOp(tokens));
+
+
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '&'},
+                Token{TokenType::special, '&'}
+            });
+            REQUIRE(parseCondOp(tokens) == AST::CondOp::AND);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '|'},
+                Token{TokenType::special, '|'}
+            });
+            REQUIRE(parseCondOp(tokens) == AST::CondOp::OR);
+            tokens = std::deque<Token>({
+                Token{TokenType::special, '!'},
+                Token{TokenType::special, '('}
+            });
+            REQUIRE(parseCondOp(tokens) == AST::CondOp::NOT);
+
         }
+        
     }
-    
-    })";
-    REQUIRE(Parser().parse(generatedCode1) != nullptr);
 
-    std::string generatedCode2 = R"(procedure h7JOVeUY {
+    SECTION("Complete procedure test") {
+        
+
+        std::string fail = R"(procedure a {
+            while (c !! b) {
+                read c; 
+            }
+        })";
+        REQUIRE(Parser().parse(fail) == nullptr);
+
+        std::string fail2 = R"(procedure a {
+            while (!c)) {
+                read c;
+            }
+        })";
+        REQUIRE(Parser().parse(fail2) == nullptr);
+
+
+        //std::string fail3 = R"(procedure 1a {
+        //    1x = 1y + 1z;
+        //})";
+        //REQUIRE(Parser().parse(fail3) == nullptr);
+
+        std::string testCode = R"(procedure computeAverage {
+            read num1;
+            read num2;
+            read num3;
+            sum = num1 + num2 + num3;
+            ave = sum / 3;
+            print ave;
+        })";
+        REQUIRE(Parser().parse(testCode) != nullptr);
+
+
+        std::string testCode2 = R"(procedure printAscending {
+            read num1;
+            read num2;
+            noSwap = 0;
+            if (num1 > num2) then{
+                temp = num1;
+                num1 = num2;
+                num2 = temp;
+            }
+            else {
+                noSwap = 1;
+            }
+            print num1;
+            print num2;
+            print noSwap;
+        })";
+        REQUIRE(Parser().parse(testCode2) != nullptr);
+
+        std::string generatedCode1 = R"(procedure Y5Gw {
+            if ((0 >= 758) && (!(34 >= 5))) then {
+                z955ACp = (6018) * E1IOMsY;
+                read y7633lWD;
+                qR84sPE9 = 3518 + mZ8pf;
+            } else {
+                while (!(!(63 >= 0))) {
+                    print pGcpOwD;
+                    Hv37 = 290 * (553) + 38 * 3;
+                }
+            }
+    
+        })";
+        REQUIRE(Parser().parse(generatedCode1) != nullptr);
+
+        std::string generatedCode2 = R"(procedure h7JOVeUY {
  JqVi =  72 % (556 - ix70);
 if (nxg9F5 + 0 * (JCq81 - 04 % (1 - 0)) == 180) then {
 p1hb3wd =  (0 + (oEX8A) - A000 / (((A000 + 149 / 0513)) + 2033 / (aCtu4) % (364 % (833 - 730 - 0 % (72 % 0) - 0 % 0) % 4) % (Ao5eB) * (0 / 436) - 0) - 014 * A000) + qZZD72Av * (0 / (2608 - (0))) % (A000) % (7531 - UzRG);
@@ -107,5 +229,7 @@ BpZjf =   (0 - 3241) / (xS8Y5myR % (TW0P)) + (7753) % (5582 + A000 - e5k575j4 % 
 BPs82 =  (2) % (263 - 9374) * ((814) + (0 + o9y0Nxi) % A000 - 0 / 035) % (53 - 272 % 7 - 801 * A000) * (03 % (lGUy - 59));
 
 })";
-    REQUIRE(Parser().parse(generatedCode2) != nullptr);
+        REQUIRE(Parser().parse(generatedCode2) != nullptr);
+    }
+    
 }

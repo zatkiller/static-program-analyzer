@@ -69,7 +69,10 @@ AST::RelOp parseRelOp(deque<Token>& tokens) {
         Logger(Level::ERROR) << "RelOp Expected";
         throw invalid_argument("RelOp expected!");
     }
-
+    if (tokens.size() < 1) {
+        Logger(Level::ERROR) << "Unexpected Termination";
+        throw invalid_argument("Unexpected Termination!");
+    }
     Token nextToken = tokens.front();
     char* nextOp = get_if<char>(&nextToken.value);
 
