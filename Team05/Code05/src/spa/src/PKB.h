@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "PKB/StatementTable.h"
 #include "PKB/VariableTable.h"
@@ -19,7 +20,7 @@ class VarTable;  // no need to #include "VarTable.h" as all I need is pointer
 class PKB {
 public:
     PKB();
-    static VarTable* varTable; 
+    //static VarTable* varTable; 
     static int setProcToAST(PROC p, TNode* r);
     static TNode* getRootAST(PROC p);
 
@@ -28,8 +29,8 @@ public:
     //void insertAST();
 
 private:
-    static StatementTable* statementTable;
-    static VariableTable* variableTable;
-    static ProcedureTable* procedureTable;
-    static ModifiesRelationshipTable* modifiesTable;
+    static std::unique_ptr<StatementTable> statementTable;
+    static std::unique_ptr<VariableTable> variableTable;
+    static std::unique_ptr<ProcedureTable> procedureTable;
+    static std::unique_ptr<ModifiesRelationshipTable> modifiesTable;
 };
