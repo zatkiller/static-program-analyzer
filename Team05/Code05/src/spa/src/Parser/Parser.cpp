@@ -123,15 +123,19 @@ AST::RelOp parseRelOp(deque<Token>& tokens) {
 AST::CondOp parseCondOp(deque<Token>& tokens) {
     // either "&&" or "||"
     Token condOpToken = getNextToken(tokens);
-    char* currOp = get_if<char>(&condOpToken.value);
-    if (!currOp) {
+    if (condOpToken.type != TokenType::special) {
         Logger(Level::ERROR) << "CondOp Expected";
         throw invalid_argument("CondOp expected!");
     }
+    char currOp = get<char>(condOpToken.value);
 
+    if (tokens.size() < 1) {
+        Logger(Level::ERROR) << "Unexpected Termination";
+        throw invalid_argument("Unexpected Termination!");
+    }
     condOpToken = tokens.front();
     char* nextOp = get_if<char>(&condOpToken.value);
-    switch (*currOp) {
+    switch (currOp) {
     case '&':
         if (!nextOp || *nextOp != '&') {
             Logger(Level::ERROR) << "Symbol not recognised";

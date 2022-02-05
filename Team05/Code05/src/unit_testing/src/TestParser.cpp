@@ -83,7 +83,6 @@ TEST_CASE("Testing Parser") {
                 Token{TokenType::special, '&'},
                 Token{TokenType::special, '|'}
             });
-            auto c = parseCondOp(tokens);
             REQUIRE_THROWS(parseCondOp(tokens));
             tokens = std::deque<Token>({
                 Token{TokenType::special, '|'},
@@ -112,12 +111,6 @@ TEST_CASE("Testing Parser") {
                 Token{TokenType::special, '|'}
             });
             REQUIRE(parseCondOp(tokens) == AST::CondOp::OR);
-            tokens = std::deque<Token>({
-                Token{TokenType::special, '!'},
-                Token{TokenType::special, '('}
-            });
-            REQUIRE(parseCondOp(tokens) == AST::CondOp::NOT);
-
         }
         
     }
