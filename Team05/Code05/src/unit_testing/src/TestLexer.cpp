@@ -87,5 +87,7 @@ TEST_CASE("Lexer test") {
             lexedTokens.pop_front();
             tokens.pop();
         }
+
+        REQUIRE_NOTHROW(Lexer("4+3*2/(1-5)-6%8").getTokens());
     }
 }

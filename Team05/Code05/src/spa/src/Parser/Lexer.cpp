@@ -39,7 +39,7 @@ void Lexer::lex(const std::string& source) {
         if (isalpha(lastChar)) {
             std::string s;
             s.push_back(lastChar);
-            while (isalnum(*std::next(it))) {
+            while (std::next(it) != source.end() && isalnum(*std::next(it))) {
                 it++; lastChar = *it;
                 s.push_back(lastChar);
             }
@@ -51,7 +51,7 @@ void Lexer::lex(const std::string& source) {
         if (isdigit(lastChar)) {
             std::string s;
             s.push_back(lastChar);
-            while (isdigit(*std::next(it))) {
+            while (std::next(it) != source.end() && isdigit(*std::next(it))) {
                 it++; lastChar = *it;
                 s.push_back(lastChar);
             }
