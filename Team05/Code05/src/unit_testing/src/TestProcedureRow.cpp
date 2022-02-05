@@ -10,9 +10,9 @@
  * 
  */
 TEST_CASE("ProcedureRow operator testing") {
-    ProcedureRow row1{ "main" };
-    ProcedureRow row2{ "main" };
-    ProcedureRow row3{ "foo" };
+    ProcedureRow row1{ PROC_NAME{"main"}};
+    ProcedureRow row2{ PROC_NAME{"main"} };
+    ProcedureRow row3{ PROC_NAME{"foo"} };
 
     TEST_LOG << "Test ProcedureRow ==";
     REQUIRE(row1 == row1);

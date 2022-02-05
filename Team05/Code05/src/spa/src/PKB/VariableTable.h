@@ -1,18 +1,19 @@
 #pragma once
 
 #include <stdio.h>
-#include <set>
+#include <unordered_set>
 
 #include "VariableRow.h"
+#include "PKBDataTypes.h"
+#include "PKBField.h"
 
 class VariableTable {
 public:
-	// TODO: replace <int> with <PKBField>
 	// count of an item in a set can only be 0 or 1
-	bool contains(std::string);
-	void insert(std::string variableName);
+	bool contains(PKBField);
+	void insert(PKBField);
 	int getSize();
 
 private:
-	std::set<VariableRow> rows;
+	std::unordered_set<VariableRow, VariableRowHash> rows;
 };

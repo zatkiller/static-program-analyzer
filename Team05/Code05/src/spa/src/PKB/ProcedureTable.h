@@ -1,18 +1,18 @@
 #pragma once
 
 #include <stdio.h>
-#include <set>
+#include <unordered_set>
 
 #include "ProcedureRow.h"
+#include "PKBField.h"
 
 class ProcedureTable {
 public:
-	// TODO: replace <int> with <PKBField>
 	// count of an item in a set can only be 0 or 1
-	bool contains(std::string);
-	void insert(std::string variableName);
+	bool contains(PKBField);
+	void insert(PKBField);
 	int getSize();
 
 private:
-	std::set<ProcedureRow> rows;
+	std::unordered_set<ProcedureRow, ProcedureRowHash> rows;
 };

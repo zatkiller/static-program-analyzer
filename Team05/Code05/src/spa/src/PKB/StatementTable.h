@@ -1,17 +1,17 @@
 #pragma once
 
 #include <stdio.h>
-#include <set>
+#include <unordered_set>
 
+#include "PKBField.h"
 #include "StatementRow.h"
 
 class StatementTable {
 public:
-	// TODO: replace <int> with <PKBField>
-	bool contains(StatementType, int);
-	void insert(StatementType, int);
+	bool contains(PKBField);
+	void insert(PKBField);
 	int getSize();
 
 private:
-	std::set<StatementRow> rows;
+	std::unordered_set<StatementRow, StatementRowHash> rows;
 };
