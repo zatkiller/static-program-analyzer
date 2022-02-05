@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdio.h>
-#include <set>
+#include <unordered_set>
 
 #include "VariableRow.h"
 #include "PKBDataTypes.h"
@@ -15,5 +15,5 @@ public:
 	int getSize();
 
 private:
-	std::set<VariableRow> rows;
+	std::unordered_set<VariableRow, VariableRowHash> rows;
 };

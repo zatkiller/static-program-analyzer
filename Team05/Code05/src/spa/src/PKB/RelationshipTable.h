@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdio.h>
-#include <set>
+#include <unordered_set>
 
 #include "RelationshipRow.h"
 #include "PKBRelationship.h"
@@ -17,6 +17,6 @@ public:
 	int getSize();
 
 protected:
-	std::set<RelationshipRow> rows;
+	std::unordered_set<RelationshipRow, RelationshipRowHash> rows;
 	PKBRelationship type; 
 };
