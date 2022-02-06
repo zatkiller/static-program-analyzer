@@ -3,6 +3,8 @@
 #include "logging.h"
 #include "Lexer.h"
 
+namespace SimpleParser {
+
 #ifdef _DEBUG
 void logQueue(std::deque<Token> q) {
     std::ostringstream oss;
@@ -75,3 +77,5 @@ void Lexer::lex(const std::string& source) {
 std::deque<Token>& Lexer::getTokens() {
     return tokens;
 }
+
+}  // namespace SimpleParser
