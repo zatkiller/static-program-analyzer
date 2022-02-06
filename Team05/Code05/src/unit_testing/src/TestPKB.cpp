@@ -18,4 +18,15 @@ TEST_CASE("PKB testing") {
     TEST_LOG << "Test PKB#insertRelationship MODIFIES";
 
     pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field2);
+    REQUIRE(pkb->modifiesTable->getSize() == 1);
+
+    TEST_LOG << "Test PKB#getRelationship MODIFIES";
+
+    PKBResponse res1 = pkb->getRelationship(field1, field2, PKBRelationship::MODIFIES);
+    /*PKBResponse expected = PKBResponse{ true, Response{std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>{field1, field2}} };
+    auto content1 = std::get<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(res1.res);
+    auto content2 = std::get<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(expected.res);
+    REQUIRE(content1.size() == content2.size());
+    REQUIRE(res1.hasResult == expected.hasResult);*/
+    
 }

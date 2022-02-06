@@ -13,4 +13,6 @@ using Response = std::variant<std::unordered_set<PKBField, PKBFieldHash>,
 struct PKBResponse {
     bool hasResult;
     Response res;
+
+    //bool operator == (const PKBResponse)
 };

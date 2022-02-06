@@ -37,7 +37,7 @@ public:
 	PKBResponse getProcedures();
 	PKBResponse getConstants();
 
-private:
+public:
 	std::unique_ptr<StatementTable> statementTable;
 	std::unique_ptr<VariableTable> variableTable;
 	std::unique_ptr<ProcedureTable> procedureTable;
