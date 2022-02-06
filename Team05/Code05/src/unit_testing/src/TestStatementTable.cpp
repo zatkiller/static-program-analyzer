@@ -1,4 +1,4 @@
-#include "pkb/StatementTable.h"
+#include "PKB/StatementTable.h"
 #include "logging.h"
 #include <iostream>
 
