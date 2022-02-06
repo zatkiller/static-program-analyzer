@@ -28,6 +28,10 @@ void PKB::insertStatement(StatementType type, int statementNumber) {
     statementTable->insert(type, statementNumber);
 }
 
+void PKB::insertVariable(std::string name) {
+    variableTable->insert(name);
+}
+
 void PKB::insertRelationship(PKBRelationship type, PKBField entity1, PKBField entity2) {
     switch (type) {
     case PKBRelationship::MODIFIES:

@@ -28,6 +28,7 @@ public:
     static TNode* getRootAST(PROC p);
 
     void insertStatement(StatementType, int);
+    void insertVariable(std::string);
     void insertRelationship(PKBRelationship, PKBField, PKBField);
     // void insertAST();
 

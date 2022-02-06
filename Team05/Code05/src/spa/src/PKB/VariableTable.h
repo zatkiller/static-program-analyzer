@@ -11,8 +11,8 @@
 class VariableTable {
 public:
     // count of an item in a set can only be 0 or 1
-    bool contains(PKBField);
-    void insert(PKBField);
+    bool contains(std::string name);
+    void insert(std::string name);
     int getSize();
     std::vector<VAR_NAME> getAllVars();
 

@@ -28,4 +28,10 @@ TEST_CASE("PKB testing") {
     auto content2 = std::get<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(expected.res);
     REQUIRE(content1.size() == content2.size());
     REQUIRE(res1.hasResult == expected.hasResult);*/
+
+    TEST_LOG << "Test PKB#insertVariable";
+
+    std::string varName1 = "a";
+    pkb->insertVariable(varName1);
+    REQUIRE(pkb->variableTable->getSize() == 1);
 }
