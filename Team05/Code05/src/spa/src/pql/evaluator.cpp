@@ -20,7 +20,6 @@ std::string PKBFieldToString(PKBField pkbField) {
 
 PKBResponse getAll(DesignEntity type) {
     std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
-//            {DesignEntity::STMT, StatementType::Statement},
             {DesignEntity::ASSIGN, StatementType::Assignment},
             {DesignEntity::WHILE, StatementType::While},
             {DesignEntity::IF, StatementType::If},
