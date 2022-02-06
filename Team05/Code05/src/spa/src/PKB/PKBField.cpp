@@ -1,5 +1,3 @@
-#pragma once
-
 #include <vector>
 
 #include "PKBField.h"
@@ -27,7 +25,7 @@ size_t PKBFieldHash::operator() (const PKBField& other) const {
 		case PKBType::CONST:
 			return std::hash<int>()(std::get<CONST>(other.content));
 		default:
-			break;
+			return std::hash<PKBType>()(other.tag);
 		}
 	}
 	else {
