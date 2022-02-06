@@ -18,9 +18,8 @@ std::string PKBFieldToString(PKBField pkbField) {
     return res;
 }
 
-std::set<PKBField> getAll(DesignEntity type) {
+PKBResponse getAll(DesignEntity type) {
     std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
-            {DesignEntity::STMT, StatementType::Statement},
             {DesignEntity::ASSIGN, StatementType::Assignment},
             {DesignEntity::WHILE, StatementType::While},
             {DesignEntity::IF, StatementType::If},
@@ -28,27 +27,34 @@ std::set<PKBField> getAll(DesignEntity type) {
             {DesignEntity::PRINT, StatementType::Print},
             {DesignEntity::CALL, StatementType::Call}
     };
-    std::set<PKBField> result;
+    PKBResponse result;
+    PKB pkb = PKB();
     if (type == DesignEntity::PROCEDURE) {
-        result = PKBStub::getProcedures();
+        result = pkb.getProcedures();
     } else if (type == DesignEntity::CONSTANT) {
-        result = PKBStub::getConst();
+        result = pkb.getConstants();
     } else if (type == DesignEntity::VARIABLE) {
-        result = PKBStub::getVariables();
+        result = pkb.getVariables();
+    } else if (type == DesignEntity::STMT) {
+        result = pkb.getStatements();
     } else {
         StatementType sType = StatementTypeMap.find(type)->second;
-        result = PKBStub::getStatements(sType);
+        result = pkb.getStatements(sType);
     }
     return result;
 }
 
 
 // replace int by PKBField
-std::string processResult(std::set<PKBField> queryResult) {
+std::string processResult(PKBResponse queryResult) {
     std::string stringResult = "";
+    if(!queryResult.hasResult) {
+        return stringResult;
+    }
+    std::unordered_set<PKBField, PKBFieldHash> result = std::get<std::unordered_set<PKBField, PKBFieldHash>>(queryResult.res);
     int count = 0;
-    for (auto field : queryResult) {
-        if (count == queryResult.size() - 1) {
+    for (auto field : result) {
+        if (count == result.size() - 1) {
             stringResult += PKBFieldToString(field);
         } else {
             stringResult = stringResult + PKBFieldToString(field) + ", ";
@@ -68,7 +74,7 @@ std::string evaluate(Query query) {
     // TO DO: replace int with PKBField
     std::set<int> suchthatResult;
     std::set<int> patternResult;
-    std::set<PKBField> queryResult;
+    PKBResponse queryResult;
 
     if (suchthat.empty() && pattern.empty()) {
         queryResult = getAll(returnType);
