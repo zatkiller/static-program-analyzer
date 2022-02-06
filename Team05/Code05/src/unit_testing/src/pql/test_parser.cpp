@@ -180,7 +180,7 @@ TEST_CASE("Parser parsePattern - wildcard expression") {
     Pattern pattern = patterns[0];
 
     REQUIRE(pattern.getSynonym() == "a");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().declaration == "v");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
     REQUIRE(pattern.getExpression() == "_");
 }
@@ -201,7 +201,7 @@ TEST_CASE("Parser parsePattern - string expression") {
     Pattern pattern = patterns[0];
 
     REQUIRE(pattern.getSynonym() == "a");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().declaration == "v");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
     REQUIRE(pattern.getExpression() == "x");
 }
@@ -222,7 +222,7 @@ TEST_CASE("Parser parsePattern - string expression with wildcard") {
     Pattern pattern = patterns[0];
 
     REQUIRE(pattern.getSynonym() == "a");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().declaration == "v");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
     REQUIRE(pattern.getExpression() == "_x_");
 }
@@ -260,7 +260,7 @@ TEST_CASE("Parser parseEntRef") {
     Query query;
     EntRef er = parser.parseEntRef(query);
     REQUIRE(er.isVarName());
-    REQUIRE(er.variable == "x");
+    REQUIRE(er.getVariableName() == "x");
 }
 
 TEST_CASE("Parser parseRelRefVariabels") {
@@ -276,7 +276,7 @@ TEST_CASE("Parser parseRelRefVariabels") {
     REQUIRE(mPtr->modifiesStmt.isLineNo());
     REQUIRE(mPtr->modifiesStmt.getLineNo() == 3);
     REQUIRE(mPtr->modified.isVarName());
-    REQUIRE(mPtr->modified.variable == "x");
+    REQUIRE(mPtr->modified.getVariableName() == "x");
 }
 
 TEST_CASE("Parser parseRelRef") {
@@ -338,14 +338,14 @@ TEST_CASE("Parser parseQuery") {
     REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
     REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
     REQUIRE(modifiesPtr->modified.isDeclaration());
-    REQUIRE(modifiesPtr->modified.declaration == "v1");
+    REQUIRE(modifiesPtr->modified.getDeclaration() == "v1");
 
     // Check pattern
     std::vector<Pattern> patterns = query.getPattern();
     Pattern pattern = patterns[0];
 
     REQUIRE(pattern.getSynonym() == "a1");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().declaration == "v");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
     REQUIRE(pattern.getExpression() == "_x_");
 }
@@ -383,7 +383,7 @@ TEST_CASE("Parser parsePql") {
     Pattern pattern = patterns[0];
 
     REQUIRE(pattern.getSynonym() == "a");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().declaration == "v");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
     REQUIRE(pattern.getExpression() == "_x_");
 }

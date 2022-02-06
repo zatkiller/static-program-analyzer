@@ -79,7 +79,9 @@ EntRef EntRef::ofDeclaration(std::string d) {
 }
 
 EntRef EntRef::ofWildcard() {
-    return EntRef { EntRefType::WILDCARD };
+    EntRef e;
+    e.type = EntRefType::WILDCARD;
+    return e;
 }
 
 EntRefType EntRef::getType() {

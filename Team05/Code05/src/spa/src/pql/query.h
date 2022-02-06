@@ -64,10 +64,11 @@ enum class EntRefType {
 };
 
 struct EntRef{
+private:
     EntRefType type = EntRefType::NOT_INITIALIZED;
     std::string declaration = "";
     std::string variable = "";
-
+public:
     static EntRef ofDeclaration(std::string);
     static EntRef ofVarName(std::string);
     static EntRef ofWildcard();
