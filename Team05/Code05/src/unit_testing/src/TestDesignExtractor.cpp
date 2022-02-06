@@ -8,12 +8,12 @@
 #include "DesignExtractor/DesignExtractor.h"
 #include "DesignExtractor/VariableExtractor.h"
 #include "DesignExtractor/ModifiesExtractor.h"
+#include "PKB.h"
 #include "logging.h"
 
 #define TEST_LOG Logger() << "TestDesignExtractor.cpp "
 
 namespace AST {
-
     TEST_CASE("Design extractor Test") {
         TEST_LOG << "Testing Design Extractor";
         // Construct a simple AST;
@@ -25,7 +25,7 @@ namespace AST {
          *
          */
 
-        auto pkb = std::make_shared<PKBStub>();
+        auto pkb = std::make_shared<PKBAdaptor>();
 
         SECTION("whileBlk walking test") {
             TEST_LOG << "Walking simple while AST";

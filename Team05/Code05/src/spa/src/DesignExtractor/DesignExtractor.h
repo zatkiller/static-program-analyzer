@@ -9,6 +9,7 @@
 #include <string>
 
 #include "Parser/AST.h"
+#include "PKB.h"
 
 using muTable = std::set<std::pair<std::variant<std::string, int>, std::string>>;  // modifies or uses table
 using sTable = std::set<std::string>;  // string only table
@@ -17,9 +18,11 @@ using Table = std::variant<muTable, sTable>;
 /**
  * A PKB adaptor for testing purposes. Will be developed when integrating with PKB implementation
  */
-struct PKBStub {
+struct PKBAdaptor {
+
     std::map<std::string, Table> tables;
-    PKBStub() {
+
+    PKBAdaptor() {
         tables["variables"].emplace<sTable>();
         tables["modifies"].emplace<muTable>();
     }
@@ -62,7 +65,7 @@ struct TreeWalker : public AST::ASTNodeVisitor {
  */
 class Extractor : public TreeWalker {
 protected:
-    std::shared_ptr<PKBStub> pkb;
+    std::shared_ptr<PKBAdaptor> pkb;
 public:
-    explicit Extractor(std::shared_ptr<PKBStub> pkb) : pkb(pkb) {}
+    explicit Extractor(std::shared_ptr<PKBAdaptor> pkb) : pkb(pkb) {}
 };
