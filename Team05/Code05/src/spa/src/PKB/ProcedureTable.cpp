@@ -6,31 +6,31 @@
 
 // count of an item in a set can only be 0 or 1
 bool ProcedureTable::contains(PKBField field) {
-	if (field.tag != PKBType::PROCEDURE) {
-		throw "Only procedures are accepted!";
-	}
-	PROC_NAME proc = std::get<PROC_NAME>(field.content);
-	return rows.count(ProcedureRow(proc)) == 1;
+    if (field.tag != PKBType::PROCEDURE) {
+        throw "Only procedures are accepted!";
+    }
+    PROC_NAME proc = std::get<PROC_NAME>(field.content);
+    return rows.count(ProcedureRow(proc)) == 1;
 }
 
 void ProcedureTable::insert(PKBField field) {
-	if (field.tag != PKBType::PROCEDURE) {
-		throw "Only procedures are accepted!";
-	}
-	PROC_NAME proc = std::get<PROC_NAME>(field.content);
-	rows.insert(ProcedureRow(proc));
+    if (field.tag != PKBType::PROCEDURE) {
+        throw "Only procedures are accepted!";
+    }
+    PROC_NAME proc = std::get<PROC_NAME>(field.content);
+    rows.insert(ProcedureRow(proc));
 }
 
 int ProcedureTable::getSize() {
-	return rows.size();
+    return rows.size();
 }
 
 std::vector<PROC_NAME> ProcedureTable::getAllProcs() {
-	std::vector<PROC_NAME> res;
+    std::vector<PROC_NAME> res;
 
-	for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-		res.push_back(iter->getProcName());
-	}
+    for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
+        res.push_back(iter->getProcName());
+    }
 
-	return res;
+    return res;
 }

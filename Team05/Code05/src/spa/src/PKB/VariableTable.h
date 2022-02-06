@@ -10,12 +10,12 @@
 
 class VariableTable {
 public:
-	// count of an item in a set can only be 0 or 1
-	bool contains(PKBField);
-	void insert(PKBField);
-	int getSize();
-	std::vector<VAR_NAME> getAllVars();
+    // count of an item in a set can only be 0 or 1
+    bool contains(PKBField);
+    void insert(PKBField);
+    int getSize();
+    std::vector<VAR_NAME> getAllVars();
 
 private:
-	std::unordered_set<VariableRow, VariableRowHash> rows;
+    std::unordered_set<VariableRow, VariableRowHash> rows;
 };

@@ -4,16 +4,16 @@
 
 class ConstantRow {
 public:
-	ConstantRow(CONST value) : constant(value) {};
+    explicit ConstantRow(CONST value) : constant(value) {}
 
-	bool operator == (const ConstantRow&) const;
-	CONST getConst() const;
-	
+    bool operator == (const ConstantRow&) const;
+    CONST getConst() const;
+    
 private:
-	CONST constant;
+    CONST constant;
 };
 
 class ConstantRowHash {
 public:
-	size_t operator() (const ConstantRow&) const;
+    size_t operator() (const ConstantRow&) const;
 };

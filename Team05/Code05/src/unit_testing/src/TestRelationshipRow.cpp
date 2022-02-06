@@ -10,7 +10,6 @@
  * 
  */
 TEST_CASE("RelationshipRow operator testing") {
-    
     PKBField field1{ PKBType::VARIABLE, true, Content{VAR_NAME{"test"}} };
     PKBField field2{ PKBType::VARIABLE, true, Content{VAR_NAME{"test"}} };
     PKBField field3{ PKBType::PROCEDURE, true, Content{PROC_NAME{"proc_test"}} };

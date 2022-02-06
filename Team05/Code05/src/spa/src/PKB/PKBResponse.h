@@ -14,5 +14,5 @@ struct PKBResponse {
     bool hasResult;
     Response res;
 
-    //bool operator == (const PKBResponse)
+    // bool operator == (const PKBResponse)
 };

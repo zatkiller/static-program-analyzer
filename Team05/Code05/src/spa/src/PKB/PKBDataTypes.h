@@ -7,7 +7,7 @@
 typedef int CONST;
 
 typedef struct VAR_NAME {
-    VAR_NAME(std::string str) : name(str) {};
+    VAR_NAME(std::string str) : name(str) {}
     std::string name;
 
     public:
@@ -16,7 +16,7 @@ typedef struct VAR_NAME {
 } VAR_NAME;
 
 typedef struct PROC_NAME {
-    PROC_NAME(std::string str) : name(str) {};
+    PROC_NAME(std::string str) : name(str) {}
     std::string name;
 
     public:

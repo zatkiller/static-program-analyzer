@@ -7,16 +7,16 @@
 
 class VariableRow {
 public:
-	VariableRow(VAR_NAME);
+    explicit VariableRow(VAR_NAME);
 
-	bool operator == (const VariableRow&) const;
-	VAR_NAME getVarName() const;
+    bool operator == (const VariableRow&) const;
+    VAR_NAME getVarName() const;
 
 private:
-	VAR_NAME variableName;
+    VAR_NAME variableName;
 };
 
 class VariableRowHash {
-	public:
-		size_t operator()(const VariableRow&) const;
+    public:
+        size_t operator()(const VariableRow&) const;
 };

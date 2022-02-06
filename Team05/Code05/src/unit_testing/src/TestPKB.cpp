@@ -28,5 +28,4 @@ TEST_CASE("PKB testing") {
     auto content2 = std::get<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(expected.res);
     REQUIRE(content1.size() == content2.size());
     REQUIRE(res1.hasResult == expected.hasResult);*/
-    
 }

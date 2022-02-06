@@ -8,12 +8,12 @@
 
 class ProcedureTable {
 public:
-	// count of an item in a set can only be 0 or 1
-	bool contains(PKBField);
-	void insert(PKBField);
-	int getSize();
-	std::vector<PROC_NAME> getAllProcs();
+    // count of an item in a set can only be 0 or 1
+    bool contains(PKBField);
+    void insert(PKBField);
+    int getSize();
+    std::vector<PROC_NAME> getAllProcs();
 
 private:
-	std::unordered_set<ProcedureRow, ProcedureRowHash> rows;
+    std::unordered_set<ProcedureRow, ProcedureRowHash> rows;
 };

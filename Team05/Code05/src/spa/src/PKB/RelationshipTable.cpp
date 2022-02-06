@@ -5,9 +5,9 @@
 RelationshipTable::RelationshipTable(PKBRelationship rsType) : type(rsType) {}
 
 PKBRelationship RelationshipTable::getType() {
-	return type;
+    return type;
 }
 
 int RelationshipTable::getSize() {
-	return rows.size();
+    return rows.size();
 }

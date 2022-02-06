@@ -9,12 +9,12 @@
 
 class StatementTable {
 public:
-	bool contains(StatementType, int);
-	void insert(StatementType, int);
-	int getSize();
-	std::vector<STMT_LO> getAllStmt();
-	std::vector<STMT_LO> getStmtOfType(StatementType);
+    bool contains(StatementType, int);
+    void insert(StatementType, int);
+    int getSize();
+    std::vector<STMT_LO> getAllStmt();
+    std::vector<STMT_LO> getStmtOfType(StatementType);
 
 private:
-	std::unordered_set<StatementRow, StatementRowHash> rows;
+    std::unordered_set<StatementRow, StatementRowHash> rows;
 };

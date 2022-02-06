@@ -7,13 +7,13 @@
 ProcedureRow::ProcedureRow(PROC_NAME p) : procedureName(p) {}
 
 bool ProcedureRow::operator == (const ProcedureRow& row) const {
-	return procedureName == row.procedureName;
+    return procedureName == row.procedureName;
 }
 
 PROC_NAME ProcedureRow::getProcName() const {
-	return procedureName;
+    return procedureName;
 }
 
 size_t ProcedureRowHash::operator() (const ProcedureRow& other) const {
-	return std::hash<std::string>()(other.getProcName().name);
+    return std::hash<std::string>()(other.getProcName().name);
 }

@@ -11,7 +11,8 @@
  * Ensures token structs and token type are correct.
  */
 TEST_CASE("ModifiesRelationshipTable testing") {
-    std::unique_ptr<ModifiesRelationshipTable> table = std::unique_ptr<ModifiesRelationshipTable>(new ModifiesRelationshipTable());
+    std::unique_ptr<ModifiesRelationshipTable> table = 
+        std::unique_ptr<ModifiesRelationshipTable>(new ModifiesRelationshipTable());
     PKBField field1{ PKBType::PROCEDURE, true, Content{PROC_NAME{"main"}} };
     PKBField field2{ PKBType::VARIABLE, true, Content{VAR_NAME{"a"}} };
     PKBField field3{ PKBType::VARIABLE, true, Content{VAR_NAME{"b"}} };

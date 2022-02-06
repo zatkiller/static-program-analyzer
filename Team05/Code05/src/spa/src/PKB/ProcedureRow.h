@@ -7,16 +7,16 @@
 
 class ProcedureRow {
 public:
-	ProcedureRow(PROC_NAME);
+    explicit ProcedureRow(PROC_NAME);
 
-	bool operator == (const ProcedureRow&) const;
-	PROC_NAME getProcName() const;
+    bool operator == (const ProcedureRow&) const;
+    PROC_NAME getProcName() const;
 
 private:
-	PROC_NAME procedureName;
+    PROC_NAME procedureName;
 };
 
 class ProcedureRowHash {
-	public:
-		size_t operator() (const ProcedureRow&) const;
+    public:
+        size_t operator() (const ProcedureRow&) const;
 };

@@ -7,11 +7,11 @@
 
 class ConstantTable {
 public:
-	bool contains(PKBField);
-	void insert(PKBField);
-	int getSize();
-	std::vector<CONST> getAllConst();
+    bool contains(PKBField);
+    void insert(PKBField);
+    int getSize();
+    std::vector<CONST> getAllConst();
 
 private:
-	std::unordered_set<ConstantRow, ConstantRowHash> rows;
+    std::unordered_set<ConstantRow, ConstantRowHash> rows;
 };
