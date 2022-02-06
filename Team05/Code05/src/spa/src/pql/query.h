@@ -68,6 +68,7 @@ private:
     EntRefType type = EntRefType::NOT_INITIALIZED;
     std::string declaration = "";
     std::string variable = "";
+
 public:
     static EntRef ofDeclaration(std::string);
     static EntRef ofVarName(std::string);
@@ -145,6 +146,7 @@ private:
     std::vector<std::string> variable;
     std::vector<std::shared_ptr<RelRef>> suchthat;
     std::vector<Pattern> pattern;
+
 public:
     std::unordered_map<std::string, DesignEntity> getDeclarations();
     std::vector<std::string> getVariable();
