@@ -24,7 +24,6 @@ Token Lexer::getNextToken() {
     if (text.length() == 0) {
         return Token{"EOF", TokenType::END_OF_FILE};
     } else if (text[0] == '"') {
-
         auto pos1 = text.find("\"");
         auto pos2 = text.find("\"", pos1 + 1);
         int num_chars = pos2 - pos1;

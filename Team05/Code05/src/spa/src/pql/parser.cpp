@@ -237,4 +237,4 @@ Query Parser::parsePql(std::string query) {
     }
 
     return queryObj;
-};
+}
