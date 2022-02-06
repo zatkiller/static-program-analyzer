@@ -18,17 +18,16 @@ std::string PKBFieldToString(PKBField pkbField) {
     return res;
 }
 
-std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
-        {DesignEntity::STMT, StatementType::Statement},
-        {DesignEntity::ASSIGN, StatementType::Assignment},
-        {DesignEntity::WHILE, StatementType::While},
-        {DesignEntity::IF, StatementType::If},
-        {DesignEntity::READ, StatementType::Read},
-        {DesignEntity::PRINT, StatementType::Print},
-        {DesignEntity::CALL, StatementType::Call}
-};
-
 std::set<PKBField> getAll(DesignEntity type) {
+    std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
+            {DesignEntity::STMT, StatementType::Statement},
+            {DesignEntity::ASSIGN, StatementType::Assignment},
+            {DesignEntity::WHILE, StatementType::While},
+            {DesignEntity::IF, StatementType::If},
+            {DesignEntity::READ, StatementType::Read},
+            {DesignEntity::PRINT, StatementType::Print},
+            {DesignEntity::CALL, StatementType::Call}
+    };
     std::set<PKBField> result;
     if (type == DesignEntity::PROCEDURE) {
         result = PKBStub::getProcedures();
