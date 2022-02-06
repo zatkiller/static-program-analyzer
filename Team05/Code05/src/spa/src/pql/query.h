@@ -88,6 +88,7 @@ struct EntRef{
     }
 };
 
+//  Following grammar rules naming convention: https://github.com/nus-cs3203/project-wiki/wiki/Iteration-1-Scope
 enum class RelRefType {
     INVALID,
     FOLLOWS,
