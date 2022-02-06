@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "logging.h"
 #include "PKB.h"
 #include "TNode.h"
 
@@ -33,7 +34,7 @@ void PKB::insertRelationship(PKBRelationship type, PKBField entity1, PKBField en
         modifiesTable->insert(entity1, entity2);
         break;
     default:
-        std::cerr << "Insert into an invalid relationship table\n";
+        Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
     }
 }
 
