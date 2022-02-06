@@ -25,3 +25,11 @@ void VariableTable::insert(PKBField field) {
 int VariableTable::getSize() {
 	return rows.size();
 }
+
+std::vector<VAR_NAME> VariableTable::getAllVars() {
+	std::vector<VAR_NAME> res;
+	for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
+		res.push_back(iter->getVarName());
+	}
+	return res;
+}

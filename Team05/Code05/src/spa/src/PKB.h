@@ -10,6 +10,9 @@
 #include "PKB/VariableTable.h"
 #include "PKB/ProcedureTable.h"
 #include "PKB/ModifiesRelationshipTable.h"
+#include "PKB/ConstantTable.h"
+#include "PKB/PKBResponse.h"
+#include "PKB/PKBReturnType.h"
 
 typedef int PROC;
 
@@ -28,9 +31,16 @@ public:
 	void insertRelationship(PKBRelationship, PKBField, PKBField);
 	//void insertAST();
 
-private:
+	PKBResponse getRelationship(PKBField, PKBField, PKBRelationship);
+	PKBResponse getStatements(StatementType);
+	PKBResponse getVariables();
+	PKBResponse getProcedures();
+	PKBResponse getConstants();
+
+public:
 	std::unique_ptr<StatementTable> statementTable;
 	std::unique_ptr<VariableTable> variableTable;
 	std::unique_ptr<ProcedureTable> procedureTable;
 	std::unique_ptr<ModifiesRelationshipTable> modifiesTable;
+	std::unique_ptr<ConstantTable> constantTable;
 };

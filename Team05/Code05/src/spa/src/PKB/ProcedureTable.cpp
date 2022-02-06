@@ -26,3 +26,13 @@ void ProcedureTable::insert(PKBField field) {
 int ProcedureTable::getSize() {
 	return rows.size();
 }
+
+std::vector<PROC_NAME> ProcedureTable::getAllProcs() {
+	std::vector<PROC_NAME> res;
+
+	for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
+		res.push_back(iter->getProcName());
+	}
+
+	return res;
+}
