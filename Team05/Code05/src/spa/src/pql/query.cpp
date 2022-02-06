@@ -1,6 +1,6 @@
 #include <algorithm>
 
-#include "query.h"
+#include "pql/query.h"
 
 std::unordered_map<std::string, DesignEntity> designEntityMap = {
         { "stmt", DesignEntity::STMT },
@@ -64,16 +64,24 @@ void Query::addPattern(Pattern p) {
 }
 
 
-void EntRef::setType(EntRefType entType) {
-    type = entType;
+EntRef EntRef::ofVarName(std::string name) {
+    EntRef e;
+    e.variable = name;
+    e.type = EntRefType::VARIABLE_NAME;
+    return e;
 }
 
-void EntRef::setDeclaration(std::string d) {
-    declaration = d;
+EntRef EntRef::ofDeclaration(std::string d) {
+    EntRef e;
+    e.declaration = d;
+    e.type = EntRefType::DECLARATION;
+    return e;
 }
 
-void EntRef::setVariableName(std::string name) {
-    variable = name;
+EntRef EntRef::ofWildcard() {
+    EntRef e;
+    e.type = EntRefType::WILDCARD;
+    return e;
 }
 
 EntRefType EntRef::getType() {
@@ -100,16 +108,24 @@ bool EntRef::isWildcard() {
     return type == EntRefType::WILDCARD;
 }
 
-void StmtRef::setType(StmtRefType type) {
-    type = type;
+StmtRef StmtRef::ofDeclaration(std::string d) {
+    StmtRef s;
+    s.type = StmtRefType::DECLARATION;
+    s.declaration = d;
+    return s;
 }
 
-void StmtRef::setDeclaration(std::string d) {
-    declaration = d;
+StmtRef StmtRef::ofLineNo(int lineNo) {
+    StmtRef s;
+    s.type = StmtRefType::LINE_NO;
+    s.lineNo = lineNo;
+    return s;
 }
 
-void StmtRef::setLineNo(int lineNo) {
-    lineNo = lineNo;
+StmtRef StmtRef::ofWildcard() {
+    StmtRef s;
+    s.type = StmtRefType::WILDCARD;
+    return s;
 }
 
 StmtRefType StmtRef::getType() {
@@ -136,17 +152,6 @@ bool StmtRef::isWildcard() {
     return type == StmtRefType::WILDCARD;
 }
 
-void Pattern::setSynonym(std::string s) {
-    synonym = s;
-}
-
-void Pattern::setLhs(EntRef entityRef) {
-    lhs = entityRef;
-}
-
-void Pattern::setExpression(std::string expression) {
-    expression = expression;
-}
 
 std::string Pattern::getSynonym() {
     return synonym;

@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "query.h"
-#include "lexer.h"
+#include "pql/query.h"
+#include "pql/lexer.h"
 
 struct Parser {
     Lexer lexer = Lexer("");
@@ -30,24 +30,26 @@ struct Parser {
     void parseSuchThat(Query&);
     std::shared_ptr<RelRef> parseRelRef(Query&);
 
+    // Template functions to be defined in header file
+    // https://stackoverflow.com/questions/3040480/c-template-function-compiles-in-header-but-not-implementation
     template<typename T, typename F1, typename F2>
     std::shared_ptr<T> parseRelRefVariables(Query &queryObj, F1 f1, F2 f2) {
         std::shared_ptr<T> ptr = std::make_shared<T>();
-        getAndCheckNextToken(TokenType::OpeningParan);
+        getAndCheckNextToken(TokenType::OPENING_PARAN);
 
         if (!isStmtRef(peekNextToken(), queryObj))
             throw "Not a valid StmtRef!";
 
         ptr.get()->*f1 = parseStmtRef(queryObj);
-        getAndCheckNextToken(TokenType::Comma);
+        getAndCheckNextToken(TokenType::COMMA);
 
         if (!isEntRef(peekNextToken(), queryObj))
             throw "Not a valid EntRef!";
 
         ptr.get()->*f2 = parseEntRef(queryObj);
-        getAndCheckNextToken(TokenType::ClosingParan);
+        getAndCheckNextToken(TokenType::CLOSING_PARAN);
         return ptr;
-    };
+    }
 
     std::shared_ptr<RelRef> parseUses(Query &);
     std::shared_ptr<RelRef> parseModifies(Query &);
@@ -56,4 +58,7 @@ struct Parser {
     bool isEntRef(Token, Query &);
     StmtRef parseStmtRef(Query &);
     EntRef parseEntRef(Query &);
+
+    void parsePattern(Query&);
+    std::string parseExpSpec();
 };

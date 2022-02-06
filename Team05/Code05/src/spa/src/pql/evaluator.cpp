@@ -1,5 +1,4 @@
 #include "evaluator.h"
-#include "../logging.h"
 
 #define DEBUG Logger(Level::DEBUG) << "evaluator.cpp "
 
@@ -19,30 +18,32 @@ std::string PKBFieldToString(PKBField pkbField) {
     return res;
 }
 
-std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
-        {DesignEntity::STMT, StatementType::Statement},
-        {DesignEntity::ASSIGN, StatementType::Assignment},
-        {DesignEntity::WHILE, StatementType::While},
-        {DesignEntity::IF, StatementType::If},
-        {DesignEntity::READ, StatementType::Read},
-        {DesignEntity::PRINT, StatementType::Print},
-        {DesignEntity::CALL, StatementType::Call}
-};
+PKBResponse getAll(DesignEntity type) {
+    std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
+//            {DesignEntity::STMT, StatementType::Statement},
+            {DesignEntity::ASSIGN, StatementType::Assignment},
+            {DesignEntity::WHILE, StatementType::While},
+            {DesignEntity::IF, StatementType::If},
+            {DesignEntity::READ, StatementType::Read},
+            {DesignEntity::PRINT, StatementType::Print},
+            {DesignEntity::CALL, StatementType::Call}
+    };
+    PKBResponse result;
+    PKB pkb = PKB();
 
-std::set<PKBField> getAll(DesignEntity type) {
-    std::set<PKBField> result;
     if (type == DesignEntity::PROCEDURE) {
-        result = PKBStub::getProcedures();
+        result = pkb.getProcedures();
     } else if (type == DesignEntity::CONSTANT) {
-        result = PKBStub::getConst();
+        result = pkb.getConstants();
     } else if (type == DesignEntity::VARIABLE) {
-        result = PKBStub::getVariables();
+        result = pkb.getVariables();
     } else {
         StatementType sType = StatementTypeMap.find(type)->second;
-        result = PKBStub::getStatements(sType);
+        result = pkb.getStatements(sType);
     }
     return result;
 }
+
 //Replace int by PKBField
 std::set<PKBField> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, DesignEntity returnType) {
     //TODO: Modifies when PKBResponse is definded Replace int with PKBFields
@@ -85,18 +86,6 @@ std::set<PKBField> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses,
             } else if (stmtType == StmtRefType::LINE_NO) {
 
             } else if (stmtType == StmtRefType::WILDCARD) {
-
-            }
-            // TODO: modifies when PKB API is defined (support one clause only)
-            //result = getRelationship(stmt, modified,  PKBRelationship::MODIFIES, returnType);
-        } else if (type == RelRefType::USESS) {
-            std::shared_ptr<Uses> uPtr = std::dynamic_pointer_cast<Uses>(r);
-            Uses* usesPtr = uPtr.get();
-            Uses u = *usesPtr;
-            EntRef used = u.used;
-            StmtRef stmt = u.useStmt;
-            EntRefType entType = used.getType();
-            StmtRefType stmtType = stmt.getType();
 
             if (entType == EntRefType::DECLARATION) {
                 //TODO: fill in when creating PKBField
@@ -144,32 +133,36 @@ std::set<PKBField> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses,
 //    return result;
 //}
 
-//replace int by PKBField
-std::string processResult(std::set<PKBField> queryResult) {
+// replace int by PKBField
+std::string processResult(PKBResponse queryResult) {
     std::string stringResult = "";
+    if(!queryResult.hasResult) {
+        return stringResult;
+    }
+    std::unordered_set<PKBField, PKBFieldHash> result = std::get<std::unordered_set<PKBField, PKBFieldHash>>(queryResult.res);
     int count = 0;
-    for (auto field : queryResult) {
-        if (count == queryResult.size() - 1) {
+    for (auto field : result) {
+        if (count == result.size() - 1) {
             stringResult += PKBFieldToString(field);
         } else {
             stringResult = stringResult + PKBFieldToString(field) + ", ";
         }
     }
-    DEBUG << "stringResult";
+
     return stringResult;
 }
 
 std::string evaluate(Query query) {
-//    std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
+    // std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
     std::vector<std::string> variable = query.getVariable();
     std::vector<std::shared_ptr<RelRef>> suchthat = query.getSuchthat();
     std::vector<Pattern> pattern = query.getPattern();
 
     DesignEntity returnType = query.getDeclarationDesignEntity(variable[0]);
-    //TODO: replace int with PKBField
+    // TO DO: replace int with PKBField
     std::set<int> suchthatResult;
     std::set<int> patternResult;
-    std::set<PKBField> queryResult;
+    PKBResponse queryResult;
 
 //    if (!suchthat.empty()) {
 //        suchthatResult = processSuchthat(suchthat, returnType);
@@ -179,17 +172,9 @@ std::string evaluate(Query query) {
 //        patternResult = processPattern(pattern, returnType);
 //    }
 
+
     if (suchthat.empty() && pattern.empty()) {
         queryResult = getAll(returnType);
-
-    } else {
-//        int size = std::min(suchthatResult.size(), patternResult.size());
-//        std::vector<int> v1(size);
-//        std::vector<int>::iterator it, ls;
-//        ls = std::set_intersection(suchthatResult.begin(), suchthatResult.end(), patternResult.begin(), patternResult.end(), v1.begin());
-//        for (it = v1.begin(); it != ls; ++it) {
-//            queryResult.insert(*it);
-//        }
     }
 
     return processResult(queryResult);

@@ -1,66 +1,117 @@
 #include "pql/lexer.h"
 #include "catch.hpp"
-#include "logging.h"
 
-TEST_CASE("Lexer tokenisation") {
+TEST_CASE("Lexer getTexxt") {
     std::string testQuery = "assign a; variable v;\n Select a such that Uses (a, v) pattern a (v, _)";
-
     Lexer lexer(testQuery);
 
-    REQUIRE(lexer.getNextToken() == Token{"assign", TokenType::Identifier});
-    REQUIRE(lexer.getNextToken() == Token{"a", TokenType::Identifier});
-    REQUIRE(lexer.getNextToken().getText() == ";");
-
-    REQUIRE(lexer.getNextToken() == Token{"variable", TokenType::Identifier});
-    REQUIRE(lexer.getNextToken() == Token{"v", TokenType::Identifier});
-    REQUIRE(lexer.getNextToken().getText() == ";");
-
-    REQUIRE(lexer.getNextReservedToken() == Token{"Select", TokenType::Select});
-    REQUIRE(lexer.getNextToken() == Token{"a", TokenType::Identifier});
-
-    REQUIRE(lexer.getNextReservedToken() == Token{"such that", TokenType::SuchThat});
-    REQUIRE(lexer.getNextReservedToken() == Token{"Uses", TokenType::Uses});
-
-    REQUIRE(lexer.getNextToken() == Token{"(", TokenType::OpeningParan});
-    REQUIRE(lexer.getNextToken() == Token{"a", TokenType::Identifier});
-    REQUIRE(lexer.getNextToken() == Token{",", TokenType::Comma});
-    REQUIRE(lexer.getNextToken() == Token{"v", TokenType::Identifier});
-    REQUIRE(lexer.getNextToken() == Token{")", TokenType::ClosingParan});
-
-    REQUIRE(lexer.getNextReservedToken() == Token{"pattern", TokenType::Pattern});
-    REQUIRE(lexer.getNextToken() == Token{"a", TokenType::Identifier});
-
-    REQUIRE(lexer.getNextToken() == Token{"(", TokenType::OpeningParan});
-    REQUIRE(lexer.getNextToken() == Token{"v", TokenType::Identifier});
-    REQUIRE(lexer.getNextToken() == Token{",", TokenType::Comma});
-    REQUIRE(lexer.getNextToken() == Token{"_", TokenType::Underscore});
-    REQUIRE(lexer.getNextToken() == Token{")", TokenType::ClosingParan});
+    REQUIRE(lexer.getText() == testQuery);
 }
-
 TEST_CASE("Lexer eatWhitespace") {
-    std::string string1 = "   ";
-    std::string string2 = "\n";
-
-    Lexer lexer1(string1);
+    Lexer lexer1("   ");
     lexer1.eatWhitespace();
     REQUIRE(lexer1.text.length() == 0);
 
-    Lexer lexer2(string2);
+    Lexer lexer2("\n");
     lexer2.eatWhitespace();
     REQUIRE(lexer2.text.length() == 0);
+
+    Lexer lexer3("\t");
+    lexer3.eatWhitespace();
+    REQUIRE(lexer3.text.length() == 0);
+}
+
+TEST_CASE("Lexer hasPrefx") {
+    Lexer lexer("assign a;");
+    REQUIRE(lexer.hasPrefix("assign"));
+}
+
+TEST_CASE("Lexer getNextReservedToken") {
+    Lexer lexer("123 hi123 hi \"test\" ;()_,.");
+
+    auto t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::NUMBER);
+    REQUIRE(t1.getText() == "123");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::IDENTIFIER);
+    REQUIRE(t1.getText() == "hi123");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::IDENTIFIER);
+    REQUIRE(t1.getText() == "hi");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::STRING);
+    REQUIRE(t1.getText() == "test");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::SEMICOLON);
+    REQUIRE(t1.getText() == ";");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::OPENING_PARAN);
+    REQUIRE(t1.getText() == "(");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::CLOSING_PARAN);
+    REQUIRE(t1.getText() == ")");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::UNDERSCORE);
+    REQUIRE(t1.getText() == "_");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::COMMA);
+    REQUIRE(t1.getText() == ",");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::INVALID);
+    REQUIRE(t1.getText() == "");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::END_OF_FILE);
 }
 
 TEST_CASE("Lexer peekNextToken") {
-    std::string testQuery = "assign a; \n Select a such that Uses (a, v) pattern a (v, _)";
-
-    Lexer lexer(testQuery);
-
-    REQUIRE(lexer.peekNextToken() == Token{"assign", TokenType::Identifier});
-    REQUIRE(lexer.getNextToken() == Token{"assign", TokenType::Identifier});
-
-    REQUIRE(lexer.getNextToken() == Token{"a", TokenType::Identifier});
-    REQUIRE(lexer.getNextToken().getText() == ";");
-
-    REQUIRE(lexer.peekNextReservedToken() == Token{"Select", TokenType::Select});
-    REQUIRE(lexer.getNextReservedToken() == Token{"Select", TokenType::Select});
+    Lexer lexer("hello 123 hello123");
+    REQUIRE(lexer.peekNextToken() == Token{"hello", TokenType::IDENTIFIER});
+    REQUIRE(lexer.getNextToken() == Token{"hello", TokenType::IDENTIFIER});
 }
+
+TEST_CASE("Lexer getNextToken") {
+    Lexer lexer("Select Modifies Uses pattern such that");
+
+    auto t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::SELECT);
+    REQUIRE(t1.getText() == "Select");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::MODIFIES);
+    REQUIRE(t1.getText() == "Modifies");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::USES);
+    REQUIRE(t1.getText() == "Uses");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::PATTERN);
+    REQUIRE(t1.getText() == "pattern");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::SUCH_THAT);
+    REQUIRE(t1.getText() == "such that");
+}
+
+TEST_CASE("Lexer peekNextReservedToken") {
+    Lexer lexer("Select Modifies Uses");
+
+    auto t1 = lexer.peekNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::SELECT);
+    REQUIRE(t1.getText() == "Select");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::SELECT);
+    REQUIRE(t1.getText() == "Select");
+}
+
