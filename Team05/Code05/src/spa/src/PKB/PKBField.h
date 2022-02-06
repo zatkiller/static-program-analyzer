@@ -13,11 +13,10 @@ struct PKBField {
     bool isConcrete;
     Content content;
 
-    public:
-        PKBField(PKBType type, bool concrete, Content c) : tag(type), isConcrete(concrete), content(c) {}
-        PKBField() {}
+    PKBField(PKBType type, bool concrete, Content c) : tag(type), isConcrete(concrete), content(c) {}
+    PKBField() {}
 
-        bool operator == (const PKBField&) const;
+    bool operator == (const PKBField&) const;
 };
 
 class PKBFieldHash {
