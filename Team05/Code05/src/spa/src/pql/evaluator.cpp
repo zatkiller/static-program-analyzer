@@ -44,7 +44,7 @@ std::set<PKBField> getAll(DesignEntity type) {
 }
 
 
-//replace int by PKBField
+// replace int by PKBField
 std::string processResult(std::set<PKBField> queryResult) {
     std::string stringResult = "";
     int count = 0;
@@ -60,13 +60,13 @@ std::string processResult(std::set<PKBField> queryResult) {
 }
 
 std::string evaluate(Query query) {
-//    std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
+    // std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
     std::vector<std::string> variable = query.getVariable();
     std::vector<std::shared_ptr<RelRef>> suchthat = query.getSuchthat();
     std::vector<Pattern> pattern = query.getPattern();
 
     DesignEntity returnType = query.getDeclarationDesignEntity(variable[0]);
-    //TODO: replace int with PKBField
+    // TO DO: replace int with PKBField
     std::set<int> suchthatResult;
     std::set<int> patternResult;
     std::set<PKBField> queryResult;

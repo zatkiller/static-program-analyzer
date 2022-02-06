@@ -47,7 +47,7 @@ struct Token {
 struct Lexer {
     std::string text;
 
-    Lexer(std::string input) : text(input) {};
+    explicit Lexer(std::string input) : text(input) {}
 
     void eatWhitespace();
 

@@ -102,13 +102,12 @@ enum class RelRefType {
 struct RelRef {
     RelRefType type = RelRefType::INVALID;
     RelRef() {}
-    RelRef(RelRefType type) : type(type) {}
-    virtual ~RelRef() {};
+    explicit RelRef(RelRefType type) : type(type) {}
+    virtual ~RelRef() {}
     virtual RelRefType getType() { return type; }
 };
 
 struct Modifies : RelRef {
-
     Modifies() : RelRef(RelRefType::MODIFIESS) {}
     EntRef modified;
     StmtRef modifiesStmt;
@@ -134,7 +133,6 @@ struct Pattern {
     bool operator==(const Pattern &o) const {
         return (synonym == o.synonym) && (lhs == o.lhs) && (expression == o.expression);
     }
-
 };
 
 class Query {

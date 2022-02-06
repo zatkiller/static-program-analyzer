@@ -4,16 +4,13 @@
 #include <vector>
 #include "logging.h"
 
-std::string NOT_EXPECTING_TOKEN_ERROR_MSG = "Not expecting this token type!";
-std::string VAR_DOES_NOT_EXIST_ERROR_MSG = "Variable does not exist in declaration!";
-
 TEST_CASE("Parser checkType") {
     Parser parser;
     Token token = Token { "", TokenType::INVALID };
     REQUIRE_NOTHROW(parser.checkType(token, TokenType::INVALID));
 
     Token token2 = Token { "", TokenType::STRING };
-    REQUIRE_THROWS_WITH(parser.checkType(token2, TokenType::INVALID), NOT_EXPECTING_TOKEN_ERROR_MSG);
+    REQUIRE_THROWS_WITH(parser.checkType(token2, TokenType::INVALID), "Not expecting this token type!");
 }
 
 TEST_CASE("Parser getAndCheckNextToken and peekAndCheckNextToken") {
@@ -21,7 +18,7 @@ TEST_CASE("Parser getAndCheckNextToken and peekAndCheckNextToken") {
     parser.lexer.text = "hello 123";
     REQUIRE_NOTHROW(parser.getAndCheckNextToken(TokenType::IDENTIFIER));
 
-    REQUIRE_THROWS_WITH(parser.peekAndCheckNextToken(TokenType::IDENTIFIER), NOT_EXPECTING_TOKEN_ERROR_MSG);
+    REQUIRE_THROWS_WITH(parser.peekAndCheckNextToken(TokenType::IDENTIFIER), "Not expecting this token type!");
     REQUIRE_NOTHROW(parser.peekAndCheckNextToken(TokenType::NUMBER));
 }
 
@@ -30,7 +27,7 @@ TEST_CASE("Parser getAndCheckNextReservedToken and peekAndCheckNextReservedToken
     parser.lexer.text = "Select such that";
     REQUIRE_NOTHROW(parser.getAndCheckNextReservedToken(TokenType::SELECT));
 
-    REQUIRE_THROWS_WITH(parser.peekAndCheckNextReservedToken(TokenType::PATTERN), NOT_EXPECTING_TOKEN_ERROR_MSG);
+    REQUIRE_THROWS_WITH(parser.peekAndCheckNextReservedToken(TokenType::PATTERN), "Not expecting this token type!");
     REQUIRE_NOTHROW(parser.peekAndCheckNextReservedToken(TokenType::SUCH_THAT));
 }
 
@@ -105,7 +102,6 @@ TEST_CASE("Parser parseDeclarations") {
     parser.parseDeclarations(queryObj);
     REQUIRE(queryObj.hasDeclaration("v"));
     REQUIRE(queryObj.getDeclarationDesignEntity("v") == DesignEntity::VARIABLE);
-
 }
 
 TEST_CASE("Parser parseSelectFields") {
@@ -123,7 +119,7 @@ TEST_CASE("Parser parseSelectFields") {
     parser.addPql("assign a; \n Select v");
 
     parser.parseDeclarations(queryObj);
-    REQUIRE_THROWS_WITH(parser.parseSelectFields(queryObj), VAR_DOES_NOT_EXIST_ERROR_MSG);
+    REQUIRE_THROWS_WITH(parser.parseSelectFields(queryObj), "Variable does not exist in declaration!");
 }
 
 TEST_CASE("Parser parseSuchThat - Uses") {
@@ -187,7 +183,6 @@ TEST_CASE("Parser parsePattern - wildcard expression") {
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().declaration == "v");
     REQUIRE(validDeclaration);
     REQUIRE(pattern.getExpression() == "_");
-
 }
 
 TEST_CASE("Parser parsePattern - string expression") {
@@ -272,7 +267,8 @@ TEST_CASE("Parser parseRelRefVariabels") {
     Query queryObj;
     Parser parser;
     parser.lexer.text = "(3, \"x\")";
-    std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Modifies>(queryObj, &Modifies::modifiesStmt, &Modifies::modified);
+    std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Modifies>(queryObj,
+        &Modifies::modifiesStmt, &Modifies::modified);
     REQUIRE(ptr.get()->getType() == RelRefType::MODIFIESS);
 
     std::shared_ptr<Modifies> sharedPtr = std::dynamic_pointer_cast<Modifies>(ptr);

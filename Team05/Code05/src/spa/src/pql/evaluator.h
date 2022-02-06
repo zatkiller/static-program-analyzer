@@ -9,9 +9,7 @@
 #include <variant>
 #include <map>
 
-#include "query.h"
-
-
+#include "pql/query.h"
 
 enum class StatementType {
     Statement, Assignment, While, If, Read, Print, Call
@@ -24,7 +22,7 @@ enum class PKBType {
 typedef int CONST;
 
 typedef struct VAR_NAME {
-    VAR_NAME(std::string str) : name(str) {};
+    VAR_NAME(std::string str) : name(str) {}
     std::string name;
 
 public:
@@ -33,7 +31,7 @@ public:
 } VAR_NAME;
 
 typedef struct PROC_NAME {
-    PROC_NAME(std::string str) : name(str) {};
+    PROC_NAME(std::string str) : name(str) {}
     std::string name;
 
 public:
@@ -68,7 +66,6 @@ public:
 
 
 struct PKBStub {
-
     // Placeholder method for interfacing with PKB
     static std::set<PKBField> getStatements(StatementType);
     static std::set<PKBField> getVariables();

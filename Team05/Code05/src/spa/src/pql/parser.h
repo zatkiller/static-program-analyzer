@@ -47,7 +47,7 @@ struct Parser {
         ptr.get()->*f2 = parseEntRef(queryObj);
         getAndCheckNextToken(TokenType::CLOSING_PARAN);
         return ptr;
-    };
+    }
 
     std::shared_ptr<RelRef> parseUses(Query &);
     std::shared_ptr<RelRef> parseModifies(Query &);

@@ -225,7 +225,8 @@ Query Parser::parsePql(std::string query) {
     addPql(query);
     Query queryObj;
 
-    for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::END_OF_FILE; token = peekNextReservedToken()) {
+    for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::END_OF_FILE;
+        token = peekNextReservedToken()) {
         if (token.getTokenType() != TokenType::SELECT) {
             // Parse delcarations first
             parseDeclarations(queryObj);
