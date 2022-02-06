@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ConstantTable.h"
 
 bool ConstantTable::contains(PKBField entry) {

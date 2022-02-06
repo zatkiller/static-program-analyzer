@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ConstantRow.h"
 
 bool ConstantRow::operator == (const ConstantRow& other) const {
