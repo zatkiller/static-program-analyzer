@@ -44,82 +44,82 @@ std::set<PKBField> getAll(DesignEntity type) {
     return result;
 }
 //Replace int by PKBField
-//std::set<int> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, DesignEntity returnType) {
-//    //TODO: Modifies when PKBResponse is definded Replace int with PKBFields
-//    PKBResponse result;
-//    //only one clause for now
-//    for (auto r : clauses) {
-//        RelRefType type = r.get()->getType();
-//
-//        if (type == RelRefType::MODIFIESS) {
-//            std::shared_ptr<Modifies> mPtr = std::dynamic_pointer_cast<Modifies>(r);
-//            Modifies* modifiesPtr = mPtr.get();
-//            Modifies m = *modifiesPtr;
-//            EntRef modified = m.modified;
-//            StmtRef stmt = m.modifiesStmt;
-//            EntRefType entType = modified.getType();
-//            StmtRefType stmtType = stmt.getType();
-//
-//            if ((stmt.isWildcard() || stmt.isLineNo()) && (modified.isWildcard() || modified.isVarName())) {
-//                //include PKB files
-//                STMT_LO stmtLineNo;
-//                stmtLineNo.statementNo = stmt.getLineNo();
-//                PKBField stmtPKBField = PKBField(PKBType::STATEMENT, false, stmt.isWildcard() ? "_" : stmt.getLineNo());
-//                PKBField moidifiedPKBField = PKBField(PKBType::VARIABLE, false, modified.isWildcard() ? "_" : modified.getVariableName());
-//                hasRelationships = PKB::isRelationshipPresent(stmtPKBField, modified, PKBRelationship::MODIFIES);
-//            } else if (stmt.isDeclaration() && modified.isDeclaration()) {
-//
-//            } else {
-//
-//            }
-//            if (entType == EntRefType::DECLARATION) {
-//                //TODO: fill in when creating PKBField
-//            } else if (entType == EntRefType::VARIABLE_NAME) {
-//                //TODO: fill in when creating PKBField
-//            } else if (entType == EntRefType::WILDCARD) {
-//                //TODO: fill in when creating PKBField
-//            }
-//
-//            if (stmtType == StmtRefType::DECLARATION) {
-//
-//            } else if (stmtType == StmtRefType::LINE_NO) {
-//
-//            } else if (stmtType == StmtRefType::WILDCARD) {
-//
-//            }
-//            // TODO: modifies when PKB API is defined (support one clause only)
-//            //result = getRelationship(stmt, modified,  PKBRelationship::MODIFIES, returnType);
-//        } else if (type == RelRefType::USESS) {
-//            std::shared_ptr<Uses> uPtr = std::dynamic_pointer_cast<Uses>(r);
-//            Uses* usesPtr = uPtr.get();
-//            Uses u = *usesPtr;
-//            EntRef used = u.used;
-//            StmtRef stmt = u.useStmt;
-//            EntRefType entType = used.getType();
-//            StmtRefType stmtType = stmt.getType();
-//
-//            if (entType == EntRefType::DECLARATION) {
-//                //TODO: fill in when creating PKBField
-//            } else if (entType == EntRefType::VARIABLE_NAME) {
-//                //TODO: fill in when creating PKBField
-//            } else if (entType == EntRefType::WILDCARD) {
-//                //TODO: fill in when creating PKBField
-//            }
-//
-//            if (stmtType == StmtRefType::DECLARATION) {
-//
-//            } else if (stmtType == StmtRefType::LINE_NO) {
-//
-//            } else if (stmtType == StmtRefType::WILDCARD) {
-//
-//            }
-//            // TODO: modifies when PKB API is defined
-//            //PKBReturnType can be the DesignEntity
-//            //result = getRelationship(stmt, used, PKBRelationship::USES, returnType);
-//        }
-//    }
-//    return result;
-//}
+std::set<PKBField> processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, DesignEntity returnType) {
+    //TODO: Modifies when PKBResponse is definded Replace int with PKBFields
+    std::set<PKBField> result;
+    //only one clause for now
+    for (auto r : clauses) {
+        RelRefType type = r.get()->getType();
+
+        if (type == RelRefType::MODIFIESS) {
+            std::shared_ptr<Modifies> mPtr = std::dynamic_pointer_cast<Modifies>(r);
+            Modifies* modifiesPtr = mPtr.get();
+            Modifies m = *modifiesPtr;
+            EntRef modified = m.modified;
+            StmtRef stmt = m.modifiesStmt;
+            EntRefType entType = modified.getType();
+            StmtRefType stmtType = stmt.getType();
+
+            if ((stmt.isWildcard() || stmt.isLineNo()) && (modified.isWildcard() || modified.isVarName())) {
+                //include PKB files
+                STMT_LO stmtLineNo;
+                stmtLineNo.statementNo = stmt.getLineNo();
+                PKBField stmtPKBField = PKBField(PKBType::STATEMENT, false, stmt.isWildcard() ? "_" : stmt.getLineNo());
+                PKBField moidifiedPKBField = PKBField(PKBType::VARIABLE, false, modified.isWildcard() ? "_" : modified.getVariableName());
+                hasRelationships = PKB::isRelationshipPresent(stmtPKBField, modified, PKBRelationship::MODIFIES);
+            } else if (stmt.isDeclaration() && modified.isDeclaration()) {
+
+            } else {
+
+            }
+            if (entType == EntRefType::DECLARATION) {
+                //TODO: fill in when creating PKBField
+            } else if (entType == EntRefType::VARIABLE_NAME) {
+                //TODO: fill in when creating PKBField
+            } else if (entType == EntRefType::WILDCARD) {
+                //TODO: fill in when creating PKBField
+            }
+
+            if (stmtType == StmtRefType::DECLARATION) {
+
+            } else if (stmtType == StmtRefType::LINE_NO) {
+
+            } else if (stmtType == StmtRefType::WILDCARD) {
+
+            }
+            // TODO: modifies when PKB API is defined (support one clause only)
+            //result = getRelationship(stmt, modified,  PKBRelationship::MODIFIES, returnType);
+        } else if (type == RelRefType::USESS) {
+            std::shared_ptr<Uses> uPtr = std::dynamic_pointer_cast<Uses>(r);
+            Uses* usesPtr = uPtr.get();
+            Uses u = *usesPtr;
+            EntRef used = u.used;
+            StmtRef stmt = u.useStmt;
+            EntRefType entType = used.getType();
+            StmtRefType stmtType = stmt.getType();
+
+            if (entType == EntRefType::DECLARATION) {
+                //TODO: fill in when creating PKBField
+            } else if (entType == EntRefType::VARIABLE_NAME) {
+                //TODO: fill in when creating PKBField
+            } else if (entType == EntRefType::WILDCARD) {
+                //TODO: fill in when creating PKBField
+            }
+
+            if (stmtType == StmtRefType::DECLARATION) {
+
+            } else if (stmtType == StmtRefType::LINE_NO) {
+
+            } else if (stmtType == StmtRefType::WILDCARD) {
+
+            }
+            // TODO: modifies when PKB API is defined
+            //PKBReturnType can be the DesignEntity
+            //result = getRelationship(stmt, used, PKBRelationship::USES, returnType);
+        }
+    }
+    return result;
+}
 
 //Replace int by PKBField
 //std::set<int> processPattern(std::vector<Pattern> patterns, DesignEntity returnType) {
