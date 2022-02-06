@@ -33,6 +33,7 @@ public:
     // void insertAST();
 
     PKBResponse getRelationship(PKBField, PKBField, PKBRelationship);
+    PKBResponse getStatements();
     PKBResponse getStatements(StatementType);
     PKBResponse getVariables();
     PKBResponse getProcedures();

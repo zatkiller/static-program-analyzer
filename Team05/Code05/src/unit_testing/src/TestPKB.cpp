@@ -34,4 +34,15 @@ TEST_CASE("PKB testing") {
     std::string varName1 = "a";
     pkb->insertVariable(varName1);
     REQUIRE(pkb->variableTable->getSize() == 1);
+
+    pkb->insertStatement(StatementType::Assignment, 1);
+    pkb->insertStatement(StatementType::While, 1);
+
+    PKBResponse res2 = pkb->getStatements();
+    auto content3 = std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&res2.res);
+    REQUIRE(content3->size() == 2);
+
+    PKBResponse res3 = pkb->getStatements(StatementType::Assignment);
+    auto content4 = std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&res3.res);
+    REQUIRE(content4->size() == 1);
 }
