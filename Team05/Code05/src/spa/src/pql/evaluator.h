@@ -21,11 +21,41 @@ enum class PKBType {
     STATEMENT, VARIABLE, PROCEDURE, CONST
 };
 
+typedef int CONST;
+
+typedef struct VAR_NAME {
+    VAR_NAME(std::string str) : name(str) {};
+    std::string name;
+
+public:
+    bool operator == (const VAR_NAME&) const;
+    bool operator < (const VAR_NAME&) const;
+} VAR_NAME;
+
+typedef struct PROC_NAME {
+    PROC_NAME(std::string str) : name(str) {};
+    std::string name;
+
+public:
+    bool operator == (const PROC_NAME&) const;
+    bool operator < (const PROC_NAME&) const;
+} PROC_NAME;
+
+typedef struct STMT_LO {
+    int statementNum;
+    StatementType type;
+
+public:
+    bool operator == (const STMT_LO&) const;
+    bool operator < (const STMT_LO&) const;
+} STMT_LO;
+
+using Content = std::variant<STMT_LO, VAR_NAME, PROC_NAME, CONST>;
 
 struct PKBField {
     PKBType tag; // const field members?
     bool isConcrete;
-    std::variant<STMT_LO, VAR_NAME, PROC_NAME, CONST> content;
+    Content content;
 
 
 public:
@@ -36,37 +66,21 @@ public:
     bool operator < (const PKBField&) const;
 };
 
-struct PKBResponse {
-    bool isContent;
-    union Response {
-        std::set<PKBField> content;
-        std::set<std::vector<PKBField>> contentList;
-    };
-}
-
-using sTable = std::set<std::pair<std::string, std::string>>;  // stmt tables
-using vTable = std::set<std::string>;  // variable tables
-using Table = std::variant<sTable, vTable>;
 
 struct PKBStub {
-    std::map<std::string, Table> tables;
-    PKBStub() {
-        tables["variables"].emplace<vTable>();
-        tables["statements"].emplace<sTable>();
-    }
 
     // Placeholder method for interfacing with PKB
-    static PKBResponse getStatements(StatementType);
-    static PKBResponse getVariables();
-    static PKBResponse getConst();
-    static PKBResponse getProcedures();
+    static std::set<PKBField> getStatements(StatementType);
+    static std::set<PKBField> getVariables();
+    static std::set<PKBField> getConst();
+    static std::set<PKBField> getProcedures();
 };
 
 enum class PKBRelationship {
     MODIFIES, USES
 };
 
-PKBResponse getall(DesignEntity);
+std::set<PKBField> getall(DesignEntity);
 
 std::string PKBFieldToString(PKBField);
 
