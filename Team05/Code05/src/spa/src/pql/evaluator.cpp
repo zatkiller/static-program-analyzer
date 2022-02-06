@@ -1,5 +1,4 @@
 #include "evaluator.h"
-#include "../logging.h"
 
 #define DEBUG Logger(Level::DEBUG) << "evaluator.cpp "
 
@@ -57,7 +56,6 @@ std::string processResult(std::set<PKBField> queryResult) {
         }
     }
 
-    DEBUG << "stringResult";
     return stringResult;
 }
 
