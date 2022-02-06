@@ -36,6 +36,8 @@ PKBResponse getAll(DesignEntity type) {
         result = pkb.getConstants();
     } else if (type == DesignEntity::VARIABLE) {
         result = pkb.getVariables();
+    } else if (type == DesignEntity::STMT) {
+        result = pkb.getStatements();
     } else {
         StatementType sType = StatementTypeMap.find(type)->second;
         result = pkb.getStatements(sType);
