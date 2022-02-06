@@ -6,6 +6,8 @@
 #include "AST.h"
 #include "Lexer.h"
 
+namespace SimpleParser {
+
 class Parser {
 public:
     std::unique_ptr<AST::Program> parse(const std::string& source);  // main method that parses the source code
@@ -33,3 +35,5 @@ private:
 
     friend class ParserUnitTest;
 };
+
+}  // namespace SimpleParser

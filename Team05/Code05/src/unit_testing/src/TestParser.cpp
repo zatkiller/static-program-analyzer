@@ -6,6 +6,7 @@
 #include "Parser/Lexer.h"
 #include "Parser/Parser.h"
 
+namespace SimpleParser {
 
 class ParserUnitTest {
 public:
@@ -516,3 +517,6 @@ BPs82 =  (2) % (263 - 9374) * ((814) + (0 + o9y0Nxi) % A000 - 0 / 035) % (53 - 2
         REQUIRE(Parser().parse(generatedCode2) != nullptr);
     }    
 }
+
+}  // namespace SimpleParser
+

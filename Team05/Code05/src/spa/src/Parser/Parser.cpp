@@ -13,6 +13,9 @@
 #include "logging.h"
 #include "AST.h"
 
+
+namespace SimpleParser {
+
 using std::make_unique;
 using std::move;
 using std::unique_ptr;
@@ -39,16 +42,16 @@ Token getNextToken(deque<Token>& tokens) {
 }
 
 /**
- * Parses constants
- */
+    * Parses constants
+    */
 unique_ptr<AST::Expr> Parser::parseConstExpr(deque<Token>& tokens) {
     Token currToken = getNextToken(tokens);  // consume token
     return make_unique<AST::Const>(get<int>(currToken.value));
 }
 
 /**
- * Parses variable names
- */
+    * Parses variable names
+    */
 unique_ptr<AST::Expr> Parser::parseVariableExpr(deque<Token>& tokens) {
     Token currToken = getNextToken(tokens);  // consume token
     return make_unique<AST::Var>(get<string>(currToken.value));
@@ -246,7 +249,7 @@ unique_ptr<AST::Expr> Parser::shuntingYardParser(deque<Token>& tokens) {
             if (symbol == '(') {
                 operators.push(symbol);
                 tokens.pop_front();
-            // If it's operators, we resolve what we can
+                // If it's operators, we resolve what we can
             } else if (symbol == '*' || symbol == '/' || symbol == '%') {
                 while (!operators.empty()) {
                     char top = operators.top();
@@ -320,9 +323,9 @@ unique_ptr<AST::CondExpr> Parser::parseRelExpr(deque<Token>& tokens) {
 }
 
 /**
- * To identify if bracketted expression is part of a condExpr or Expr.
- * E.g. while( (x+1) > 1) vs while ((x > 1) && (y < x))
- */
+    * To identify if bracketted expression is part of a condExpr or Expr.
+    * E.g. while( (x+1) > 1) vs while ((x > 1) && (y < x))
+    */
 bool isCondExpr(deque<Token>& tokens) {
     int openBrCount = 0;
     for (auto& v : tokens) {
@@ -420,7 +423,7 @@ AST::StmtLst Parser::parseStmtLst(deque<Token>& tokens) {
         }
     } while (
         (tokens.front().type != TokenType::special ||
-        get<char>(tokens.front().value) != '}') &&
+            get<char>(tokens.front().value) != '}') &&
         tokens.front().type != TokenType::eof);
     return AST::StmtLst(list);
 }
@@ -586,3 +589,5 @@ unique_ptr<AST::Program> Parser::parse(const string& source) {
         return unique_ptr<AST::Program>();
     }
 }
+
+}  // namespace SimpleParser
