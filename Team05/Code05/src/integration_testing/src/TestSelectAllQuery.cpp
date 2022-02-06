@@ -52,3 +52,26 @@ TEST_CASE("Test get statements") {
     REQUIRE(evaluator.getAll(DesignEntity::ASSIGN).hasResult == false);
 
 }
+
+TEST_CASE("Test get variables") {
+    PKB pkb = PKB();
+    PKB* pkbptr = &pkb;
+    Evaluator evaluator = Evaluator(pkbptr);
+
+    REQUIRE(evaluator.getAll(DesignEntity::VARIABLE).hasResult == false);
+
+    pkb.insertVariable("x");
+    pkb.insertVariable("y");
+    pkb.insertVariable("cur");
+
+    PKBField v1{PKBType::VARIABLE, true, Content{VAR_NAME("x")}};
+    PKBField v2{PKBType::VARIABLE, true, Content{VAR_NAME("y")}};
+    PKBField v3{PKBType::VARIABLE, true, Content{VAR_NAME("cur")}};
+
+    std::unordered_set<PKBField, PKBFieldHash> expectedSelectVar;
+    expectedSelectVar.insert(v1);
+    expectedSelectVar.insert(v2);
+    expectedSelectVar.insert(v3);
+
+    REQUIRE(std::get<std::unordered_set<PKBField, PKBFieldHash>>(evaluator.getAll(DesignEntity::VARIABLE).res) == expectedSelectVar);
+}
