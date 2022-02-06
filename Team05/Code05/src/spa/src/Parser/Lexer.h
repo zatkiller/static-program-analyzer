@@ -6,6 +6,8 @@
 #include <iostream>
 #include <variant>
 
+namespace SimpleParser {
+
 enum class TokenType {
     eof,
     name,     // [a-zA-Z][a-zA-Z0-9]*
@@ -37,3 +39,5 @@ public:
     }
     std::deque<Token>& getTokens();
 };
+
+}  // namespace SimpleParser
