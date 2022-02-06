@@ -20,11 +20,20 @@
 #include "PKB.h"
 #include "PKB/PKBRelationship.h"
 
+class Evaluator {
+    PKB* pkb;
 
-PKBResponse getAll(DesignEntity);
+public:
+    Evaluator(PKB* pkb) {
+        this->pkb = pkb;
+    }
 
-std::string PKBFieldToString(PKBField);
+    PKBResponse getAll(DesignEntity);
 
-std::string processResult(PKBResponse);
+    std::string PKBFieldToString(PKBField);
 
-std::string evaluate(Query);
+    std::string processResult(PKBResponse);
+
+    std::string evaluate(Query);
+};
+

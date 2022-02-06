@@ -2,7 +2,7 @@
 
 #define DEBUG Logger(Level::DEBUG) << "evaluator.cpp "
 
-std::string PKBFieldToString(PKBField pkbField) {
+std::string Evaluator::PKBFieldToString(PKBField pkbField) {
     std::string res = "";
     if(pkbField.tag == PKBType::STATEMENT) {
         int lineNo = std::get<STMT_LO>(pkbField.content).statementNum;
@@ -18,7 +18,7 @@ std::string PKBFieldToString(PKBField pkbField) {
     return res;
 }
 
-PKBResponse getAll(DesignEntity type) {
+PKBResponse Evaluator::getAll(DesignEntity type) {
     std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
             {DesignEntity::ASSIGN, StatementType::Assignment},
             {DesignEntity::WHILE, StatementType::While},
@@ -28,25 +28,25 @@ PKBResponse getAll(DesignEntity type) {
             {DesignEntity::CALL, StatementType::Call}
     };
     PKBResponse result;
-    PKB pkb = PKB();
+
     if (type == DesignEntity::PROCEDURE) {
-        result = pkb.getProcedures();
+        result = pkb->getProcedures();
     } else if (type == DesignEntity::CONSTANT) {
-        result = pkb.getConstants();
+        result = pkb->getConstants();
     } else if (type == DesignEntity::VARIABLE) {
-        result = pkb.getVariables();
+        result = pkb->getVariables();
     } else if (type == DesignEntity::STMT) {
-        result = pkb.getStatements();
+        result = pkb->getStatements();
     } else {
         StatementType sType = StatementTypeMap.find(type)->second;
-        result = pkb.getStatements(sType);
+        result = pkb->getStatements(sType);
     }
     return result;
 }
 
 
 // replace int by PKBField
-std::string processResult(PKBResponse queryResult) {
+std::string Evaluator::processResult(PKBResponse queryResult) {
     std::string stringResult = "";
     if(!queryResult.hasResult) {
         return stringResult;
@@ -64,7 +64,7 @@ std::string processResult(PKBResponse queryResult) {
     return stringResult;
 }
 
-std::string evaluate(Query query) {
+std::string Evaluator::evaluate(Query query) {
     // std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
     std::vector<std::string> variable = query.getVariable();
     std::vector<std::shared_ptr<RelRef>> suchthat = query.getSuchthat();
