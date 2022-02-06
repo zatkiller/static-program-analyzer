@@ -14,6 +14,7 @@ class ASTNode {
 public:
     virtual ~ASTNode() {}
     virtual void accept(std::shared_ptr<ASTNodeVisitor> visitor) const = 0;
+    virtual bool operator==(ASTNode const& o) const = 0;
 };
 
 // Abstract classes
@@ -91,8 +92,9 @@ private:
 public:
     explicit Var(const std::string& varName) : varName(varName) {}
     const std::string& getVarName() const { return varName; }
-    void setVarName(std::string& name) { this->varName = name; }
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 
@@ -108,7 +110,6 @@ private:
 public:
     ~Statement() {}
     explicit Statement(int stmtNo) : stmtNo(stmtNo) {}
-
     const int getStmtNo() const {
         return stmtNo;
     }
@@ -140,6 +141,8 @@ public:
     : list(std::move(list)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -157,6 +160,8 @@ public:
         procName(procName), stmtLst(std::move(stmtLst)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -171,8 +176,10 @@ private:
 public:
     explicit Program(std::unique_ptr<Procedure> procedure) :
         procedure(std::move(procedure)) {}
-
+    
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -198,6 +205,8 @@ public:
         elseBlk(std::move(elseBlk)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -220,6 +229,8 @@ public:
         stmtLst(std::move(stmtLst)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -246,6 +257,8 @@ public:
     const Var getLHS() const {
         return *var;
     }
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 
@@ -254,7 +267,7 @@ public:
     * Base class for 'Read and 'Print' statements.
     */
 class IO : public Statement {
-private:
+protected:
     std::unique_ptr<Var> var;
 public:
     IO(
@@ -265,6 +278,8 @@ public:
         var(std::move(var)) {}
 
     const Var getVar() const { return *var; }
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -300,6 +315,9 @@ private:
 public:
     explicit Const(int constValue) : constValue(constValue) {}
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    const int getConstValue() const { return constValue; }
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -334,6 +352,8 @@ public:
         RHS(std::move(RHS)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -370,6 +390,8 @@ public:
         RHS(std::move(RHS)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -401,6 +423,8 @@ public:
         RHS(std::move(RHS)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -419,6 +443,8 @@ public:
         condExpr(std::move(condExpr)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 
