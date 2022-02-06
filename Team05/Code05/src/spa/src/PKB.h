@@ -22,25 +22,25 @@ class VarTable;  // no need to #include "VarTable.h" as all I need is pointer
 
 class PKB {
 public:
-	PKB();
-	//static VarTable* varTable; 
-	static int setProcToAST(PROC p, TNode* r);
-	static TNode* getRootAST(PROC p);
+    PKB();
+    // static VarTable* varTable; 
+    static int setProcToAST(PROC p, TNode* r);
+    static TNode* getRootAST(PROC p);
 
-	void insertStatement(StatementType, int);
-	void insertRelationship(PKBRelationship, PKBField, PKBField);
-	//void insertAST();
+    void insertStatement(StatementType, int);
+    void insertRelationship(PKBRelationship, PKBField, PKBField);
+    // void insertAST();
 
-	PKBResponse getRelationship(PKBField, PKBField, PKBRelationship);
-	PKBResponse getStatements(StatementType);
-	PKBResponse getVariables();
-	PKBResponse getProcedures();
-	PKBResponse getConstants();
+    PKBResponse getRelationship(PKBField, PKBField, PKBRelationship);
+    PKBResponse getStatements(StatementType);
+    PKBResponse getVariables();
+    PKBResponse getProcedures();
+    PKBResponse getConstants();
 
 public:
-	std::unique_ptr<StatementTable> statementTable;
-	std::unique_ptr<VariableTable> variableTable;
-	std::unique_ptr<ProcedureTable> procedureTable;
-	std::unique_ptr<ModifiesRelationshipTable> modifiesTable;
-	std::unique_ptr<ConstantTable> constantTable;
+    std::unique_ptr<StatementTable> statementTable;
+    std::unique_ptr<VariableTable> variableTable;
+    std::unique_ptr<ProcedureTable> procedureTable;
+    std::unique_ptr<ModifiesRelationshipTable> modifiesTable;
+    std::unique_ptr<ConstantTable> constantTable;
 };
