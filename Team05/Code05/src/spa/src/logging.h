@@ -21,6 +21,11 @@ enum class Level {
     OK,
 };
 
+/**
+ * The short-lived Logger object. Usage: Logger(Level::INFO) << "msg.
+ * 
+ * Logging level supported: INFO, WARN, DEBUG, ERROR, OK
+ */
 class Logger {
 public:
     template<typename T>
@@ -29,7 +34,7 @@ public:
         return *this;
     }
 
-    Logger(Level level = Level::INFO) : level(level) {
+    explicit Logger(Level level = Level::INFO) : level(level) {
         this->oss << this->getHeader();
     }
 
@@ -42,8 +47,7 @@ public:
         default:
             std::cout << this->oss.str() << std::endl;
             break;
-        }
-        
+        }        
     }
 
 private:
