@@ -30,6 +30,8 @@ struct Parser {
     void parseSuchThat(Query&);
     std::shared_ptr<RelRef> parseRelRef(Query&);
 
+    // Template functions to be defined in header file
+    // https://stackoverflow.com/questions/3040480/c-template-function-compiles-in-header-but-not-implementation
     template<typename T, typename F1, typename F2>
     std::shared_ptr<T> parseRelRefVariables(Query &queryObj, F1 f1, F2 f2) {
         std::shared_ptr<T> ptr = std::make_shared<T>();
