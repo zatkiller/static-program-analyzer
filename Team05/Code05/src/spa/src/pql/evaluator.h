@@ -51,7 +51,7 @@ public:
 using Content = std::variant<STMT_LO, VAR_NAME, PROC_NAME, CONST>;
 
 struct PKBField {
-    PKBType tag; //  const field members?
+    PKBType tag;  // const field members?
     bool isConcrete;
     Content content;
 
