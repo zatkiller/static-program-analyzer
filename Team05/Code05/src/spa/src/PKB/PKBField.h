@@ -1,6 +1,7 @@
 #pragma once
 
 #include <variant>
+#include <vector>
 
 #include "PKBType.h"
 #include "PKBDataTypes.h"
@@ -17,5 +18,14 @@ struct PKBField {
         PKBField() {}
 
         bool operator == (const PKBField&) const;
-        bool operator < (const PKBField&) const;
+};
+
+class PKBFieldHash {
+public:
+    size_t operator() (const PKBField&) const;
+};
+
+class PKBFieldVectorHash {
+public:
+    size_t operator() (const std::vector<PKBField>&) const;
 };

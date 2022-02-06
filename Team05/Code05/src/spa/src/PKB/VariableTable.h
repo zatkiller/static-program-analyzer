@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <unordered_set>
+#include <vector>
 
 #include "VariableRow.h"
 #include "PKBDataTypes.h"
@@ -13,6 +14,7 @@ public:
 	bool contains(PKBField);
 	void insert(PKBField);
 	int getSize();
+	std::vector<VAR_NAME> getAllVars();
 
 private:
 	std::unordered_set<VariableRow, VariableRowHash> rows;

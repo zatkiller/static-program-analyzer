@@ -1,14 +1,16 @@
 #pragma once
 
-#include <set>
+#include <unordered_set>
 #include <stdio.h>
 #include <vector>
+#include <variant>
 
 #include "PKBField.h"
 
+using Response = std::variant<std::unordered_set<PKBField, PKBFieldHash>,
+    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>;
+
 struct PKBResponse {
-    union Response {
-        std::set<PKBField> content;
-        std::set<std::vector<PKBField>> contentList;
-    };
-} PKBResponse;
+    bool hasResult;
+    Response res;
+};

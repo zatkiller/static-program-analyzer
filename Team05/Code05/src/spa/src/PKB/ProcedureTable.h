@@ -12,6 +12,7 @@ public:
 	bool contains(PKBField);
 	void insert(PKBField);
 	int getSize();
+	std::vector<PROC_NAME> getAllProcs();
 
 private:
 	std::unordered_set<ProcedureRow, ProcedureRowHash> rows;
