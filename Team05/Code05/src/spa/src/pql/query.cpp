@@ -121,7 +121,9 @@ StmtRef StmtRef::ofLineNo(int lineNo) {
 }
 
 StmtRef StmtRef::ofWildcard() {
-    return  StmtRef { StmtRefType::WILDCARD };
+    StmtRef s;
+    s.type = StmtRefType::WILDCARD;
+    return s;
 }
 
 StmtRefType StmtRef::getType() {

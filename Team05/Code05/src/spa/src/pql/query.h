@@ -28,10 +28,12 @@ enum class StmtRefType {
 };
 
 struct StmtRef {
+private:
     StmtRefType type = StmtRefType::NOT_INITIALIZED;
     std::string declaration = "";
     int lineNo = -1;
 
+public:
     static StmtRef ofDeclaration(std::string);
     static StmtRef ofLineNo(int);
     static StmtRef ofWildcard();

@@ -138,7 +138,7 @@ TEST_CASE("Parser parseSuchThat - Uses") {
     REQUIRE(relRefPtr->getType() == RelRefType::USESS);
 
     std::shared_ptr<Uses> usesPtr = std::dynamic_pointer_cast<Uses>(relRefPtr);
-    REQUIRE(usesPtr->useStmt.declaration == "a");
+    REQUIRE(usesPtr->useStmt.getDeclaration() == "a");
     REQUIRE(usesPtr->useStmt.isDeclaration());
     REQUIRE(usesPtr->used.isWildcard());
 }
@@ -159,7 +159,7 @@ TEST_CASE("Parser parseSuchThat - Modifies") {
     REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
 
     std::shared_ptr<Modifies> modifiesPtr = std::dynamic_pointer_cast<Modifies>(relRefPtr);
-    REQUIRE(modifiesPtr->modifiesStmt.declaration == "a");
+    REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
     REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
     REQUIRE(modifiesPtr->modified.isWildcard());
 }
@@ -251,7 +251,7 @@ TEST_CASE("Parser parseStmtRef") {
     Query query;
     StmtRef sr = parser.parseStmtRef(query);
     REQUIRE(sr.isLineNo());
-    REQUIRE(sr.lineNo == 3);
+    REQUIRE(sr.getLineNo() == 3);
 }
 
 TEST_CASE("Parser parseEntRef") {
@@ -274,7 +274,7 @@ TEST_CASE("Parser parseRelRefVariabels") {
     std::shared_ptr<Modifies> sharedPtr = std::dynamic_pointer_cast<Modifies>(ptr);
     Modifies* mPtr = sharedPtr.get();
     REQUIRE(mPtr->modifiesStmt.isLineNo());
-    REQUIRE(mPtr->modifiesStmt.lineNo == 3);
+    REQUIRE(mPtr->modifiesStmt.getLineNo() == 3);
     REQUIRE(mPtr->modified.isVarName());
     REQUIRE(mPtr->modified.variable == "x");
 }
@@ -336,7 +336,7 @@ TEST_CASE("Parser parseQuery") {
 
     std::shared_ptr<Modifies> modifiesPtr = std::dynamic_pointer_cast<Modifies>(relRefPtr);
     REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
-    REQUIRE(modifiesPtr->modifiesStmt.declaration == "a");
+    REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
     REQUIRE(modifiesPtr->modified.isDeclaration());
     REQUIRE(modifiesPtr->modified.declaration == "v1");
 
@@ -374,7 +374,7 @@ TEST_CASE("Parser parsePql") {
     REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
 
     std::shared_ptr<Modifies> modifiesPtr = std::dynamic_pointer_cast<Modifies>(relRefPtr);
-    REQUIRE(modifiesPtr->modifiesStmt.declaration == "a");
+    REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
     REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
     REQUIRE(modifiesPtr->modified.isWildcard());
 
