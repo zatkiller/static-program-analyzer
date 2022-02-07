@@ -25,8 +25,7 @@ namespace AST {
          *
          */
 
-        PKB ppkb;
-        auto pkb = std::make_shared<PKBAdaptor>(&ppkb);
+        PKB pkb;
 
         SECTION("whileBlk walking test") {
             TEST_LOG << "Walking simple while AST";
@@ -36,7 +35,7 @@ namespace AST {
                 make<Print>(3, make<Var>("v3"))
             );
             auto whileBlk = make<While>(1, std::move(relExpr), std::move(stmtlst));
-            auto ve = std::make_shared<VariableExtractor>(pkb);
+            auto ve = std::make_shared<VariableExtractor>(&pkb);
             whileBlk->accept(ve);
             // variable extractions
             REQUIRE(ve->getVars() == std::set<std::string>({"v1", "v3"}));
@@ -87,7 +86,7 @@ namespace AST {
             auto program = std::make_unique<Program>(std::move(procedure));
 
             SECTION("Variable extractor test") {
-                auto ve = std::make_shared<VariableExtractor>(pkb);
+                auto ve = std::make_shared<VariableExtractor>(&pkb);
                 program->accept(ve);
 
                 std::set<std::string> expectedVars = { "x", "remainder", "digit", "sum" };
@@ -95,7 +94,7 @@ namespace AST {
             }
 
             SECTION("Modifies extractor test") {
-                auto me = std::make_shared<ModifiesExtractor>(pkb);
+                auto me = std::make_shared<ModifiesExtractor>(&pkb);
                 program->accept(me);
 
                 muTable m;

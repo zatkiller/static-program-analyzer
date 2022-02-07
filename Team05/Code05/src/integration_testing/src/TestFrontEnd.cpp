@@ -71,7 +71,7 @@ TEST_CASE("Front end testing") {
         SECTION("Statement modifies extraction from PKB") {
             // 3rd param in PKBField construction is unused in getRelationship.
             auto response = pkb.getRelationship(
-                PKBField{ PKBType::STATEMENT, false, STMT_LO{1, StatementType::Read} },
+                PKBField{ PKBType::STATEMENT, false, STMT_LO{1} },
                 PKBField{ PKBType::VARIABLE, false, VAR_NAME{"a"} },
                 PKBRelationship::MODIFIES);
             REQUIRE(response.hasResult);

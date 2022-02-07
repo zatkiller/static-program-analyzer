@@ -13,25 +13,24 @@
 
 using muTable = std::set<std::pair<std::variant<std::string, int>, std::string>>;  // modifies or uses table
 using sTable = std::set<std::string>;  // string only table
-using Table = std::variant<muTable, sTable>;
 
 /**
  * A PKB adaptor for testing purposes. Will be developed when integrating with PKB implementation
  */
-struct PKBAdaptor {
-    std::map<std::string, Table> tables;
-    PKB *pkb;
-
-    PKBAdaptor(PKB *pkb) : pkb(pkb) {
-        tables["variables"].emplace<sTable>();
-        tables["modifies"].emplace<muTable>();
-    }
-
-    // Placeholder method for interfacing with PKB
-    void insert(std::string tableName, std::string value);
-    void insert(std::string tableName, std::pair<int, std::string> relationship);
-    void insert(std::string tableName, std::pair<std::string, std::string> relationship);
-};
+//struct PKBAdaptor {
+//    std::map<std::string, Table> tables;
+//    PKB *pkb;
+//
+//    PKBAdaptor(PKB *pkb) : pkb(pkb) {
+//        tables["variables"].emplace<sTable>();
+//        tables["modifies"].emplace<muTable>();
+//    }
+//
+//    // Placeholder method for interfacing with PKB
+//    void insert(std::string tableName, std::string value);
+//    void insert(std::string tableName, std::pair<int, std::string> relationship);
+//    void insert(std::string tableName, std::pair<std::string, std::string> relationship);
+//};
 
 
 /**
@@ -65,7 +64,7 @@ struct TreeWalker : public AST::ASTNodeVisitor {
  */
 class Extractor : public TreeWalker {
 protected:
-    std::shared_ptr<PKBAdaptor> pkb;
+    PKB *pkb;
 public:
-    explicit Extractor(std::shared_ptr<PKBAdaptor> pkb) : pkb(pkb) {}
+    explicit Extractor(PKB *pkb) : pkb(pkb) {}
 };

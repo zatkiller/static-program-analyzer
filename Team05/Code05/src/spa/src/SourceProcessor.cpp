@@ -16,10 +16,9 @@ bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb)
     if (!ast) {
         return false;
     }
-    auto pkbAdaptor = std::make_shared<PKBAdaptor>(pkb);
 
-    ast->accept(std::make_shared<VariableExtractor>(pkbAdaptor));
-    ast->accept(std::make_shared<ModifiesExtractor>(pkbAdaptor));
+    ast->accept(std::make_shared<VariableExtractor>(pkb));
+    ast->accept(std::make_shared<ModifiesExtractor>(pkb));
 
     return true;
 }
