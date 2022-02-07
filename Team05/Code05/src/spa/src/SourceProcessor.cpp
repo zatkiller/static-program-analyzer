@@ -20,6 +20,8 @@ bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb)
 
     ast->accept(std::make_shared<VariableExtractor>(pkbAdaptor));
     ast->accept(std::make_shared<ModifiesExtractor>(pkbAdaptor));
+
+    return true;
 }
 
 std::unique_ptr<AST::Program> SourceProcessor::parse(const std::string& sourceCode) {
