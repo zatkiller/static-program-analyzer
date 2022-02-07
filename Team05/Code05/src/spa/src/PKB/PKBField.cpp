@@ -5,7 +5,7 @@
 
 bool PKBField::operator == (const PKBField& other) const {
     if (tag == other.tag && isConcrete == other.isConcrete) {
-        return content == other.content;
+        return isConcrete ? content == other.content : true;
     }
     return false;
 }
