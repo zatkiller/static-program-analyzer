@@ -107,7 +107,10 @@ TEST_CASE("Test evaluate select s") {
     pkb.insertStatement(StatementType::Print, 7);
 
     std::list<std::string> result = evaluator.evaluate(q);
-    REQUIRE(result == std::list<std::string>{"7", "6", "4", "3", "8", "5", "2"});
+    result.sort();
+    std::list<std::string> expected{"7", "6", "4", "3", "8", "5", "2"};
+    expected.sort();
+    REQUIRE(result == expected);
 }
 
 TEST_CASE("Test evaluate select a") {
@@ -127,7 +130,10 @@ TEST_CASE("Test evaluate select a") {
     pkb.insertStatement(StatementType::Print, 7);
 
     std::list<std::string> result = evaluator.evaluate(q);
-    REQUIRE(result == std::list<std::string>{"8", "5", "2"});
+    result.sort();
+    std::list<std::string> expected{"8", "5", "2"};
+    expected.sort();
+    REQUIRE(result == expected);
 }
 
 TEST_CASE("Test evaluate select v") {
@@ -144,5 +150,8 @@ TEST_CASE("Test evaluate select v") {
     pkb.insertVariable("cur");
 
     std::list<std::string> result = evaluator.evaluate(q);
-    REQUIRE(result == std::list<std::string>{"cur", "y", "x"});
+    result.sort();
+    std::list<std::string> expected{"cur", "y", "x"};
+    expected.sort();
+    REQUIRE(result == expected);
 }
