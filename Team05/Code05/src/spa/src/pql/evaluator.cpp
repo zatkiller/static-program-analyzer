@@ -51,7 +51,7 @@ std::string Evaluator::processResult(PKBResponse queryResult) {
     if(!queryResult.hasResult) {
         return stringResult;
     }
-    std::unordered_set<PKBField, PKBFieldHash> result = std::get<std::unordered_set<PKBField, PKBFieldHash>>(queryResult.res);
+    std::unordered_set<PKBField, PKBFieldHash> result = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&queryResult.res));
     int count = 0;
     for (auto field : result) {
         if (count == result.size() - 1) {
@@ -59,6 +59,7 @@ std::string Evaluator::processResult(PKBResponse queryResult) {
         } else {
             stringResult = stringResult + PKBFieldToString(field) + ", ";
         }
+        count += 1;
     }
 
     return stringResult;
