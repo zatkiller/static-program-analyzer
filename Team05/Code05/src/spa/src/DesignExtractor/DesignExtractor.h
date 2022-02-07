@@ -20,9 +20,9 @@ using Table = std::variant<muTable, sTable>;
  */
 struct PKBAdaptor {
     std::map<std::string, Table> tables;
-    std::shared_ptr<PKB> pkb;
+    PKB *pkb;
 
-    PKBAdaptor(std::shared_ptr<PKB> pkb) : pkb(pkb) {
+    PKBAdaptor(PKB *pkb) : pkb(pkb) {
         tables["variables"].emplace<sTable>();
         tables["modifies"].emplace<muTable>();
     }

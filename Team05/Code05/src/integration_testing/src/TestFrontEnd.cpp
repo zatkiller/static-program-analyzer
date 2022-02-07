@@ -32,8 +32,8 @@ std::variant<int, std::string> extractField(PKBField v) {
 
 TEST_CASE("Front end testing") {
     
-    auto pkb = std::make_shared<PKB>();
-    SourceProcessor sp(pkb);
+    PKB pkb;
+    SourceProcessor sp;
     sp.processSimple(R"(
         procedure sumDigits {
             read number;
@@ -47,11 +47,11 @@ TEST_CASE("Front end testing") {
 
             print sum;
         }
-    )");
+    )", &pkb);
 
 
     SECTION("Variable extraction from PKB") {
-        auto response = pkb->getVariables();
+        auto response = pkb.getVariables();
         REQUIRE(response.hasResult);
 
         auto resultSet = std::get<std::unordered_set<PKBField, PKBFieldHash>>(response.res);
@@ -70,7 +70,7 @@ TEST_CASE("Front end testing") {
 
         SECTION("Statement modifies extraction from PKB") {
             // 3rd param in PKBField construction is unused in getRelationship.
-            auto response = pkb->getRelationship(
+            auto response = pkb.getRelationship(
                 PKBField{ PKBType::STATEMENT, false, STMT_LO{1, StatementType::Read} },
                 PKBField{ PKBType::VARIABLE, false, VAR_NAME{"a"} },
                 PKBRelationship::MODIFIES);
@@ -102,7 +102,7 @@ TEST_CASE("Front end testing") {
         }
         SECTION("Procedure modifies extraction from PKB") {
             // 3rd param in PKBField construction is unused in getRelationship.
-            auto response = pkb->getRelationship(
+            auto response = pkb.getRelationship(
                 PKBField{ PKBType::PROCEDURE, false, PROC_NAME{"a"}},
                 PKBField{ PKBType::VARIABLE, false, VAR_NAME{"a"} },
                 PKBRelationship::MODIFIES);
