@@ -44,28 +44,22 @@ PKBResponse Evaluator::getAll(DesignEntity type) {
     return result;
 }
 
-
-// replace int by PKBField
-std::string Evaluator::processResult(PKBResponse queryResult) {
-    std::string stringResult = "";
+std::vector<std::string> Evaluator::getListOfResult(PKBResponse queryResult) {
+    std::vector<std::string> listResult{};
     if(!queryResult.hasResult) {
-        return stringResult;
-    }
-    std::unordered_set<PKBField, PKBFieldHash> result = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&queryResult.res));
-    int count = 0;
-    for (auto field : result) {
-        if (count == result.size() - 1) {
-            stringResult += PKBFieldToString(field);
-        } else {
-            stringResult = stringResult + PKBFieldToString(field) + ", ";
-        }
-        count += 1;
+        return listResult;
     }
 
-    return stringResult;
+    std::unordered_set<PKBField, PKBFieldHash> result = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&queryResult.res));
+
+    for (auto field : result) {
+        listResult.push_back(PKBFieldToString(field));
+    }
+
+    return listResult;
 }
 
-std::string Evaluator::evaluate(Query query) {
+std::vector<std::string > Evaluator::evaluate(Query query) {
     // std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
     std::vector<std::string> variable = query.getVariable();
     std::vector<std::shared_ptr<RelRef>> suchthat = query.getSuchthat();
@@ -81,5 +75,5 @@ std::string Evaluator::evaluate(Query query) {
         queryResult = getAll(returnType);
     }
 
-    return processResult(queryResult);
+    return getListOfResult(queryResult);
 }

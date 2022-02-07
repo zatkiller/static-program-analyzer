@@ -4,6 +4,7 @@
 #include "PKB/PKBType.h"
 #include "PKB/PKBField.h"
 #include "pql/evaluator.h"
+#include "pql/query.h"
 #include "catch.hpp"
 
 TEST_CASE("Test get statements") {
@@ -83,4 +84,65 @@ TEST_CASE("Test get variables") {
     std::unordered_set<PKBField, PKBFieldHash> setVar = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resVar.res));
     REQUIRE(setVar == expectedSelectVar);
 
+}
+
+TEST_CASE("Test evaluate select s") {
+    Query q = Query();
+    q.addDeclaration("s", DesignEntity::STMT);
+    q.addDeclaration("a", DesignEntity::STMT);
+    q.addDeclaration("v", DesignEntity::VARIABLE);
+    q.addDeclaration("w", DesignEntity::WHILE);
+
+    q.addVariable("s");
+
+    PKB pkb = PKB();
+    PKB* ptr = &pkb;
+    Evaluator evaluator = Evaluator(ptr);
+    pkb.insertStatement(StatementType::Assignment, 2);
+    pkb.insertStatement(StatementType::Assignment, 5);
+    pkb.insertStatement(StatementType::Assignment, 8);
+    pkb.insertStatement(StatementType::While, 3);
+    pkb.insertStatement(StatementType::If, 4);
+    pkb.insertStatement(StatementType::If, 6);
+    pkb.insertStatement(StatementType::Print, 7);
+
+    std::vector<std::string> result = evaluator.evaluate(q);
+    REQUIRE(result == std::vector<std::string>{"7", "6", "4", "3", "8", "5", "2"});
+}
+
+TEST_CASE("Test evaluate select a") {
+    Query q = Query();
+    q.addDeclaration("a", DesignEntity::ASSIGN);
+    q.addVariable("a");
+
+    PKB pkb = PKB();
+    PKB* ptr = &pkb;
+    Evaluator evaluator = Evaluator(ptr);
+    pkb.insertStatement(StatementType::Assignment, 2);
+    pkb.insertStatement(StatementType::Assignment, 5);
+    pkb.insertStatement(StatementType::Assignment, 8);
+    pkb.insertStatement(StatementType::While, 3);
+    pkb.insertStatement(StatementType::If, 4);
+    pkb.insertStatement(StatementType::If, 6);
+    pkb.insertStatement(StatementType::Print, 7);
+
+    std::vector<std::string> result = evaluator.evaluate(q);
+    REQUIRE(result == std::vector<std::string>{"8", "5", "2"});
+}
+
+TEST_CASE("Test evaluate select v") {
+    Query q = Query();
+    q.addDeclaration("v", DesignEntity::VARIABLE);
+    q.addVariable("v");
+
+    PKB pkb = PKB();
+    PKB* ptr = &pkb;
+    Evaluator evaluator = Evaluator(ptr);
+
+    pkb.insertVariable("x");
+    pkb.insertVariable("y");
+    pkb.insertVariable("cur");
+
+    std::vector<std::string> result = evaluator.evaluate(q);
+    REQUIRE(result == std::vector<std::string>{"cur", "y", "x"});
 }

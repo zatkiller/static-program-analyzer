@@ -32,8 +32,8 @@ public:
 
     std::string PKBFieldToString(PKBField);
 
-    std::string processResult(PKBResponse);
+    std::vector<std::string > getListOfResult(PKBResponse);
 
-    std::string evaluate(Query);
+    std::vector<std::string > evaluate(Query);
 };
 
