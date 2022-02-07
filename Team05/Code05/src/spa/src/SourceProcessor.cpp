@@ -5,7 +5,7 @@
 #include "Parser/Parser.h"
 #include "DesignExtractor/ModifiesExtractor.h"
 #include "DesignExtractor/VariableExtractor.h"
-
+#include "DesignExtractor/StatementExtractor.h"
 
 using SimpleParser::Parser;
 
@@ -19,6 +19,7 @@ bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb)
 
     ast->accept(std::make_shared<VariableExtractor>(pkb));
     ast->accept(std::make_shared<ModifiesExtractor>(pkb));
+    ast->accept(std::make_shared<StatementExtractor>(pkb));
 
     return true;
 }

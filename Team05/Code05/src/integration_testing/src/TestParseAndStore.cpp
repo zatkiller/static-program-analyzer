@@ -30,7 +30,7 @@ std::variant<int, std::string> extractField(PKBField v) {
 }
 
 
-TEST_CASE("Front end testing") {
+TEST_CASE("Test parse and store") {
     
     PKB pkb;
     SourceProcessor sp;
@@ -50,7 +50,8 @@ TEST_CASE("Front end testing") {
     )", &pkb);
 
 
-    SECTION("Variable extraction from PKB") {
+    TEST_LOG << "Variable extraction from PKB";
+    {
         auto response = pkb.getVariables();
         REQUIRE(response.hasResult);
 
@@ -65,10 +66,12 @@ TEST_CASE("Front end testing") {
         REQUIRE(vars == expected);
     }
 
-    SECTION("Modifies extraction from PKB") {
+    TEST_LOG << "Modifies extraction from PKB";
+    {
         using Rows = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
-        SECTION("Statement modifies extraction from PKB") {
+        TEST_LOG << "Statement modifies extraction from PKB";
+        {
             // 3rd param in PKBField construction is unused in getRelationship.
             auto response = pkb.getRelationship(
                 PKBField{ PKBType::STATEMENT, false, STMT_LO{1} },
@@ -100,7 +103,8 @@ TEST_CASE("Front end testing") {
             };
             REQUIRE(expected == stmtModifies);
         }
-        SECTION("Procedure modifies extraction from PKB") {
+        TEST_LOG << "Procedure modifies extraction from PKB";
+        {
             // 3rd param in PKBField construction is unused in getRelationship.
             auto response = pkb.getRelationship(
                 PKBField{ PKBType::PROCEDURE, false, PROC_NAME{"a"}},
@@ -127,6 +131,28 @@ TEST_CASE("Front end testing") {
             };
             REQUIRE(expected == stmtModifies);
         }
+    }
+
+    TEST_LOG << "Statement extraction from PKB"; 
+    {
+        auto response = pkb.getStatements();
+        REQUIRE(response.hasResult);
+        auto resultSet = std::get<std::unordered_set<PKBField, PKBFieldHash>>(response.res);
+
+        std::set<STMT_LO> statements;
+        for (auto v : resultSet) {
+            statements.insert(std::get<STMT_LO>(v.content));
+        }
+        std::set<STMT_LO> expected = {
+            STMT_LO{1, StatementType::Read},
+            STMT_LO{2, StatementType::Assignment},
+            STMT_LO{3, StatementType::While},
+            STMT_LO{4, StatementType::Assignment},
+            STMT_LO{5, StatementType::Assignment},
+            STMT_LO{6, StatementType::Assignment},
+            STMT_LO{7, StatementType::Print}
+        };
+        REQUIRE(statements == expected);
     }
 
 }
