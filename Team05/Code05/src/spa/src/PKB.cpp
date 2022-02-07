@@ -71,6 +71,18 @@ PKBResponse PKB::getStatements(StatementType stmtType) {
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
 }
 
+PKBResponse PKB::getStatements() {
+    std::unordered_set<PKBField, PKBFieldHash> res;
+
+    std::vector<STMT_LO> extracted = statementTable->getAllStmt();
+    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
+        PKBField temp{ PKBType::STATEMENT, true, Content{ *iter } };
+        res.insert(temp);
+    }
+
+    return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
+}
+
 PKBResponse PKB::getVariables() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 

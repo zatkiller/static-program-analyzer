@@ -10,8 +10,11 @@
 #include "PKB.h"
 #include "SourceProcessor.h"
 
+#include "PKB.h"
+#include "pql/qps.h"
+
 class TestWrapper : public AbstractWrapper {
- public:
+public:
   // default constructor
   TestWrapper();
   
@@ -27,6 +30,7 @@ class TestWrapper : public AbstractWrapper {
 private:
     PKB pkb;
     SourceProcessor sp;
+    QPS qps;
 };
 
 #endif
