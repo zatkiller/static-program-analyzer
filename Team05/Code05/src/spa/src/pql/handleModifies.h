@@ -1,14 +1,7 @@
-//
-// Created by 杨悦Helen on 6/2/22.
-//
+#include <memory>
+#include "query.h"
+#include "PKB/StatementType.h"
+#include "PKB/PKBField.h"
+#include "PKB/PKBRelationship.h"
 
-#ifndef SPA_HANDLEMODIFIES_H
-#define SPA_HANDLEMODIFIES_H
-
-
-class handleModifies {
-
-};
-
-
-#endif //SPA_HANDLEMODIFIES_H
+void handleModifies(std::shared_ptr<RelRef>);

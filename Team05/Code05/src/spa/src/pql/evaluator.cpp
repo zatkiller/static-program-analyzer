@@ -54,26 +54,26 @@ PKBResponse Evaluator::getAll(DesignEntity type) {
 //        RelRefType type = r.get()->getType();
 //
 //        if (type == RelRefType::MODIFIESS) {
-//            std::shared_ptr<Modifies> mPtr = std::dynamic_pointer_cast<Modifies>(r);
-//            Modifies* modifiesPtr = mPtr.get();
-//            Modifies m = *modifiesPtr;
-//            EntRef modified = m.modified;
-//            StmtRef stmt = m.modifiesStmt;
-//            EntRefType entType = modified.getType();
-//            StmtRefType stmtType = stmt.getType();
-//
-//            if ((stmt.isWildcard() || stmt.isLineNo()) && (modified.isWildcard() || modified.isVarName())) {
-//                //include PKB files
-//                STMT_LO stmtLineNo;
-//                stmtLineNo.statementNo = stmt.getLineNo();
-//                PKBField stmtPKBField = PKBField(PKBType::STATEMENT, false, stmt.isWildcard() ? "_" : stmt.getLineNo());
-//                PKBField moidifiedPKBField = PKBField(PKBType::VARIABLE, false, modified.isWildcard() ? "_" : modified.getVariableName());
-//                hasRelationships = PKB::isRelationshipPresent(stmtPKBField, modified, PKBRelationship::MODIFIES);
-//            } else if (stmt.isDeclaration() && modified.isDeclaration()) {
-//
-//            } else {
-//
-//            }
+            std::shared_ptr<Modifies> mPtr = std::dynamic_pointer_cast<Modifies>(r);
+            Modifies* modifiesPtr = mPtr.get();
+            Modifies m = *modifiesPtr;
+            EntRef modified = m.modified;
+            StmtRef stmt = m.modifiesStmt;
+            EntRefType entType = modified.getType();
+            StmtRefType stmtType = stmt.getType();
+
+            if ((stmt.isWildcard() || stmt.isLineNo()) && (modified.isWildcard() || modified.isVarName())) {
+                //include PKB files
+                STMT_LO stmtLineNo;
+                stmtLineNo.statementNo = stmt.getLineNo();
+                PKBField stmtPKBField = PKBField(PKBType::STATEMENT, false, stmt.isWildcard() ? "_" : stmt.getLineNo());
+                PKBField moidifiedPKBField = PKBField(PKBType::VARIABLE, false, modified.isWildcard() ? "_" : modified.getVariableName());
+                hasRelationships = PKB::isRelationshipPresent(stmtPKBField, modified, PKBRelationship::MODIFIES);
+            } else if (stmt.isDeclaration() && modified.isDeclaration()) {
+
+            } else {
+
+            }
 //            if (entType == EntRefType::DECLARATION) {
 //                //TODO: fill in when creating PKBField
 //            } else if (entType == EntRefType::VARIABLE_NAME) {
