@@ -10,6 +10,7 @@
 #include <memory>
 #include <variant>
 #include <map>
+#include <list>
 
 #include "pql/query.h"
 #include "PKB/PKBField.h"
@@ -21,11 +22,20 @@
 #include "PKB/PKBRelationship.h"
 
 
+class Evaluator {
+    PKB* pkb;
 
-PKBResponse getAll(DesignEntity);
+public:
+    Evaluator(PKB* pkb) {
+        this->pkb = pkb;
+    }
 
-std::string PKBFieldToString(PKBField);
+    PKBResponse getAll(DesignEntity);
 
-std::string processResult(PKBResponse);
+    std::string PKBFieldToString(PKBField);
 
-std::string evaluate(Query);
+    std::list<std::string > getListOfResult(PKBResponse);
+
+    std::list<std::string > evaluate(Query);
+};
+

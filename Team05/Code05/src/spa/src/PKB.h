@@ -34,6 +34,7 @@ public:
 
     PKBResponse getRelationship(PKBField, PKBField, PKBRelationship);
     PKBResponse getStatements(StatementType);
+    PKBResponse getStatements();
     PKBResponse getVariables();
     PKBResponse getProcedures();
     PKBResponse getConstants();
