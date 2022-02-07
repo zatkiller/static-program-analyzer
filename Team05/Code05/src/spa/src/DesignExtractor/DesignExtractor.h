@@ -19,10 +19,10 @@ using Table = std::variant<muTable, sTable>;
  * A PKB adaptor for testing purposes. Will be developed when integrating with PKB implementation
  */
 struct PKBAdaptor {
-
     std::map<std::string, Table> tables;
+    std::shared_ptr<PKB> pkb;
 
-    PKBAdaptor() {
+    PKBAdaptor(std::shared_ptr<PKB> pkb) : pkb(pkb) {
         tables["variables"].emplace<sTable>();
         tables["modifies"].emplace<muTable>();
     }

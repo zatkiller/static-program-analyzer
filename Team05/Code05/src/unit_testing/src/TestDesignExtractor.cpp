@@ -25,7 +25,7 @@ namespace AST {
          *
          */
 
-        auto pkb = std::make_shared<PKBAdaptor>();
+        auto pkb = std::make_shared<PKBAdaptor>(std::make_shared<PKB>());
 
         SECTION("whileBlk walking test") {
             TEST_LOG << "Walking simple while AST";

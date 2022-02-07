@@ -4,9 +4,9 @@
 #include "PKB.h"
 
 class SourceProcessor {
-	PKB* pkb;
+    std::shared_ptr<PKB> pkb;
 public:
-	SourceProcessor(PKB* pkb) : pkb(pkb) {};
-	bool processSimple(const std::string&);
-	std::unique_ptr<AST::Program> parse(const std::string&);
+    SourceProcessor(std::shared_ptr<PKB> pkb) : pkb(pkb) {};
+    bool processSimple(const std::string&);
+    std::unique_ptr<AST::Program> parse(const std::string&);
 };
