@@ -15,25 +15,6 @@ using muTable = std::set<std::pair<std::variant<std::string, int>, std::string>>
 using sTable = std::set<std::string>;  // string only table
 
 /**
- * A PKB adaptor for testing purposes. Will be developed when integrating with PKB implementation
- */
-//struct PKBAdaptor {
-//    std::map<std::string, Table> tables;
-//    PKB *pkb;
-//
-//    PKBAdaptor(PKB *pkb) : pkb(pkb) {
-//        tables["variables"].emplace<sTable>();
-//        tables["modifies"].emplace<muTable>();
-//    }
-//
-//    // Placeholder method for interfacing with PKB
-//    void insert(std::string tableName, std::string value);
-//    void insert(std::string tableName, std::pair<int, std::string> relationship);
-//    void insert(std::string tableName, std::pair<std::string, std::string> relationship);
-//};
-
-
-/**
  * A foundation for all design extractor. Performs depth-first traversal on the AST and do nothing.
  * Children classes can inherit this class and override the specific methods that they want to perform
  * actions at.

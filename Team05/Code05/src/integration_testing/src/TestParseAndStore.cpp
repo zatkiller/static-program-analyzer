@@ -26,12 +26,10 @@ std::variant<int, std::string> extractField(PKBField v) {
     case PKBType::PROCEDURE: return std::get<PROC_NAME>(v.content).name;
     case PKBType::CONST: return std::get<CONST>(v.content);
     }
-
 }
 
 
 TEST_CASE("Test parse and store") {
-    
     PKB pkb;
     SourceProcessor sp;
     sp.processSimple(R"(
@@ -154,6 +152,4 @@ TEST_CASE("Test parse and store") {
         };
         REQUIRE(statements == expected);
     }
-
 }
-

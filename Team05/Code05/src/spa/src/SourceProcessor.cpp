@@ -9,8 +9,7 @@
 
 using SimpleParser::Parser;
 
-bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb)
-{
+bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb) {
     auto ast = Parser().parse(sourceCode);
     // parsing failed
     if (!ast) {

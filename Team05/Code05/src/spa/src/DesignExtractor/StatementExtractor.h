@@ -1,8 +1,6 @@
 #include "DesignExtractor.h"
 
 class StatementExtractor : public Extractor {
-private:
-
 public:
     using Extractor::Extractor;
     void visit(const AST::Read&) override;
@@ -10,5 +8,4 @@ public:
     void visit(const AST::While&) override;
     void visit(const AST::If&) override;
     void visit(const AST::Assign&) override;
-
 };
