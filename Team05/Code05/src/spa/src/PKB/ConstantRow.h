@@ -26,5 +26,5 @@ private:
 */
 class ConstantRowHash {
 public:
-            size_t operator() (const ConstantRow&) const;
+    size_t operator() (const ConstantRow&) const;
 };

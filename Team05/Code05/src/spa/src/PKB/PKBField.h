@@ -14,7 +14,7 @@ struct PKBField {
     Content content;
 
     PKBField(PKBType type, bool concrete, Content c) : tag(type), isConcrete(concrete), content(c) {}
-    PKBField() {}
+    //PKBField() {}
 
     bool operator == (const PKBField&) const;
 };
