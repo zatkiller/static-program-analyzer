@@ -8,7 +8,7 @@
 #include "PKB.h"
 #include "logging.h"
 
-#define TEST_LOG Logger() << "TestFrontEnd "
+#define TEST_LOG Logger() << "TestParseAndStore.cpp "
 
 // helper type for the visitor #4
 template<typename... Ts> struct overloaded : Ts... { using Ts::operator()...; };
