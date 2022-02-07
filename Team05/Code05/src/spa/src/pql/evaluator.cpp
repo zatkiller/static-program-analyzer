@@ -18,6 +18,7 @@ std::string Evaluator::PKBFieldToString(PKBField pkbField) {
     return res;
 }
 
+
 PKBResponse Evaluator::getAll(DesignEntity type) {
     std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
             {DesignEntity::ASSIGN, StatementType::Assignment},

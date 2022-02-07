@@ -36,4 +36,3 @@ public:
 
     std::vector<std::string > evaluate(Query);
 };
-
