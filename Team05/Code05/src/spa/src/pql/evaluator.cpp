@@ -45,8 +45,8 @@ PKBResponse Evaluator::getAll(DesignEntity type) {
     return result;
 }
 
-std::vector<std::string> Evaluator::getListOfResult(PKBResponse queryResult) {
-    std::vector<std::string> listResult{};
+std::list<std::string> Evaluator::getListOfResult(PKBResponse queryResult) {
+    std::list<std::string> listResult{};
     if(!queryResult.hasResult) {
         return listResult;
     }
@@ -60,7 +60,7 @@ std::vector<std::string> Evaluator::getListOfResult(PKBResponse queryResult) {
     return listResult;
 }
 
-std::vector<std::string > Evaluator::evaluate(Query query) {
+std::list<std::string > Evaluator::evaluate(Query query) {
     // std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
     std::vector<std::string> variable = query.getVariable();
     std::vector<std::shared_ptr<RelRef>> suchthat = query.getSuchthat();

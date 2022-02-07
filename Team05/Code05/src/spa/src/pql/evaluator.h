@@ -10,6 +10,7 @@
 #include <memory>
 #include <variant>
 #include <map>
+#include <list>
 
 #include "pql/query.h"
 #include "PKB/PKBField.h"
@@ -32,7 +33,7 @@ public:
 
     std::string PKBFieldToString(PKBField);
 
-    std::vector<std::string > getListOfResult(PKBResponse);
+    std::list<std::string > getListOfResult(PKBResponse);
 
-    std::vector<std::string > evaluate(Query);
+    std::list<std::string > evaluate(Query);
 };
