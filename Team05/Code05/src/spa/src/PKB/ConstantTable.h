@@ -11,7 +11,7 @@
 class ConstantTable {
 public:
     /**
-    * Checks whether the ConstantTable contains a constant wrapped in a PKBField.
+    * Checks whether the ConstantTable contains the constant wrapped in a PKBField.
     * 
     * @param entry the PKBField containing the constant to be checked
     * @returns whether the constant is present in the ConstantTable

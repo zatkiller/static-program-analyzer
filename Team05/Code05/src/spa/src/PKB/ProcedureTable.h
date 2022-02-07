@@ -12,7 +12,7 @@
 class ProcedureTable {
 public:
     /**
-    * Checks whether the ProcedureTable contains a procedure name wrapped in a PKBField.
+    * Checks whether the ProcedureTable contains the procedure name wrapped in a PKBField.
     *
     * @param field the PKBField containing the procedure name to be checked
     * @returns whether the procedure name is present in the ProcedureTable
