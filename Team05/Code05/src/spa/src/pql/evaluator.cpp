@@ -18,6 +18,7 @@ std::string Evaluator::PKBFieldToString(PKBField pkbField) {
     return res;
 }
 
+
 PKBResponse Evaluator::getAll(DesignEntity type) {
     std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
             {DesignEntity::ASSIGN, StatementType::Assignment},
@@ -51,7 +52,9 @@ std::string Evaluator::processResult(PKBResponse queryResult) {
     if(!queryResult.hasResult) {
         return stringResult;
     }
+
     std::unordered_set<PKBField, PKBFieldHash> result = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&queryResult.res));
+  
     int count = 0;
     for (auto field : result) {
         if (count == result.size() - 1) {

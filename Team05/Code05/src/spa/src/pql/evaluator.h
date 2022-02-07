@@ -36,4 +36,3 @@ public:
 
     std::string evaluate(Query);
 };
-
