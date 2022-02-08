@@ -90,45 +90,6 @@ bool Evaluator::evaluateNoSyn(std::vector<std::shared_ptr<RelRef>> noSynClauses,
     return hold;
 }
 
-//Replace int by PKBField
-//std::set<int> processPattern(std::vector<Pattern> patterns, DesignEntity returnType) {
-//    std::set<int> resultTable;
-//    for (auto p : patterns) {
-//        EntRef lhs = p.getEntRef();
-//        std::string rhs = p.getExpression();
-//
-//        // modify when pattern is defined in PKB
-//        std::string lhsString;
-//        if (lhs.isWildcard()) {
-//            lhsString = "_";
-//        } else if (lhs.isDeclaration()) {
-//            lhsString = lhs.getDeclaration();
-//        } else if (lhs.isVarName()) {
-//            lhsString = lhs.getVariableName();
-//        }
-//
-//        std::string pattern = "(" + lhsString + " , " + rhs + ")";
-//        //resultTable = match(pattern, returnType);
-//    }
-//    return resultTable;
-//}
-
-
-//std::list<std::string> Evaluator::getListOfResult(PKBResponse queryResult) {
-//    std::list<std::string> listResult{};
-//    if(!queryResult.hasResult) {
-//        return listResult;
-//    }
-//
-//    std::unordered_set<PKBField, PKBFieldHash> result = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&queryResult.res));
-//
-//    for (auto field : result) {
-//        listResult.push_back(PKBFieldToString(field));
-//    }
-//
-//    return listResult;
-//}
-
 std::list<std::string> Evaluator::getListOfResult(ResultTable& table, std::string variable) {
     std::list<std::string> listResult{};
     if(table.getResult().empty()) {
@@ -164,12 +125,11 @@ std::list<std::string > Evaluator::evaluate(Query query) {
         handler.handleSynClauses(hasSyn);
     }
 
-
+    //after process suchthat and pattern if select variable not in result table, add all
     if (suchthat.empty() && pattern.empty() || !tableRef.synExists(variable[0])) {
         PKBResponse queryResult = getAll(returnType);
         tableRef.crossJoin(queryResult);
     }
-    //after process suchthat and pattern if select variable not in result table, add all
 
     return getListOfResult(tableRef, variable[0]);
 }

@@ -107,7 +107,6 @@ void ResultTable::innerJoin(PKBResponse r, bool isFirst, bool isSecond, std::vec
             int m = isFirst ? 0 : 1;
             int a = isFirst ? 1 : 0;
             int matchedPos = getSynLocation(matched);
-            int insertPos = getSynLocation(another);
             for (auto r: queryRes) {
                 for (auto record: table) {
                     if ((r[m] == record[matchedPos])) {

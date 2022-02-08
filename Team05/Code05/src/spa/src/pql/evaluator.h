@@ -41,9 +41,6 @@ public:
 
     bool evaluateNoSyn(std::vector<std::shared_ptr<RelRef>>, DesignEntity);
 
-    void insertResultTable(PKBResponse, bool);
-
-    //std::list<std::string > getListOfResult(PKBResponse);
     std::list<std::string > getListOfResult(ResultTable&, std::string);
 
     std::list<std::string > evaluate(Query);
