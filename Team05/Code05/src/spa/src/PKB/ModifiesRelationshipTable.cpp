@@ -5,7 +5,6 @@
 
 ModifiesRelationshipTable::ModifiesRelationshipTable() : RelationshipTable{ PKBRelationship::MODIFIES } {};
 
-// count of an item in a set can only be 0 or 1
 bool ModifiesRelationshipTable::contains(PKBField entity1, PKBField entity2) {
     return rows.count(RelationshipRow(entity1, entity2)) == 1;
 }
