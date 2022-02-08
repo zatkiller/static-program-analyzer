@@ -1,7 +1,7 @@
 #include "PKB.h"
 #include "PKB/StatementType.h"
 #include "PKB/PKBDataTypes.h"
-#include "PKB/PKBType.h"
+#include "PKB/PKBEntityType.h"
 #include "PKB/PKBField.h"
 #include "pql/evaluator.h"
 #include "pql/query.h"

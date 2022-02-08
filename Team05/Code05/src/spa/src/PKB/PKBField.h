@@ -3,24 +3,44 @@
 #include <variant>
 #include <vector>
 
-#include "PKBType.h"
+#include "PKBEntityType.h"
 #include "PKBDataTypes.h"
+#include "PKBFieldType.h"
+#include <optional>
 
-using Content = std::variant<STMT_LO, VAR_NAME, PROC_NAME, CONST>;
+using Content = std::variant<std::monostate, STMT_LO, VAR_NAME, PROC_NAME, CONST>;
 
 /**
 * A data structure to represent a program design entity.
 */
 struct PKBField {
-    /* Type of program design entity */
-    PKBType tag;
+// private:
+    /* Type of field */
+    PKBFieldType fieldType;
 
-    /* Represents whether this PKBField denotes a wildcard, _. */
-    bool isConcrete;
+    /* Type of program design entity */
+    PKBEntityType entityType;
+
+    std::optional<StatementType> statementType;
+
     Content content;
 
-    // TODO: add another constructor for wildcards that takes in just the tag
-    PKBField(PKBType type, bool concrete, Content c) : tag(type), isConcrete(concrete), content(c) {}
+    /* Constructor for a concrete field. */
+    PKBField(PKBFieldType fieldType, PKBEntityType entityType, Content content) :
+        fieldType(fieldType), entityType(entityType), content(content) {}
+
+    /* Constructor for a wildcard field. */
+    PKBField(PKBFieldType fieldType, PKBEntityType entityType) :
+        fieldType(fieldType), entityType(entityType) {}
+
+    /* Constructor for a statement declaration field. */
+    PKBField(PKBFieldType fieldType, PKBEntityType entityType, StatementType statementType) :
+        fieldType(fieldType), entityType(entityType), statementType(statementType) {}
+
+    /* Constructor for a variable, or procedure, or constant field. */
+    PKBField(PKBFieldType fieldType, PKBEntityType entityType) :
+        fieldType(fieldType), entityType(entityType) {}
+    
     bool operator == (const PKBField&) const;
 };
 
