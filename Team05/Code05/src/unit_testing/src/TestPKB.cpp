@@ -26,6 +26,7 @@ TEST_CASE("PKB testing") {
         PKBFieldFactory::createConcreteField(PKBEntityType::PROCEDURE, Content{ PROC_NAME{"main"} }), 
         PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"a"} }), 
         PKBRelationship::MODIFIES));
+    REQUIRE_FALSE(pkb->isRelationshipPresent(field1, field3, PKBRelationship::MODIFIES));
 
     TEST_LOG << "Test PKB#getRelationship MODIFIES";
 
