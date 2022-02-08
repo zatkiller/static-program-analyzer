@@ -21,7 +21,11 @@ TEST_CASE("PKB testing") {
     TEST_LOG << "Test PKB#insertRelationship MODIFIES";
 
     pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field2);
-    REQUIRE(pkb->modifiesTable->getSize() == 1);
+    REQUIRE(pkb->isRelationshipPresent(field1, field2, PKBRelationship::MODIFIES));
+    REQUIRE(pkb->isRelationshipPresent(
+        PKBFieldFactory::createConcreteField(PKBEntityType::PROCEDURE, Content{ PROC_NAME{"main"} }), 
+        PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"a"} }), 
+        PKBRelationship::MODIFIES));
 
     TEST_LOG << "Test PKB#getRelationship MODIFIES";
 

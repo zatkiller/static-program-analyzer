@@ -55,6 +55,11 @@ public:
     // void insertAST();
 
     /**
+    * Checks whether there exist
+    */
+    bool isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationship rs);
+
+    /**
     * Retrieve all relationships matching rs(field1, field2).
     *
     * @param field1 the first program design entity in the relationship

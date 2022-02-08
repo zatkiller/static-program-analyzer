@@ -41,6 +41,21 @@ void PKB::insertRelationship(PKBRelationship type, PKBField entity1, PKBField en
     }
 }
 
+bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationship rs) {
+    if (field1.fieldType != PKBFieldType::CONCRETE || field2.fieldType != PKBFieldType::CONCRETE) {
+        return false;
+    }
+
+    switch (rs) {
+    case PKBRelationship::MODIFIES:
+        return modifiesTable->contains(field1, field2);
+
+    default:
+        Logger(Level::INFO) << "Checking for an invalid relationship table\n";
+        return false;
+    }
+}
+
 // GET API
 
 PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationship rs) {
