@@ -17,6 +17,7 @@ TEST_CASE("PKB testing") {
     PKBField field2 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"a"} });
     PKBField field3 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"b"} });
 
+    REQUIRE(*(field3.getContent<VAR_NAME>()) == VAR_NAME{ "b" });
     TEST_LOG << "Test PKB#insertRelationship MODIFIES";
 
     pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field2);

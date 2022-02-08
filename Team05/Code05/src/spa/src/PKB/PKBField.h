@@ -21,10 +21,7 @@ struct PKBField {
     PKBEntityType entityType;
 
     std::optional<StatementType> statementType;
-
     Content content;
-
-    bool operator == (const PKBField&) const;
 
     /* Constructor for a concrete field. */
     PKBField(PKBFieldType fieldType, PKBEntityType entityType, Content content) :
@@ -37,6 +34,22 @@ struct PKBField {
     /* Constructor for a statement declaration field. */
     PKBField(PKBFieldType fieldType, PKBEntityType entityType, StatementType statementType) :
         fieldType(fieldType), entityType(entityType), statementType(statementType) {}
+
+    /**
+    * Get a pointer to the active data type in the Content variant. If the active type in the variant is not 
+    * equal to T, a nullptr is returned. 
+    */
+    template <typename T>
+    T* getContent() {
+        if (fieldType == PKBFieldType::CONCRETE) {
+            return std::get_if<T>(&content);
+        }
+
+        return nullptr;
+    };
+
+    bool operator == (const PKBField&) const;
+
 };
 
 /**
