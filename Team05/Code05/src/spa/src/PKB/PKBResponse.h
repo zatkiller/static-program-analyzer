@@ -13,10 +13,18 @@ using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVecto
 
 using Response = std::variant<FieldResponse, FieldRowResponse>;
 
+/**
+* A data structure representing the results of a query (PKB GET APIs).
+*/
 struct PKBResponse {
-    bool hasResult;
+    bool hasResult; // TODO: is this required?
+    
+  /**
+    * Results of a query is stored in a set. To obtain the set, include 
+    * *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&PKBResponse.res).
+    */
     Response res;
-
+  
     bool operator == (const PKBResponse& other) const {
         if (hasResult != other.hasResult) {
             return false;
