@@ -13,6 +13,7 @@
 #include <list>
 
 #include "pql/query.h"
+#include "handleRelations.h"
 #include "PKB/PKBField.h"
 #include "PKB/PKBDataTypes.h"
 #include "PKB/PKBType.h"
@@ -24,17 +25,26 @@
 
 class Evaluator {
     PKB* pkb;
+    ResultTable resultTable;
 
 public:
     Evaluator(PKB* pkb) {
         this->pkb = pkb;
+        this->resultTable = ResultTable();
     }
 
     PKBResponse getAll(DesignEntity);
 
     std::string PKBFieldToString(PKBField);
 
-    std::list<std::string > getListOfResult(PKBResponse);
+    void processSuchthat(std::vector<std::shared_ptr<RelRef>>, std::vector<std::shared_ptr<RelRef>>&, std::vector<std::shared_ptr<RelRef>>&);
+
+    bool evaluateNoSyn(std::vector<std::shared_ptr<RelRef>>, DesignEntity);
+
+    void insertResultTable(PKBResponse, bool);
+
+    //std::list<std::string > getListOfResult(PKBResponse);
+    std::list<std::string > getListOfResult(ResultTable&, std::string);
 
     std::list<std::string > evaluate(Query);
 };

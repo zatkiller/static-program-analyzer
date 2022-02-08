@@ -1,15 +1,24 @@
+#pragma once
+
 #include <string>
 #include <vector>
+#include <iterator>
 #include <unordered_set>
 #include <unordered_map>
 
+#include "PKB/PKBResponse.h"
 
-class resultTable {
+class ResultTable {
     std::unordered_map<std::string, int> synSequenceMap;
-    std::unordered_set<std::vector<std::string>> result;
+    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> table;
 public:
+    ResultTable() {};
+    bool synExists(std::string);
     std::unordered_map<std::string, int> getSynMap();
-    int getSycLocation(std::string);
-    std::unordered_set<std::vector<std::string>> getResult();
-
+    int getSynLocation(std::string);
+    void insertSynLocationToLast(std::string);
+    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> getResult();
+    void insert(PKBResponse);
+    void crossJoin(PKBResponse);
+    void innerJoin(PKBResponse, bool, bool, std::vector<std::string>);
 };

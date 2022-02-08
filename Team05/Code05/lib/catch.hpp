@@ -152,7 +152,7 @@ namespace Catch {
 
 // As of this writing, IBM XL's implementation of __builtin_constant_p has a bug
 // which results in calls to destructors being emitted for each temporary,
-// without a matching initialization. In practice, this can result in something
+// without a matching initialization. In practice, this can resultTable in something
 // like `std::string::~string` being called on an uninitialized value.
 //
 // For example, this code will likely segfault under IBM XL:
@@ -2194,7 +2194,7 @@ namespace Catch { \
 #pragma warning(disable:4018) // more "signed/unsigned mismatch"
 #pragma warning(disable:4312) // Converting int to T* using reinterpret_cast (issue on x64 platform)
 #pragma warning(disable:4180) // qualifier applied to function type has no meaning
-#pragma warning(disable:4800) // Forcing result to true or false
+#pragma warning(disable:4800) // Forcing resultTable to true or false
 #endif
 
 namespace Catch {
@@ -3449,7 +3449,7 @@ namespace Matchers {
         // that float -> double promotion is lossless. Given this, we can
         // assume that if we do the standard relative comparison of
         // |lhs - rhs| <= epsilon * max(fabs(lhs), fabs(rhs)), then we get
-        // the same result if we do this for floats, as if we do this for
+        // the same resultTable if we do this for floats, as if we do this for
         // doubles that were promoted from floats.
         struct WithinRelMatcher : MatcherBase<double> {
             WithinRelMatcher(double target, double epsilon);
@@ -6824,7 +6824,7 @@ namespace Catch {
         template <typename Duration, typename Result>
         struct Timing {
             Duration elapsed;
-            Result result;
+            Result resultTable;
             int iterations;
         };
         template <typename Clock, typename Func, typename... Args>
@@ -6864,9 +6864,9 @@ namespace Catch {
             template <typename Clock, typename Fun>
             TimingOf<Clock, Fun, Chronometer> measure_one(Fun&& fun, int iters, std::true_type) {
                 Detail::ChronometerModel<Clock> meter;
-                auto&& result = Detail::complete_invoke(fun, Chronometer(meter, iters));
+                auto&& resultTable = Detail::complete_invoke(fun, Chronometer(meter, iters));
 
-                return { meter.elapsed(), std::move(result), iters };
+                return { meter.elapsed(), std::move(resultTable), iters };
             }
 
             template <typename Clock, typename Fun>
@@ -6885,7 +6885,7 @@ namespace Catch {
                     auto&& Timing = measure_one<Clock>(fun, iters, is_callable<Fun(Chronometer)>());
 
                     if (Timing.elapsed >= how_long) {
-                        return { Timing.elapsed, std::move(Timing.result), iters };
+                        return { Timing.elapsed, std::move(Timing.resultTable), iters };
                     }
                     iters *= 2;
                 }
@@ -7130,7 +7130,7 @@ namespace Catch {
             template <typename Clock>
             EnvironmentEstimate<FloatDuration<Clock>> estimate_clock_resolution(int iterations) {
                 auto r = run_for_at_least<Clock>(std::chrono::duration_cast<ClockDuration<Clock>>(clock_resolution_estimation_time), iterations, &resolution<Clock>)
-                    .result;
+                    .resultTable;
                 return {
                     FloatDuration<Clock>(mean(r.begin(), r.end())),
                     classify_outliers(r.begin(), r.end()),
@@ -7770,17 +7770,17 @@ namespace Catch {
             double normal_quantile(double p) {
                 static const double ROOT_TWO = std::sqrt(2.0);
 
-                double result = 0.0;
+                double resultTable = 0.0;
                 assert(p >= 0 && p <= 1);
                 if (p < 0 || p > 1) {
-                    return result;
+                    return resultTable;
                 }
 
-                result = -erfc_inv(2.0 * p);
-                // result *= normal distribution standard deviation (1.0) * sqrt(2)
-                result *= /*sd * */ ROOT_TWO;
-                // result += normal disttribution mean (0)
-                return result;
+                resultTable = -erfc_inv(2.0 * p);
+                // resultTable *= normal distribution standard deviation (1.0) * sqrt(2)
+                resultTable *= /*sd * */ ROOT_TWO;
+                // resultTable += normal disttribution mean (0)
+                return resultTable;
             }
 
             double outlier_variance(Estimate<double> mean, Estimate<double> stddev, int n) {
@@ -9669,7 +9669,7 @@ using detail::ExeName;
 // Convenience wrapper for option parser that specifies the help option
 using detail::Help;
 
-// enum of result types from a parse
+// enum of resultTable types from a parse
 using detail::ParseResultType;
 
 // Result type for parser operation
@@ -10423,7 +10423,7 @@ namespace Catch {
             std::size_t         size;
 
             // Initialize the flags so that, if sysctl fails for some bizarre
-            // reason, we get a predictable result.
+            // reason, we get a predictable resultTable.
 
             info.kp_proc.p_flag = 0;
 
@@ -12922,8 +12922,8 @@ namespace Catch {
         // First notify reporter that bad things happened
         m_reporter->fatalErrorEncountered(message);
 
-        // Don't rebuild the result -- the stringification itself can cause more fatal errors
-        // Instead, fake a result data.
+        // Don't rebuild the resultTable -- the stringification itself can cause more fatal errors
+        // Instead, fake a resultTable data.
         AssertionResultData tempResult( ResultWas::FatalErrorCondition, { false } );
         tempResult.message = static_cast<std::string>(message);
         AssertionResult result(m_lastAssertionInfo, tempResult);
@@ -13148,7 +13148,7 @@ namespace Catch {
         if (auto* capture = getCurrentContext().getResultCapture())
             return *capture;
         else
-            CATCH_INTERNAL_ERROR("No result capture instance");
+            CATCH_INTERNAL_ERROR("No resultTable capture instance");
     }
 
     void seedRng(IConfig const& config) {
@@ -16077,7 +16077,7 @@ private:
 
             bool printInfoMessages = true;
 
-            // Drop out if result was successful and we're not printing those
+            // Drop out if resultTable was successful and we're not printing those
             if( !m_config->includeSuccessfulResults() && result.isOk() ) {
                 if( result.getResultType() != ResultWas::Warning )
                     return false;
@@ -16148,7 +16148,7 @@ public:
         case ResultWas::Ok:
             colour = Colour::Success;
             passOrFail = "PASSED";
-            //if( result.hasMessage() )
+            //if( resultTable.hasMessage() )
             if (_stats.infoMessages.size() == 1)
                 messageLabel = "with message";
             if (_stats.infoMessages.size() > 1)
@@ -16486,7 +16486,7 @@ bool ConsoleReporter::assertionEnded(AssertionStats const& _assertionStats) {
 
     bool includeResults = m_config->includeSuccessfulResults() || !result.isOk();
 
-    // Drop out if result was successful but we're not printing them.
+    // Drop out if resultTable was successful but we're not printing them.
     if (!includeResults && result.getResultType() != ResultWas::Warning)
         return false;
 
@@ -17339,7 +17339,7 @@ namespace Catch {
             }
         }
 
-        // Drop out if result was successful but we're not printing them.
+        // Drop out if resultTable was successful but we're not printing them.
         if( !includeResults && result.getResultType() != ResultWas::Warning )
             return true;
 
@@ -17357,7 +17357,7 @@ namespace Catch {
                 .writeText( result.getExpandedExpression() );
         }
 
-        // And... Print a result applicable to each result type.
+        // And... Print a resultTable applicable to each resultTable type.
         switch( result.getResultType() ) {
             case ResultWas::ThrewException:
                 m_xml.startElement( "Exception" );
@@ -17542,13 +17542,13 @@ int main (int argc, char * const argv[]) {
 #endif
 
     Catch::registerTestMethods();
-    int result = Catch::Session().run( argc, (char**)argv );
+    int resultTable = Catch::Session().run( argc, (char**)argv );
 
 #if !CATCH_ARC_ENABLED
     [pool drain];
 #endif
 
-    return result;
+    return resultTable;
 }
 
 #endif // __OBJC__
