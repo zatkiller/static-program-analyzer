@@ -53,7 +53,6 @@ public:
 
     // void insertAST();
 
-<<<<<<< HEAD
     /**
     * Retrieve all relationships matching rs(field1, field2).
     *
