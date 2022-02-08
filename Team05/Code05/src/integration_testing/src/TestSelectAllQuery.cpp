@@ -3,6 +3,7 @@
 #include "PKB/PKBDataTypes.h"
 #include "PKB/PKBEntityType.h"
 #include "PKB/PKBField.h"
+#include "PKB/PKBFieldFactory.h"
 #include "pql/evaluator.h"
 #include "pql/query.h"
 #include "catch.hpp"
@@ -19,13 +20,13 @@ TEST_CASE("Test get statements") {
     pkb.insertStatement(StatementType::If, 6);
     pkb.insertStatement(StatementType::Print, 7);
 
-    PKBField a1{PKBType::STATEMENT, true, Content{STMT_LO{2, StatementType::Assignment}}};
-    PKBField a2{PKBType::STATEMENT, true, Content{STMT_LO{5, StatementType::Assignment}}};
-    PKBField a3{PKBType::STATEMENT, true, Content{STMT_LO{8, StatementType::Assignment}}};
-    PKBField w1{PKBType::STATEMENT, true, Content{STMT_LO{3, StatementType::While}}};
-    PKBField i1{PKBType::STATEMENT, true, Content{STMT_LO{4, StatementType::If}}};
-    PKBField i2{PKBType::STATEMENT, true, Content{STMT_LO{6, StatementType::If}}};
-    PKBField p1{PKBType::STATEMENT, true, Content{STMT_LO{7, StatementType::Print}}};
+    PKBField a1 = PKBFieldFactory::createConcreteField(PKBEntityType::STATEMENT, Content{ STMT_LO{2, StatementType::Assignment} });
+    PKBField a2 = PKBFieldFactory::createConcreteField(PKBEntityType::STATEMENT, Content{ STMT_LO{5, StatementType::Assignment} });
+    PKBField a3 = PKBFieldFactory::createConcreteField(PKBEntityType::STATEMENT, Content{ STMT_LO{8, StatementType::Assignment} });
+    PKBField w1 = PKBFieldFactory::createConcreteField(PKBEntityType::STATEMENT, Content{ STMT_LO{3, StatementType::While} });
+    PKBField i1 = PKBFieldFactory::createConcreteField(PKBEntityType::STATEMENT, Content{ STMT_LO{4, StatementType::If} });
+    PKBField i2 = PKBFieldFactory::createConcreteField(PKBEntityType::STATEMENT, Content{ STMT_LO{6, StatementType::If} });
+    PKBField p1 = PKBFieldFactory::createConcreteField(PKBEntityType::STATEMENT, Content{ STMT_LO{7, StatementType::Print} });
 
     std::unordered_set<PKBField, PKBFieldHash> expectedSelectAll{a1, a2, a3, w1, i1, i2, p1};
     std::unordered_set<PKBField, PKBFieldHash> expectedSelectAssign {a1, a2, a3};
@@ -74,9 +75,9 @@ TEST_CASE("Test get variables") {
     pkb.insertVariable("y");
     pkb.insertVariable("cur");
 
-    PKBField v1{PKBType::VARIABLE, true, Content{VAR_NAME("x")}};
-    PKBField v2{PKBType::VARIABLE, true, Content{VAR_NAME("y")}};
-    PKBField v3{PKBType::VARIABLE, true, Content{VAR_NAME("cur")}};
+    PKBField v1 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"x"} });
+    PKBField v2 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"y"} });
+    PKBField v3 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"cur"} });
 
     std::unordered_set<PKBField, PKBFieldHash> expectedSelectVar{v1, v2, v3};
 

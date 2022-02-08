@@ -1,7 +1,8 @@
-#include "PKB.h"
-#include "logging.h"
 #include <iostream>
 
+#include "logging.h"
+#include "PKB.h"
+#include "PKB/PKBFieldFactory.h"
 #include "catch.hpp"
 
 #define TEST_LOG Logger() << "TestPKB.cpp "
@@ -11,9 +12,10 @@
  */
 TEST_CASE("PKB testing") {
     std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
-    PKBField field1{ PKBType::PROCEDURE, true, Content{PROC_NAME{"main"}} };
-    PKBField field2{ PKBType::VARIABLE, true, Content{VAR_NAME{"a"}} };
-    PKBField field3{ PKBType::VARIABLE, true, Content{VAR_NAME{"b"}} };
+
+    PKBField field1 = PKBFieldFactory::createConcreteField(PKBEntityType::PROCEDURE, Content{ PROC_NAME{"main"} });
+    PKBField field2 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"a"} });
+    PKBField field3 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"b"} });
 
     TEST_LOG << "Test PKB#insertRelationship MODIFIES";
 

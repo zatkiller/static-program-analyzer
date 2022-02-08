@@ -14,7 +14,6 @@ using Content = std::variant<std::monostate, STMT_LO, VAR_NAME, PROC_NAME, CONST
 * A data structure to represent a program design entity.
 */
 struct PKBField {
-// private:
     /* Type of field */
     PKBFieldType fieldType;
 
@@ -25,23 +24,19 @@ struct PKBField {
 
     Content content;
 
+    bool operator == (const PKBField&) const;
+
     /* Constructor for a concrete field. */
     PKBField(PKBFieldType fieldType, PKBEntityType entityType, Content content) :
         fieldType(fieldType), entityType(entityType), content(content) {}
 
-    /* Constructor for a wildcard field. */
+    /* Constructor for a variable, or procedure, or constant field, or a wildcard field. */
     PKBField(PKBFieldType fieldType, PKBEntityType entityType) :
         fieldType(fieldType), entityType(entityType) {}
 
     /* Constructor for a statement declaration field. */
     PKBField(PKBFieldType fieldType, PKBEntityType entityType, StatementType statementType) :
         fieldType(fieldType), entityType(entityType), statementType(statementType) {}
-
-    /* Constructor for a variable, or procedure, or constant field. */
-    PKBField(PKBFieldType fieldType, PKBEntityType entityType) :
-        fieldType(fieldType), entityType(entityType) {}
-    
-    bool operator == (const PKBField&) const;
 };
 
 /**
