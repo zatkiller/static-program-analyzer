@@ -35,7 +35,7 @@ public:
 
     PKBResponse getAll(DesignEntity);
 
-    std::string PKBFieldToString(PKBField);
+    static std::string PKBFieldToString(PKBField);
 
     void processSuchthat(std::vector<std::shared_ptr<RelRef>>, std::vector<std::shared_ptr<RelRef>>&, std::vector<std::shared_ptr<RelRef>>&);
 

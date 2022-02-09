@@ -13,6 +13,6 @@ public:
     ResultTable& tableRef;
     RelationshipHandler(PKB* pkb, ResultTable& tableRef) : pkb(pkb), tableRef(tableRef) {};
 
-    bool handleModifies(Modifies*);
+    void handleModifies(Modifies*);
     void handleSynClauses(std::vector<std::shared_ptr<RelRef>>);
 };

@@ -2,7 +2,7 @@
 
 
 //return true if relations has no synonym and relationship holds.
-bool RelationshipHandler::handleModifies(Modifies* mPtr) {
+void RelationshipHandler::handleModifies(Modifies* mPtr) {
     Modifies m = *mPtr;
     EntRef modified = m.modified;
     StmtRef stmt = m.modifiesStmt;

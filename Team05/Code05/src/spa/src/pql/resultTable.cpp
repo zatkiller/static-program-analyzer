@@ -9,7 +9,7 @@ std::unordered_map<std::string, int> ResultTable::getSynMap() {
 }
 
 int ResultTable::getSynLocation(std::string synonym) {
-    return this->synSequenceMap.find(synonym)->second;
+    return getSynMap().find(synonym)->second;
 }
 
 void ResultTable::insertSynLocationToLast(std::string name) {
@@ -56,7 +56,7 @@ void ResultTable::crossJoin(PKBResponse r) {
         for (auto r : queryRes) {
             for (auto record : table) {
                 std::vector<PKBField> newRecord = record;
-                newRecord.insert(record.end(),
+                newRecord.insert(newRecord.end(),
                               std::make_move_iterator(r.begin()),
                               std::make_move_iterator(r.end()));
                 newTable.insert(newRecord);
@@ -70,7 +70,6 @@ void ResultTable::crossJoin(PKBResponse r) {
 
 void ResultTable::innerJoin(PKBResponse r, bool isFirst, bool isSecond, std::vector<std::string> allSyn) {
     if (table.empty()) {
-        insert(r);
         return;
     }
     std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> newTable;
@@ -111,7 +110,7 @@ void ResultTable::innerJoin(PKBResponse r, bool isFirst, bool isSecond, std::vec
                 for (auto record: table) {
                     if ((r[m] == record[matchedPos])) {
                         std::vector<PKBField> newRecord = record;
-                        newRecord.push_back(record[a]);  //ensure new field is added at last, otherwise use insert()
+                        newRecord.push_back(r[a]);  //ensure new field is added at last, otherwise use insert()
                         newTable.insert(newRecord);
                     }
                 }
