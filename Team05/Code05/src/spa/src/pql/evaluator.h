@@ -39,8 +39,6 @@ public:
 
     void processSuchthat(std::vector<std::shared_ptr<RelRef>>, std::vector<std::shared_ptr<RelRef>>&, std::vector<std::shared_ptr<RelRef>>&);
 
-    bool evaluateNoSyn(std::vector<std::shared_ptr<RelRef>>, DesignEntity);
-
     std::list<std::string > getListOfResult(ResultTable&, std::string);
 
     std::list<std::string > evaluate(Query);

@@ -274,7 +274,6 @@ TEST_CASE("Test innerJoin with records in table") {
     ResultTable table4 = createNonEmptyTable();
     table4.insertSynLocationToLast("s1");
     REQUIRE(table4.getSynLocation("s1") == 2);
-    TEST_LOG << "tabe4 s1 position 2";
     table4.innerJoin(response3, false, true, std::vector<std::string>{"s1", "v"});
     REQUIRE(table4.getResult().size() == 3);
     printTable(table4);
@@ -302,7 +301,7 @@ TEST_CASE("Test join method") {
     REQUIRE(table1.getResult().size() == 3);
     printTable(table1);
 
-    TEST_LOG << "========== 1 syn join (cross join 1)";
+    TEST_LOG << "========== 1 syn join (cross join 2)";
     ResultTable table2 = createNonEmptyTable();
     std::vector<std::string> synonyms2{"v1"};
     std::unordered_set<PKBField, PKBFieldHash> testR2{newField4, newField5, newField6};
@@ -312,61 +311,101 @@ TEST_CASE("Test join method") {
     REQUIRE(table2.getResult().size() == 9);
     printTable(table2);
 
-    TEST_LOG << "========== 1 syn join (inner join 1)";
+    TEST_LOG << "========== 1 syn join (empty result cross join 3)";
     ResultTable table3 = createNonEmptyTable();
-    std::vector<std::string> synonyms3{"s"};
-    std::unordered_set<PKBField, PKBFieldHash> testR3{newField1, newField2, newField3};
+    std::vector<std::string> synonyms3{"v1"};
+    std::unordered_set<PKBField, PKBFieldHash> testR3{};
     PKBResponse response3{true, Response{testR3}};
-
     table3.join(response3, synonyms3);
-    REQUIRE(table3.getSynLocation("s") == 1);
-    REQUIRE(table3.getResult().size() == 2);
+    REQUIRE(table3.getSynLocation("v1") == 2);
+    REQUIRE(table3.getResult().size() == 0);
     printTable(table3);
 
-    TEST_LOG << "========== 2 syns join (cross join)";
+    TEST_LOG << "========== 1 syn join (inner join 1)";
     ResultTable table4 = createNonEmptyTable();
-    std::vector<std::string> synonyms4{"s1", "v1"};
-    table4.join(responseVector, synonyms4);
-    REQUIRE(table4.getSynLocation("s1") == 2);
-    REQUIRE(table4.getSynLocation("v1") == 3);
-    REQUIRE(table4.getResult().size() == 15);
+    std::vector<std::string> synonyms4{"s"};
+    std::unordered_set<PKBField, PKBFieldHash> testR4{newField1, newField2, newField3};
+    PKBResponse response4{true, Response{testR4}};
+    table4.join(response4, synonyms4);
+    REQUIRE(table4.getSynLocation("s") == 1);
+    REQUIRE(table4.getResult().size() == 2);
     printTable(table4);
 
-    TEST_LOG << "========== 2 syns join (inner join 1)";
-    ResultTable table5{};
-    table5.insertSynLocationToLast("v");
-    table5.insertSynLocationToLast("s");
-    std::vector<std::string> synonyms5{"s", "v"};
+    TEST_LOG << "========== 2 syns join (cross join)";
+    ResultTable table5 = createNonEmptyTable();
+    std::vector<std::string> synonyms5{"s1", "v1"};
     table5.join(responseVector, synonyms5);
-    REQUIRE(table5.getSynLocation("v") == 0);
-    REQUIRE(table5.getSynLocation("s") == 1);
-    REQUIRE(table5.getResult().size() == 0);
+    REQUIRE(table5.getSynLocation("s1") == 2);
+    REQUIRE(table5.getSynLocation("v1") == 3);
+    REQUIRE(table5.getResult().size() == 15);
     printTable(table5);
 
-    TEST_LOG << "========== 2 syns join (inner join 2)";
-    ResultTable table6 = createNonEmptyTable();
-    table6.join(responseVector, synonyms5);
+    TEST_LOG << "========== 2 syns join (inner join 1)";
+    ResultTable table6{};
+    table6.insertSynLocationToLast("v");
+    table6.insertSynLocationToLast("s");
+    std::vector<std::string> synonyms6{"s", "v"};
+    table6.join(responseVector, synonyms6);
     REQUIRE(table6.getSynLocation("v") == 0);
     REQUIRE(table6.getSynLocation("s") == 1);
-    REQUIRE(table6.getResult().size() == 2);
+    REQUIRE(table6.getResult().size() == 0);
     printTable(table6);
 
-    TEST_LOG << "========== 2 syns join (inner join 3)";
+    TEST_LOG << "========== 2 syns join (inner join 2)";
     ResultTable table7 = createNonEmptyTable();
-    std::vector<std::string> synonyms7{"s", "v1"};
+    std::vector<std::string> synonyms7{"s", "v"};
     table7.join(responseVector, synonyms7);
-    REQUIRE(table7.getSynLocation("v1") == 2);
+    REQUIRE(table7.getSynLocation("v") == 0);
     REQUIRE(table7.getSynLocation("s") == 1);
-    REQUIRE(table7.getResult().size() == 3);
+    REQUIRE(table7.getResult().size() == 2);
     printTable(table7);
 
-    TEST_LOG << "========== 2 syns join (inner join 4)";
+    TEST_LOG << "========== 2 syns join (inner join 3)";
     ResultTable table8 = createNonEmptyTable();
-    std::vector<std::string> synonyms8{"s1", "v"};
+    std::vector<std::string> synonyms8{"s", "v1"};
     table8.join(responseVector, synonyms8);
-    REQUIRE(table8.getSynLocation("v") == 0);
-    REQUIRE(table8.getSynLocation("s1") == 2);
-    REQUIRE(table8.getResult().size() == 4);
+    REQUIRE(table8.getSynLocation("v1") == 2);
+    REQUIRE(table8.getSynLocation("s") == 1);
+    REQUIRE(table8.getResult().size() == 3);
     printTable(table8);
 
+    TEST_LOG << "========== 2 syns join (inner join 4)";
+    ResultTable table9 = createNonEmptyTable();
+    std::vector<std::string> synonyms9{"s1", "v"};
+    table9.join(responseVector, synonyms9);
+    REQUIRE(table9.getSynLocation("v") == 0);
+    REQUIRE(table9.getSynLocation("s1") == 2);
+    REQUIRE(table9.getResult().size() == 4);
+    printTable(table9);
+
+    TEST_LOG << "========== 1 syn join (empty response inner join 5)";
+    ResultTable table10 = createNonEmptyTable();
+    std::vector<std::string> synonyms10{"v"};
+    std::unordered_set<PKBField, PKBFieldHash> testR10{};
+    PKBResponse response10{false, Response{testR10}};
+    table10.join(response10, synonyms10);
+    REQUIRE(table10.getSynLocation("v") == 0);
+    REQUIRE(table10.getResult().size() == 0);
+    printTable(table10);
+
+    TEST_LOG << "========== 2 syn join (empty response inner join 6)";
+    ResultTable table11 = createNonEmptyTable();
+    std::vector<std::string> synonyms11{"v", "s"};
+    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> testR11{};
+    PKBResponse response11{false, Response{testR11}};
+    table11.join(response11, synonyms11);
+    REQUIRE(table11.getSynLocation("v") == 0);
+    REQUIRE(table11.getResult().size() == 0);
+    printTable(table11);
+
+    TEST_LOG << "========== 2 syn join (empty response cross join 2)";
+    ResultTable table12 = createNonEmptyTable();
+    std::vector<std::string> synonyms12{"v1", "s1"};
+    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> testR12{};
+    PKBResponse response12{false, Response{testR12}};
+    table12.join(response12, synonyms12);
+    REQUIRE(table12.getSynLocation("v1") == 2);
+    REQUIRE(table12.getSynLocation("s1") == 3);
+    REQUIRE(table12.getResult().size() == 0);
+    printTable(table12);
 }

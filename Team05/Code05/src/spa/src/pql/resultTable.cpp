@@ -102,7 +102,7 @@ void ResultTable::innerJoin(PKBResponse r, bool isFirst, bool isSecond, std::vec
             }
         } else { //one synonym in the tabel
             std::string matched = isFirst ? allSyn[0] : allSyn[1];
-            std::string another = isFirst ? allSyn[1] : allSyn[2];
+            std::string another = isFirst ? allSyn[1] : allSyn[0];
             int m = isFirst ? 0 : 1;
             int a = isFirst ? 1 : 0;
             int matchedPos = getSynLocation(matched);
@@ -133,7 +133,7 @@ void ResultTable::join(PKBResponse response, std::vector<std::string> synonyms) 
         } else if (synExists(first)) {
             insertSynLocationToLast(second);
             innerJoin(response, true, false, synonyms);
-        } else {
+        } else if (synExists(second)){
             insertSynLocationToLast(first);
             innerJoin(response, false, true, synonyms);
         }

@@ -72,23 +72,7 @@ void Evaluator::processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, st
 
 }
 
-bool Evaluator::evaluateNoSyn(std::vector<std::shared_ptr<RelRef>> noSynClauses, DesignEntity returnType) {
-    bool hold = true;
-    for (auto clause : noSynClauses) {
-        RelRef* relRefPtr = clause.get();
-        if (relRefPtr->getType() == RelRefType::MODIFIESS) {
-            Modifies* mPtr= dynamic_cast<Modifies*>(relRefPtr);
-            EntRef modified = mPtr->modified;
-            StmtRef stmt = mPtr->modifiesStmt;
-            //add method enfRefGeneratePKBField and stmtRefGeneratePKBField
-//            PKBField modifiedField;
-//            PKBField Modified;
-//API call
-//        hold = hold && pkb->isRelationshipPresent(stmtPKBField, modified, PKBRelationship::MODIFIES);
-        }
-    }
-    return hold;
-}
+
 
 std::list<std::string> Evaluator::getListOfResult(ResultTable& table, std::string variable) {
     std::list<std::string> listResult{};
@@ -120,8 +104,8 @@ std::list<std::string > Evaluator::evaluate(Query query) {
 
     if (!suchthat.empty()) {
         processSuchthat(suchthat, noSyn, hasSyn);
-        if (!evaluateNoSyn(noSyn, returnType)) return std::list<std::string>{};
-        RelationshipHandler handler = RelationshipHandler(pkb, tableRef);
+        ClauseHandler handler = ClauseHandler(pkb, tableRef);
+        if (!handler.evaluateNoSynClauses(noSyn)) return std::list<std::string>{};
         handler.handleSynClauses(hasSyn);
     }
 
