@@ -46,10 +46,9 @@ struct PKBField {
         }
 
         return nullptr;
-    };
+    }
 
     bool operator == (const PKBField&) const;
-
 };
 
 /**

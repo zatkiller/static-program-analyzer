@@ -1,6 +1,8 @@
 #include "PKBFieldFactory.h"
 
 PKBField PKBFieldFactory::createConcreteField(PKBEntityType entityType, Content content) {
+    // TODO(teo-jun-xiong): add check that entityType == content, e.g. if entityType is statement,
+    // content should be STMT_LO
     return PKBField{ PKBFieldType::CONCRETE, entityType, content };
 }
 
