@@ -23,7 +23,7 @@ typedef struct PROC_NAME {
 } PROC_NAME;
 
 typedef struct STMT_LO {
-    STMT_LO(int statementNum, StatementType type) : statementNum(statementNum), type(type) {};
+    STMT_LO(int statementNum, StatementType type) : statementNum(statementNum), type(type) {}
     int statementNum;
     StatementType type;
 

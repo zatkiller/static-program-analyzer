@@ -62,11 +62,11 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
     switch (rs) {
     case PKBRelationship::MODIFIES:
     {
-        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> extracted = 
+        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> extracted =
             modifiesTable->retrieve(field1, field2);
-        return extracted.size() != 0 
-            ? PKBResponse{ true, Response{extracted} } 
-            : PKBResponse{ false, Response{extracted} };
+        return extracted.size() != 0
+            ? PKBResponse{ true, Response{extracted} }
+        : PKBResponse{ false, Response{extracted} };
         break;
     }
     default:
@@ -103,7 +103,7 @@ PKBResponse PKB::getVariables() {
     for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
         res.insert(PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ *iter }));
     }
-    
+
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
 }
 
