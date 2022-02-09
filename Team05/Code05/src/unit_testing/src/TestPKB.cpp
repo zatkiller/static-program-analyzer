@@ -2,7 +2,7 @@
 
 #include "logging.h"
 #include "PKB.h"
-#include "PKB/PKBFieldFactory.h"
+#include "PKB/PKBField.h"
 #include "catch.hpp"
 
 #define TEST_LOG Logger() << "TestPKB.cpp "
@@ -13,19 +13,19 @@
 TEST_CASE("PKB testing") {
     std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
 
-    PKBField field1 = PKBFieldFactory::createConcreteField(PROC_NAME{"main"});
-    PKBField field2 = PKBFieldFactory::createConcreteField(VAR_NAME{"a"});
-    PKBField field3 = PKBFieldFactory::createConcreteField(VAR_NAME{"b"});
-    PKBField field4 = PKBFieldFactory::createConcreteField(PROC_NAME{"foo"});
-    PKBField procDeclaration = PKBFieldFactory::createProcedureDeclarationField();
-    PKBField varDeclaration = PKBFieldFactory::createVariableDeclarationField();
+    PKBField field1 = PKBField::createConcrete(PROC_NAME{"main"});
+    PKBField field2 = PKBField::createConcrete(VAR_NAME{"a"});
+    PKBField field3 = PKBField::createConcrete(VAR_NAME{"b"});
+    PKBField field4 = PKBField::createConcrete(PROC_NAME{"foo"});
+    PKBField procDeclaration = PKBField::createProcedureDeclaration();
+    PKBField varDeclaration = PKBField::createVariableDeclaration();
 
 
     pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field2);
     REQUIRE(pkb->isRelationshipPresent(field1, field2, PKBRelationship::MODIFIES));
     REQUIRE(pkb->isRelationshipPresent(
-        PKBFieldFactory::createConcreteField(PROC_NAME{"main"}), 
-        PKBFieldFactory::createConcreteField(VAR_NAME{"a"}), 
+        PKBField::createConcrete(PROC_NAME{"main"}), 
+        PKBField::createConcrete(VAR_NAME{"a"}), 
         PKBRelationship::MODIFIES));
     REQUIRE_FALSE(pkb->isRelationshipPresent(field1, field3, PKBRelationship::MODIFIES));
     REQUIRE(*(field3.getContent<VAR_NAME>()) == VAR_NAME{ "b" });
