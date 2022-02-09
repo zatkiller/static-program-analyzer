@@ -17,7 +17,8 @@ std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>
 ModifiesRelationshipTable::retrieve(PKBField field1, PKBField field2) {
     std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> res;
     
-    if (!field1.isConcrete && !field2.isConcrete) {
+    if (!(field1.fieldType == PKBFieldType::CONCRETE) && 
+        !(field2.fieldType == PKBFieldType::CONCRETE)) {
         for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
             std::vector<PKBField> temp;
 
@@ -25,13 +26,13 @@ ModifiesRelationshipTable::retrieve(PKBField field1, PKBField field2) {
             PKBField first = current.getFirst();
             PKBField second = current.getSecond();
 
-            if (first.tag == field1.tag && second.tag == field2.tag) {
+            if (first.entityType == field1.entityType && second.entityType == field2.entityType) {
                 temp.push_back(first);
                 temp.push_back(second);
                 res.insert(temp);
             }
         }
-    } else if (field1.isConcrete && !field2.isConcrete) {
+    } else if (field1.fieldType == PKBFieldType::CONCRETE && !(field2.fieldType == PKBFieldType::CONCRETE)) {
         for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
             std::vector<PKBField> temp;
 
@@ -39,13 +40,13 @@ ModifiesRelationshipTable::retrieve(PKBField field1, PKBField field2) {
             PKBField first = current.getFirst();
             PKBField second = current.getSecond();
 
-            if (first == field1 && second.tag == field2.tag) {
+            if (first == field1 && second.entityType == field2.entityType) {
                 temp.push_back(first);
                 temp.push_back(second);
                 res.insert(temp);
             }
         }
-    } else if (!field1.isConcrete && field2.isConcrete) {
+    } else if (!(field1.fieldType == PKBFieldType::CONCRETE) && field2.fieldType == PKBFieldType::CONCRETE) {
         for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
             std::vector<PKBField> temp;
 
@@ -53,7 +54,7 @@ ModifiesRelationshipTable::retrieve(PKBField field1, PKBField field2) {
             PKBField first = current.getFirst();
             PKBField second = current.getSecond();
 
-            if (first.tag == field1.tag && second == field2) {
+            if (first.entityType == field1.entityType && second == field2) {
                 temp.push_back(first);
                 temp.push_back(second);
                 res.insert(temp);

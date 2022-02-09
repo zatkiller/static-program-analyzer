@@ -1,7 +1,8 @@
-#include "PKB/ProcedureTable.h"
-#include "logging.h"
 #include <iostream>
 
+#include "logging.h"
+#include "PKB/ProcedureTable.h"
+#include "PKB/PKBFieldFactory.h"
 #include "catch.hpp"
 
 #define TEST_LOG Logger() << "TestProcedureTable.cpp "
@@ -11,8 +12,9 @@
  */
 TEST_CASE("ProcedureTable testing") {
     ProcedureTable table{};
-    PKBField field1{ PKBType::PROCEDURE, true, Content{PROC_NAME{"main"}} };
-    PKBField field2{ PKBType::PROCEDURE, true, Content{PROC_NAME{"foo"}} };
+
+    PKBField field1 = PKBFieldFactory::createConcreteField(PKBEntityType::PROCEDURE, Content{ PROC_NAME{"main"} });
+    PKBField field2 = PKBFieldFactory::createConcreteField(PKBEntityType::PROCEDURE, Content{ PROC_NAME{"foo"} });
 
     TEST_LOG << "Test empty ProcedureTable#contains";
     REQUIRE_FALSE(table.contains(field1));

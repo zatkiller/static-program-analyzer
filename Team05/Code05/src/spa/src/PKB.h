@@ -13,6 +13,7 @@
 #include "PKB/ConstantTable.h"
 #include "PKB/PKBResponse.h"
 #include "PKB/PKBReturnType.h"
+#include "PKB/PKBFieldFactory.h"
 
 typedef int PROC;
 

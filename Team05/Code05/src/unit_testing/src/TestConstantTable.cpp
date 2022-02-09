@@ -1,16 +1,18 @@
-#include "PKB/ConstantTable.h"
-#include "logging.h"
 #include <iostream>
 
+#include "logging.h"
+#include "PKB/ConstantTable.h"
+#include "PKB/PKBFieldFactory.h"
 #include "catch.hpp"
 
 #define TEST_LOG Logger() << "TestConstantTable.cpp"
 
 TEST_CASE("ConstantTable testing") {
     ConstantTable table{};
-    PKBField field1{ PKBType::CONST, true, Content{ CONST{1} } };
-    PKBField field2{ PKBType::CONST, true, Content{ CONST{2} } };
-    PKBField field3{ PKBType::CONST, true, Content{ CONST{1} } };
+
+    PKBField field1 = PKBFieldFactory::createConcreteField(PKBEntityType::CONST, Content{ CONST{1} });
+    PKBField field2 = PKBFieldFactory::createConcreteField(PKBEntityType::CONST, Content{ CONST{2} });
+    PKBField field3 = PKBFieldFactory::createConcreteField(PKBEntityType::CONST, Content{ CONST{1} });
 
     TEST_LOG << "Test empty ConstantTable#contains";
     REQUIRE_FALSE(table.contains(field1));

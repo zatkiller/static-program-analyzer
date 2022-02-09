@@ -1,7 +1,8 @@
-#include "PKB/RelationshipRow.h"
-#include "logging.h"
 #include <iostream>
 
+#include "logging.h"
+#include "PKB.h"
+#include "PKB/RelationshipRow.h"
 #include "catch.hpp"
 
 #define TEST_LOG Logger() << "TestRelationshipRow.cpp "
@@ -9,11 +10,12 @@
 /**
  * 
  */
-TEST_CASE("RelationshipRow operator testing") {
-    PKBField field1{ PKBType::VARIABLE, true, Content{VAR_NAME{"test"}} };
-    PKBField field2{ PKBType::VARIABLE, true, Content{VAR_NAME{"test"}} };
-    PKBField field3{ PKBType::PROCEDURE, true, Content{PROC_NAME{"proc_test"}} };
-    
+TEST_CASE("RelationshipRow operator testing") {  
+    PKBField field1 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"test"} });
+    PKBField field2 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"test"} });
+    PKBField field3 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"proc_test"} });
+
+
     RelationshipRow row1{ field1, field2 };
     RelationshipRow row2{ field1, field2 };
     RelationshipRow row3{ field1, field3 };
