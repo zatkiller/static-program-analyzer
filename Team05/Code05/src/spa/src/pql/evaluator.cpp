@@ -128,7 +128,8 @@ std::list<std::string > Evaluator::evaluate(Query query) {
     //after process suchthat and pattern if select variable not in result table, add all
     if (suchthat.empty() && pattern.empty() || !tableRef.synExists(variable[0])) {
         PKBResponse queryResult = getAll(returnType);
-        tableRef.crossJoin(queryResult);
+        std::vector<std::string> synonyms{variable[0]};
+        tableRef.join(queryResult, synonyms);
     }
 
     return getListOfResult(tableRef, variable[0]);

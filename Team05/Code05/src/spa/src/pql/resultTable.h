@@ -22,4 +22,5 @@ public:
     void insert(PKBResponse);
     void crossJoin(PKBResponse);
     void innerJoin(PKBResponse, bool, bool, std::vector<std::string>);
+    void join(PKBResponse, std::vector<std::string>);
 };

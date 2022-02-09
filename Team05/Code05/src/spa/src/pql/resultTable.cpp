@@ -56,9 +56,9 @@ void ResultTable::crossJoin(PKBResponse r) {
         for (auto r : queryRes) {
             for (auto record : table) {
                 std::vector<PKBField> newRecord = record;
-                newRecord.insert(newRecord.end(),
-                              std::make_move_iterator(r.begin()),
-                              std::make_move_iterator(r.end()));
+                for (auto field : r) {
+                    newRecord.push_back(field);
+                }
                 newTable.insert(newRecord);
             }
         }
@@ -118,4 +118,33 @@ void ResultTable::innerJoin(PKBResponse r, bool isFirst, bool isSecond, std::vec
         }
     }
     this->table = newTable;
+}
+
+void ResultTable::join(PKBResponse response, std::vector<std::string> synonyms) {
+    if (synonyms.size() == 2) {
+        std::string first = synonyms[0];
+        std::string second = synonyms[1];
+        if (synExists(first) && synExists(second)) {
+            innerJoin(response, true, true, synonyms);
+        } else if (!synExists(first) && !synExists(second)) {
+            insertSynLocationToLast(first);
+            insertSynLocationToLast(second);
+            crossJoin(response);
+        } else if (synExists(first)) {
+            insertSynLocationToLast(second);
+            innerJoin(response, true, false, synonyms);
+        } else {
+            insertSynLocationToLast(first);
+            innerJoin(response, false, true, synonyms);
+        }
+    } else {
+        std::string syn = synonyms[0];
+        if (synExists(syn)) {
+            innerJoin(response, true, false, synonyms);
+        } else {
+            insertSynLocationToLast(syn);
+            crossJoin(response);
+        }
+    }
+
 }
