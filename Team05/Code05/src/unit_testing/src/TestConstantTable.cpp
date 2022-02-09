@@ -10,9 +10,9 @@
 TEST_CASE("ConstantTable testing") {
     ConstantTable table{};
 
-    PKBField field1 = PKBFieldFactory::createConcreteField(PKBEntityType::CONST, Content{ CONST{1} });
-    PKBField field2 = PKBFieldFactory::createConcreteField(PKBEntityType::CONST, Content{ CONST{2} });
-    PKBField field3 = PKBFieldFactory::createConcreteField(PKBEntityType::CONST, Content{ CONST{1} });
+    PKBField field1 = PKBFieldFactory::createConcreteField(CONST{1});
+    PKBField field2 = PKBFieldFactory::createConcreteField(CONST{2});
+    PKBField field3 = PKBFieldFactory::createConcreteField(CONST{1});
 
     TEST_LOG << "Test empty ConstantTable#contains";
     REQUIRE_FALSE(table.contains(field1));

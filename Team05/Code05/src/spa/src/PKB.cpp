@@ -79,7 +79,7 @@ PKBResponse PKB::getStatements() {
 
     std::vector<STMT_LO> extracted = statementTable->getAllStmt();
     for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBFieldFactory::createConcreteField(PKBEntityType::STATEMENT, Content{ *iter }));
+        res.insert(PKBFieldFactory::createConcreteField(*iter));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -90,7 +90,7 @@ PKBResponse PKB::getStatements(StatementType stmtType) {
 
     std::vector<STMT_LO> extracted = statementTable->getStmtOfType(stmtType);
     for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBFieldFactory::createConcreteField(PKBEntityType::STATEMENT, Content{ *iter }));
+        res.insert(PKBFieldFactory::createConcreteField(*iter));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -101,7 +101,7 @@ PKBResponse PKB::getVariables() {
 
     std::vector<VAR_NAME> extracted = variableTable->getAllVars();
     for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ *iter }));
+        res.insert(PKBFieldFactory::createConcreteField(*iter));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -112,7 +112,7 @@ PKBResponse PKB::getProcedures() {
 
     std::vector<PROC_NAME> extracted = procedureTable->getAllProcs();
     for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBFieldFactory::createConcreteField(PKBEntityType::PROCEDURE, Content{ *iter }));
+        res.insert(PKBFieldFactory::createConcreteField(*iter));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -123,7 +123,7 @@ PKBResponse PKB::getConstants() {
 
     std::vector<CONST> extracted = constantTable->getAllConst();
     for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBFieldFactory::createConcreteField(PKBEntityType::CONST, Content{ *iter }));
+        res.insert(PKBFieldFactory::createConcreteField(*iter));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };

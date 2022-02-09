@@ -14,9 +14,9 @@
 TEST_CASE("ModifiesRelationshipTable testing") {
     std::unique_ptr<ModifiesRelationshipTable> table = 
         std::unique_ptr<ModifiesRelationshipTable>(new ModifiesRelationshipTable());
-    PKBField field1 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ PROC_NAME{"main"} });
-    PKBField field2 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"a"} });
-    PKBField field3 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"b"} });
+    PKBField field1 = PKBFieldFactory::createConcreteField(PROC_NAME{"main"});
+    PKBField field2 = PKBFieldFactory::createConcreteField(VAR_NAME{"a"});
+    PKBField field3 = PKBFieldFactory::createConcreteField(VAR_NAME{"b"});
 
     TEST_LOG << "Test ModifiesRelationshipTable#getType";
     REQUIRE(table->getType() == PKBRelationship::MODIFIES);
