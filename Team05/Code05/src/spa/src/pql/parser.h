@@ -40,13 +40,24 @@ struct Parser {
         if (!isStmtRef(peekNextToken(), queryObj))
             throw "Not a valid StmtRef!";
 
-        ptr.get()->*f1 = parseStmtRef(queryObj);
+
+        StmtRef sr = parseStmtRef(queryObj);
+
+        if (sr.isWildcard())
+            throw "Cannot be wildcard!";
+
+        ptr.get()->*f1 = sr;
         getAndCheckNextToken(TokenType::COMMA);
 
         if (!isEntRef(peekNextToken(), queryObj))
             throw "Not a valid EntRef!";
 
-        ptr.get()->*f2 = parseEntRef(queryObj);
+        EntRef er = parseEntRef(queryObj);
+
+        if (er.isDeclaration() && queryObj.getDeclarationDesignEntity(er.getDeclaration()) != DesignEntity::VARIABLE)
+            throw "Has to be a variable design entity if this is a declaration";
+
+        ptr.get()->*f2 = er;
         getAndCheckNextToken(TokenType::CLOSING_PARAN);
         return ptr;
     }
