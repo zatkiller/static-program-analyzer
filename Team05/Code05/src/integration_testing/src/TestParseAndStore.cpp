@@ -16,15 +16,15 @@ template<typename... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template<typename... Ts> overloaded(Ts...)->overloaded<Ts...>;
 
 std::variant<int, std::string> extractField(PKBField v) {
-    if (!v.isConcrete) {
+    if (v.fieldType != PKBFieldType::CONCRETE) {
         throw std::invalid_argument("No value to extract from PKBField, not concrete");
     }
 
-    switch (v.tag) {
-    case PKBType::VARIABLE: return std::get<VAR_NAME>(v.content).name;
-    case PKBType::STATEMENT: return std::get<STMT_LO>(v.content).statementNum;
-    case PKBType::PROCEDURE: return std::get<PROC_NAME>(v.content).name;
-    case PKBType::CONST: return std::get<CONST>(v.content);
+    switch (v.entityType) {
+    case PKBEntityType::VARIABLE: return std::get<VAR_NAME>(v.content).name;
+    case PKBEntityType::STATEMENT: return std::get<STMT_LO>(v.content).statementNum;
+    case PKBEntityType::PROCEDURE: return std::get<PROC_NAME>(v.content).name;
+    case PKBEntityType::CONST: return std::get<CONST>(v.content);
     }
 }
 
@@ -72,8 +72,8 @@ TEST_CASE("Test parse and store") {
         {
             // 3rd param in PKBField construction is unused in getRelationship.
             auto response = pkb.getRelationship(
-                PKBField{ PKBType::STATEMENT, false, STMT_LO{1} },
-                PKBField{ PKBType::VARIABLE, false, VAR_NAME{"a"} },
+                PKBField::createDeclaration(StatementType::Assignment),
+                PKBField::createDeclaration(PKBEntityType::VARIABLE),
                 PKBRelationship::MODIFIES);
             REQUIRE(response.hasResult);
             auto resultSet = std::get<Rows>(response.res);
@@ -105,8 +105,8 @@ TEST_CASE("Test parse and store") {
         {
             // 3rd param in PKBField construction is unused in getRelationship.
             auto response = pkb.getRelationship(
-                PKBField{ PKBType::PROCEDURE, false, PROC_NAME{"a"}},
-                PKBField{ PKBType::VARIABLE, false, VAR_NAME{"a"} },
+                PKBField::createDeclaration(PKBEntityType::PROCEDURE),
+                PKBField::createDeclaration(PKBEntityType::VARIABLE),
                 PKBRelationship::MODIFIES);
             REQUIRE(response.hasResult);
             auto resultSet = std::get<Rows>(response.res);
