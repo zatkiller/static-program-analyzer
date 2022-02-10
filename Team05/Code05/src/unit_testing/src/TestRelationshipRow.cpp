@@ -11,9 +11,9 @@
  * 
  */
 TEST_CASE("RelationshipRow operator testing") {  
-    PKBField field1 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"test"} });
-    PKBField field2 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"test"} });
-    PKBField field3 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"proc_test"} });
+    PKBField field1 = PKBField::createConcrete(VAR_NAME{"test"});
+    PKBField field2 = PKBField::createConcrete(VAR_NAME{"test"});
+    PKBField field3 = PKBField::createConcrete(VAR_NAME{"proc_test"});
 
 
     RelationshipRow row1{ field1, field2 };

@@ -3,7 +3,7 @@
 
 #include "logging.h"
 #include "PKB/ModifiesRelationshipTable.h"
-#include "PKB/PKBFieldFactory.h"
+#include "PKB/PKBField.h"
 #include "catch.hpp"
 
 #define TEST_LOG Logger() << "TestModifiesRelationshipTable.cpp "
@@ -14,9 +14,9 @@
 TEST_CASE("ModifiesRelationshipTable testing") {
     std::unique_ptr<ModifiesRelationshipTable> table = 
         std::unique_ptr<ModifiesRelationshipTable>(new ModifiesRelationshipTable());
-    PKBField field1 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ PROC_NAME{"main"} });
-    PKBField field2 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"a"} });
-    PKBField field3 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"b"} });
+    PKBField field1 = PKBField::createConcrete(PROC_NAME{"main"});
+    PKBField field2 = PKBField::createConcrete(VAR_NAME{"a"});
+    PKBField field3 = PKBField::createConcrete(VAR_NAME{"b"});
 
     TEST_LOG << "Test ModifiesRelationshipTable#getType";
     REQUIRE(table->getType() == PKBRelationship::MODIFIES);

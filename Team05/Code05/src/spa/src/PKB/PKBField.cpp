@@ -10,6 +10,18 @@ bool PKBField::operator == (const PKBField& other) const {
     return false;
 }
 
+PKBField PKBField::createWildcard(PKBEntityType entityType) {
+    return PKBField{ PKBFieldType::WILDCARD, entityType };
+}
+
+PKBField PKBField::createDeclaration(PKBEntityType entityType) {
+    return PKBField{ PKBFieldType::DECLARATION, entityType };
+}
+
+PKBField PKBField::createDeclaration(StatementType statementType) {
+    return PKBField{ PKBFieldType::DECLARATION, PKBEntityType::STATEMENT, statementType };
+}
+
 size_t PKBFieldHash::operator() (const PKBField& other) const {
     PKBEntityType entityType = other.entityType;
 

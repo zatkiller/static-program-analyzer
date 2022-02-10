@@ -2,6 +2,7 @@
 
 #include <variant>
 #include <vector>
+#include <stdexcept>
 
 #include "PKBEntityType.h"
 #include "PKBDataTypes.h"
@@ -23,17 +24,46 @@ struct PKBField {
     std::optional<StatementType> statementType;
     Content content;
 
-    /* Constructor for a concrete field. */
-    PKBField(PKBFieldType fieldType, PKBEntityType entityType, Content content) :
-        fieldType(fieldType), entityType(entityType), content(content) {}
+    /**
+    * Creates a concrete field. The type of data must be a PKBEntityType.
+    */
+    static PKBField createConcrete(Content content) {
+        PKBEntityType type{};
 
-    /* Constructor for a variable, or procedure, or constant field, or a wildcard field. */
-    PKBField(PKBFieldType fieldType, PKBEntityType entityType) :
-        fieldType(fieldType), entityType(entityType) {}
+        switch (content.index()) {
+        case 1:
+            type = PKBEntityType::STATEMENT;
+            break;
+        case 2:
+            type = PKBEntityType::VARIABLE;
+            break;
+        case 3:
+            type = PKBEntityType::PROCEDURE;
+            break;
+        case 4:
+            type = PKBEntityType::CONST;
+            break;
+        default:
+            throw std::invalid_argument("Content of a concrete field must be provided.");
+        }
 
-    /* Constructor for a statement declaration field. */
-    PKBField(PKBFieldType fieldType, PKBEntityType entityType, StatementType statementType) :
-        fieldType(fieldType), entityType(entityType), statementType(statementType) {}
+        return PKBField{ PKBFieldType::CONCRETE, type, content };
+    }
+
+    /**
+    * Creates a wildcard representing the given entityType.
+    */
+    static PKBField createWildcard(PKBEntityType entityType);
+
+    /**
+     * Creates a declaration (synonym) for procedures, variables, and constants.
+     */
+    static PKBField createDeclaration(PKBEntityType entityType);
+
+    /**
+    * Creates a declaration (synonym) for statements.
+    */
+    static PKBField createDeclaration(StatementType statementType);
 
     /**
     * Get a pointer to the active data type in the Content variant. If the active type in the variant is not 
@@ -49,6 +79,19 @@ struct PKBField {
     }
 
     bool operator == (const PKBField&) const;
+
+private:
+    /* Constructor for a concrete field. */
+    PKBField(PKBFieldType fieldType, PKBEntityType entityType, Content content) :
+        fieldType(fieldType), entityType(entityType), content(content) {}
+
+    /* Constructor for a variable, or procedure, or constant field, or a wildcard field. */
+    PKBField(PKBFieldType fieldType, PKBEntityType entityType) :
+        fieldType(fieldType), entityType(entityType) {}
+
+    /* Constructor for a statement declaration field. */
+    PKBField(PKBFieldType fieldType, PKBEntityType entityType, StatementType statementType) :
+        fieldType(fieldType), entityType(entityType), statementType(statementType) {}
 };
 
 /**

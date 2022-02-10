@@ -14,7 +14,7 @@
 #include "PKB/ConstantTable.h"
 #include "PKB/PKBResponse.h"
 #include "PKB/PKBReturnType.h"
-#include "PKB/PKBFieldFactory.h"
+#include "PKB/PKBField.h"
 
 typedef int PROC;
 

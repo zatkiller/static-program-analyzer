@@ -1,7 +1,7 @@
 #include "PKB/PKBResponse.h"
 #include "logging.h"
 #include <iostream>
-#include "PKB/PKBFieldFactory.h"
+#include "PKB/PKBField.h"
 
 #include "catch.hpp"
 
@@ -11,12 +11,12 @@ TEST_CASE("PKBResponse == Testing") {
     // Initialization of PKBfields and PKBResponses
 
     // Statement fields
-    PKBField stmt1 = PKBFieldFactory::createConcreteField(PKBEntityType::STATEMENT, Content{ STMT_LO{ 3, StatementType::Assignment } });
-    PKBField stmt2 = PKBFieldFactory::createConcreteField(PKBEntityType::STATEMENT, Content{ STMT_LO{ 5, StatementType::Assignment } });
+    PKBField stmt1 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
+    PKBField stmt2 = PKBField::createConcrete(STMT_LO{ 5, StatementType::Assignment });
 
 
     // Var fields
-    PKBField var1 = PKBFieldFactory::createConcreteField(PKBEntityType::VARIABLE, Content{ VAR_NAME{"a"} });
+    PKBField var1 = PKBField::createConcrete(VAR_NAME{"a"});
 
     // Empty PKBResponses
     PKBResponse empty1{ false, Response{} };
