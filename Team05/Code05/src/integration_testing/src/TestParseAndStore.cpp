@@ -78,26 +78,26 @@ TEST_CASE("Test parse and store") {
             REQUIRE(response.hasResult);
             auto resultSet = std::get<Rows>(response.res);
 
-            std::set<std::pair<int, std::string>> stmtModifies;
+            std::set<std::pair<STMT_LO, VAR_NAME>> stmtModifies;
             for (auto& row : resultSet) {
-                auto stmt = std::get<int>(extractField(row[0]));
-                auto var = std::get<std::string>(extractField(row[1]));
+                auto stmt = std::get<STMT_LO>(row[0].content);
+                auto var = std::get<VAR_NAME>(row[1].content);
                 stmtModifies.insert(std::make_pair<>(stmt, var));
             }
 
-            auto p = [](int s, std::string v) {
+            auto p = [](STMT_LO s, VAR_NAME v) {
                 return std::make_pair<>(s, v);
             };
 
-            std::set<std::pair<int, std::string>> expected = {
-                p(1, "number"),
-                p(2, "sum"),
-                p(3, "digit"),
-                p(3, "sum"),
-                p(3, "number"),
-                p(4, "digit"),
-                p(5, "sum"),
-                p(6, "number"),
+            std::set<std::pair<STMT_LO, VAR_NAME>> expected = {
+                p(STMT_LO{1, StatementType::Read}, VAR_NAME{"number"}),
+                p(STMT_LO{2, StatementType::Assignment}, VAR_NAME{"sum"}),
+                p(STMT_LO{3, StatementType::While}, VAR_NAME{"digit"}),
+                p(STMT_LO{3, StatementType::While}, VAR_NAME{"sum"}),
+                p(STMT_LO{3, StatementType::While}, VAR_NAME{"number"}),
+                p(STMT_LO{4, StatementType::Assignment}, VAR_NAME{"digit"}),
+                p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"sum"}),
+                p(STMT_LO{6, StatementType::Assignment}, VAR_NAME{"number"})
             };
             REQUIRE(expected == stmtModifies);
         }

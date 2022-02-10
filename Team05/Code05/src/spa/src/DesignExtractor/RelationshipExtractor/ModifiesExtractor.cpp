@@ -4,25 +4,25 @@
 #define DEBUG_LOG Logger(Level::DEBUG) << "ModifiesExtractor.cpp Extracted "
 
 void ModifiesExtractor::cascadeToContainer(const std::string& varName) {
-    for (auto stmtNo : containerNumber) {
+    for (auto stmt : container) {
         // local table for testing
-        table.insert(std::make_pair<>(stmtNo, varName));
-        DEBUG_LOG << "(" << stmtNo << "," << varName << ")";
+        table.insert(std::make_pair<>(stmt.statementNum, varName));
+        DEBUG_LOG << "(" << stmt.statementNum << "," << varName << ")";
 
         pkb->insertRelationship(
             PKBRelationship::MODIFIES,
-            PKBField{ PKBType::STATEMENT, true, STMT_LO{stmtNo} },
+            PKBField{ PKBType::STATEMENT, true, stmt },
             PKBField{ PKBType::VARIABLE, true, VAR_NAME{varName} }
         );
     }
-    if (!currentProcedureName.empty()) {
+    if (!currentProcedure.name.empty()) {
         // local table for testing
-        table.insert(std::make_pair<>(currentProcedureName, varName));
-        DEBUG_LOG << "(" << currentProcedureName << "," << varName << ")";
+        table.insert(std::make_pair<>(currentProcedure.name, varName));
+        DEBUG_LOG << "(" << currentProcedure.name << "," << varName << ")";
 
         pkb->insertRelationship(
             PKBRelationship::MODIFIES,
-            PKBField{ PKBType::PROCEDURE, true, PROC_NAME{currentProcedureName} },
+            PKBField{ PKBType::PROCEDURE, true, currentProcedure },
             PKBField{ PKBType::VARIABLE, true, VAR_NAME{varName} }
         );
     }
@@ -36,7 +36,7 @@ void ModifiesExtractor::visit(const AST::Read& node) {
 
     pkb->insertRelationship(
         PKBRelationship::MODIFIES,
-        PKBField{ PKBType::STATEMENT, true, STMT_LO{node.getStmtNo()} },
+        PKBField{ PKBType::STATEMENT, true, STMT_LO{node.getStmtNo(), StatementType::Read} },
         PKBField{ PKBType::VARIABLE, true, VAR_NAME{varName} }
     );
 
@@ -51,22 +51,30 @@ void ModifiesExtractor::visit(const AST::Assign& node) {
 
     pkb->insertRelationship(
         PKBRelationship::MODIFIES,
-        PKBField{ PKBType::STATEMENT, true, STMT_LO{node.getStmtNo()} },
+        PKBField{ PKBType::STATEMENT, true, STMT_LO{node.getStmtNo(), StatementType::Assignment} },
         PKBField{ PKBType::VARIABLE, true, VAR_NAME{varName} }
     );
 
     cascadeToContainer(varName);
 }
 
+void ModifiesExtractor::visit(const AST::While& node) {
+    stmtNumToType[node.getStmtNo()] = StatementType::While;
+}
+
+void ModifiesExtractor::visit(const AST::If& node) {
+    stmtNumToType[node.getStmtNo()] = StatementType::If;
+}
+
 void ModifiesExtractor::enterContainer(std::variant<int, std::string> containerId) {
     int* pNum = std::get_if<int>(&containerId);
     if (pNum) {
-        containerNumber.push_front(*pNum);
+        container.push_front(STMT_LO{ *pNum, stmtNumToType[*pNum] });
     } else {
-        currentProcedureName = std::get<std::string>(containerId);
+        currentProcedure = PROC_NAME{ std::get<std::string>(containerId) };
     }
 }
 
 void ModifiesExtractor::exitContainer() {
-    containerNumber.pop_front();
+    container.pop_front();
 }
