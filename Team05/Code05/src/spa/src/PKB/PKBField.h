@@ -27,9 +27,7 @@ struct PKBField {
     /**
     * Creates a concrete field. The type of data must be a PKBEntityType.
     */
-    template <typename T>
-    static PKBField createConcrete(T data) {
-        Content content{ data };
+    static PKBField createConcrete(Content content) {
         PKBEntityType type{};
 
         switch (content.index()) {
@@ -56,26 +54,16 @@ struct PKBField {
     * Creates a wildcard representing the given entityType.
     */
     static PKBField createWildcard(PKBEntityType entityType);
-    
+
     /**
-    * Creates a statement declaration of the given statementType.
-    */
-    static PKBField createStatementDeclaration(StatementType statementType);
-    
+     * Creates a declaration (synonym) for procedures, variables, and constants.
+     */
+    static PKBField createDeclaration(PKBEntityType entityType);
+
     /**
-    * Creates a constant declaration.
+    * Creates a declaration (synonym) for statements.
     */
-    static PKBField createConstantDeclaration();
-    
-    /**
-    * Creates a variable declaration.
-    */
-    static PKBField createVariableDeclaration();
-    
-    /**
-    * Creates a procedure declaration.
-    */
-    static PKBField createProcedureDeclaration();
+    static PKBField createDeclaration(StatementType statementType);
 
     /**
     * Get a pointer to the active data type in the Content variant. If the active type in the variant is not 
@@ -93,7 +81,6 @@ struct PKBField {
     bool operator == (const PKBField&) const;
 
 private:
-
     /* Constructor for a concrete field. */
     PKBField(PKBFieldType fieldType, PKBEntityType entityType, Content content) :
         fieldType(fieldType), entityType(entityType), content(content) {}

@@ -17,8 +17,8 @@ TEST_CASE("PKB testing") {
     PKBField field2 = PKBField::createConcrete(VAR_NAME{"a"});
     PKBField field3 = PKBField::createConcrete(VAR_NAME{"b"});
     PKBField field4 = PKBField::createConcrete(PROC_NAME{"foo"});
-    PKBField procDeclaration = PKBField::createProcedureDeclaration();
-    PKBField varDeclaration = PKBField::createVariableDeclaration();
+    PKBField procDeclaration = PKBField::createDeclaration(PKBEntityType::PROCEDURE);
+    PKBField varDeclaration = PKBField::createDeclaration(PKBEntityType::VARIABLE);
 
 
     pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field2);

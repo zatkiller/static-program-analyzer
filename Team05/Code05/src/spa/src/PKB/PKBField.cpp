@@ -14,22 +14,13 @@ PKBField PKBField::createWildcard(PKBEntityType entityType) {
     return PKBField{ PKBFieldType::WILDCARD, entityType };
 }
 
-PKBField PKBField::createStatementDeclaration(StatementType statementType) {
+PKBField PKBField::createDeclaration(PKBEntityType entityType) {
+    return PKBField{ PKBFieldType::DECLARATION, entityType };
+}
+
+PKBField PKBField::createDeclaration(StatementType statementType) {
     return PKBField{ PKBFieldType::DECLARATION, PKBEntityType::STATEMENT, statementType };
 }
-
-PKBField PKBField::createConstantDeclaration() {
-    return PKBField{ PKBFieldType::DECLARATION, PKBEntityType::CONST };
-}
-
-PKBField PKBField::createVariableDeclaration() {
-    return PKBField{ PKBFieldType::DECLARATION, PKBEntityType::VARIABLE };
-}
-
-PKBField PKBField::createProcedureDeclaration() {
-    return PKBField{ PKBFieldType::DECLARATION, PKBEntityType::PROCEDURE };
-}
-
 
 size_t PKBFieldHash::operator() (const PKBField& other) const {
     PKBEntityType entityType = other.entityType;
