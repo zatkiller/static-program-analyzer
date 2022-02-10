@@ -6,7 +6,7 @@
 
 // count of an item in a set can only be 0 or 1
 bool ProcedureTable::contains(PKBField field) {
-    if (field.tag != PKBType::PROCEDURE) {
+    if (field.entityType != PKBEntityType::PROCEDURE) {
         throw "Only procedures are accepted!";
     }
     PROC_NAME proc = std::get<PROC_NAME>(field.content);
@@ -14,7 +14,7 @@ bool ProcedureTable::contains(PKBField field) {
 }
 
 void ProcedureTable::insert(PKBField field) {
-    if (field.tag != PKBType::PROCEDURE) {
+    if (field.entityType != PKBEntityType::PROCEDURE) {
         throw "Only procedures are accepted!";
     }
     PROC_NAME proc = std::get<PROC_NAME>(field.content);
