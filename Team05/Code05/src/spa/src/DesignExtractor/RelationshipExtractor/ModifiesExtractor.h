@@ -4,7 +4,7 @@
 #include <string>
 
 #include "Parser/AST.h"
-#include "DesignExtractor.h"
+#include "DesignExtractor/Extractor.h"
 
 
 /**
