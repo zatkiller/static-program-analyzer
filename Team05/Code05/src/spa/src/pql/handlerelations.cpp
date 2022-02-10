@@ -1,4 +1,4 @@
-#include "handleRelations.h"
+#include "handlerelations.h"
 
 
 //return true if relations has no synonym and relationship holds.

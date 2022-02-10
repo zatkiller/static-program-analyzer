@@ -1,6 +1,6 @@
 #include <memory>
 #include "query.h"
-#include "resultTable.h"
+#include "resulttable.h"
 #include "PKB/StatementType.h"
 #include "PKB/PKBField.h"
 #include "PKB/PKBRelationship.h"

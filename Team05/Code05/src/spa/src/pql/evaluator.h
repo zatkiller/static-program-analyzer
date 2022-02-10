@@ -13,7 +13,7 @@
 #include <list>
 
 #include "pql/query.h"
-#include "handleRelations.h"
+#include "handlerelations.h"
 #include "PKB/PKBField.h"
 #include "PKB/PKBDataTypes.h"
 #include "PKB/PKBType.h"

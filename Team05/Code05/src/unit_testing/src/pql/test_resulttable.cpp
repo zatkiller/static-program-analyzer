@@ -1,4 +1,4 @@
-#include "pql/resultTable.h"
+#include "pql/resulttable.h"
 #include "catch.hpp"
 #include "logging.h"
 

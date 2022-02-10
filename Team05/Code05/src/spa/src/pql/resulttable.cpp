@@ -1,4 +1,4 @@
-#include "resultTable.h"
+#include "resulttable.h"
 
 bool ResultTable::synExists(std::string name) {
     return synSequenceMap.find(name) != synSequenceMap.end();
