@@ -98,7 +98,7 @@ enum class RelRefType {
     FOLLOWS,
     FOLLOWST,
     PARENT,
-    PARRENTT,
+    PARENTT,
     MODIFIESS,
     USESS
 };
@@ -123,7 +123,34 @@ struct Uses : RelRef {
 
     EntRef used;
     StmtRef useStmt;
-    RelRefType getType() {return type;}
+};
+
+struct Follows : RelRef {
+    Follows() : RelRef(RelRefType::FOLLOWS) {}
+
+    StmtRef follower;
+    StmtRef followed;
+};
+
+struct FollowsT : RelRef {
+    FollowsT() : RelRef(RelRefType::FOLLOWST) {}
+
+    StmtRef follower;
+    StmtRef transitiveFollowed;
+};
+
+struct Parent : RelRef {
+    Parent() : RelRef(RelRefType::PARENT) {}
+
+    StmtRef parent;
+    StmtRef child;
+};
+
+struct ParentT : RelRef {
+    ParentT() : RelRef(RelRefType::PARENTT) {}
+
+    StmtRef parent;
+    StmtRef transitiveChild;
 };
 
 struct Pattern {

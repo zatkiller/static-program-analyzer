@@ -85,6 +85,14 @@ Token Lexer::getNextReservedToken() {
         token =  Token {"Modifies", TokenType::MODIFIES};
     } else if (hasPrefix("Uses")) {
         token = Token {"Uses", TokenType::USES};
+    } else if (hasPrefix("Parent*")) {
+        token = Token {"Parent*", TokenType::PARENT_T};
+    } else if (hasPrefix("Parent")) {
+        token =  Token {"Parent", TokenType::PARENT};
+    } else if (hasPrefix("Follows*")) {
+        token = Token {"Follows*", TokenType::FOLLOWS_T};
+    } else if (hasPrefix("Follows")) {
+        token =  Token {"Follows", TokenType::FOLLOWS};
     } else if (hasPrefix("pattern")) {
         token =  Token {"pattern", TokenType::PATTERN};
     } else if (hasPrefix("such that")) {

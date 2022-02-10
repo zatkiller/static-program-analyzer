@@ -49,6 +49,26 @@ TEST_CASE("Uses") {
     REQUIRE(uses.getType() == RelRefType::USESS);
 }
 
+TEST_CASE("Follows") {
+    Follows follows;
+    REQUIRE(follows.getType() == RelRefType::FOLLOWS);
+}
+
+TEST_CASE("Follows*") {
+    FollowsT follows;
+    REQUIRE(follows.getType() == RelRefType::FOLLOWST);
+}
+
+TEST_CASE("Parent") {
+    Parent p;
+    REQUIRE(p.getType() == RelRefType::PARENT);
+}
+
+TEST_CASE("Parent*") {
+    ParentT p;
+    REQUIRE(p.getType() == RelRefType::PARENTT);
+}
+
 TEST_CASE("Pattern") {
     Pattern p = { "h", EntRef::ofWildcard(), "_x_"};
     REQUIRE(p.getSynonym() == "h");

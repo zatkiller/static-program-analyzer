@@ -39,32 +39,20 @@ struct Parser {
         getAndCheckNextToken(TokenType::OPENING_PARAN);
 
         if (!isStmtRef(peekNextToken(), queryObj))
-            throw exceptions::PqlSyntaxException("Not a valid StmtRef!");
+            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidStmtRefMessage);
 
-
-        StmtRef sr = parseStmtRef(queryObj);
-
-        if (sr.isWildcard())
-            throw "Cannot be wildcard!";
-
-        ptr.get()->*f1 = sr;
+        ptr.get()->*f1 = parseStmtRef(queryObj);
         getAndCheckNextToken(TokenType::COMMA);
 
-        if (!isEntRef(peekNextToken(), queryObj))
-            throw exceptions::PqlSyntaxException("Not a valid EntRef!");
+        if (!isStmtRef(peekNextToken(), queryObj))
+            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidStmtRefMessage);
 
-        EntRef er = parseEntRef(queryObj);
-
-        if (er.isDeclaration() && queryObj.getDeclarationDesignEntity(er.getDeclaration()) != DesignEntity::VARIABLE)
-            throw "Has to be a variable design entity if this is a declaration";
-
-        ptr.get()->*f2 = er;
+        ptr.get()->*f2 = parseStmtRef(queryObj);
         getAndCheckNextToken(TokenType::CLOSING_PARAN);
         return ptr;
     }
 
-    std::shared_ptr<RelRef> parseUses(Query &);
-    std::shared_ptr<RelRef> parseModifies(Query &);
+    std::shared_ptr<RelRef> parseModifiesOrUsesVariables(Query &, TokenType);
 
     bool isStmtRef(Token, Query &);
     bool isEntRef(Token, Query &);

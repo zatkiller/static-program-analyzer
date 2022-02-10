@@ -20,6 +20,10 @@ enum class TokenType {
     // Relationships
     USES,
     MODIFIES,
+    FOLLOWS,
+    FOLLOWS_T,
+    PARENT,
+    PARENT_T,
 
     // Reserved Keywords
     SELECT,

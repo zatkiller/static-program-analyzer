@@ -2,6 +2,8 @@
 
 #include "pql/parser.h"
 
+using namespace messages::qps::parser;
+
 std::string Parser::getParsedText() {
     return lexer.text;
 }
@@ -22,7 +24,7 @@ Token Parser::peekNextReservedToken() {
 
 void Parser::checkType(Token token, TokenType tokenType) {
     if (token.getTokenType() != tokenType)
-        throw exceptions::PqlSyntaxException("Not expecting this token type!");
+        throw exceptions::PqlSyntaxException(notExpectingTokenMessage);
 }
 
 Token Parser::getAndCheckNextToken(TokenType tt) {
@@ -58,7 +60,7 @@ void Parser::parseDeclarations(Query &queryObj) {
     Token token = getAndCheckNextToken(TokenType::IDENTIFIER);
     auto iterator = designEntityMap.find(token.getText());
     if (iterator == designEntityMap.end())
-        throw exceptions::PqlSyntaxException("No such design entity!");
+        throw exceptions::PqlSyntaxException(noSuchDesignEntityMessage);
 
     DesignEntity designEntity = iterator->second;
     parseDeclaration(queryObj, designEntity);
@@ -83,7 +85,7 @@ void Parser::parseSelectFields(Query &queryObj) {
     std::string name = t.getText();
 
     if (!queryObj.hasDeclaration(name))
-        throw exceptions::PqlSyntaxException("Variable does not exist in declaration!");
+        throw exceptions::PqlSyntaxException(declarationDoesNotExistMessage);
 
     queryObj.addVariable(name);
 }
@@ -143,24 +145,58 @@ EntRef Parser::parseEntRef(Query &queryObj) {
     return entRef;
 }
 
-std::shared_ptr<RelRef> Parser::parseUses(Query &queryObj) {
-    return parseRelRefVariables<Uses>(queryObj, &Uses::useStmt, &Uses::used);
-}
+std::shared_ptr<RelRef> Parser::parseModifiesOrUsesVariables(Query &queryObj, TokenType tt) {
+    getAndCheckNextToken(TokenType::OPENING_PARAN);
 
-std::shared_ptr<RelRef> Parser::parseModifies(Query &queryObj) {
-    return parseRelRefVariables<Modifies>(queryObj, &Modifies::modifiesStmt, &Modifies::modified);
+    if (!isStmtRef(peekNextToken(), queryObj))
+        throw exceptions::PqlSyntaxException(invalidStmtRefMessage);
+
+    StmtRef sr = parseStmtRef(queryObj);
+
+    if (sr.isWildcard())
+        throw exceptions::PqlSemanticException(cannotBeWildcardMessage);
+
+    getAndCheckNextToken(TokenType::COMMA);
+
+    if (!isEntRef(peekNextToken(), queryObj))
+        throw exceptions::PqlSyntaxException(invalidEntRefMessage);
+
+    EntRef er = parseEntRef(queryObj);
+
+    if (er.isDeclaration() && queryObj.getDeclarationDesignEntity(er.getDeclaration()) != DesignEntity::VARIABLE)
+        throw exceptions::PqlSemanticException(notVariableSynonymMessage);
+
+    getAndCheckNextToken(TokenType::CLOSING_PARAN);
+
+    if (tt == TokenType::USES) {
+        std::shared_ptr<Uses> usesPtr = std::make_shared<Uses>();
+        usesPtr->used = er;
+        usesPtr->useStmt = sr;
+        return usesPtr;
+    } else {
+        std::shared_ptr<Modifies> modifiesPtr = std::make_shared<Modifies>();
+        modifiesPtr->modifiesStmt = sr;
+        modifiesPtr->modified = er;
+        return modifiesPtr;
+    }
 }
 
 std::shared_ptr<RelRef> Parser::parseRelRef(Query &queryObj) {
     TokenType tokenType = getNextReservedToken().getTokenType();
 
-    if (tokenType == TokenType::USES) {
-        return parseUses(queryObj);
-    } else if (tokenType == TokenType::MODIFIES) {
-        return parseModifies(queryObj);
-    } else {
-        throw exceptions::PqlSyntaxException("Unrecognized RelRef");
+    if ((tokenType == TokenType::USES) || (tokenType == TokenType::MODIFIES)) {
+        return parseModifiesOrUsesVariables(queryObj, tokenType);
+    } else if (tokenType == TokenType::FOLLOWS) {
+        return parseRelRefVariables<Follows>(queryObj, &Follows::follower, &Follows::followed);
+    } else if (tokenType == TokenType::FOLLOWS_T) {
+        return parseRelRefVariables<FollowsT>(queryObj, &FollowsT::follower, &FollowsT::transitiveFollowed);
+    } else if (tokenType == TokenType::PARENT) {
+        return parseRelRefVariables<Parent>(queryObj, &Parent::parent, &Parent::child);
+    } else if (tokenType == TokenType::PARENT_T) {
+        return parseRelRefVariables<ParentT>(queryObj, &ParentT::parent, &ParentT::transitiveChild);
     }
+
+    throw exceptions::PqlSyntaxException(invalidRelRefMessage);
 }
 
 std::string Parser::parseExpSpec() {
@@ -195,7 +231,7 @@ void Parser::parsePattern(Query &queryObj) {
     std::string declarationName = t.getText();
 
     if (queryObj.getDeclarationDesignEntity(declarationName) != DesignEntity::ASSIGN)
-        throw exceptions::PqlSyntaxException("Not an assignment");
+        throw exceptions::PqlSyntaxException(notAnAssignmentMessage);
 
     Pattern p;
 
@@ -235,7 +271,7 @@ Query Parser::parsePql(std::string query) {
                 parseQuery(queryObj);
             }
         }
-    } catch (exceptions::PqlSyntaxException) {
+    } catch (exceptions::PqlException) {
         queryObj.setValid(false);
     }
 
