@@ -1,7 +1,6 @@
 #include <sstream>
 
 #include "pql/parser.h"
-#include "logging.h"
 
 std::string Parser::getParsedText() {
     return lexer.text;
@@ -23,7 +22,7 @@ Token Parser::peekNextReservedToken() {
 
 void Parser::checkType(Token token, TokenType tokenType) {
     if (token.getTokenType() != tokenType)
-        throw "Not expecting this token type!";
+        throw exceptions::PqlSyntaxException("Not expecting this token type!");
 }
 
 Token Parser::getAndCheckNextToken(TokenType tt) {
@@ -59,7 +58,7 @@ void Parser::parseDeclarations(Query &queryObj) {
     Token token = getAndCheckNextToken(TokenType::IDENTIFIER);
     auto iterator = designEntityMap.find(token.getText());
     if (iterator == designEntityMap.end())
-        throw "No such design entity!";
+        throw exceptions::PqlSyntaxException("No such design entity!");
 
     DesignEntity designEntity = iterator->second;
     parseDeclaration(queryObj, designEntity);
@@ -84,7 +83,7 @@ void Parser::parseSelectFields(Query &queryObj) {
     std::string name = t.getText();
 
     if (!queryObj.hasDeclaration(name))
-        throw "Variable does not exist in declaration!";
+        throw exceptions::PqlSyntaxException("Variable does not exist in declaration!");
 
     queryObj.addVariable(name);
 }
@@ -160,7 +159,7 @@ std::shared_ptr<RelRef> Parser::parseRelRef(Query &queryObj) {
     } else if (tokenType == TokenType::MODIFIES) {
         return parseModifies(queryObj);
     } else {
-        throw "Don't recognize this relRef";
+        throw exceptions::PqlSyntaxException("Unrecognized RelRef");
     }
 }
 
@@ -196,7 +195,7 @@ void Parser::parsePattern(Query &queryObj) {
     std::string declarationName = t.getText();
 
     if (queryObj.getDeclarationDesignEntity(declarationName) != DesignEntity::ASSIGN)
-        throw "Not an assignment!";
+        throw exceptions::PqlSyntaxException("Not an assignment");
 
     Pattern p;
 
@@ -225,15 +224,19 @@ Query Parser::parsePql(std::string query) {
     addPql(query);
     Query queryObj;
 
-    for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::END_OF_FILE;
-        token = peekNextReservedToken()) {
-        if (token.getTokenType() != TokenType::SELECT) {
-            // Parse delcarations first
-            parseDeclarations(queryObj);
-        } else {
-            // Start parsing the actual query
-            parseQuery(queryObj);
+    try {
+        for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::END_OF_FILE;
+             token = peekNextReservedToken()) {
+            if (token.getTokenType() != TokenType::SELECT) {
+                // Parse delcarations first
+                parseDeclarations(queryObj);
+            } else {
+                // Start parsing the actual query
+                parseQuery(queryObj);
+            }
         }
+    } catch (exceptions::PqlSyntaxException) {
+        queryObj.setValid(false);
     }
 
     return queryObj;

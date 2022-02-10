@@ -146,20 +146,23 @@ private:
     std::vector<std::string> variable;
     std::vector<std::shared_ptr<RelRef>> suchthat;
     std::vector<Pattern> pattern;
+    bool valid;
 
 public:
     std::unordered_map<std::string, DesignEntity> getDeclarations();
     std::vector<std::string> getVariable();
     std::vector<std::shared_ptr<RelRef>> getSuchthat();
     std::vector<Pattern> getPattern();
+    bool isValid();
+    void setValid(bool);
 
-    bool hasDeclaration(std::string name);
+    bool hasDeclaration(std::string);
     bool hasVariable(std::string var);
 
     void addDeclaration(std::string, DesignEntity);
     void addVariable(std::string var);
     void addSuchthat(std::shared_ptr<RelRef>);
-    void addPattern(Pattern pattern);
+    void addPattern(Pattern);
 
-    DesignEntity getDeclarationDesignEntity(std::string name);
+    DesignEntity getDeclarationDesignEntity(std::string);
 };

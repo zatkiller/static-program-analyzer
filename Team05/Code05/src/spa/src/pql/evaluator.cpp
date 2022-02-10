@@ -20,7 +20,6 @@ std::string Evaluator::PKBFieldToString(PKBField pkbField) {
 
 PKBResponse Evaluator::getAll(DesignEntity type) {
     std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
-
             {DesignEntity::ASSIGN, StatementType::Assignment},
             {DesignEntity::WHILE, StatementType::While},
             {DesignEntity::IF, StatementType::If},
@@ -44,6 +43,7 @@ PKBResponse Evaluator::getAll(DesignEntity type) {
     }
     return result;
 }
+
 
 //classify the clauses into has Synonym and without Synonym
 void Evaluator::processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, std::vector<std::shared_ptr<RelRef>>& noSyn, std::vector<std::shared_ptr<RelRef>>& hasSyn) {
@@ -117,4 +117,5 @@ std::list<std::string > Evaluator::evaluate(Query query) {
     }
 
     return getListOfResult(tableRef, variable[0]);
+
 }
