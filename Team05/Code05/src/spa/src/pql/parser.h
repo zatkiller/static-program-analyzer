@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "exceptions.h"
 #include "pql/query.h"
 #include "pql/lexer.h"
 
@@ -38,7 +39,7 @@ struct Parser {
         getAndCheckNextToken(TokenType::OPENING_PARAN);
 
         if (!isStmtRef(peekNextToken(), queryObj))
-            throw "Not a valid StmtRef!";
+            throw exceptions::PqlSyntaxException("Not a valid StmtRef!");
 
 
         StmtRef sr = parseStmtRef(queryObj);
@@ -50,7 +51,7 @@ struct Parser {
         getAndCheckNextToken(TokenType::COMMA);
 
         if (!isEntRef(peekNextToken(), queryObj))
-            throw "Not a valid EntRef!";
+            throw exceptions::PqlSyntaxException("Not a valid EntRef!");
 
         EntRef er = parseEntRef(queryObj);
 

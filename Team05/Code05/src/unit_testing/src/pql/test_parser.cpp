@@ -2,7 +2,9 @@
 #include "catch.hpp"
 #include <memory>
 #include <vector>
+
 #include "logging.h"
+#include "exceptions.h"
 
 TEST_CASE("Parser checkType") {
     Parser parser;
@@ -10,7 +12,8 @@ TEST_CASE("Parser checkType") {
     REQUIRE_NOTHROW(parser.checkType(token, TokenType::INVALID));
 
     Token token2 = Token { "", TokenType::STRING };
-    REQUIRE_THROWS_WITH(parser.checkType(token2, TokenType::INVALID), "Not expecting this token type!");
+    REQUIRE_THROWS_MATCHES(parser.checkType(token2, TokenType::INVALID), exceptions::PqlSyntaxException,
+        Catch::Message("Not expecting this token type!"));
 }
 
 TEST_CASE("Parser getAndCheckNextToken and peekAndCheckNextToken") {
@@ -18,8 +21,9 @@ TEST_CASE("Parser getAndCheckNextToken and peekAndCheckNextToken") {
     parser.lexer.text = "hello 123";
     REQUIRE_NOTHROW(parser.getAndCheckNextToken(TokenType::IDENTIFIER));
 
-    REQUIRE_THROWS_WITH(parser.peekAndCheckNextToken(TokenType::IDENTIFIER), "Not expecting this token type!");
-    REQUIRE_NOTHROW(parser.peekAndCheckNextToken(TokenType::NUMBER));
+    REQUIRE_THROWS_MATCHES(parser.peekAndCheckNextToken(TokenType::IDENTIFIER), exceptions::PqlSyntaxException,
+                           Catch::Message("Not expecting this token type!"));
+   REQUIRE_NOTHROW(parser.peekAndCheckNextToken(TokenType::NUMBER));
 }
 
 TEST_CASE("Parser getAndCheckNextReservedToken and peekAndCheckNextReservedToken") {
@@ -27,7 +31,8 @@ TEST_CASE("Parser getAndCheckNextReservedToken and peekAndCheckNextReservedToken
     parser.lexer.text = "Select such that";
     REQUIRE_NOTHROW(parser.getAndCheckNextReservedToken(TokenType::SELECT));
 
-    REQUIRE_THROWS_WITH(parser.peekAndCheckNextReservedToken(TokenType::PATTERN), "Not expecting this token type!");
+    REQUIRE_THROWS_MATCHES(parser.peekAndCheckNextReservedToken(TokenType::PATTERN), exceptions::PqlSyntaxException,
+                        Catch::Message("Not expecting this token type!"));
     REQUIRE_NOTHROW(parser.peekAndCheckNextReservedToken(TokenType::SUCH_THAT));
 }
 
@@ -119,7 +124,9 @@ TEST_CASE("Parser parseSelectFields") {
     parser.addPql("assign a; \n Select v");
 
     parser.parseDeclarations(queryObj);
-    REQUIRE_THROWS_WITH(parser.parseSelectFields(queryObj), "Variable does not exist in declaration!");
+
+    REQUIRE_THROWS_MATCHES(parser.parseSelectFields(queryObj), exceptions::PqlSyntaxException,
+                           Catch::Message("Variable does not exist in declaration!"));
 }
 
 TEST_CASE("Parser parseSuchThat - Uses") {

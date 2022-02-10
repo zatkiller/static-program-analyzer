@@ -1,5 +1,6 @@
 #include <algorithm>
 
+#include "exceptions.h"
 #include "pql/query.h"
 
 std::unordered_map<std::string, DesignEntity> designEntityMap = {
@@ -13,6 +14,15 @@ std::unordered_map<std::string, DesignEntity> designEntityMap = {
         { "constant", DesignEntity::CONSTANT },
         { "procedure", DesignEntity::PROCEDURE }
 };
+
+bool Query::isValid() {
+    return valid;
+}
+
+void Query::setValid(bool valid) {
+    this->valid = valid;
+}
+
 
 bool Query::hasDeclaration(std::string name) {
     return declarations.count(name) > 0;
@@ -45,7 +55,7 @@ std::vector<Pattern> Query::getPattern() {
 
 void Query::addDeclaration(std::string var, DesignEntity de) {
     if (declarations.find(var) != declarations.end())
-        throw "Declaration already exists!";
+        throw exceptions::PqlSyntaxException("Declaration already exists!");
 
     declarations.insert({var, de});
 }
