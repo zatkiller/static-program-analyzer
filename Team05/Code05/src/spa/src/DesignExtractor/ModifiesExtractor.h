@@ -14,6 +14,7 @@ class ModifiesExtractor : public Extractor {
 private:
     std::deque<int> containerNumber;
     std::string currentProcedureName;
+    muTable table;
 
     /**
      * Cascade the modifies relationship up the container stack. If a container contains a modify statement
@@ -32,6 +33,6 @@ public:
     void exitContainer() override;
 
     muTable getModifies() {
-        return std::get<muTable>(pkb->tables["modifies"]);
+        return table;
     }
 };

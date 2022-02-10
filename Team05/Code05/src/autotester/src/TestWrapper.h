@@ -7,6 +7,8 @@
 
 // include your other headers here
 #include "AbstractWrapper.h"
+#include "PKB.h"
+#include "SourceProcessor.h"
 
 #include "PKB.h"
 #include "pql/qps.h"
@@ -26,8 +28,8 @@ public:
   virtual void evaluate(std::string query, std::list<std::string>& results);
 
 private:
-    // Need PKB team to check if this is
     PKB pkb;
+    SourceProcessor sp;
     QPS qps;
 };
 

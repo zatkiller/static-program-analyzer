@@ -4,15 +4,15 @@
 
 std::string Evaluator::PKBFieldToString(PKBField pkbField) {
     std::string res = "";
-    if(pkbField.tag == PKBType::STATEMENT) {
+    if(pkbField.entityType == PKBEntityType::STATEMENT) {
         int lineNo = std::get<STMT_LO>(pkbField.content).statementNum;
         res = std::to_string(lineNo);
-    } else if ( pkbField.tag == PKBType::CONST) {
+    } else if ( pkbField.entityType == PKBEntityType::CONST) {
         int c = std::get<CONST>(pkbField.content);
         res = std::to_string(c);
-    } else if (pkbField.tag == PKBType::VARIABLE) {
+    } else if (pkbField.entityType == PKBEntityType::VARIABLE) {
         res = std::get<VAR_NAME>(pkbField.content).name;
-    } else if (pkbField.tag == PKBType::PROCEDURE) {
+    } else if (pkbField.entityType == PKBEntityType::PROCEDURE) {
         res = std::get<PROC_NAME>(pkbField.content).name;
     }
     return res;

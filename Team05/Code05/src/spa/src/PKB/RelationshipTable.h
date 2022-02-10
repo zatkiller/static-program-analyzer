@@ -6,13 +6,37 @@
 #include "RelationshipRow.h"
 #include "PKBRelationship.h"
 
+/**
+* A data structure to store program design abstractions as RelationshipRows. Base class of *RelationshipTables.
+*/
 class RelationshipTable {
 public:
-    // count of an item in a set can only be 0 or 1
     explicit RelationshipTable(PKBRelationship);
 
-    virtual bool contains(PKBField, PKBField) = 0;
-    virtual void insert(PKBField, PKBField) = 0;
+    /**
+    * Checks whether the RelationshipTable contains a RelationshipRow representing
+    * Relationship(entity1, entity2).
+    *
+    * @param entity1 the first program design entity in the relationship
+    * @param entity2 the second program design entity in the relationship
+    *
+    * @returns whether the relationship is present in the RelationshipTable
+    */
+    virtual bool contains(PKBField entity1, PKBField entity2) = 0;
+
+    /**
+    * Inserts a RelationshipRow representing Relationship(entity1, entity2) into the RelationshipTable.
+    *
+    * @param entity1 the first program design entity in the relationship
+    * @param entity2 the second program design entity in the relationship
+    */
+    virtual void insert(PKBField entity1, PKBField entity2) = 0;
+
+    /** 
+    * Retrieves the type of relationships the RelationshipTable stores.
+    * 
+    * @returns type of relationship
+    */
     PKBRelationship getType();
     int getSize();
 
