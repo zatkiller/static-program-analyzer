@@ -11,6 +11,7 @@ PKB::PKB() {
     variableTable = std::make_unique<VariableTable>();
     procedureTable = std::make_unique<ProcedureTable>();
     modifiesTable = std::make_unique<ModifiesRelationshipTable>();
+    followsTable = std::make_unique<FollowsRelationshipTable>();
 }
 
 int PKB::setProcToAST(PROC p, TNode* r) {
@@ -36,6 +37,8 @@ void PKB::insertRelationship(PKBRelationship type, PKBField entity1, PKBField en
     case PKBRelationship::MODIFIES:
         modifiesTable->insert(entity1, entity2);
         break;
+    case PKBRelationship::FOLLOWS:
+        followsTable->insert(entity1, entity2);
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
     }
@@ -49,7 +52,8 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
     switch (rs) {
     case PKBRelationship::MODIFIES:
         return modifiesTable->contains(field1, field2);
-
+    case PKBRelationship::FOLLOWS:
+        return followsTable->contains(field1, field2);
     default:
         Logger(Level::INFO) << "Checking for an invalid relationship table\n";
         return false;
@@ -62,11 +66,18 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
     switch (rs) {
     case PKBRelationship::MODIFIES:
     {
-        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> extracted =
-            modifiesTable->retrieve(field1, field2);
+        FieldRowResponse extracted = modifiesTable->retrieve(field1, field2);
         return extracted.size() != 0
             ? PKBResponse{ true, Response{extracted} }
-        : PKBResponse{ false, Response{extracted} };
+            : PKBResponse{ false, Response{extracted} };
+        break;
+    }
+    case PKBRelationship::FOLLOWS:
+    {
+        FieldRowResponse extracted = followsTable->retrieve(field1, field2);
+        return extracted.size() != 0
+            ? PKBResponse{ true, Response{extracted} }
+            : PKBResponse{ false, Response{extracted} };
         break;
     }
     default:

@@ -10,6 +10,7 @@
 #include "PKB/VariableTable.h"
 #include "PKB/ProcedureTable.h"
 #include "PKB/ModifiesRelationshipTable.h"
+#include "PKB/FollowsRelationshipTable.h"
 #include "PKB/ConstantTable.h"
 #include "PKB/PKBResponse.h"
 #include "PKB/PKBReturnType.h"
@@ -109,5 +110,6 @@ public:
     std::unique_ptr<VariableTable> variableTable;
     std::unique_ptr<ProcedureTable> procedureTable;
     std::unique_ptr<ModifiesRelationshipTable> modifiesTable;
+    std::unique_ptr<FollowsRelationshipTable> followsTable;
     std::unique_ptr<ConstantTable> constantTable;
 };
