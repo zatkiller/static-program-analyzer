@@ -11,10 +11,17 @@ class ClauseHandler {
 public:
     PKB* pkb;
     ResultTable& tableRef;
-    ClauseHandler(PKB* pkb, ResultTable& tableRef) : pkb(pkb), tableRef(tableRef) {};
+    Query& query;
 
+    ClauseHandler(PKB* pkb, ResultTable& tableRef, Query& query) : pkb(pkb), tableRef(tableRef), query(query) {};
+
+    StatementType getStatementType(DesignEntity);
     void handleModifies(Modifies*);
     void handleUses(Uses*);
+    void handleFollows(Follows*);
+    void handleFollowsT(FollowsT*);
+    void handleParent(Parent*);
+    void handleParentT(ParentT*);
     void handleSynClauses(std::vector<std::shared_ptr<RelRef>>);
     bool evaluateNoSynClauses(std::vector<std::shared_ptr<RelRef>>);
 };

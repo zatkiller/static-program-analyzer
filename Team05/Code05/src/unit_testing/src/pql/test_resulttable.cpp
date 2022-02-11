@@ -4,31 +4,31 @@
 
 #define TEST_LOG Logger() << "test_resultTable.cpp "
 
-PKBField field1{ PKBType::VARIABLE, true, Content{VAR_NAME {"main"}} };
-PKBField field2{ PKBType::VARIABLE, true, Content{VAR_NAME{"a"}} };
-PKBField field3{ PKBType::VARIABLE, true, Content{VAR_NAME{"b"}} };
-PKBField field4{ PKBType::STATEMENT, true, Content{STMT_LO {1}} };
-PKBField field5{ PKBType::STATEMENT, true, Content{STMT_LO{3}} };
-PKBField field6{ PKBType::STATEMENT, true, Content{STMT_LO{6}} };
+PKBField field1 = PKBField::createConcrete(VAR_NAME{"main"});
+PKBField field2 = PKBField::createConcrete(VAR_NAME{"a"});
+PKBField field3 = PKBField::createConcrete(VAR_NAME{"b"});
+PKBField field4 = PKBField::createConcrete(STMT_LO{1, StatementType::Assignment});
+PKBField field5 = PKBField::createConcrete(STMT_LO{3, StatementType::Assignment});
+PKBField field6 = PKBField::createConcrete(STMT_LO{6, StatementType::Assignment});
 
-PKBField newField1(PKBType::STATEMENT, true, Content{STMT_LO {1}});
-PKBField newField2(PKBType::STATEMENT, true, Content{STMT_LO {5}});
-PKBField newField3(PKBType::STATEMENT, true, Content{STMT_LO {6}});
-PKBField newField4(PKBType::VARIABLE, true, Content{VAR_NAME {"b"}});
-PKBField newField5(PKBType::VARIABLE, true, Content{VAR_NAME {"cur"}});
-PKBField newField6(PKBType::VARIABLE, true, Content{VAR_NAME {"main"}});
+PKBField newField1 = PKBField::createConcrete(STMT_LO{1, StatementType::Assignment});
+PKBField newField2 = PKBField::createConcrete(STMT_LO{5, StatementType::Assignment});
+PKBField newField3 = PKBField::createConcrete(STMT_LO{6, StatementType::Assignment});
+PKBField newField4 = PKBField::createConcrete(VAR_NAME{"b"});
+PKBField newField5 = PKBField::createConcrete(VAR_NAME{"cur"});
+PKBField newField6 = PKBField::createConcrete(VAR_NAME{"main"});
 
 std::string PKBFieldToString(PKBField pkbField) {
     std::string res = "";
-    if(pkbField.tag == PKBType::STATEMENT) {
+    if(pkbField.entityType == PKBEntityType::STATEMENT) {
         int lineNo = std::get<STMT_LO>(pkbField.content).statementNum;
         res = std::to_string(lineNo);
-    } else if ( pkbField.tag == PKBType::CONST) {
+    } else if ( pkbField.entityType == PKBEntityType::CONST) {
         int c = std::get<CONST>(pkbField.content);
         res = std::to_string(c);
-    } else if (pkbField.tag == PKBType::VARIABLE) {
+    } else if (pkbField.entityType == PKBEntityType::VARIABLE) {
         res = std::get<VAR_NAME>(pkbField.content).name;
-    } else if (pkbField.tag == PKBType::PROCEDURE) {
+    } else if (pkbField.entityType == PKBEntityType::PROCEDURE) {
         res = std::get<PROC_NAME>(pkbField.content).name;
     }
     return res;
@@ -166,8 +166,8 @@ TEST_CASE("Test crossJoin with records inside") {
     ResultTable table = createNonEmptyTable();
     ResultTable table2 = createNonEmptyTable();
 
-    PKBField newField1(PKBType::STATEMENT, true, Content{STMT_LO {2, StatementType::Assignment}});
-    PKBField newField2(PKBType::STATEMENT, true, Content{STMT_LO {5, StatementType::Assignment}});
+    PKBField newField1 = PKBField::createConcrete(STMT_LO{2, StatementType::Assignment});
+    PKBField newField2 = PKBField::createConcrete(STMT_LO{5, StatementType::Assignment});
     table.insertSynLocationToLast("a");
     std::unordered_set<PKBField, PKBFieldHash> r1{newField1, newField2};
     PKBResponse response1{true, Response{r1}};
@@ -182,8 +182,8 @@ TEST_CASE("Test crossJoin with records inside") {
     REQUIRE(table.getResult().find(std::vector<PKBField>{field3, field6, newField2}) != table.getResult().end());
     printTable(table);
     TEST_LOG << "Cross join a vector of response";
-    PKBField newField3(PKBType::CONST, true, Content{CONST{45}});
-    PKBField newField4(PKBType::CONST, true, Content{CONST{26}});
+    PKBField newField3 = PKBField::createConcrete(Content{45});
+    PKBField newField4 = PKBField::createConcrete(Content{26});
     std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> r2{
             std::vector<PKBField>{newField1, newField3},
             std::vector<PKBField>{newField1, newField4},

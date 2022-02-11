@@ -136,11 +136,12 @@ std::list<std::string > Evaluator::evaluate(Query query) {
     // TO DO: replace int with PKBField
     ResultTable resultTable;
     ResultTable& tableRef = resultTable;
+    Query& queryRef = query;
 
 
     if (!suchthat.empty()) {
         processSuchthat(suchthat, noSyn, hasSyn);
-        ClauseHandler handler = ClauseHandler(pkb, tableRef);
+        ClauseHandler handler = ClauseHandler(pkb, tableRef, queryRef);
         if (!handler.evaluateNoSynClauses(noSyn)) return std::list<std::string>{};
         handler.handleSynClauses(hasSyn);
     }
