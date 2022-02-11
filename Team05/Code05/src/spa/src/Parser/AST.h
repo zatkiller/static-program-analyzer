@@ -72,9 +72,9 @@ struct ASTNodeVisitor {
     * Identified by:
     *  expr | term | factor
     * where:
-    *  expr: expr ‘+’ term | expr ‘-’ term | term
-    *  term: term ‘*’ factor | term ‘/’ factor | term ‘%’ factor | factor
-    *  factor: var_name | const_value | ‘(’ expr ‘)’
+    *  expr: expr ï¿½+ï¿½ term | expr ï¿½-ï¿½ term | term
+    *  term: term ï¿½*ï¿½ factor | term ï¿½/ï¿½ factor | term ï¿½%ï¿½ factor | factor
+    *  factor: var_name | const_value | ï¿½(ï¿½ expr ï¿½)ï¿½
     */
 class Expr : public ASTNode {
 public:
@@ -205,6 +205,9 @@ public:
         elseBlk(std::move(elseBlk)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    CondExpr* getCondExpr() const {
+        return condExpr.get();
+    }
 
     virtual bool operator==(ASTNode const& o) const;
 };
@@ -229,6 +232,9 @@ public:
         stmtLst(std::move(stmtLst)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    CondExpr* getCondExpr() const {
+        return condExpr.get();
+    }
 
     virtual bool operator==(ASTNode const& o) const;
 };
@@ -254,8 +260,12 @@ public:
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 
-    const Var getLHS() const {
-        return *var;
+    Var* getLHS() const {
+        return var.get();
+    }
+
+    Expr* getRHS() const {
+        return expr.get();
     }
 
     virtual bool operator==(ASTNode const& o) const;
@@ -405,8 +415,8 @@ enum class CondOp {
 /**
     * Represents CondBinExpr in the AST.
     * Identified by:
-    *  from cont_expr: ‘(’ cond_expr ‘)’ ‘&&’ ‘(’ cond_expr ‘)’ |
-    *    ‘(’ cond_expr ‘)’ ‘||’ ‘(’ cond_expr ‘)’
+    *  from cont_expr: ï¿½(ï¿½ cond_expr ï¿½)ï¿½ ï¿½&&ï¿½ ï¿½(ï¿½ cond_expr ï¿½)ï¿½ |
+    *    ï¿½(ï¿½ cond_expr ï¿½)ï¿½ ï¿½||ï¿½ ï¿½(ï¿½ cond_expr ï¿½)ï¿½
     */
 class CondBinExpr : public CondExpr {
 private:
@@ -430,7 +440,7 @@ public:
 /**
     * Represents the condition expression with '!' in the AST.
     * Identified by:
-    *   from cont_expr: ‘!’ ‘(’ cond_expr ‘)’
+    *   from cont_expr: ï¿½!ï¿½ ï¿½(ï¿½ cond_expr ï¿½)ï¿½
     */
 class NotCondExpr : public CondExpr {
 private:
