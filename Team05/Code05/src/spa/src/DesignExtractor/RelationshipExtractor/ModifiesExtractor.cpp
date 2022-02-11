@@ -11,8 +11,9 @@ void ModifiesExtractor::cascadeToContainer(const std::string& varName) {
 
         pkb->insertRelationship(
             PKBRelationship::MODIFIES,
-            PKBField{ PKBType::STATEMENT, true, stmt },
-            PKBField{ PKBType::VARIABLE, true, VAR_NAME{varName} }
+            PKBField::createConcrete(stmt),
+            PKBField::createConcrete(VAR_NAME{ varName })
+
         );
     }
     if (!currentProcedure.name.empty()) {
@@ -22,8 +23,8 @@ void ModifiesExtractor::cascadeToContainer(const std::string& varName) {
 
         pkb->insertRelationship(
             PKBRelationship::MODIFIES,
-            PKBField{ PKBType::PROCEDURE, true, currentProcedure },
-            PKBField{ PKBType::VARIABLE, true, VAR_NAME{varName} }
+            PKBField::createConcrete(currentProcedure),
+            PKBField::createConcrete(VAR_NAME{ varName })
         );
     }
 }
@@ -36,8 +37,8 @@ void ModifiesExtractor::visit(const AST::Read& node) {
 
     pkb->insertRelationship(
         PKBRelationship::MODIFIES,
-        PKBField{ PKBType::STATEMENT, true, STMT_LO{node.getStmtNo(), StatementType::Read} },
-        PKBField{ PKBType::VARIABLE, true, VAR_NAME{varName} }
+        PKBField::createConcrete(STMT_LO{ node.getStmtNo(), StatementType::Read}),
+        PKBField::createConcrete(VAR_NAME{ varName })
     );
 
     cascadeToContainer(varName);
@@ -51,8 +52,8 @@ void ModifiesExtractor::visit(const AST::Assign& node) {
 
     pkb->insertRelationship(
         PKBRelationship::MODIFIES,
-        PKBField{ PKBType::STATEMENT, true, STMT_LO{node.getStmtNo(), StatementType::Assignment} },
-        PKBField{ PKBType::VARIABLE, true, VAR_NAME{varName} }
+        PKBField::createConcrete(STMT_LO{ node.getStmtNo(), StatementType::Assignment }),
+        PKBField::createConcrete(VAR_NAME{ varName })
     );
 
     cascadeToContainer(varName);

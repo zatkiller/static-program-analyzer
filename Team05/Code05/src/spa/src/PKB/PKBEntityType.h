@@ -1,5 +1,5 @@
 #pragma once
 
-enum class PKBType {
+enum class PKBEntityType {
     STATEMENT, VARIABLE, PROCEDURE, CONST
 };

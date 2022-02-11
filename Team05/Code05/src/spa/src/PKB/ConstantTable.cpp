@@ -1,7 +1,7 @@
 #include "ConstantTable.h"
 
 bool ConstantTable::contains(PKBField entry) {
-    if (entry.tag != PKBType::CONST) {
+    if (entry.entityType != PKBEntityType::CONST) {
         throw "Only constants are accepted!";
     }
     CONST constant = std::get<CONST>(entry.content);
@@ -9,7 +9,7 @@ bool ConstantTable::contains(PKBField entry) {
 }
 
 void ConstantTable::insert(PKBField entry) {
-    if (entry.tag != PKBType::CONST) {
+    if (entry.entityType != PKBEntityType::CONST) {
         throw "Only constants are accepted!";
     }
     CONST constant = std::get<CONST>(entry.content);

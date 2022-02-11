@@ -41,17 +41,32 @@ void PKB::insertRelationship(PKBRelationship type, PKBField entity1, PKBField en
     }
 }
 
+bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationship rs) {
+    if (field1.fieldType != PKBFieldType::CONCRETE || field2.fieldType != PKBFieldType::CONCRETE) {
+        return false;
+    }
+
+    switch (rs) {
+    case PKBRelationship::MODIFIES:
+        return modifiesTable->contains(field1, field2);
+
+    default:
+        Logger(Level::INFO) << "Checking for an invalid relationship table\n";
+        return false;
+    }
+}
+
 // GET API
 
 PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationship rs) {
     switch (rs) {
     case PKBRelationship::MODIFIES:
     {
-        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> extracted = 
+        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> extracted =
             modifiesTable->retrieve(field1, field2);
-        return extracted.size() != 0 
-            ? PKBResponse{ true, Response{extracted} } 
-            : PKBResponse{ false, Response{extracted} };
+        return extracted.size() != 0
+            ? PKBResponse{ true, Response{extracted} }
+        : PKBResponse{ false, Response{extracted} };
         break;
     }
     default:
@@ -59,25 +74,23 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
     }
 }
 
-PKBResponse PKB::getStatements(StatementType stmtType) {
-    std::unordered_set<PKBField, PKBFieldHash> res;
-
-    std::vector<STMT_LO> extracted = statementTable->getStmtOfType(stmtType);
-    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        PKBField temp{ PKBType::STATEMENT, true, Content{ *iter } };
-        res.insert(temp);
-    }
-
-    return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
-}
-
 PKBResponse PKB::getStatements() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
     std::vector<STMT_LO> extracted = statementTable->getAllStmt();
     for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        PKBField temp{ PKBType::STATEMENT, true, Content{ *iter } };
-        res.insert(temp);
+        res.insert(PKBField::createConcrete(*iter));
+    }
+
+    return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
+}
+
+PKBResponse PKB::getStatements(StatementType stmtType) {
+    std::unordered_set<PKBField, PKBFieldHash> res;
+
+    std::vector<STMT_LO> extracted = statementTable->getStmtOfType(stmtType);
+    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
+        res.insert(PKBField::createConcrete(*iter));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -88,10 +101,9 @@ PKBResponse PKB::getVariables() {
 
     std::vector<VAR_NAME> extracted = variableTable->getAllVars();
     for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        PKBField temp{ PKBType::VARIABLE, true, Content{ *iter } };
-        res.insert(temp);
+        res.insert(PKBField::createConcrete(*iter));
     }
-    
+
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
 }
 
@@ -100,8 +112,7 @@ PKBResponse PKB::getProcedures() {
 
     std::vector<PROC_NAME> extracted = procedureTable->getAllProcs();
     for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        PKBField temp{ PKBType::PROCEDURE, true, Content{ *iter } };
-        res.insert(temp);
+        res.insert(PKBField::createConcrete(*iter));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -112,8 +123,7 @@ PKBResponse PKB::getConstants() {
 
     std::vector<CONST> extracted = constantTable->getAllConst();
     for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        PKBField temp{ PKBType::CONST, true, Content{ *iter } };
-        res.insert(temp);
+        res.insert(PKBField::createConcrete(*iter));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
