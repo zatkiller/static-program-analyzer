@@ -15,11 +15,7 @@ bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb) {
     }
 
     DesignExtractor(pkb).extract(ast.get());
-
-    //ast->accept(std::make_shared<VariableExtractor>(pkb));
-    //ast->accept(std::make_shared<ModifiesExtractor>(pkb));
-    //ast->accept(std::make_shared<StatementExtractor>(pkb));
-
+    
     return true;
 }
 
