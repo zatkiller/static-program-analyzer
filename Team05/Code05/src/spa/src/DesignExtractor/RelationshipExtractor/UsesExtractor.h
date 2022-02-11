@@ -9,7 +9,7 @@
 
 
 /**
- * Extracts all modifies relationship from the AST and send them to PKB Adaptor.
+ * Extracts all uses relationship from the AST and send them to PKB Adaptor.
  */
 class UsesExtractor : public Extractor {
 private:
@@ -19,8 +19,8 @@ private:
     std::map<int, StatementType> stmtNumToType;
 
     /**
-     * Cascade the modifies relationship up the container stack. If a container contains a modify statement
-     * that modifies x, then the container itself modifies x.
+     * Cascade the uses relationship up the container stack. If a container contains a use statement
+     * that uses x, then the container itself uses x.
      *
      * @param varName the name of the variable that is modified.
      */
@@ -37,6 +37,10 @@ public:
     void enterContainer(std::variant<int, std::string> containerId) override;
     void exitContainer() override;
 
+    /**
+     * Returns a muTable that contains a local copy of uses relationship extracted.
+     * Mainly used for testing purposes.
+     */
     muTable getUses() {
         return table;
     }
