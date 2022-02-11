@@ -37,6 +37,6 @@ TEST_CASE("ConstantTable getAllConst") {
 
     table.insert(PKBField::createConcrete(CONST{ 1 }));
     table.insert(PKBField::createConcrete(CONST{ 2 }));
-    expected = { 1, 2 };
+    expected = { CONST{1}, CONST{2} };
     REQUIRE(expected == table.getAllConst());
 }
