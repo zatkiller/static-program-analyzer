@@ -9,48 +9,58 @@ void UsesExtractor::cascadeToContainer(const std::string& varName) {
         // local table for testing
         table.insert(std::make_pair<>(stmt.statementNum, varName));
         DEBUG_LOG << "(" << stmt.statementNum << "," << varName << ")";
+        pkb->insertRelationship(
+            PKBRelationship::USES,
+            PKBField::createConcrete(stmt),
+            PKBField::createConcrete(VAR_NAME{varName})
+        );
     }
     if (!currentProcedure.name.empty()) {
         // local table for testing
         table.insert(std::make_pair<>(currentProcedure.name, varName));
         DEBUG_LOG << "(" << currentProcedure.name << "," << varName << ")";
+        pkb->insertRelationship(
+            PKBRelationship::USES,
+            PKBField::createConcrete(currentProcedure),
+            PKBField::createConcrete(VAR_NAME{varName})
+        );
     }
 }
 
-void UsesExtractor::extractAndInsert(int stmtNo, AST::ASTNode* part) {
+void UsesExtractor::extractAndInsert(STMT_LO stmt, const AST::ASTNode* part) {
     auto ve = std::make_shared<VariableExtractor_>();
     part->accept(ve);
 
     auto varNames = ve->getVars();
 
     for (auto varName : varNames) {
-        table.insert(std::make_pair<>(stmtNo, varName));
-        DEBUG_LOG << "(" << stmtNo << "," << varName << ")";
+        table.insert(std::make_pair<>(stmt.statementNum, varName));
+        DEBUG_LOG << "(" << stmt.statementNum << "," << varName << ")";
+        pkb->insertRelationship(
+            PKBRelationship::USES,
+            PKBField::createConcrete(stmt),
+            PKBField::createConcrete(VAR_NAME{varName})
+        );
         cascadeToContainer(varName);
     }
 }
 
 void UsesExtractor::visit(const AST::Print& node) {
-    std::string varName = node.getVar().getVarName();
-
-    table.insert(std::make_pair<>(node.getStmtNo(), varName));
-    DEBUG_LOG << "(" << node.getStmtNo() << "," << varName << ")";
-
-    cascadeToContainer(varName);
+    extractAndInsert(STMT_LO{ node.getStmtNo(), StatementType::Print }, &node);
 }
 
 void UsesExtractor::visit(const AST::Assign& node) {
-    extractAndInsert(node.getStmtNo(), node.getRHS());
+    extractAndInsert(STMT_LO{ node.getStmtNo(), StatementType::Assignment }, node.getRHS());
 }
 
 void UsesExtractor::visit(const AST::While& node) {
     stmtNumToType[node.getStmtNo()] = StatementType::While;
-    extractAndInsert(node.getStmtNo(), node.getCondExpr());
+    extractAndInsert(STMT_LO{ node.getStmtNo(), StatementType::While }, node.getCondExpr());
 }
 
 void UsesExtractor::visit(const AST::If& node) {
     stmtNumToType[node.getStmtNo()] = StatementType::If;
-    extractAndInsert(node.getStmtNo(), node.getCondExpr());
+    extractAndInsert(STMT_LO{ node.getStmtNo(), StatementType::If }, node.getCondExpr());
 }
 
 void UsesExtractor::enterContainer(std::variant<int, std::string> containerId) {
