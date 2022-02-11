@@ -10,7 +10,6 @@ TEST_CASE("ConstantRow getConst") {
     REQUIRE(row1.getConst() == CONST{ 1 });
 }
 
-
 TEST_CASE("ConstantRow ==") {
     ConstantRow row1{ CONST{1} };
     ConstantRow row2{ CONST{1} };
