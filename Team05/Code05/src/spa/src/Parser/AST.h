@@ -415,8 +415,8 @@ enum class CondOp {
 /**
     * Represents CondBinExpr in the AST.
     * Identified by:
-    *  from cont_expr: �(� cond_expr �)� �&&� �(� cond_expr �)� |
-    *    �(� cond_expr �)� �||� �(� cond_expr �)�
+    *  from cont_expr: '(' cond_expr ')' '&&' '(' cond_expr ')' |
+    *    '(' cond_expr ')' '||' '(' cond_expr ')'
     */
 class CondBinExpr : public CondExpr {
 private:
@@ -440,7 +440,7 @@ public:
 /**
     * Represents the condition expression with '!' in the AST.
     * Identified by:
-    *   from cont_expr: �!� �(� cond_expr �)�
+    *   from cont_expr: '!' '(' cond_expr ')'
     */
 class NotCondExpr : public CondExpr {
 private:
