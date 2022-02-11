@@ -4,7 +4,6 @@
 #include "PKB/RelationshipRow.h"
 #include "catch.hpp"
 
-
 TEST_CASE("ReationshipRow ==") {
     PKBField field1 = PKBField::createConcrete(VAR_NAME{ "test" });
     PKBField field2 = PKBField::createConcrete(VAR_NAME{ "test" });
