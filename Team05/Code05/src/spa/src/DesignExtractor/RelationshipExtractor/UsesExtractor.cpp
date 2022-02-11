@@ -17,6 +17,19 @@ void UsesExtractor::cascadeToContainer(const std::string& varName) {
     }
 }
 
+void UsesExtractor::extractAndInsert(int stmtNo, AST::ASTNode* part) {
+    auto ve = std::make_shared<VariableExtractor_>();
+    part->accept(ve);
+
+    auto varNames = ve->getVars();
+
+    for (auto varName : varNames) {
+        table.insert(std::make_pair<>(stmtNo, varName));
+        DEBUG_LOG << "(" << stmtNo << "," << varName << ")";
+        cascadeToContainer(varName);
+    }
+}
+
 void UsesExtractor::visit(const AST::Print& node) {
     std::string varName = node.getVar().getVarName();
 
@@ -27,45 +40,17 @@ void UsesExtractor::visit(const AST::Print& node) {
 }
 
 void UsesExtractor::visit(const AST::Assign& node) {
-    
-    auto ve = std::make_shared<VariableExtractor_>();
-    node.getRHS()->accept(ve);
-
-    auto varNames = ve->getVars();
-
-    for (auto varName : varNames) {
-        table.insert(std::make_pair<>(node.getStmtNo(), varName));
-        DEBUG_LOG << "(" << node.getStmtNo() << "," << varName << ")";
-        cascadeToContainer(varName);
-    }
+    extractAndInsert(node.getStmtNo(), node.getRHS());
 }
 
 void UsesExtractor::visit(const AST::While& node) {
     stmtNumToType[node.getStmtNo()] = StatementType::While;
-
-    auto ve = std::make_shared<VariableExtractor_>();
-    node.getCondExpr()->accept(ve);
-    auto varNames = ve->getVars();
-
-    for (auto varName : varNames) {
-        table.insert(std::make_pair<>(node.getStmtNo(), varName));
-        DEBUG_LOG << "(" << node.getStmtNo() << "," << varName << ")";
-        cascadeToContainer(varName);
-    }
+    extractAndInsert(node.getStmtNo(), node.getCondExpr());
 }
 
 void UsesExtractor::visit(const AST::If& node) {
     stmtNumToType[node.getStmtNo()] = StatementType::If;
-
-    auto ve = std::make_shared<VariableExtractor_>();
-    node.getCondExpr()->accept(ve);
-    auto varNames = ve->getVars();
-
-    for (auto varName : varNames) {
-        table.insert(std::make_pair<>(node.getStmtNo(), varName));
-        DEBUG_LOG << "(" << node.getStmtNo() << "," << varName << ")";
-        cascadeToContainer(varName);
-    }
+    extractAndInsert(node.getStmtNo(), node.getCondExpr());
 }
 
 void UsesExtractor::enterContainer(std::variant<int, std::string> containerId) {

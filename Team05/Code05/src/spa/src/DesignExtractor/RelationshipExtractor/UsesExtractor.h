@@ -25,6 +25,7 @@ private:
      * @param varName the name of the variable that is modified.
      */
     void cascadeToContainer(const std::string& varNames);
+    void extractAndInsert(int, AST::ASTNode*);
 
 public:
     using Extractor::Extractor;
