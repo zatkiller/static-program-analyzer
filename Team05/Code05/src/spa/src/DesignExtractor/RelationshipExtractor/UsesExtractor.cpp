@@ -1,23 +1,8 @@
 #include "UsesExtractor.h"
+#include "DesignExtractor/EntityExtractor/VariableExtractor.h"
 #include "logging.h"
 
 #define DEBUG_LOG Logger(Level::DEBUG) << "UsesExtractor.cpp Extracted "
-
-/**
- * Private implementation of variable extraction without PKB interaction.
- */
-class VariableExtractor_ : public TreeWalker {
-    private:
-    sTable table;
-
-public:
-    void visit(const AST::Var& node) override {
-        table.insert(node.getVarName());
-    };
-    sTable getVars() {
-        return table;
-    }
-};
 
 void UsesExtractor::cascadeToContainer(const std::string& varName) {
     for (auto stmt : container) {
