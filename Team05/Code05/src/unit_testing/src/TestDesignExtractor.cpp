@@ -6,8 +6,8 @@
 #include "catch.hpp"
 #include "Parser/AST.h"
 #include "DesignExtractor/DesignExtractor.h"
-#include "DesignExtractor/VariableExtractor.h"
-#include "DesignExtractor/ModifiesExtractor.h"
+#include "DesignExtractor/EntityExtractor/VariableExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
 #include "PKB.h"
 #include "logging.h"
 
