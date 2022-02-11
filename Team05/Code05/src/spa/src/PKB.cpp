@@ -59,6 +59,25 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
 // GET API
 
 PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationship rs) {
+    // TODO(teo-jun-xiong): collapse into a function
+    if (field1.fieldType == PKBFieldType::CONCRETE && field1.entityType == PKBEntityType::STATEMENT) {
+        auto content = field1.getContent<STMT_LO>();
+
+        if (!content->hasStatementType()) {
+            StatementType type = statementTable->getStmtTypeOfLine(content->statementNum);
+            field1.content = STMT_LO{ content->statementNum, type };
+        }
+    }
+
+    if (field2.fieldType == PKBFieldType::CONCRETE && field2.entityType == PKBEntityType::STATEMENT) {
+        auto content = field2.getContent<STMT_LO>();
+
+        if (!content->hasStatementType()) {
+            StatementType type = statementTable->getStmtTypeOfLine(content->statementNum);
+            field2.content = STMT_LO{ content->statementNum, type };
+        }
+    }
+
     switch (rs) {
     case PKBRelationship::MODIFIES:
     {
