@@ -28,6 +28,9 @@ TEST_CASE("ConstantTable getSize") {
 
     table.insert(field1);
     REQUIRE(table.getSize() == 1);
+
+    table.insert(field1);
+    REQUIRE(table.getSize() == 1);
 }
 
 TEST_CASE("ConstantTable getAllConst") {

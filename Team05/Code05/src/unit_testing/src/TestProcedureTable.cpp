@@ -44,6 +44,9 @@ TEST_CASE("ProcedureTable getSize") {
 
     table.insert(field1);
     REQUIRE(table.getSize() == 1);
+
+    table.insert(field1);
+    REQUIRE(table.getSize() == 1);
 }
 
 TEST_CASE("ProcedureTable getAllProcs") {
