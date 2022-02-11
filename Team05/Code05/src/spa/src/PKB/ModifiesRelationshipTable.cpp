@@ -5,11 +5,22 @@
 
 ModifiesRelationshipTable::ModifiesRelationshipTable() : RelationshipTable{ PKBRelationship::MODIFIES } {};
 
+// to ensure that both parameters are valid for ModifiesS or ModifiesP
+bool arePKBFieldsValid(PKBField entity1, PKBField entity2) {
+    return (entity1.entityType == PKBEntityType::PROCEDURE ||
+        entity1.entityType == PKBEntityType::STATEMENT) &&
+        (entity2.entityType == PKBEntityType::VARIABLE);
+}
+
 bool ModifiesRelationshipTable::contains(PKBField entity1, PKBField entity2) {
+    if (!arePKBFieldsValid(entity1, entity2)) return false;
+
     return rows.count(RelationshipRow(entity1, entity2)) == 1;
 }
 
 void ModifiesRelationshipTable::insert(PKBField entity1, PKBField entity2) {
+    if (!arePKBFieldsValid(entity1, entity2)) return;
+
     rows.insert(RelationshipRow(entity1, entity2));
 }
 
