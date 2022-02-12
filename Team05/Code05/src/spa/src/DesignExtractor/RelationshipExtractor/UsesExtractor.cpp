@@ -4,42 +4,49 @@
 
 #define DEBUG_LOG Logger(Level::DEBUG) << "UsesExtractor.cpp Extracted "
 
+/**
+ * Private strategy to only retrieve a local copy of variables.
+ */
+class VariablePKBStrategy : public NullPKBStrategy {
+public:
+    std::set<std::string> variables;
+    void insertVariable(std::string name) override {
+        variables.insert(name);
+    };
+};
+
 void UsesExtractor::cascadeToContainer(const std::string& varName) {
     for (auto stmt : container) {
-        // local table for testing
-        table.insert(std::make_pair<>(stmt.statementNum, varName));
         DEBUG_LOG << "(" << stmt.statementNum << "," << varName << ")";
         pkb->insertRelationship(
             PKBRelationship::USES,
-            PKBField::createConcrete(stmt),
-            PKBField::createConcrete(VAR_NAME{varName})
+            stmt,
+            VAR_NAME{varName}
         );
     }
     if (!currentProcedure.name.empty()) {
-        // local table for testing
-        table.insert(std::make_pair<>(currentProcedure.name, varName));
         DEBUG_LOG << "(" << currentProcedure.name << "," << varName << ")";
         pkb->insertRelationship(
             PKBRelationship::USES,
-            PKBField::createConcrete(currentProcedure),
-            PKBField::createConcrete(VAR_NAME{varName})
+            currentProcedure,
+            VAR_NAME{varName}
         );
     }
 }
 
 void UsesExtractor::extractAndInsert(STMT_LO stmt, const AST::ASTNode* part) {
-    auto ve = std::make_shared<VariableExtractor_>();
+    VariablePKBStrategy vps;
+    auto ve = std::make_shared<VariableExtractor>(&vps);
     part->accept(ve);
 
-    auto varNames = ve->getVars();
+    auto varNames = vps.variables;
 
     for (auto varName : varNames) {
-        table.insert(std::make_pair<>(stmt.statementNum, varName));
         DEBUG_LOG << "(" << stmt.statementNum << "," << varName << ")";
         pkb->insertRelationship(
             PKBRelationship::USES,
-            PKBField::createConcrete(stmt),
-            PKBField::createConcrete(VAR_NAME{varName})
+            stmt,
+            VAR_NAME{varName}
         );
         cascadeToContainer(varName);
     }

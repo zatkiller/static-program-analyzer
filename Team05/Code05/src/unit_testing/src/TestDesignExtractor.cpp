@@ -2,9 +2,11 @@
 #include <vector>
 #include <cstdarg>
 #include <stdio.h>
+#include <set>
 
 #include "catch.hpp"
 #include "Parser/AST.h"
+#include "DesignExtractor/PKBStrategy.h"
 #include "DesignExtractor/DesignExtractor.h"
 #include "DesignExtractor/EntityExtractor/VariableExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
@@ -13,6 +15,74 @@
 #include "logging.h"
 
 #define TEST_LOG Logger() << "TestDesignExtractor.cpp "
+
+
+class TestPKBStrategy : public PKBStrategy {
+public:
+    std::set<STMT_LO> statements;
+    std::set<std::string> variables;
+    std::map<PKBRelationship, std::set<std::pair<Content, Content>>> relationships;
+
+    void insertStatement(STMT_LO stmt) override {
+        statements.insert(stmt);
+    };
+    void insertVariable(std::string name) override {
+        variables.insert(name);
+    };
+    void insertRelationship(PKBRelationship type, Content arg1, Content arg2) override {
+        relationships[type].insert(std::make_pair<>(arg1, arg2));
+    };
+};
+
+template <typename T>
+std::set<T> setDiff(std::set<T> set1, std::set<T> set2) {
+    std::set<T> diff;
+    std::set_difference(
+        set1.begin(), set1.end(),
+        set2.begin(), set2.end(),
+        std::inserter(diff, diff.end())
+    );
+    return diff;
+}
+
+TEST_CASE("TestPKBStrategy Test") {
+    TestPKBStrategy pkbStrategy;
+    std::set<STMT_LO> stmts = {
+        STMT_LO{1, StatementType::Assignment},
+        STMT_LO{2, StatementType::Read},
+        STMT_LO{3, StatementType::Print},
+        STMT_LO{4, StatementType::If},
+        STMT_LO{5, StatementType::While},
+    };
+    for (auto stmt : stmts) {
+        pkbStrategy.insertStatement(stmt);
+    }
+    REQUIRE(pkbStrategy.statements == stmts);
+
+    std::set<std::string> vars = {
+        "x",
+        "x123",
+        "jaosidjfaoisdjfiaosdjfioasjd"
+    };
+    for (auto var : vars) {
+        pkbStrategy.insertVariable(var);
+    }
+    REQUIRE(pkbStrategy.variables == vars);
+
+    
+    auto p = [](auto a1, auto a2) {
+        return std::make_pair<>(a1, a2);
+    };
+    std::set<std::pair<Content, Content>> relationships = {
+        p(STMT_LO{1, StatementType::Assignment}, VAR_NAME{"X"}),
+        p(STMT_LO{1, StatementType::Assignment}, STMT_LO{2, StatementType::Read}),
+        p(PROC_NAME{"main"}, VAR_NAME("x"))
+    };
+    for (auto relationship : relationships) {
+        pkbStrategy.insertRelationship(PKBRelationship::MODIFIES, relationship.first, relationship.second);
+    }
+    REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == relationships);
+}
 
 namespace AST {
     TEST_CASE("Design extractor Test") {
@@ -26,7 +96,10 @@ namespace AST {
          *
          */
 
-        PKB pkb;
+        TestPKBStrategy pkbStrategy;
+        auto p = [] (auto p1, auto p2) {
+            return std::make_pair<>(p1,p2);
+        };  // Helper method to make pairs.
 
         SECTION("whileBlk walking test") {
             TEST_LOG << "Walking simple while AST";
@@ -36,10 +109,11 @@ namespace AST {
                 make<Print>(3, make<Var>("v3"))
             );
             auto whileBlk = make<While>(1, std::move(relExpr), std::move(stmtlst));
-            auto ve = std::make_shared<VariableExtractor>(&pkb);
+            auto ve = std::make_shared<VariableExtractor>(&pkbStrategy);
             whileBlk->accept(ve);
             // variable extractions
-            REQUIRE(ve->getVars() == std::set<std::string>({"v1", "v3"}));
+            
+            REQUIRE(pkbStrategy.variables == std::set<std::string>({"v1", "v3"}));
         }
 
 
@@ -87,67 +161,68 @@ namespace AST {
             auto program = std::make_unique<Program>(std::move(procedure));
 
             SECTION("Variable extractor test") {
-                auto ve = std::make_shared<VariableExtractor>(&pkb);
+                auto ve = std::make_shared<VariableExtractor>(&pkbStrategy);
                 program->accept(ve);
 
                 std::set<std::string> expectedVars = { "x", "remainder", "digit", "sum" };
-                REQUIRE(ve->getVars() == expectedVars);
+                REQUIRE(pkbStrategy.variables == expectedVars);
             }
 
             SECTION("Modifies extractor test") {
-                auto me = std::make_shared<ModifiesExtractor>(&pkb);
+                auto me = std::make_shared<ModifiesExtractor>(&pkbStrategy);
                 program->accept(me);
 
-                muTable m;
+                std::set<std::pair<Content, Content>> expected = {
+                    p(PROC_NAME{"main"}, VAR_NAME{"x"}),
+                    p(PROC_NAME{"main"}, VAR_NAME{"sum"}),
+                    p(PROC_NAME{"main"}, VAR_NAME{"remainder"}),
+                    p(PROC_NAME{"main"}, VAR_NAME{"digit"}),
 
-                m.insert(std::make_pair<>("main", "x"));
-                m.insert(std::make_pair<>("main", "sum"));
-                m.insert(std::make_pair<>("main", "remainder"));
-                m.insert(std::make_pair<>("main", "digit"));
-                m.insert(std::make_pair<>(1, "x"));
-                m.insert(std::make_pair<>(2, "sum"));
-                m.insert(std::make_pair<>(3, "digit"));
-                m.insert(std::make_pair<>(3, "remainder"));
-                m.insert(std::make_pair<>(3, "sum"));
-                m.insert(std::make_pair<>(3, "x"));
-                m.insert(std::make_pair<>(5, "remainder"));
-                m.insert(std::make_pair<>(6, "digit"));
-                m.insert(std::make_pair<>(7, "sum"));
-                m.insert(std::make_pair<>(8, "sum"));
-                m.insert(std::make_pair<>(10, "x"));
+                    p(STMT_LO{1, StatementType::Read}, VAR_NAME{"x"}),
+                    p(STMT_LO{2, StatementType::Assignment}, VAR_NAME{"sum"}),
+                    p(STMT_LO{3, StatementType::While}, VAR_NAME{"digit"}),
+                    p(STMT_LO{3, StatementType::While}, VAR_NAME{"remainder"}),
+                    p(STMT_LO{3, StatementType::While}, VAR_NAME{"sum"}),
+                    p(STMT_LO{3, StatementType::While}, VAR_NAME{"x"}),
+                    p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"remainder"}),
+                    p(STMT_LO{6, StatementType::Assignment}, VAR_NAME{"digit"}),
+                    p(STMT_LO{7, StatementType::If}, VAR_NAME{"sum"}),
+                    p(STMT_LO{8, StatementType::Assignment}, VAR_NAME{"sum"}),
+                    p(STMT_LO{10, StatementType::Assignment}, VAR_NAME{"x"}),
 
-                REQUIRE(me->getModifies() == m);
+                };
+                REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
             }
 
             SECTION("Uses extractor test") {
-                auto ue = std::make_shared<UsesExtractor>(&pkb);
+                auto ue = std::make_shared<UsesExtractor>(&pkbStrategy);
                 program->accept(ue);
 
-                muTable m;
+                std::set<std::pair<Content, Content>> expected = {
+                    p(PROC_NAME{"main"}, VAR_NAME{"x"}),
+                    p(PROC_NAME{"main"}, VAR_NAME{"sum"}),
+                    p(PROC_NAME{"main"}, VAR_NAME{"remainder"}),
+                    p(PROC_NAME{"main"}, VAR_NAME{"digit"}),
 
-                m.insert(std::make_pair<>("main", "x"));
-                m.insert(std::make_pair<>("main", "sum"));
-                m.insert(std::make_pair<>("main", "remainder"));
-                m.insert(std::make_pair<>("main", "digit"));
-                m.insert(std::make_pair<>(3, "x"));
-                m.insert(std::make_pair<>(3, "digit"));
-                m.insert(std::make_pair<>(3, "remainder"));
-                m.insert(std::make_pair<>(3, "sum"));
-                m.insert(std::make_pair<>(4, "x"));
-                m.insert(std::make_pair<>(5, "x"));
-                m.insert(std::make_pair<>(6, "x"));
-                m.insert(std::make_pair<>(7, "remainder"));
-                m.insert(std::make_pair<>(7, "sum"));
-                m.insert(std::make_pair<>(7, "digit"));
-                m.insert(std::make_pair<>(7, "x"));
-                m.insert(std::make_pair<>(8, "sum"));
-                m.insert(std::make_pair<>(8, "digit"));
-                m.insert(std::make_pair<>(9, "x"));
-                m.insert(std::make_pair<>(10, "x"));
-                m.insert(std::make_pair<>(11, "sum"));
+                    p(STMT_LO{3, StatementType::While}, VAR_NAME{"digit"}),
+                    p(STMT_LO{3, StatementType::While}, VAR_NAME{"remainder"}),
+                    p(STMT_LO{3, StatementType::While}, VAR_NAME{"sum"}),
+                    p(STMT_LO{3, StatementType::While}, VAR_NAME{"x"}),
+                    p(STMT_LO{4, StatementType::Print}, VAR_NAME{"x"}),
+                    p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"x"}),
+                    p(STMT_LO{6, StatementType::Assignment}, VAR_NAME{"x"}),
+                    p(STMT_LO{7, StatementType::If}, VAR_NAME{"digit"}),
+                    p(STMT_LO{7, StatementType::If}, VAR_NAME{"remainder"}),
+                    p(STMT_LO{7, StatementType::If}, VAR_NAME{"sum"}),
+                    p(STMT_LO{7, StatementType::If}, VAR_NAME{"x"}),
+                    p(STMT_LO{8, StatementType::Assignment}, VAR_NAME{"sum"}),
+                    p(STMT_LO{8, StatementType::Assignment}, VAR_NAME{"digit"}),
+                    p(STMT_LO{9, StatementType::Print}, VAR_NAME{"x"}),
+                    p(STMT_LO{10, StatementType::Assignment}, VAR_NAME{"x"}),
+                    p(STMT_LO{11, StatementType::Print}, VAR_NAME{"sum"}),
+                };
 
-
-                REQUIRE(ue->getUses() == m);
+                REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
             }
         }
     }
