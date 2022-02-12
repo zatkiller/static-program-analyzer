@@ -45,7 +45,7 @@ void ModifiesExtractor::visit(const AST::Read& node) {
 }
 
 void ModifiesExtractor::visit(const AST::Assign& node) {
-    std::string varName = node.getLHS().getVarName();
+    std::string varName = node.getLHS()->getVarName();
 
     table.insert(std::make_pair<>(node.getStmtNo(), varName));
     DEBUG_LOG << "(" << node.getStmtNo() << "," << varName << ")";

@@ -19,3 +19,19 @@ public:
         return table;
     }
 };
+
+/**
+ * Private implementation of variable extraction without PKB interaction.
+ */
+class VariableExtractor_ : public TreeWalker {
+private:
+    sTable table;
+
+public:
+    void visit(const AST::Var& node) override {
+        table.insert(node.getVarName());
+    };
+    sTable getVars() {
+        return table;
+    }
+};

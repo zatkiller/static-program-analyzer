@@ -8,6 +8,7 @@
 #include "DesignExtractor/DesignExtractor.h"
 #include "DesignExtractor/EntityExtractor/VariableExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
 #include "PKB.h"
 #include "logging.h"
 
@@ -80,7 +81,7 @@ namespace AST {
                     )),
                     make<Assign>(10, make<Var>("x"), make<BinExpr>(BinOp::DIVIDE, make<Var>("x"), make<Const>(10)))
                 )),
-                make<Print>(11, make<Var>("x"))
+                make<Print>(11, make<Var>("sum"))
             ));
 
             auto program = std::make_unique<Program>(std::move(procedure));
@@ -116,6 +117,37 @@ namespace AST {
                 m.insert(std::make_pair<>(10, "x"));
 
                 REQUIRE(me->getModifies() == m);
+            }
+
+            SECTION("Uses extractor test") {
+                auto ue = std::make_shared<UsesExtractor>(&pkb);
+                program->accept(ue);
+
+                muTable m;
+
+                m.insert(std::make_pair<>("main", "x"));
+                m.insert(std::make_pair<>("main", "sum"));
+                m.insert(std::make_pair<>("main", "remainder"));
+                m.insert(std::make_pair<>("main", "digit"));
+                m.insert(std::make_pair<>(3, "x"));
+                m.insert(std::make_pair<>(3, "digit"));
+                m.insert(std::make_pair<>(3, "remainder"));
+                m.insert(std::make_pair<>(3, "sum"));
+                m.insert(std::make_pair<>(4, "x"));
+                m.insert(std::make_pair<>(5, "x"));
+                m.insert(std::make_pair<>(6, "x"));
+                m.insert(std::make_pair<>(7, "remainder"));
+                m.insert(std::make_pair<>(7, "sum"));
+                m.insert(std::make_pair<>(7, "digit"));
+                m.insert(std::make_pair<>(7, "x"));
+                m.insert(std::make_pair<>(8, "sum"));
+                m.insert(std::make_pair<>(8, "digit"));
+                m.insert(std::make_pair<>(9, "x"));
+                m.insert(std::make_pair<>(10, "x"));
+                m.insert(std::make_pair<>(11, "sum"));
+
+
+                REQUIRE(ue->getUses() == m);
             }
         }
     }
