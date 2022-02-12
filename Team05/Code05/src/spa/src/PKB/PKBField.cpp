@@ -15,6 +15,11 @@ PKBField PKBField::createWildcard(PKBEntityType entityType) {
 }
 
 PKBField PKBField::createDeclaration(PKBEntityType entityType) {
+    if (entityType == PKBEntityType::STATEMENT) {
+        throw std::invalid_argument(
+            "Use the overloaded createDeclarations(StatementType) to create a statement declaration");
+    }
+
     return PKBField{ PKBFieldType::DECLARATION, entityType };
 }
 
