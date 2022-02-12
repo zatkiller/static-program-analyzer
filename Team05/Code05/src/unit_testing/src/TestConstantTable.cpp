@@ -10,20 +10,15 @@
 TEST_CASE("ConstantTable testing") {
     ConstantTable table{};
 
-    PKBField field1 = PKBField::createConcrete(CONST{1});
-    PKBField field2 = PKBField::createConcrete(CONST{2});
-    PKBField field3 = PKBField::createConcrete(CONST{1});
-
     TEST_LOG << "Test empty ConstantTable#contains";
-    REQUIRE_FALSE(table.contains(field1));
+    REQUIRE_FALSE(table.contains(1));
 
     TEST_LOG << "Test duplicate ConstantTable#insert";
-    table.insert(field1);
-    table.insert(field3);
+    table.insert(1);
+    table.insert(1);
     REQUIRE(table.getSize() == 1);
 
     TEST_LOG << "Test non-empty ConstantTable#contains";
-    REQUIRE(table.contains(field1));
-    REQUIRE(table.contains(field3));
-    REQUIRE_FALSE(table.contains(field2));
+    REQUIRE(table.contains(1));
+    REQUIRE_FALSE(table.contains(2));
 }
