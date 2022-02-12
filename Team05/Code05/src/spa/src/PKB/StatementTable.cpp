@@ -50,8 +50,8 @@ std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType type) {
 StatementType StatementTable::getStmtTypeOfLine(int statementNum) {
     for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
         STMT_LO stmt = iter->getStmt();
-        if (stmt.statementNum == statementNum) {
-            return stmt.type;
+        if (stmt.statementNum == statementNum && stmt.hasStatementType()) {
+            return stmt.type.value();
         }
     }
 

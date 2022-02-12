@@ -79,7 +79,7 @@ TEST_CASE("PKB testing") {
     REQUIRE(content4->size() == 1);
 }
 
-TEST_CASE("PKB ") {
+TEST_CASE("PKB STMT_LO empty type") {
     std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
     pkb->insertStatement(StatementType::Assignment, 5);
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 5 });

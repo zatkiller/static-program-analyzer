@@ -9,11 +9,7 @@ bool STMT_LO::operator < (const STMT_LO& other) const {
 }
 
 bool STMT_LO::hasStatementType() {
-    return type == StatementType::Assignment ||
-        type == StatementType::Call ||
-        type == StatementType::If ||
-        type == StatementType::Read ||
-        type == StatementType::Print;
+    return type.has_value();
 }
 
 bool VAR_NAME::operator == (const VAR_NAME& other) const {
