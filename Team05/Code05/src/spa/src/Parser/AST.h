@@ -72,9 +72,9 @@ struct ASTNodeVisitor {
     * Identified by:
     *  expr | term | factor
     * where:
-    *  expr: expr �+� term | expr �-� term | term
-    *  term: term �*� factor | term �/� factor | term �%� factor | factor
-    *  factor: var_name | const_value | �(� expr �)�
+    *  expr: expr '+' term | expr '-' term | term
+    *  term: term '*' factor | term '/' factor | term '%' factor | factor
+    *  factor: var_name | const_value | '(' expr ')'
     */
 class Expr : public ASTNode {
 public:
