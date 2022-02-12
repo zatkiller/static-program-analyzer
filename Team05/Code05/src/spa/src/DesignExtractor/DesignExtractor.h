@@ -13,12 +13,12 @@
 class DesignExtractor {
 private:
     std::list<std::shared_ptr<Extractor>> extractors;
-    PKBStrategy* pkb;
+    PKBStrategy* pkbStrategy;
 public:
-    DesignExtractor(PKBStrategy* pkb) : pkb(pkb) {
-        extractors.push_back(std::make_shared<StatementExtractor>(pkb));
-        extractors.push_back(std::make_shared<VariableExtractor>(pkb));
-        extractors.push_back(std::make_shared<ModifiesExtractor>(pkb));
+    DesignExtractor(PKBStrategy* pkbStrategy) : pkbStrategy(pkbStrategy) {
+        extractors.push_back(std::make_shared<StatementExtractor>(pkbStrategy));
+        extractors.push_back(std::make_shared<VariableExtractor>(pkbStrategy));
+        extractors.push_back(std::make_shared<ModifiesExtractor>(pkbStrategy));
     };
 
     void extract(AST::ASTNode* ast) {
