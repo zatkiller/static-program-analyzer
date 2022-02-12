@@ -10,11 +10,11 @@ bool FollowsRelationshipTable::contains(PKBField entity1, PKBField entity2) {
 }
 
 void FollowsRelationshipTable::insert(PKBField entity1, PKBField entity2) {
-    bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT && 
+    bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT &&
         entity2.entityType == entity1.entityType;
     bool checkConcreteEnt = entity1.fieldType == PKBFieldType::CONCRETE &&
         entity2.fieldType == entity1.fieldType;
-    
+
     if (checkEntTypeMatch && checkConcreteEnt) {
         rows.insert(RelationshipRow(entity1, entity2));
     } else {
@@ -59,7 +59,7 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
         }
         for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
             std::vector<PKBField> temp;
-            
+
             RelationshipRow curr = *iter;
             PKBField first = curr.getFirst();
             PKBField second = curr.getSecond();
@@ -116,3 +116,34 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
 
     return res;
 }
+
+bool FollowsRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
+    if (entity1.entityType != PKBEntityType::STATEMENT || entity2.entityType != PKBEntityType::STATEMENT) {
+        throw "Input fields must be statements!";
+    }
+    if (entity1.fieldType != PKBFieldType::CONCRETE || entity2.fieldType != PKBFieldType::CONCRETE) {
+        throw "Input fields must be concrete!";
+    }
+
+    // Base Cases
+    if (entity1.getContent<STMT_LO>()->statementNum >= entity2.getContent<STMT_LO>()->statementNum) {
+        return false;
+    }
+    if (this->contains(entity1, entity2)) {
+        return true;
+    }
+
+    // Recursive Step
+    PKBField declaration = PKBField::createDeclaration(PKBEntityType::STATEMENT);
+    FieldRowResponse res = this->retrieve(entity1, declaration);
+    if (res.size() == 0) {
+        return false;
+    }
+
+    PKBField resEntity = (*res.begin()).at(0);
+
+    return this->containsT(resEntity, entity2);
+}
+
+// TODO
+// FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {}

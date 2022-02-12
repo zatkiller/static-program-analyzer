@@ -13,4 +13,10 @@ public:
     bool contains(PKBField entity1, PKBField entity2);
     void insert(PKBField entity1, PKBField entity2);
     FieldRowResponse retrieve(PKBField entity1, PKBField entity2);
+
+    // TODO
+     bool containsT(PKBField entity1, PKBField entity2);
+
+    // TODO
+    // FieldRowResponse retrieveT(PKBField entity1, PKBField entity2);
 };
