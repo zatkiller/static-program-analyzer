@@ -8,31 +8,19 @@
 #include "Parser/AST.h"
 #include "DesignExtractor/Extractor.h"
 #include "PKB.h"
+#include "DesignExtractor/RelationshipExtractor/TransitiveRelationshipTemplate.h"
+
 
 /**
  * Extracts all uses relationship from the AST and send them to PKB Adaptor.
  */
-class UsesExtractor : public Extractor {
+class UsesExtractor : public TransitiveRelationshipTemplate {
 private:
-    std::deque<STMT_LO> container;
-    PROC_NAME currentProcedure = PROC_NAME{ "" };
-    std::map<int, StatementType> stmtNumToType;
-    /**
-     * Cascade the uses relationship up the container stack. If a container contains a use statement
-     * that uses x, then the container itself uses x.
-     *
-     * @param varName the name of the variable that is modified.
-     */
-    void cascadeToContainer(const std::string& varNames);
-    void extractAndInsert(STMT_LO, const AST::ASTNode*);
-
+    void insert(Content a1, Content a2);
 public:
-    using Extractor::Extractor;
-
+    using TransitiveRelationshipTemplate::TransitiveRelationshipTemplate;
     void visit(const AST::Print& node) override;
     void visit(const AST::Assign& node) override;
-    void visit(const AST::While& node) override;
-    void visit(const AST::If& node) override;
-    void enterContainer(std::variant<int, std::string> containerId) override;
-    void exitContainer() override;
+    void visit(const AST::While&) override;
+    void visit(const AST::If&) override;
 };
