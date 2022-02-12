@@ -134,16 +134,18 @@ bool FollowsRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
     }
 
     // Recursive Step
-    PKBField declaration = PKBField::createDeclaration(PKBEntityType::STATEMENT);
+    PKBField declaration = PKBField::createDeclaration(StatementType::All);
     FieldRowResponse res = this->retrieve(entity1, declaration);
     if (res.size() == 0) {
         return false;
     }
 
-    PKBField resEntity = (*res.begin()).at(0);
+    PKBField resEntity = (*res.begin()).at(1);
 
     return this->containsT(resEntity, entity2);
 }
 
-// TODO
-// FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {}
+// TODO Use graphs to implement retrieveT
+//FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
+//    
+//}

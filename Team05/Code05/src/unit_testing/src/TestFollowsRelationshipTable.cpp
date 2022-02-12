@@ -56,13 +56,12 @@ TEST_CASE("FollowsRelationshipTable retrieve") {
 }
 
 TEST_CASE("FollowsRelationshipTable containsT") {
-    std::cout << "containsT" << std::endl;
     auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
 
-    //REQUIRE_FALSE(table->containsT(field1, field3));
+    REQUIRE_FALSE(table->containsT(field1, field3));
 
     table->insert(field1, field2);
     table->insert(field2, field3);
