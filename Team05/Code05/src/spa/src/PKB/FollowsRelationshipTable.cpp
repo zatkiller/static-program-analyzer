@@ -63,7 +63,7 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
             RelationshipRow curr = *iter;
             PKBField first = curr.getFirst();
             PKBField second = curr.getSecond();
-            StatementType secStmtType = second.statementType.value_or(StatementType::All);
+            StatementType secStmtType = second.getContent<STMT_LO>()->type.value_or(StatementType::All);
             StatementType entStmtType = entity2.statementType.value();
 
             if (first == entity1 && (entStmtType == StatementType::All || secStmtType == entStmtType)) {
@@ -82,7 +82,7 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
             RelationshipRow curr = *iter;
             PKBField first = curr.getFirst();
             PKBField second = curr.getSecond();
-            StatementType firstStmtType = first.statementType.value_or(StatementType::All);
+            StatementType firstStmtType = first.getContent<STMT_LO>()->type.value_or(StatementType::All);
             StatementType entStmtType = entity1.statementType.value();
 
             if (second == entity2 && (entStmtType == StatementType::All || firstStmtType == entStmtType)) {
@@ -98,8 +98,11 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
             RelationshipRow curr = *iter;
             PKBField first = curr.getFirst();
             PKBField second = curr.getSecond();
-            StatementType firstStmtType = first.statementType.value_or(StatementType::All);
-            StatementType secStmtType = second.statementType.value_or(StatementType::All);
+
+            STMT_LO* firstStmt = first.getContent<STMT_LO>();
+            STMT_LO* secStmt = second.getContent<STMT_LO>();
+            StatementType firstStmtType = firstStmt->type.value_or(StatementType::All);
+            StatementType secStmtType = secStmt->type.value_or(StatementType::All);
             StatementType entType1 = entity1.statementType.value();
             StatementType entType2 = entity2.statementType.value();
 
@@ -145,7 +148,7 @@ bool FollowsRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
     return this->containsT(resEntity, entity2);
 }
 
-// TODO Use graphs to implement retrieveT
-//FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
+// TODO(Patrick): Use graphs to implement retrieveT
+// FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
 //    
 //}

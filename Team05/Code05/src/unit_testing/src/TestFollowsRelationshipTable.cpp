@@ -51,8 +51,41 @@ TEST_CASE("FollowsRelationshipTable retrieve") {
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::If });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Print });
 
-    // Case 1: Both query fields are statement declarations
+    table->insert(field1, field2);
+    table->insert(field2, field3);
 
+    // Case 1: Both query fields are statement declarations
+    PKBField decl1 = PKBField::createDeclaration(StatementType::All);
+    PKBField decl2 = PKBField::createDeclaration(StatementType::If);
+    PKBField decl3 = PKBField::createDeclaration(StatementType::Assignment);
+    PKBField decl4 = PKBField::createDeclaration(StatementType::Print);
+
+    FieldRowResponse expected1{ {{field1, field2}, {field2, field3}} };
+    REQUIRE(table->retrieve(decl1, decl1) == expected1);
+
+    FieldRowResponse expected2{ {{field2, field3}} };
+    REQUIRE(table->retrieve(decl2, decl1) == expected2);
+
+    REQUIRE(table->retrieve(decl3, decl4).size() == 0);
+
+    // Case 2: First query field is a declaration, second is concrete
+    PKBField conc1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
+    PKBField conc2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::If });
+    PKBField conc3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Print });
+    PKBField conc4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::Print });
+
+    FieldRowResponse expected3{ {{field1, field2}} };
+    REQUIRE(table->retrieve(decl1, conc2) == expected3);
+    REQUIRE(table->retrieve(decl1, conc4).size() == 0);
+    
+    FieldRowResponse expected4{ {{field2, field3}} };
+    REQUIRE(table->retrieve(decl2, conc3) == expected4);
+
+    // Case 3: First query field is concrete, second is a declaration
+    FieldRowResponse expected5{ {{field2, field3}} };
+    REQUIRE(table->retrieve(conc2, decl1) == expected5);
+    REQUIRE(table->retrieve(conc2, decl3).size() == 0);
+    REQUIRE(table->retrieve(conc4, decl1).size() == 0);
 }
 
 TEST_CASE("FollowsRelationshipTable containsT") {
@@ -71,7 +104,7 @@ TEST_CASE("FollowsRelationshipTable containsT") {
     PKBField field4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::If });
     PKBField field5 = PKBField::createConcrete(STMT_LO{ 5, StatementType::Assignment });
     PKBField field6 = PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment });
-    PKBField field7 = PKBField::createConcrete(STMT_LO{ 7, StatementType::Assignment }); // end if
+    PKBField field7 = PKBField::createConcrete(STMT_LO{ 7, StatementType::Assignment });
     PKBField field8 = PKBField::createConcrete(STMT_LO{ 8, StatementType::Assignment });
 
     table->insert(field4, field7);
@@ -84,6 +117,6 @@ TEST_CASE("FollowsRelationshipTable containsT") {
     REQUIRE_FALSE(table->containsT(field4, field6));
 }
 
-//TEST_CASE("FollowsRelationshiPTable retrieveT") {
+// TEST_CASE("FollowsRelationshiPTable retrieveT") {
 //
-//}
+// }
