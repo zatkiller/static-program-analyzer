@@ -14,7 +14,8 @@ bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb) {
         return false;
     }
 
-    DesignExtractor(pkb).extract(ast.get());
+    ActualPKBStrategy actualPKBStrategy(pkb);
+    DesignExtractor(&actualPKBStrategy).extract(ast.get());
     
     return true;
 }

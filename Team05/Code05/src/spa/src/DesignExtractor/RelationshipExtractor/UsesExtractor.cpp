@@ -11,8 +11,8 @@ void UsesExtractor::cascadeToContainer(const std::string& varName) {
         DEBUG_LOG << "(" << stmt.statementNum << "," << varName << ")";
         pkb->insertRelationship(
             PKBRelationship::USES,
-            PKBField::createConcrete(stmt),
-            PKBField::createConcrete(VAR_NAME{varName})
+            stmt,
+            VAR_NAME{varName}
         );
     }
     if (!currentProcedure.name.empty()) {
@@ -21,8 +21,8 @@ void UsesExtractor::cascadeToContainer(const std::string& varName) {
         DEBUG_LOG << "(" << currentProcedure.name << "," << varName << ")";
         pkb->insertRelationship(
             PKBRelationship::USES,
-            PKBField::createConcrete(currentProcedure),
-            PKBField::createConcrete(VAR_NAME{varName})
+            currentProcedure,
+            VAR_NAME{varName}
         );
     }
 }
@@ -38,8 +38,8 @@ void UsesExtractor::extractAndInsert(STMT_LO stmt, const AST::ASTNode* part) {
         DEBUG_LOG << "(" << stmt.statementNum << "," << varName << ")";
         pkb->insertRelationship(
             PKBRelationship::USES,
-            PKBField::createConcrete(stmt),
-            PKBField::createConcrete(VAR_NAME{varName})
+            stmt,
+            VAR_NAME{varName}
         );
         cascadeToContainer(varName);
     }

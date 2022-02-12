@@ -84,7 +84,8 @@ namespace AST {
          *
          */
 
-        PKB pkb;
+        TestPKBStrategy pkb;
+
 
         SECTION("whileBlk walking test") {
             TEST_LOG << "Walking simple while AST";

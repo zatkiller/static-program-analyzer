@@ -10,6 +10,7 @@
 
 #include "Parser/AST.h"
 #include "PKB.h"
+#include "DesignExtractor/PKBStrategy.h"
 
 using muTable = std::set<std::pair<std::variant<std::string, int>, std::string>>;  // modifies or uses table
 using sTable = std::set<std::string>;  // string only table
@@ -45,7 +46,7 @@ struct TreeWalker : public AST::ASTNodeVisitor {
  */
 class Extractor : public TreeWalker {
 protected:
-    PKB* pkb;
+    PKBStrategy* pkb;
 public:
-    explicit Extractor(PKB* pkb) : pkb(pkb) {}
+    explicit Extractor(PKBStrategy* pkb) : pkb(pkb) {}
 };
