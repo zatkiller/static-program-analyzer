@@ -20,6 +20,8 @@ public:
     */
     bool contains(StatementType, int);
 
+    bool contains(int);
+
     /**
     * Inserts statement information wrapped in a PKBField into the StatementTable.
     *
@@ -48,6 +50,8 @@ public:
     * @return a vector of statement information belong to the given type
     */
     std::vector<STMT_LO> getStmtOfType(StatementType);
+
+    StatementType getStmtTypeOfLine(int statementNum);
 
 private:
     std::unordered_set<StatementRow, StatementRowHash> rows;
