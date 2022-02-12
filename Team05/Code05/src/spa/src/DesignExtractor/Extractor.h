@@ -1,19 +1,8 @@
 #pragma once
 
-#include <set>
-#include <deque>
-#include <map>
-#include <variant>
-#include <utility>
-#include <memory>
-#include <string>
-
 #include "Parser/AST.h"
 #include "PKB.h"
 #include "DesignExtractor/PKBStrategy.h"
-
-using muTable = std::set<std::pair<std::variant<std::string, int>, std::string>>;  // modifies or uses table
-using sTable = std::set<std::string>;  // string only table
 
 /**
  * A foundation for all design extractor. Performs depth-first traversal on the AST and do nothing.

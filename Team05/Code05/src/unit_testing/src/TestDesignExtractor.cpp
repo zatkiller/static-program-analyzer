@@ -2,6 +2,7 @@
 #include <vector>
 #include <cstdarg>
 #include <stdio.h>
+#include <set>
 
 #include "catch.hpp"
 #include "Parser/AST.h"
@@ -32,6 +33,17 @@ public:
         relationships[type].insert(std::make_pair<>(arg1, arg2));
     };
 };
+
+template <typename T>
+std::set<T> setDiff(std::set<T> set1, std::set<T> set2) {
+    std::set<T> diff;
+    std::set_difference(
+        set1.begin(), set1.end(),
+        set2.begin(), set2.end(),
+        std::inserter(diff, diff.end())
+    );
+    return diff;
+}
 
 TEST_CASE("TestPKBStrategy Test") {
     TestPKBStrategy pkb;

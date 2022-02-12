@@ -5,8 +5,6 @@
 
 void ModifiesExtractor::cascadeToContainer(const std::string& varName) {
     for (auto stmt : container) {
-        // local table for testing
-        table.insert(std::make_pair<>(stmt.statementNum, varName));
         DEBUG_LOG << "(" << stmt.statementNum << "," << varName << ")";
 
         pkb->insertRelationship(
@@ -16,8 +14,6 @@ void ModifiesExtractor::cascadeToContainer(const std::string& varName) {
         );
     }
     if (!currentProcedure.name.empty()) {
-        // local table for testing
-        table.insert(std::make_pair<>(currentProcedure.name, varName));
         DEBUG_LOG << "(" << currentProcedure.name << "," << varName << ")";
 
         pkb->insertRelationship(
@@ -31,7 +27,6 @@ void ModifiesExtractor::cascadeToContainer(const std::string& varName) {
 void ModifiesExtractor::visit(const AST::Read& node) {
     std::string varName = node.getVar().getVarName();
 
-    table.insert(std::make_pair<>(node.getStmtNo(), varName));
     DEBUG_LOG << "(" << node.getStmtNo() << "," << varName << ")";
 
     pkb->insertRelationship(
@@ -46,7 +41,6 @@ void ModifiesExtractor::visit(const AST::Read& node) {
 void ModifiesExtractor::visit(const AST::Assign& node) {
     std::string varName = node.getLHS()->getVarName();
 
-    table.insert(std::make_pair<>(node.getStmtNo(), varName));
     DEBUG_LOG << "(" << node.getStmtNo() << "," << varName << ")";
 
     pkb->insertRelationship(

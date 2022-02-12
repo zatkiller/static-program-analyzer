@@ -2,6 +2,7 @@
 
 #include <deque>
 #include <string>
+#include <map>
 
 #include "Parser/AST.h"
 #include "DesignExtractor/Extractor.h"
@@ -14,7 +15,6 @@ class ModifiesExtractor : public Extractor {
 private:
     std::deque<STMT_LO> container;
     PROC_NAME currentProcedure = PROC_NAME{""};
-    muTable table;
     std::map<int, StatementType> stmtNumToType;
 
     /**
@@ -34,8 +34,4 @@ public:
     void visit(const AST::If& node) override;
     void enterContainer(std::variant<int, std::string> containerId) override;
     void exitContainer() override;
-
-    muTable getModifies() {
-        return table;
-    }
 };
