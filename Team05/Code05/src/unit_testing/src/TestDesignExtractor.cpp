@@ -5,6 +5,7 @@
 
 #include "catch.hpp"
 #include "Parser/AST.h"
+#include "DesignExtractor/PKBStrategy.h"
 #include "DesignExtractor/DesignExtractor.h"
 #include "DesignExtractor/EntityExtractor/VariableExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
@@ -13,6 +14,63 @@
 #include "logging.h"
 
 #define TEST_LOG Logger() << "TestDesignExtractor.cpp "
+
+
+class TestPKBStrategy : public PKBStrategy {
+public:
+    std::set<STMT_LO> statements;
+    std::set<std::string> variables;
+    std::map<PKBRelationship, std::set<std::pair<Content, Content>>> relationships;
+
+    void insertStatement(STMT_LO stmt) override {
+        statements.insert(stmt);
+    };
+    void insertVariable(std::string name) override {
+        variables.insert(name);
+    };
+    void insertRelationship(PKBRelationship type, Content arg1, Content arg2) override {
+        relationships[type].insert(std::make_pair<>(arg1, arg2));
+    };
+};
+
+TEST_CASE("TestPKBStrategy Test") {
+    TestPKBStrategy pkb;
+    std::set<STMT_LO> stmts = {
+        STMT_LO{1, StatementType::Assignment},
+        STMT_LO{2, StatementType::Read},
+        STMT_LO{3, StatementType::Print},
+        STMT_LO{4, StatementType::If},
+        STMT_LO{5, StatementType::While},
+    };
+    for (auto stmt : stmts) {
+        pkb.insertStatement(stmt);
+    }
+    REQUIRE(pkb.statements == stmts);
+
+    std::set<std::string> vars = {
+        "x",
+        "x123",
+        "jaosidjfaoisdjfiaosdjfioasjd"
+    };
+    for (auto var : vars) {
+        pkb.insertVariable(var);
+    }
+    REQUIRE(pkb.variables == vars);
+
+    
+    auto p = [](auto a1, auto a2) {
+        return std::make_pair<>(a1, a2);
+    };
+    std::set<std::pair<Content, Content>> relationships = {
+        p(STMT_LO{1, StatementType::Assignment}, VAR_NAME{"X"}),
+        p(STMT_LO{1, StatementType::Assignment}, STMT_LO{2, StatementType::Read}),
+        p(PROC_NAME{"main"}, VAR_NAME("x"))
+    };
+    for (auto relationship : relationships) {
+        pkb.insertRelationship(PKBRelationship::MODIFIES, relationship.first, relationship.second);
+    }
+    REQUIRE(pkb.relationships[PKBRelationship::MODIFIES] == relationships);
+}
 
 namespace AST {
     TEST_CASE("Design extractor Test") {
