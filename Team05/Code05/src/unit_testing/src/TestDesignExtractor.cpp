@@ -11,6 +11,8 @@
 #include "DesignExtractor/EntityExtractor/VariableExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/FollowsExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/ParentExtractor.h"
 #include "PKB.h"
 #include "logging.h"
 
@@ -223,6 +225,38 @@ namespace AST {
                 };
 
                 REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
+            }
+        
+            SECTION("Follows extractor test") {
+                auto fe = std::make_shared<FollowsExtractor>(&pkbStrategy);
+                program->accept(fe);
+
+                std::set<std::pair<Content, Content>> expected = {
+                    p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
+                    p(STMT_LO{2, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{11, StatementType::Print}),
+                    p(STMT_LO{4, StatementType::Print}, STMT_LO{5, StatementType::Assignment}),
+                    p(STMT_LO{5, StatementType::Assignment}, STMT_LO{6, StatementType::Assignment}),
+                    p(STMT_LO{6, StatementType::Assignment}, STMT_LO{7, StatementType::If}),
+                    p(STMT_LO{7, StatementType::If}, STMT_LO{10, StatementType::Assignment}),
+                };
+                REQUIRE(pkbStrategy.relationships[PKBRelationship::FOLLOWS] == expected);
+            }
+
+            SECTION("Parents extractor test") {
+                auto pe = std::make_shared<ParentExtractor>(&pkbStrategy);
+                program->accept(pe);
+
+                std::set<std::pair<Content, Content>> expected = {
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{4, StatementType::Print}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{5, StatementType::Assignment}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{6, StatementType::Assignment}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{7, StatementType::If}),
+                    p(STMT_LO{7, StatementType::If}, STMT_LO{8, StatementType::Assignment}),
+                    p(STMT_LO{7, StatementType::If}, STMT_LO{9, StatementType::Print}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{10, StatementType::Assignment}),
+                };
+                REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENTS] == expected);
             }
         }
     }
