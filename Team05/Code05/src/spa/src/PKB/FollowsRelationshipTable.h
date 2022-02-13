@@ -1,9 +1,7 @@
 #pragma once
 
 #include <unordered_set>
-#include <map>
 #include <memory>
-#include <list>
 #include "RelationshipTable.h"
 #include "FollowsGraph.h"
 
@@ -49,7 +47,8 @@ public:
     FieldRowResponse retrieve(PKBField entity1, PKBField entity2);
     bool containsT(PKBField entity1, PKBField entity2);
 
-    // FieldRowResponse retrieveT(PKBField entity1, PKBField entity2);
+    FieldRowResponse retrieveT(PKBField entity1, PKBField entity2);
+
 private:
     std::unique_ptr<FollowsGraph> followsGraph;
 };

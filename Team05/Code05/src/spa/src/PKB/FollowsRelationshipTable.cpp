@@ -1,5 +1,4 @@
 #include <unordered_set>
-#include <vector>
 
 #include "FollowsRelationshipTable.h"
 
@@ -154,7 +153,17 @@ bool FollowsRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
     return this->containsT(resEntity, entity2);
 }
 
-// TODO(Patrick): Use graphs to implement retrieveT
-// FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
-//    
-//}
+FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
+    // for any fields that are wildcards, convert them into declarations of all types
+    if (entity1.fieldType == PKBFieldType::WILDCARD) {
+        entity1.fieldType = PKBFieldType::DECLARATION;
+        entity1.statementType = StatementType::All;
+    }
+    
+    if (entity2.fieldType == PKBFieldType::WILDCARD) {
+        entity2.fieldType = PKBFieldType::DECLARATION;
+        entity2.statementType = StatementType::All;
+    }
+
+    return followsGraph->getFollowsT(entity1, entity2);
+}
