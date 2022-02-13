@@ -1,5 +1,5 @@
 #pragma once
 
 enum class PKBRelationship {
-    MODIFIES, USES, FOLLOWS
+    MODIFIES, USES, FOLLOWS, FOLLOWST, PARENT
 };

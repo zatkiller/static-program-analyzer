@@ -1,40 +1,37 @@
-#include <unordered_set>
-#include <vector>
+#include "ParentRelationshipTable.h"
 
-#include "FollowsRelationshipTable.h"
+ParentRelationshipTable::ParentRelationshipTable() : RelationshipTable{ PKBRelationship::PARENT } {};
 
-FollowsRelationshipTable::FollowsRelationshipTable() : RelationshipTable{ PKBRelationship::FOLLOWS } {};
-
-bool FollowsRelationshipTable::contains(PKBField entity1, PKBField entity2) {
+bool ParentRelationshipTable::contains(PKBField entity1, PKBField entity2) {
     bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT &&
-        entity2.entityType == entity1.entityType;
+        entity2.entityType == PKBEntityType::STATEMENT;
     bool checkConcreteEnt = entity1.fieldType == PKBFieldType::CONCRETE &&
         entity2.fieldType == entity1.fieldType;
 
-    if (!checkConcreteEnt || !checkEntTypeMatch) {
+    if (!checkEntTypeMatch || !checkConcreteEnt) {
         throw "Only concrete statements are allowed!";
-    }
-
+    } 
+    
     return rows.count(RelationshipRow(entity1, entity2)) == 1;
 }
 
-void FollowsRelationshipTable::insert(PKBField entity1, PKBField entity2) {
+void ParentRelationshipTable::insert(PKBField entity1, PKBField entity2) {
     bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT &&
         entity2.entityType == entity1.entityType;
     bool checkConcreteEnt = entity1.fieldType == PKBFieldType::CONCRETE &&
         entity2.fieldType == entity1.fieldType;
 
     if (!checkEntTypeMatch || !checkConcreteEnt) {
-        throw "Only concrete statements can be inserted into the Follows table!";
+        throw "Only concrete statements can be inserted into the Parent table!";
     }
 
     rows.insert(RelationshipRow(entity1, entity2));
 }
 
-FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField entity2) {
-    // Both fields have to be a statement type
+FieldRowResponse ParentRelationshipTable::retrieve(PKBField entity1, PKBField entity2) {
+    // Check both fields are statement types
     if (entity1.entityType != PKBEntityType::STATEMENT || entity2.entityType != PKBEntityType::STATEMENT) {
-        throw "Follows relationship is only defined for statements!";
+        throw "Parent relationship is only defined for statements!";
     }
 
     PKBFieldType fieldType1 = entity1.fieldType;
@@ -43,60 +40,66 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
     STMT_LO* stmt1ptr = entity1.getContent<STMT_LO>();
     STMT_LO* stmt2ptr = entity2.getContent<STMT_LO>();
 
-    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> res;
+    FieldRowResponse res;
 
     if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 == PKBFieldType::CONCRETE) {
+        // Check both fields contain content
         if (!stmt1ptr || !stmt2ptr) {
-            throw "Valid statement must be provided for a concrete field!";
+            throw "Valid statements must be provided for a concrete field!";
         }
+
         for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
             std::vector<PKBField> temp;
 
             RelationshipRow curr = *iter;
-            PKBField first = curr.getFirst();
-            PKBField second = curr.getSecond();
+            PKBField rowFirst = curr.getFirst();
+            PKBField rowSecond = curr.getSecond();
 
-            if (first == entity1 && second == entity2) {
-                temp.push_back(first);
-                temp.push_back(second);
+            if (rowFirst == entity1 && rowSecond == entity2) {
+                temp.push_back(rowFirst);
+                temp.push_back(rowSecond);
                 res.insert(temp);
             }
         }
     } else if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 != PKBFieldType::CONCRETE) {
+        // Check first field contains content
         if (!stmt1ptr) {
             throw "Valid statement must be provided for a concrete field!";
         }
+
         for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
             std::vector<PKBField> temp;
 
             RelationshipRow curr = *iter;
-            PKBField first = curr.getFirst();
-            PKBField second = curr.getSecond();
-            StatementType secStmtType = second.getContent<STMT_LO>()->type.value_or(StatementType::All);
-            StatementType entStmtType = entity2.statementType.value();
+            PKBField rowFirst = curr.getFirst();
+            PKBField rowSecond = curr.getSecond();
+            StatementType declStmtType = entity2.statementType.value();
+            StatementType rowSecStmtType = rowSecond.getContent<STMT_LO>()->type.value_or(StatementType::All);
 
-            if (first == entity1 && (entStmtType == StatementType::All || secStmtType == entStmtType)) {
-                temp.push_back(first);
-                temp.push_back(second);
+            if (rowFirst == entity1 && (declStmtType == StatementType::All || declStmtType == rowSecStmtType)) {
+                temp.push_back(rowFirst);
+                temp.push_back(rowSecond);
                 res.insert(temp);
             }
         }
     } else if (fieldType1 != PKBFieldType::CONCRETE && fieldType2 == PKBFieldType::CONCRETE) {
+        // Check second field contains content
         if (!stmt2ptr) {
             throw "Valid statement must be provided for a concrete field!";
         }
+
         for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
             std::vector<PKBField> temp;
 
             RelationshipRow curr = *iter;
-            PKBField first = curr.getFirst();
-            PKBField second = curr.getSecond();
-            StatementType firstStmtType = first.getContent<STMT_LO>()->type.value_or(StatementType::All);
-            StatementType entStmtType = entity1.statementType.value();
+            PKBField rowFirst = curr.getFirst();
+            PKBField rowSecond = curr.getSecond();
+            StatementType declStmtType = entity1.statementType.value();
+            StatementType rowFirstStmtType = rowFirst.getContent<STMT_LO>()->type.value_or(StatementType::All);
 
-            if (second == entity2 && (entStmtType == StatementType::All || firstStmtType == entStmtType)) {
-                temp.push_back(first);
-                temp.push_back(second);
+            if ((declStmtType == StatementType::All || declStmtType == rowFirstStmtType) && rowSecond == entity2) {
+                temp.push_back(rowFirst);
+                temp.push_back(rowSecond);
                 res.insert(temp);
             }
         }
@@ -105,22 +108,19 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
             std::vector<PKBField> temp;
 
             RelationshipRow curr = *iter;
-            PKBField first = curr.getFirst();
-            PKBField second = curr.getSecond();
+            PKBField rowFirst = curr.getFirst();
+            PKBField rowSecond = curr.getSecond();
+            StatementType entStmtType1 = entity1.statementType.value();
+            StatementType entStmtType2 = entity2.statementType.value();
+            StatementType rowFirstType = rowFirst.getContent<STMT_LO>()->type.value_or(StatementType::All);
+            StatementType rowSecType = rowSecond.getContent<STMT_LO>()->type.value_or(StatementType::All);
 
-            STMT_LO* firstStmt = first.getContent<STMT_LO>();
-            STMT_LO* secStmt = second.getContent<STMT_LO>();
-            StatementType firstStmtType = firstStmt->type.value_or(StatementType::All);
-            StatementType secStmtType = secStmt->type.value_or(StatementType::All);
-            StatementType entType1 = entity1.statementType.value();
-            StatementType entType2 = entity2.statementType.value();
-
-            bool entCond1 = (entType1 == firstStmtType || entType1 == StatementType::All);
-            bool entCond2 = (entType2 == secStmtType || entType2 == StatementType::All);
+            bool entCond1 = (entStmtType1 == rowFirstType || entStmtType1 == StatementType::All);
+            bool entCond2 = (entStmtType2 == rowSecType || entStmtType2 == StatementType::All);
 
             if (entCond1 && entCond2) {
-                temp.push_back(first);
-                temp.push_back(second);
+                temp.push_back(rowFirst);
+                temp.push_back(rowSecond);
                 res.insert(temp);
             }
         }
@@ -129,7 +129,7 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
     return res;
 }
 
-bool FollowsRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
+bool ParentRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
     if (entity1.entityType != PKBEntityType::STATEMENT || entity2.entityType != PKBEntityType::STATEMENT) {
         throw "Input fields must be statements!";
     }
@@ -157,7 +157,6 @@ bool FollowsRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
     return this->containsT(resEntity, entity2);
 }
 
-// TODO(Patrick): Use graphs to implement retrieveT
-// FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
-//    
+//FieldRowResponse ParentRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
+//
 //}
