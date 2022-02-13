@@ -106,7 +106,7 @@ std::list<std::string > Evaluator::evaluate(Query query) {
     if (!suchthat.empty()) {
         processSuchthat(suchthat, noSyn, hasSyn);
         ClauseHandler handler = ClauseHandler(pkb, tableRef, queryRef);
-        if (!handler.evaluateNoSynClauses(noSyn)) return std::list<std::string>{};
+        if (!handler.handleNoSynClauses(noSyn)) return std::list<std::string>{};
         handler.handleSynClauses(hasSyn);
     }
 
