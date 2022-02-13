@@ -203,47 +203,23 @@ bool ClauseHandler::evaluateNoSynClauses(std::vector<std::shared_ptr<RelRef>> no
         RelRef* relRefPtr = clause.get();
         if (relRefPtr->getType() == RelRefType::MODIFIESS) {
             Modifies* mPtr= dynamic_cast<Modifies*>(relRefPtr);
-            PKBField stmtField = PKBField::createConcrete(STMT_LO{mPtr->modifiesStmt.getLineNo()});
-            PKBField modifiedField = PKBField::createConcrete(VAR_NAME{mPtr->modified.getVariableName()});
-            //API call
-            if (!pkb->isRelationshipPresent(stmtField, modifiedField, PKBRelationship::MODIFIES)) {
-                return false;
-            }
+            if (!evaluateNoSynRelRef(PKBRelationship::MODIFIES, mPtr, &Modifies::modifiesStmt, &Modifies::modified)) return false;
+
         } else if (relRefPtr->getType() == RelRefType::MODIFIESS) {
             Uses* uPtr = dynamic_cast<Uses*>(relRefPtr);
-            PKBField stmtField = PKBField::createConcrete(STMT_LO{uPtr->useStmt.getLineNo()});
-            PKBField usedField = PKBField::createConcrete(VAR_NAME{uPtr->used.getVariableName()});
-            if (!pkb->isRelationshipPresent(stmtField, usedField, PKBRelationship::USES)) {
-                return false;
-            }
+            if (!evaluateNoSynRelRef(PKBRelationship::USES, uPtr,  &Uses::useStmt, &Uses::used)) return false;
         } else if (relRefPtr->getType() == RelRefType::FOLLOWS) {
             Follows* fPtr = dynamic_cast<Follows*>(relRefPtr);
-            PKBField followerField = PKBField::createConcrete(STMT_LO{fPtr->follower.getLineNo()});
-            PKBField followedField = PKBField::createConcrete(STMT_LO{fPtr->followed.getLineNo()});
-            if (!pkb->isRelationshipPresent(followerField, followedField, PKBRelationship::FOLLOWS)) {
-                return false;
-            }
+            if (!evaluateNoSynRelRef(PKBRelationship::FOLLOWS, fPtr, &Follows::follower,&Follows::followed)) return false;
         } else if (relRefPtr->getType() == RelRefType::FOLLOWST) {
             FollowsT* ftPtr = dynamic_cast<FollowsT*>(relRefPtr);
-            PKBField followerField = PKBField::createConcrete(STMT_LO{ftPtr->follower.getLineNo()});
-            PKBField transitiveFollowedField = PKBField::createConcrete(STMT_LO{ftPtr->transitiveFollowed.getLineNo()});
-            if (!pkb->isRelationshipPresent(followerField, transitiveFollowedField, PKBRelationship::FOLLOWST)) {
-                return false;
-            }
+            if (!evaluateNoSynRelRef(PKBRelationship::FOLLOWST, ftPtr, &FollowsT::follower, &FollowsT::transitiveFollowed)) return false;
         } else if (relRefPtr->getType() == RelRefType::PARENT) {
             Parent* pPtr = dynamic_cast<Parent*>(relRefPtr);
-            PKBField parentField = PKBField::createConcrete(STMT_LO{pPtr->parent.getLineNo()});
-            PKBField childField = PKBField::createConcrete(STMT_LO{pPtr->child.getLineNo()});
-            if (!pkb->isRelationshipPresent(parentField, childField, PKBRelationship::PARENT)) {
-                return false;
-            }
+            if (!evaluateNoSynRelRef(PKBRelationship::PARENT, pPtr, &Parent::parent, &Parent::child)) return false;
         } else if (relRefPtr->getType() == RelRefType::PARENTT) {
             ParentT* ptPtr = dynamic_cast<ParentT*>(relRefPtr);
-            PKBField parentField = PKBField::createConcrete(STMT_LO{ptPtr->parent.getLineNo()});
-            PKBField transitiveChildField = PKBField::createConcrete(STMT_LO{ptPtr->transitiveChild.getLineNo()});
-            if (!pkb->isRelationshipPresent(parentField, transitiveChildField, PKBRelationship::PARENTT)) {
-                return false;
-            }
+            if (!evaluateNoSynRelRef(PKBRelationship::PARENTT, ptPtr, &ParentT::parent, &ParentT::transitiveChild)) return false;
         }
     }
     return true;

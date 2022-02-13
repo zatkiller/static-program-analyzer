@@ -51,58 +51,22 @@ void Evaluator::processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, st
         RelRef* relRefPtr = r.get();
         if (relRefPtr->getType() == RelRefType::MODIFIESS) {
             Modifies* mPtr= dynamic_cast<Modifies*>(relRefPtr);
-            EntRef modified = mPtr->modified;
-            StmtRef stmt = mPtr->modifiesStmt;
-            if (!modified.isDeclaration() && !stmt.isDeclaration()) {
-                noSyn.push_back(r);
-            } else {
-                hasSyn.push_back(r);
-            }
+            processSuchthatRelRef(r, mPtr->modifiesStmt, mPtr->modified, noSyn, hasSyn);
         } else if (relRefPtr->getType() == RelRefType::USESS) {
             Uses* uPtr = dynamic_cast<Uses*>(relRefPtr);
-            EntRef used = uPtr->used;
-            StmtRef stmt = uPtr->useStmt;
-            if (!used.isDeclaration() && !stmt.isDeclaration()) {
-                noSyn.push_back(r);
-            } else {
-                hasSyn.push_back(r);
-            }
+            processSuchthatRelRef(r, uPtr->useStmt, uPtr->used, noSyn, hasSyn);
         } else if (relRefPtr->getType() == RelRefType::FOLLOWS) {
             Follows* fPtr = dynamic_cast<Follows*>(relRefPtr);
-            StmtRef follower = fPtr->follower;
-            StmtRef followed = fPtr->followed;
-            if (!follower.isDeclaration() && !followed.isDeclaration()) {
-                noSyn.push_back(r);
-            } else {
-                hasSyn.push_back(r);
-            }
+            processSuchthatRelRef(r, fPtr->follower, fPtr->followed, noSyn, hasSyn);
         } else if (relRefPtr->getType() == RelRefType::FOLLOWST) {
             FollowsT* ftPtr = dynamic_cast<FollowsT*>(relRefPtr);
-            StmtRef follower = ftPtr->follower;
-            StmtRef transitiveFollowed = ftPtr->transitiveFollowed;
-            if (!follower.isDeclaration() && !transitiveFollowed.isDeclaration()) {
-                noSyn.push_back(r);
-            } else {
-                hasSyn.push_back(r);
-            }
+            processSuchthatRelRef(r, ftPtr->follower, ftPtr->transitiveFollowed, noSyn, hasSyn);
         } else if (relRefPtr->getType() == RelRefType::PARENT) {
             Parent* pPtr = dynamic_cast<Parent*>(relRefPtr);
-            StmtRef parent = pPtr->parent;
-            StmtRef child = pPtr->child;
-            if (!parent.isDeclaration() && !child.isDeclaration()) {
-                noSyn.push_back(r);
-            } else {
-                hasSyn.push_back(r);
-            }
+            processSuchthatRelRef(r, pPtr->parent, pPtr->child, noSyn, hasSyn);
         } else if (relRefPtr->getType() == RelRefType::PARENTT) {
             ParentT* ptPtr = dynamic_cast<ParentT*>(relRefPtr);
-            StmtRef parent = ptPtr->parent;
-            StmtRef transitiveChild = ptPtr->transitiveChild;
-            if (!parent.isDeclaration() && !transitiveChild.isDeclaration()) {
-                noSyn.push_back(r);
-            } else {
-                hasSyn.push_back(r);
-            }
+            processSuchthatRelRef(r, ptPtr->parent, ptPtr->transitiveChild, noSyn, hasSyn);
         }
     }
 

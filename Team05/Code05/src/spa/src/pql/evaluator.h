@@ -39,6 +39,15 @@ public:
 
     void processSuchthat(std::vector<std::shared_ptr<RelRef>>, std::vector<std::shared_ptr<RelRef>>&, std::vector<std::shared_ptr<RelRef>>&);
 
+    template<typename F1, typename F2>
+    void processSuchthatRelRef(std::shared_ptr<RelRef> r, F1 f1, F2 f2, std::vector<std::shared_ptr<RelRef>>& noSyn, std::vector<std::shared_ptr<RelRef>>& hasSyn) {
+        if (!f1.isDeclaration() && !f2.isDeclaration()) {
+            noSyn.push_back(r);
+        } else {
+            hasSyn.push_back(r);
+        }
+    }
+
     std::list<std::string > getListOfResult(ResultTable&, std::string);
 
     std::list<std::string > evaluate(Query);
