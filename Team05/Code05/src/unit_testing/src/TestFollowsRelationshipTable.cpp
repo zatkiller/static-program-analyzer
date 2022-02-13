@@ -33,6 +33,7 @@ TEST_CASE("FollowsRelationshipTable getSize") {
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::If });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Print });
+    PKBField field4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::Print });
 
     REQUIRE(table->getSize() == 0);
 
@@ -43,6 +44,9 @@ TEST_CASE("FollowsRelationshipTable getSize") {
 
     table->insert(field1, field2);
     REQUIRE(table->getSize() == 2);
+
+    table->insert(field1, field4);
+
 }
 
 TEST_CASE("FollowsRelationshipTable retrieve") {

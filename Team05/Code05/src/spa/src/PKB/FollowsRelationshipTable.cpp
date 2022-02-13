@@ -3,7 +3,9 @@
 
 #include "FollowsRelationshipTable.h"
 
-FollowsRelationshipTable::FollowsRelationshipTable() : RelationshipTable{ PKBRelationship::FOLLOWS } {};
+FollowsRelationshipTable::FollowsRelationshipTable() : RelationshipTable{ PKBRelationship::FOLLOWS } {
+    followsGraph = std::make_unique<FollowsGraph>();
+};
 
 bool FollowsRelationshipTable::contains(PKBField entity1, PKBField entity2) {
     return rows.count(RelationshipRow(entity1, entity2)) == 1;
@@ -17,6 +19,7 @@ void FollowsRelationshipTable::insert(PKBField entity1, PKBField entity2) {
 
     if (checkEntTypeMatch && checkConcreteEnt) {
         rows.insert(RelationshipRow(entity1, entity2));
+        followsGraph->addEdge(*entity1.getContent<STMT_LO>(), *entity2.getContent<STMT_LO>());
     } else {
         throw "Only concrete statements can be inserted into the Follows table!";
     }
@@ -40,7 +43,7 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
         if (!stmt1ptr || !stmt2ptr) {
             throw "Valid statement must be provided for a concrete field!";
         }
-        for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
+        /*for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
             std::vector<PKBField> temp;
 
             RelationshipRow curr = *iter;
@@ -52,6 +55,9 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
                 temp.push_back(second);
                 res.insert(temp);
             }
+        }*/
+        if (this->contains(entity1, entity2)) {
+            res.insert(std::vector<PKBField>{entity1, entity2});
         }
     } else if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 != PKBFieldType::CONCRETE) {
         if (!stmt1ptr) {

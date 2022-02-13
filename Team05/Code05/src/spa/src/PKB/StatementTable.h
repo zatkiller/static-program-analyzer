@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <unordered_set>
 #include <vector>
+#include <algorithm>
+#include <iterator>
 
 #include "PKBField.h"
 #include "StatementRow.h"

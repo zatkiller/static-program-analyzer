@@ -1,8 +1,11 @@
 #pragma once
 
 #include <unordered_set>
-
+#include <map>
+#include <memory>
+#include <list>
 #include "RelationshipTable.h"
+#include "FollowsGraph.h"
 
 using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
@@ -14,12 +17,12 @@ public:
     FollowsRelationshipTable();
 
     /**
-    * Checks whether the FollowsRelationshipTable contains a RelationshipRow representing 
+    * Checks whether the FollowsRelationshipTable contains a RelationshipRow representing
     * Follows(entity1, entity2).
-    * 
+    *
     * @param entity1 the first program design entity in the Follows relationship
     * @param entity2 the second program design entity in the Follows relationship
-    * 
+    *
     * @returns whether the relationship is present in the FollowsRelationshipTable
     */
     bool contains(PKBField entity1, PKBField entity2);
@@ -28,7 +31,7 @@ public:
     * Inserts a RelationshipRow representing Follows(entity1, entity2) into the FollowsRelationshipTable.
     * If the two provided entities are not Statements or are not concrete in nature, no inserts will be done
     * and an error will be thrown.
-    * 
+    *
     * @param entity1 the first program design entity in the Follows relationship
     * @param entity2 the second program design entity in the Follows relationship
     */
@@ -36,16 +39,18 @@ public:
 
     /**
     * Retrieves all RelationshipRows that match Follows(entity1, entity2).
-    * 
+    *
     * @param entity1 the first program design entity in the Follows relationship
     * @param entity2 the second program design entity in the Follows relationship
-    * 
-    * @return an unordered set of vectors of PKBFields, where each vector represents the two program design 
+    *
+    * @return an unordered set of vectors of PKBFields, where each vector represents the two program design
     * entities in a Follows relationship i.e. Follows(field1, field2) -> [field1, field2]
     */
     FieldRowResponse retrieve(PKBField entity1, PKBField entity2);
     bool containsT(PKBField entity1, PKBField entity2);
 
-    // TODO(Patrick): implement retrieveT with graphs
     // FieldRowResponse retrieveT(PKBField entity1, PKBField entity2);
+private:
+    std::unique_ptr<FollowsGraph> followsGraph;
 };
+
