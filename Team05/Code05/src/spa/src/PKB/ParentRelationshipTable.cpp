@@ -48,19 +48,10 @@ FieldRowResponse ParentRelationshipTable::retrieve(PKBField entity1, PKBField en
             throw "Valid statements must be provided for a concrete field!";
         }
 
-        for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-            std::vector<PKBField> temp;
-
-            RelationshipRow curr = *iter;
-            PKBField rowFirst = curr.getFirst();
-            PKBField rowSecond = curr.getSecond();
-
-            if (rowFirst == entity1 && rowSecond == entity2) {
-                temp.push_back(rowFirst);
-                temp.push_back(rowSecond);
-                res.insert(temp);
-            }
+        if (this->contains(entity1, entity2)) {
+            res.insert(std::vector<PKBField>{entity1, entity2});
         }
+
     } else if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 != PKBFieldType::CONCRETE) {
         // Check first field contains content
         if (!stmt1ptr) {
@@ -82,6 +73,7 @@ FieldRowResponse ParentRelationshipTable::retrieve(PKBField entity1, PKBField en
                 res.insert(temp);
             }
         }
+
     } else if (fieldType1 != PKBFieldType::CONCRETE && fieldType2 == PKBFieldType::CONCRETE) {
         // Check second field contains content
         if (!stmt2ptr) {
@@ -103,6 +95,7 @@ FieldRowResponse ParentRelationshipTable::retrieve(PKBField entity1, PKBField en
                 res.insert(temp);
             }
         }
+
     } else {
         for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
             std::vector<PKBField> temp;
@@ -157,6 +150,6 @@ bool ParentRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
     return this->containsT(resEntity, entity2);
 }
 
-//FieldRowResponse ParentRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
+// FieldRowResponse ParentRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
 //
-//}
+// }

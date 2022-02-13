@@ -12,6 +12,8 @@ PKB::PKB() {
     procedureTable = std::make_unique<ProcedureTable>();
     modifiesTable = std::make_unique<ModifiesRelationshipTable>();
     followsTable = std::make_unique<FollowsRelationshipTable>();
+    parentTable = std::make_unique<ParentRelationshipTable>();
+    usesTable = std::make_unique<UsesRelationshipTable>();
 }
 
 int PKB::setProcToAST(PROC p, TNode* r) {
@@ -39,6 +41,12 @@ void PKB::insertRelationship(PKBRelationship type, PKBField entity1, PKBField en
         break;
     case PKBRelationship::FOLLOWS:
         followsTable->insert(entity1, entity2);
+        break;
+    case PKBRelationship::PARENT:
+        parentTable->insert(entity1, entity2);
+        break;
+    case PKBRelationship::USES:
+        usesTable->insert(entity1, entity2);
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
     }
@@ -54,6 +62,12 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
         return modifiesTable->contains(field1, field2);
     case PKBRelationship::FOLLOWS:
         return followsTable->contains(field1, field2);
+    case PKBRelationship::PARENT:
+        return parentTable->contains(field1, field2);
+    case PKBRelationship::USES:
+        return usesTable->contains(field1, field2);
+    case PKBRelationship::FOLLOWST:
+        return followsTable->containsT(field1, field2);
     default:
         Logger(Level::INFO) << "Checking for an invalid relationship table\n";
         return false;
@@ -82,26 +96,31 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
         }
     }
 
+    FieldRowResponse extracted;
+
     switch (rs) {
     case PKBRelationship::MODIFIES:
-    {
-        FieldRowResponse extracted = modifiesTable->retrieve(field1, field2);
-        return extracted.size() != 0
-            ? PKBResponse{ true, Response{extracted} }
-            : PKBResponse{ false, Response{extracted} };
+        extracted = modifiesTable->retrieve(field1, field2);
         break;
-    }
     case PKBRelationship::FOLLOWS:
-    {
-        FieldRowResponse extracted = followsTable->retrieve(field1, field2);
-        return extracted.size() != 0
-            ? PKBResponse{ true, Response{extracted} }
-            : PKBResponse{ false, Response{extracted} };
+        extracted = followsTable->retrieve(field1, field2);
         break;
-    }
+    case PKBRelationship::PARENT:
+        extracted = parentTable->retrieve(field1, field2);
+        break;
+    case PKBRelationship::USES:
+        extracted = usesTable->retrieve(field1, field2);
+        break;
+    case PKBRelationship::FOLLOWST:
+        extracted = followsTable->retrieveT(field1, field2);
+        break;
     default:
         throw "Invalid relationship type used!";
     }
+
+    return extracted.size() != 0
+        ? PKBResponse{ true, Response{extracted} }
+        : PKBResponse{ false, Response{extracted} };
 }
 
 PKBResponse PKB::getStatements() {
