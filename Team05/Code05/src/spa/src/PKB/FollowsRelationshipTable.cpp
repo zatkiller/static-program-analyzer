@@ -1,9 +1,10 @@
 #include <unordered_set>
-#include <vector>
 
 #include "FollowsRelationshipTable.h"
 
-FollowsRelationshipTable::FollowsRelationshipTable() : RelationshipTable{ PKBRelationship::FOLLOWS } {};
+FollowsRelationshipTable::FollowsRelationshipTable() : RelationshipTable{ PKBRelationship::FOLLOWS } {
+    followsGraph = std::make_unique<FollowsGraph>();
+};
 
 bool FollowsRelationshipTable::contains(PKBField entity1, PKBField entity2) {
     bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT &&
@@ -29,6 +30,7 @@ void FollowsRelationshipTable::insert(PKBField entity1, PKBField entity2) {
     }
 
     rows.insert(RelationshipRow(entity1, entity2));
+    followsGraph->addEdge(*entity1.getContent<STMT_LO>(), *entity2.getContent<STMT_LO>());
 }
 
 FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField entity2) {
@@ -49,7 +51,7 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
         if (!stmt1ptr || !stmt2ptr) {
             throw "Valid statement must be provided for a concrete field!";
         }
-        for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
+        /*for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
             std::vector<PKBField> temp;
 
             RelationshipRow curr = *iter;
@@ -61,6 +63,9 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField e
                 temp.push_back(second);
                 res.insert(temp);
             }
+        }*/
+        if (this->contains(entity1, entity2)) {
+            res.insert(std::vector<PKBField>{entity1, entity2});
         }
     } else if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 != PKBFieldType::CONCRETE) {
         if (!stmt1ptr) {
@@ -157,7 +162,17 @@ bool FollowsRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
     return this->containsT(resEntity, entity2);
 }
 
-// TODO(Patrick): Use graphs to implement retrieveT
-// FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
-//    
-//}
+FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
+    // for any fields that are wildcards, convert them into declarations of all types
+    if (entity1.fieldType == PKBFieldType::WILDCARD) {
+        entity1.fieldType = PKBFieldType::DECLARATION;
+        entity1.statementType = StatementType::All;
+    }
+    
+    if (entity2.fieldType == PKBFieldType::WILDCARD) {
+        entity2.fieldType = PKBFieldType::DECLARATION;
+        entity2.statementType = StatementType::All;
+    }
+
+    return followsGraph->getFollowsT(entity1, entity2);
+}
