@@ -12,6 +12,7 @@
 #include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/FollowsExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/ParentExtractor.h"
 #include "PKB.h"
 #include "logging.h"
 
@@ -239,8 +240,23 @@ namespace AST {
                     p(STMT_LO{6, StatementType::Assignment}, STMT_LO{7, StatementType::If}),
                     p(STMT_LO{7, StatementType::If}, STMT_LO{10, StatementType::Assignment}),
                 };
-                auto diff = setDiff(pkbStrategy.relationships[PKBRelationship::FOLLOWS], expected);
                 REQUIRE(pkbStrategy.relationships[PKBRelationship::FOLLOWS] == expected);
+            }
+
+            SECTION("Parents extractor test") {
+                auto pe = std::make_shared<ParentExtractor>(&pkbStrategy);
+                program->accept(pe);
+
+                std::set<std::pair<Content, Content>> expected = {
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{4, StatementType::Print}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{5, StatementType::Assignment}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{6, StatementType::Assignment}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{7, StatementType::If}),
+                    p(STMT_LO{7, StatementType::If}, STMT_LO{8, StatementType::Assignment}),
+                    p(STMT_LO{7, StatementType::If}, STMT_LO{9, StatementType::Print}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{10, StatementType::Assignment}),
+                };
+                REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENTS] == expected);
             }
         }
     }
