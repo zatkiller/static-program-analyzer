@@ -27,6 +27,9 @@ enum class StmtRefType {
     WILDCARD
 };
 
+/**
+ * Struct used to store information on a StmtRef
+ */
 struct StmtRef {
 private:
     StmtRefType type = StmtRefType::NOT_INITIALIZED;
@@ -34,8 +37,25 @@ private:
     int lineNo = -1;
 
 public:
-    static StmtRef ofDeclaration(std::string);
-    static StmtRef ofLineNo(int);
+    /*
+     * Returns a StmtRef of type Declaration
+     *
+     * @param name the name of the declaration
+     * @return StmtRef of type declaration and declaration name
+     */
+    static StmtRef ofDeclaration(std::string name);
+    /*
+     * Returns a StmtRef of type LineNo
+     *
+     * @param lineNo the line number of the StmtRef
+     * @return StmtRef of type lineNo and specified LineNo
+     */
+    static StmtRef ofLineNo(int lineNo);
+    /*
+     * Returns a StmtRef of type Wildcard
+     *
+     * @return StmtRef of type wildcard
+     */
     static StmtRef ofWildcard();
 
     StmtRefType getType();
@@ -63,6 +83,9 @@ enum class EntRefType {
     WILDCARD
 };
 
+/**
+ * Struct used to store information on a EntRef
+ */
 struct EntRef{
 private:
     EntRefType type = EntRefType::NOT_INITIALIZED;
@@ -70,8 +93,25 @@ private:
     std::string variable = "";
 
 public:
-    static EntRef ofDeclaration(std::string);
-    static EntRef ofVarName(std::string);
+    /*
+     * Returns a EntRef of type Declaration
+     *
+     * @param name the name of the declaration
+     * @return EntRef of type declaration and declaration name
+     */
+    static EntRef ofDeclaration(std::string name);
+    /*
+     * Returns a EntRef of type variable name
+     *
+     * @param name the line number of the StmtRef
+     * @return EntRef of type variable and variable name
+     */
+    static EntRef ofVarName(std::string name);
+    /*
+     * Returns a EntRef of type Wildcard
+     *
+     * @return EntRef of type wildcard
+     */
     static EntRef ofWildcard();
 
     EntRefType getType();
@@ -103,7 +143,9 @@ enum class RelRefType {
     USESS
 };
 
-// Abstract class
+/**
+ * Abstract class used to represent a RelRef
+ */
 struct RelRef {
     RelRefType type = RelRefType::INVALID;
     RelRef() {}
@@ -112,12 +154,18 @@ struct RelRef {
     virtual RelRefType getType() { return type; }
 };
 
+/**
+ * Struct used to represent a Modifies RelRef
+ */
 struct Modifies : RelRef {
     Modifies() : RelRef(RelRefType::MODIFIESS) {}
     EntRef modified;
     StmtRef modifiesStmt;
 };
 
+/**
+ * Struct used to represent a Uses RelRef
+ */
 struct Uses : RelRef {
     Uses() : RelRef(RelRefType::USESS) {}
 
@@ -153,6 +201,9 @@ struct ParentT : RelRef {
     StmtRef transitiveChild;
 };
 
+/**
+ * Struct used to represent a Pattern
+ */
 struct Pattern {
     std::string synonym;
     EntRef lhs;
@@ -166,7 +217,9 @@ struct Pattern {
         return (synonym == o.synonym) && (lhs == o.lhs) && (expression == o.expression);
     }
 };
-
+/**
+ * Struct used to represent a query that has been parsed
+ */
 class Query {
 private:
     std::unordered_map<std::string, DesignEntity> declarations;
@@ -191,5 +244,11 @@ public:
     void addSuchthat(std::shared_ptr<RelRef>);
     void addPattern(Pattern);
 
-    DesignEntity getDeclarationDesignEntity(std::string);
+    /*
+     * Returns the DesignEntity of the specified declaration
+     *
+     * @param declaration the name of the declaration
+     * @return DesignEntity of the specified declaration
+     */
+    DesignEntity getDeclarationDesignEntity(std::string declaration);
 };
