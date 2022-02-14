@@ -8,18 +8,50 @@
 #include "PKB/PKBResponse.h"
 #include "PKB.h"
 
+/**
+ * A class to handle the relationship clauses.
+ */
 class ClauseHandler {
 public:
     PKB* pkb;
     ResultTable& tableRef;
     Query& query;
 
+    /** Constructor of the ClauseHandler */
     ClauseHandler(PKB* pkb, ResultTable& tableRef, Query& query) : pkb(pkb), tableRef(tableRef), query(query) {};
 
-    StatementType getStatementType(DesignEntity);
-    PKBField wrapStmtRef(StmtRef);
-    PKBField wrapEntRef(EntRef);
+    /**
+     * Maps the corresponding PKB StatementType from the Design Entity type.
+     *
+     * @param d a DesignEntity
+     * @return StatementType corresponds to the given DesignEntity
+     */
+    StatementType getStatementType(DesignEntity d);
 
+    /**
+     * Wraps a stmtRef into a PKBField.
+     *
+     * @param stmtRef
+     * @return a PKBField of the given stmtRef
+     */
+    PKBField wrapStmtRef(StmtRef stmtRef);
+
+    /**
+     * Wraps a entRef into a PKBField.
+     *
+     * @param entRef
+     * @return a PKBField of the given entRef
+     */
+    PKBField wrapEntRef(EntRef entRef);
+
+    /**
+     * Evaluates the given relationship clause and joins the results to the result table.
+     *
+     * @param ptr the relRef pointer
+     * @param f1 the memory address of the first RelRef variable
+     * @param f2 the memory address of the second RelRef variable
+     * @param relationship PKBRelationship type of the current relationship clause
+     */
     template<typename T, typename F1, typename F2>
     void evaluateRelationships(T* ptr, F1 f1, F2 f2, PKBRelationship relationship) {
         PKBField f1Field;
@@ -52,9 +84,29 @@ public:
         }
     }
 
-    void handleSynClauses(std::vector<std::shared_ptr<RelRef>>);
-    bool handleNoSynClauses(std::vector<std::shared_ptr<RelRef>>);
+    /**
+     * Handles all the clauses with synonyms.
+     *
+     * @param clauses a group of relationship clauses with synonyms
+     */
+    void handleSynClauses(std::vector<std::shared_ptr<RelRef>> clauses);
 
+    /**
+     * Handles all the clauses without synonyms.
+     *
+     * @param noSynClauses a group of relationship clauses without synonyms
+     */
+    bool handleNoSynClauses(std::vector<std::shared_ptr<RelRef>> noSynClauses);
+
+    /**
+     * Evaluates the given relationship clause without synonyms. Returns true if the relationship holds else returns false.
+     *
+     * @param r PKBRelationship type of the current relationship clause
+     * @param ptr the relRef pointer
+     * @param f1 the memory address of the first RelRef variable
+     * @param f2 the memory address of the second RelRef variable
+     * @return bool value indicates whether the relationship holds
+     */
     template<typename T, typename F1, typename F2>
     bool evaluateNoSynRelRef(PKBRelationship r, T* ptr, F1 f1, F2 f2) {
         PKBField f1Field;
