@@ -45,6 +45,15 @@ public:
     */
     Result getFollowsT(PKBField field1, PKBField field2);
 
+    /**
+    * Checks if the relationship Follows*(field1, field2) is true.
+    * 
+    * @param field1 the first field in the Follows* query
+    * @param field2 the second field in the Follows* query
+    * @return true if Follows*(field1, field2) is true and false otherwise
+    */
+    bool getContainsT(PKBField field1, PKBField field2);
+
 private:
     std::map<STMT_LO, FollowsNode*> nodes;
     Result traverseStart(PKBField field1, PKBField field2);

@@ -142,24 +142,25 @@ bool FollowsRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
         throw "Input fields must be concrete!";
     }
 
-    // Base Cases
-    if (entity1.getContent<STMT_LO>()->statementNum >= entity2.getContent<STMT_LO>()->statementNum) {
-        return false;
-    }
-    if (this->contains(entity1, entity2)) {
-        return true;
-    }
+    //// Base Cases
+    //if (entity1.getContent<STMT_LO>()->statementNum >= entity2.getContent<STMT_LO>()->statementNum) {
+    //    return false;
+    //}
+    //if (this->contains(entity1, entity2)) {
+    //    return true;
+    //}
 
-    // Recursive Step
-    PKBField declaration = PKBField::createDeclaration(StatementType::All);
-    FieldRowResponse res = this->retrieve(entity1, declaration);
-    if (res.size() == 0) {
-        return false;
-    }
+    //// Recursive Step
+    //PKBField declaration = PKBField::createDeclaration(StatementType::All);
+    //FieldRowResponse res = this->retrieve(entity1, declaration);
+    //if (res.size() == 0) {
+    //    return false;
+    //}
 
-    PKBField resEntity = (*res.begin()).at(1);
+    //PKBField resEntity = (*res.begin()).at(1);
 
-    return this->containsT(resEntity, entity2);
+    //return this->containsT(resEntity, entity2);
+    return followsGraph->getContainsT(entity1, entity2);
 }
 
 FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {

@@ -95,6 +95,20 @@ void FollowsGraph::traverseEnd(std::set<STMT_LO>* stmtSetPtr, StatementType type
     }
 }
 
+bool FollowsGraph::getContainsT(PKBField field1, PKBField field2) {
+    STMT_LO stmt = *(field1.getContent<STMT_LO>());
+    STMT_LO target = *(field2.getContent<STMT_LO>());
+    if (nodes.count(stmt) != 0) {
+        FollowsNode* curr = nodes.at(stmt);
+        while (curr->next != nullptr) {
+            if (curr->next->stmt == target) {
+                return true;
+            }
+            curr = curr->next;
+        }
+    }
+    return false;
+}
 
 Result FollowsGraph::traverseAll(StatementType type1, StatementType type2) {
     std::set<STMT_LO> stmtSet;
