@@ -9,9 +9,9 @@
 #include "PKB/PKBResponse.h"
 
 namespace qps::evaluator {
-/**
- * A data structure to store the query result from PKB.
- */
+    /**
+     * A data structure to store the query result from PKB.
+     */
     class ResultTable {
     private:
         std::unordered_map<std::string, int> synSequenceMap;
