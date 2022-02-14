@@ -18,6 +18,8 @@ PKBField newField4 = PKBField::createConcrete(VAR_NAME{"b"});
 PKBField newField5 = PKBField::createConcrete(VAR_NAME{"cur"});
 PKBField newField6 = PKBField::createConcrete(VAR_NAME{"main"});
 
+using namespace qps::evaluator;
+
 std::string PKBFieldToString(PKBField pkbField) {
     std::string res = "";
     if(pkbField.entityType == PKBEntityType::STATEMENT) {

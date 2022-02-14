@@ -6,6 +6,7 @@
 #include "exceptions.h"
 
 using namespace messages::qps::parser;
+using namespace qps::parser;
 
 TEST_CASE("Parser checkType") {
     Parser parser;
