@@ -1,4 +1,4 @@
-#include "handlerelations.h"
+#include "clausehandler.h"
 
 namespace qps::evaluator {
     StatementType ClauseHandler::getStatementType(DesignEntity d) {
