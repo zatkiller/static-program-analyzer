@@ -2,7 +2,7 @@
 
 #include "FollowsRelationshipTable.h"
 
-FollowsRelationshipTable::FollowsRelationshipTable() : RelationshipTable{ PKBRelationship::FOLLOWS } {
+FollowsRelationshipTable::FollowsRelationshipTable() : TransitiveRelationshipTable{ PKBRelationship::FOLLOWS } {
     followsGraph = std::make_unique<FollowsGraph>();
 };
 

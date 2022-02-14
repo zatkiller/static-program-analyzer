@@ -32,6 +32,8 @@ public:
     */
     virtual void insert(PKBField entity1, PKBField entity2) = 0;
 
+    virtual std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> retrieve(PKBField entity1, PKBField entity2) = 0;
+
     /** 
     * Retrieves the type of relationships the RelationshipTable stores.
     * 
@@ -43,4 +45,11 @@ public:
 protected:
     std::unordered_set<RelationshipRow, RelationshipRowHash> rows;
     PKBRelationship type; 
+};
+
+class TransitiveRelationshipTable : public RelationshipTable {
+public:
+    using RelationshipTable::RelationshipTable;
+
+    virtual std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> retrieveT(PKBField entity1, PKBField entity2) = 0;
 };

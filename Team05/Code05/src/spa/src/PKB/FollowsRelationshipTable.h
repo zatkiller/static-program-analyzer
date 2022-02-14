@@ -10,7 +10,7 @@ using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVecto
 /**
  * A data structure to store Follows and FollowsT program design abstractions as RelationshipRows. Inherits from RelationshipTable.
  */
-class FollowsRelationshipTable : public RelationshipTable {
+class FollowsRelationshipTable : public TransitiveRelationshipTable {
 public:
     FollowsRelationshipTable();
 

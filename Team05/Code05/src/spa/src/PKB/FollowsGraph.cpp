@@ -20,7 +20,7 @@ void FollowsGraph::addEdge(STMT_LO u, STMT_LO v) {
 }
 
 // wildcard should be converted to Statement::All
-FollowsTResult FollowsGraph::getFollowsT(PKBField field1, PKBField field2) {
+Result FollowsGraph::getFollowsT(PKBField field1, PKBField field2) {
     if (field1.fieldType == PKBFieldType::CONCRETE && field2.fieldType == PKBFieldType::DECLARATION) {
         return traverseStart(field1, field2);
     } else if (field1.fieldType == PKBFieldType::DECLARATION && field2.fieldType == PKBFieldType::CONCRETE) {
@@ -28,13 +28,13 @@ FollowsTResult FollowsGraph::getFollowsT(PKBField field1, PKBField field2) {
     } else if (field1.fieldType == PKBFieldType::DECLARATION && field2.fieldType == PKBFieldType::DECLARATION) {
         return traverseAll(field1.statementType.value(), field2.statementType.value());
     } else {
-        return FollowsTResult{};
+        return Result{};
     }
 }
 
-FollowsTResult FollowsGraph::traverseStart(PKBField field1, PKBField field2) {
+Result FollowsGraph::traverseStart(PKBField field1, PKBField field2) {
     std::set<STMT_LO> stmtSet;
-    FollowsTResult res;
+    Result res;
     StatementType type = field2.statementType.value();
     traverseStart(&stmtSet, type, *field1.getContent<STMT_LO>());
     std::vector<STMT_LO> list(stmtSet.begin(), stmtSet.end());
@@ -58,9 +58,9 @@ void FollowsGraph::traverseStart(std::set<STMT_LO>* stmtSetPtr, StatementType ty
     }
 }
 
-FollowsTResult FollowsGraph::traverseEnd(PKBField field1, PKBField field2) {
+Result FollowsGraph::traverseEnd(PKBField field1, PKBField field2) {
     std::set<STMT_LO> stmtSet;
-    FollowsTResult res;
+    Result res;
     StatementType type = field1.statementType.value();
     traverseEnd(&stmtSet, type, *field2.getContent<STMT_LO>());
     std::vector<STMT_LO> list(stmtSet.begin(), stmtSet.end());
@@ -86,7 +86,7 @@ void FollowsGraph::traverseEnd(std::set<STMT_LO>* stmtSetPtr, StatementType type
 }
 
 
-FollowsTResult FollowsGraph::traverseAll(StatementType type1, StatementType type2) {
+Result FollowsGraph::traverseAll(StatementType type1, StatementType type2) {
     std::set<STMT_LO> stmtSet;
     std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> res;
 
