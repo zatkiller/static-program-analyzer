@@ -1,7 +1,9 @@
 #include "pql/lexer.h"
 #include "catch.hpp"
 
-TEST_CASE("Lexer getTexxt") {
+using namespace qps::parser;
+
+TEST_CASE("Lexer getText") {
     std::string testQuery = "assign a; variable v;\n Select a such that Uses (a, v) pattern a (v, _)";
     Lexer lexer(testQuery);
 

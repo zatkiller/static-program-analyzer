@@ -1,6 +1,8 @@
 #include "pql/query.h"
 #include "catch.hpp"
 
+using namespace qps::query;
+
 TEST_CASE("StmtRef") {
     StmtRef stmtRef;
     REQUIRE(stmtRef.getType() == StmtRefType::NOT_INITIALIZED);

@@ -7,6 +7,8 @@
 #include "pql/query.h"
 #include "catch.hpp"
 
+using namespace qps::evaluator;
+
 TEST_CASE("Test get statements") {
     PKB pkb = PKB();
     PKB* ptr = &pkb;

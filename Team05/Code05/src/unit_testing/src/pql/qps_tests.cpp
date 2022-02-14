@@ -8,7 +8,7 @@
 TEST_CASE("QPS") {
     SECTION("QPS- evaluate invalid query") {
         std::list<std::string> results;
-        QPS qps;
+        qps::QPS qps;
         PKB pkb;
         qps.evaluate("Nani", results, &pkb);
 
