@@ -80,7 +80,7 @@ namespace qps::evaluator {
         void innerJoin(PKBResponse r, bool isFirst, bool isSecond, std::vector<std::string> allSyn);
 
         /**
-         * joins the PKBResponse to the result table using either crossJoin or innerJoin.
+         * Joins the PKBResponse to the result table using either crossJoin or innerJoin.
          *
          * @param response the PKBResponse
          * @param synonyms the list of all synonyms from the query
