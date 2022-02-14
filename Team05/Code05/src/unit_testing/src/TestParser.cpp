@@ -16,13 +16,13 @@ public:
         std::unique_ptr<AST::ASTNode> ast, expected;
         SECTION("Parser().parseConstExpr") {
             tokens = std::deque<Token>({ Token{TokenType::number, 5} });
-            ast = Parser().parseConstExpr(tokens);
+            ast = Parser().parseConst(tokens);
             expected = make<AST::Const>(5);
             REQUIRE(*ast == *expected);
         }  // Const
         SECTION("Parser().parseVariableExpr") {
             tokens = std::deque<Token>({ Token{TokenType::name, "Variable11"} });
-            ast = Parser().parseVariableExpr(tokens);
+            ast = Parser().parseVariable(tokens);
             expected = make<AST::Var>("Variable11");
             REQUIRE(*ast == *expected);
         };

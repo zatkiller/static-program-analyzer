@@ -11,12 +11,11 @@ namespace SimpleParser {
 class Parser {
 public:
     std::unique_ptr<AST::Program> parse(const std::string& source);  // main method that parses the source code
-    bool processSimple(const std::string& sourceCode);  // TODO(@NayLin_H99, @rootkie): Overall method for the user
 
 private:
     int lineCount = 1;
-    std::unique_ptr<AST::Expr> parseConstExpr(std::deque<Token>& tokens);
-    std::unique_ptr<AST::Expr> parseVariableExpr(std::deque<Token>& tokens);
+    std::unique_ptr<AST::Const> parseConst(std::deque<Token>& tokens);
+    std::unique_ptr<AST::Var> parseVariable(std::deque<Token>& tokens);
     AST::RelOp parseRelOp(std::deque<Token>& tokens);
     AST::CondOp parseCondOp(std::deque<Token>& tokens);
     AST::BinOp parseBinOp(std::deque<Token>& tokens);
