@@ -46,7 +46,6 @@ TEST_CASE("FollowsRelationshipTable getSize") {
     REQUIRE(table->getSize() == 2);
 
     table->insert(field1, field4);
-
 }
 
 TEST_CASE("FollowsRelationshipTable retrieve") {
@@ -121,7 +120,7 @@ TEST_CASE("FollowsRelationshipTable containsT") {
     REQUIRE_FALSE(table->containsT(field4, field6));
 }
 
-TEST_CASE("FollowsRelationshiPTable retrieveT") {
+TEST_CASE("FollowsRelationshipTable retrieveT case 1") {
     auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::While });
@@ -133,19 +132,107 @@ TEST_CASE("FollowsRelationshiPTable retrieveT") {
     table->insert(field3, field4);
     table->insert(field2, field5);
 
-    REQUIRE(table->retrieveT(field1, PKBField::createDeclaration(StatementType::While)) == FieldRowResponse{ std::vector{field1, field2}, std::vector{field1, field5} });
-    REQUIRE(table->retrieveT(field2, PKBField::createDeclaration(StatementType::While)) == FieldRowResponse{ std::vector{field2, field5} });
-    REQUIRE(table->retrieveT(field1, PKBField::createDeclaration(StatementType::All)) == FieldRowResponse{ std::vector{field1, field2}, std::vector{field1, field5} });
-    REQUIRE(table->retrieveT(field5, PKBField::createDeclaration(StatementType::While)) == FieldRowResponse{  });
+    REQUIRE(table->retrieveT(field1, PKBField::createDeclaration(StatementType::While)) == 
+        FieldRowResponse{ std::vector{field1, field2}, std::vector{field1, field5} });
+    REQUIRE(table->retrieveT(field2, PKBField::createDeclaration(StatementType::While)) == 
+        FieldRowResponse{ std::vector{field2, field5} });
+    REQUIRE(table->retrieveT(field1, PKBField::createDeclaration(StatementType::All)) == 
+        FieldRowResponse{ std::vector{field1, field2}, std::vector{field1, field5} });
+    REQUIRE(table->retrieveT(field5, PKBField::createDeclaration(StatementType::While)) == 
+        FieldRowResponse{  });
 
-    REQUIRE(table->retrieveT(field1, PKBField::createDeclaration(StatementType::Assignment)) == FieldRowResponse{});
-    REQUIRE(table->retrieveT(field3, PKBField::createDeclaration(StatementType::Assignment)) == FieldRowResponse{ std::vector{field3, field4} });
-    REQUIRE(table->retrieveT(PKBField::createDeclaration(StatementType::Assignment), PKBField::createDeclaration(StatementType::Assignment)) == FieldRowResponse{ std::vector{field3, field4} });
+    REQUIRE(table->retrieveT(field1, PKBField::createDeclaration(StatementType::Assignment)) == 
+        FieldRowResponse{});
+    REQUIRE(table->retrieveT(field3, PKBField::createDeclaration(StatementType::Assignment)) == 
+        FieldRowResponse{ std::vector{field3, field4} });
+    REQUIRE(table->retrieveT(PKBField::createDeclaration(StatementType::Assignment), 
+        PKBField::createDeclaration(StatementType::Assignment)) == 
+            FieldRowResponse{ std::vector{field3, field4} });
 
     REQUIRE(table->retrieveT(PKBField::createDeclaration(StatementType::If), field5) == FieldRowResponse{  });
     REQUIRE(table->retrieveT(PKBField::createDeclaration(StatementType::While), field1) == FieldRowResponse{  });
-    REQUIRE(table->retrieveT(PKBField::createDeclaration(StatementType::While), field5) == FieldRowResponse{ std::vector{field2, field5 } });
-    REQUIRE(table->retrieveT(PKBField::createDeclaration(StatementType::All), field5) == FieldRowResponse{ std::vector{field1, field5 }, std::vector{field2, field5 } });
-    REQUIRE(table->retrieveT(PKBField::createDeclaration(StatementType::Assignment), field5) == FieldRowResponse{ std::vector{field1, field5 } });
-    REQUIRE(table->retrieveT(PKBField::createWildcard(PKBEntityType::STATEMENT), PKBField::createWildcard(PKBEntityType::STATEMENT)) == FieldRowResponse{ std::vector{field1, field2}, std::vector{field1, field5}, std::vector{field2, field5}, std::vector{field3, field4} });
+    REQUIRE(table->retrieveT(PKBField::createDeclaration(StatementType::While), field5) == 
+        FieldRowResponse{ std::vector{field2, field5 } });
+    REQUIRE(table->retrieveT(PKBField::createDeclaration(StatementType::All), field5) == 
+        FieldRowResponse{ std::vector{field1, field5 }, std::vector{field2, field5 } });
+    REQUIRE(table->retrieveT(PKBField::createDeclaration(StatementType::Assignment), field5) == 
+        FieldRowResponse{ std::vector{field1, field5 } });
+    REQUIRE(table->retrieveT(PKBField::createWildcard(PKBEntityType::STATEMENT), 
+        PKBField::createWildcard(PKBEntityType::STATEMENT)) == 
+            FieldRowResponse{ std::vector{field1, field2}, std::vector{field1, field5}, 
+                std::vector{field2, field5}, std::vector{field3, field4} });
+}
+
+TEST_CASE("FollowsRelationshipTable retrieveT case 2") {
+    auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
+    PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
+    PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::While });
+    PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
+    PKBField field4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::If });
+    PKBField field5 = PKBField::createConcrete(STMT_LO{ 5, StatementType::Assignment });
+    PKBField field6 = PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment });
+    PKBField field7 = PKBField::createConcrete(STMT_LO{ 7, StatementType::While });
+    PKBField field8 = PKBField::createConcrete(STMT_LO{ 8, StatementType::Assignment });
+    PKBField field9 = PKBField::createConcrete(STMT_LO{ 9, StatementType::Assignment });
+
+    table->insert(field1, field2);
+    table->insert(field2, field9);
+    table->insert(field3, field4);
+    table->insert(field5, field6);
+
+    PKBField ifDecl = PKBField::createDeclaration(StatementType::If);
+    PKBField whileDecl = PKBField::createDeclaration(StatementType::While);
+    PKBField assnDecl = PKBField::createDeclaration(StatementType::Assignment);
+    PKBField allDecl = PKBField::createDeclaration(StatementType::All);
+
+    // Case 1: Both declarations
+    FieldRowResponse expected1{ 
+        {
+            {field1, field2}, 
+            {field2, field9}, 
+            {field3, field4}, 
+            {field5, field6}, 
+            {field1, field9}
+        } 
+    };
+    REQUIRE(table->retrieveT(allDecl, allDecl) == expected1);
+    
+    FieldRowResponse expected2{ {{field1, field2}} };
+    REQUIRE(table->retrieveT(assnDecl, whileDecl) == expected2);
+
+    REQUIRE(table->retrieveT(whileDecl, whileDecl).size() == 0);
+
+    FieldRowResponse expected4{ {field3, field4} };
+    REQUIRE(table->retrieveT(assnDecl, ifDecl) == expected4);
+
+
+    // Case 2: First field concrete
+    FieldRowResponse expected5{ {{field1, field2}, {field1, field9}} };
+    PKBField conc1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
+    REQUIRE(table->retrieveT(conc1, allDecl) == expected5);
+
+    FieldRowResponse expected6{ {{field3, field4}} };
+    PKBField conc2 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
+    REQUIRE(table->retrieve(conc2, allDecl) == expected6);
+
+    REQUIRE(table->retrieveT(conc2, whileDecl).size() == 0);
+
+
+    // Case 3: Second field concrete
+    FieldRowResponse expected7{ {{field2, field9}, {field1, field9}} };
+    PKBField conc3 = PKBField::createConcrete(STMT_LO{ 9, StatementType::Assignment });
+    REQUIRE(table->retrieveT(allDecl, conc3) == expected7);
+
+    PKBField conc4 = PKBField::createConcrete(STMT_LO{ 7, StatementType::While });
+    REQUIRE(table->retrieveT(allDecl, conc4).size() == 0);
+
+    FieldRowResponse expected8{ {{field3, field4}} };
+    PKBField conc5 = PKBField::createConcrete(STMT_LO{ 4, StatementType::If });
+    REQUIRE(table->retrieveT(assnDecl, conc5) == expected8);
+
+    // Case 4: Both concrete
+    FieldRowResponse expected9{ {{field1, field9}} };
+    REQUIRE(table->retrieveT(conc1, conc3) == expected9);
+
+    REQUIRE(table->retrieveT(conc5, conc4).size() == 0);
 }
