@@ -2,11 +2,13 @@
 
 #include <unordered_set>
 
+#include "ParentGraph.h"
 #include "RelationshipTable.h"
 
 using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
 class ParentRelationshipTable : public RelationshipTable {
+// class ParentRelationshipTable : public TransitiveRelationshipTable {
 public:
     ParentRelationshipTable();
 
@@ -17,4 +19,6 @@ public:
 
     // TODO(Patrick): implement retrieveT with graphs
     // FieldRowResponse retrieveT(PKBField entity1, PKBField entity2);
+// private:
+//    std::unique_ptr<ParentGraph> parentGraph;
 };

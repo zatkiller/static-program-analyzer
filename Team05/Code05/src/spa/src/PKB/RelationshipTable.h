@@ -6,6 +6,8 @@
 #include "RelationshipRow.h"
 #include "PKBRelationship.h"
 
+using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
+
 /**
 * A data structure to store program design abstractions as RelationshipRows. Base class of *RelationshipTables.
 */
@@ -32,7 +34,7 @@ public:
     */
     virtual void insert(PKBField entity1, PKBField entity2) = 0;
 
-    virtual std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> retrieve(PKBField entity1, PKBField entity2) = 0;
+    virtual FieldRowResponse retrieve(PKBField entity1, PKBField entity2) = 0;
 
     /** 
     * Retrieves the type of relationships the RelationshipTable stores.
@@ -51,5 +53,5 @@ class TransitiveRelationshipTable : public RelationshipTable {
 public:
     using RelationshipTable::RelationshipTable;
 
-    virtual std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> retrieveT(PKBField entity1, PKBField entity2) = 0;
+    virtual FieldRowResponse retrieveT(PKBField entity1, PKBField entity2) = 0;
 };

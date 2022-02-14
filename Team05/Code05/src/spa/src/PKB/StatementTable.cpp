@@ -62,17 +62,14 @@ StatementType StatementTable::getStmtTypeOfLine(int statementNum) {
     
     if (filtered.size() == 0) {
         throw "No statement exists with the provided statement number"; 
-    }
-    else if (filtered.size() > 1) {
+    } else if (filtered.size() > 1) {
         throw "Statement table has rows with duplicate line numbers";
-    }
-    else {
+    } else {
         STMT_LO stmt = filtered.at(0).getStmt();
 
         if (stmt.type.has_value()) {
             return stmt.type.value();
-        }
-        else {
+        } else {
             throw "Statement does not have a type";
         }
     }

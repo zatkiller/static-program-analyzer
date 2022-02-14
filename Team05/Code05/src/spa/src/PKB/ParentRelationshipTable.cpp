@@ -2,6 +2,10 @@
 
 ParentRelationshipTable::ParentRelationshipTable() : RelationshipTable{ PKBRelationship::PARENT } {};
 
+// ParentRelationshipTable::ParentRelationshipTable() : TransitiveRelationshipTable{ PKBRelationship::PARENT } {
+//     parentGraph = std::make_unique<ParentGraph>();
+// };
+
 bool ParentRelationshipTable::contains(PKBField entity1, PKBField entity2) {
     bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT &&
         entity2.entityType == PKBEntityType::STATEMENT;

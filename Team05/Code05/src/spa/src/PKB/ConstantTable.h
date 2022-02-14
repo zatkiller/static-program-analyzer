@@ -30,7 +30,7 @@ public:
     * 
     * @return number of ConstantRows
     */
-    int getSize() const ;
+    int getSize() const;
 
     /**
     * Retrieves all constants stored in the ConstantTable.

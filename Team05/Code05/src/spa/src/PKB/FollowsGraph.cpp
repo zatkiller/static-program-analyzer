@@ -108,7 +108,8 @@ Result FollowsGraph::traverseAll(StatementType type1, StatementType type2) {
 
             for (auto stmt : stmtSet) {
                 if (type2 == StatementType::All || type2 == stmt.type.value()) {
-                    res.insert(std::vector<PKBField>{PKBField::createConcrete(node->stmt), PKBField::createConcrete(stmt)});
+                    res.insert(std::vector<PKBField>{PKBField::createConcrete(node->stmt), 
+                        PKBField::createConcrete(stmt)});
                 }
             }
         }

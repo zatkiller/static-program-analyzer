@@ -174,5 +174,12 @@ FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField 
         entity2.statementType = StatementType::All;
     }
 
+    if (entity1.fieldType == PKBFieldType::CONCRETE && 
+        entity2.fieldType == PKBFieldType::CONCRETE) {
+        return this->containsT(entity1, entity2)
+            ? FieldRowResponse{ {{entity1, entity2}} }
+            : FieldRowResponse{};
+    }
+
     return followsGraph->getFollowsT(entity1, entity2);
 }

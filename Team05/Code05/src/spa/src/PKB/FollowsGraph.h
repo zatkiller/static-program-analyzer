@@ -10,18 +10,39 @@
 
 using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
+/**
+* A Node inside a FollowsGraph which is bidirectional
+*/
 struct FollowsNode {
-    FollowsNode(STMT_LO stmt, FollowsNode* prev, FollowsNode* next) : stmt(stmt), prev(prev), next(next) {};
+    FollowsNode(STMT_LO stmt, FollowsNode* prev, FollowsNode* next) : stmt(stmt), prev(prev), next(next) {}
 
     STMT_LO stmt;
     FollowsNode* prev;
     FollowsNode* next;
 };
 
+/**
+* A data structure that supports the lookup of transitive Follows* relationships
+*/
 class FollowsGraph {
 public:
+    /**
+    * Adds an edge between two STMT_LOs to represent a Follows relationship.
+    * 
+    * @param u the first STMT_LO in the Follows(u,v) relationship
+    * @param v the second STMT_LO in the Follows(u,v) relationship
+    */
     void addEdge(STMT_LO u, STMT_LO v);
     // wildcard should be converted to Statement::All
+
+    /**
+    * Gets all pairs of PKBFields that satisfy the provided Follows* relationship.
+    * 
+    * @param field1 the first field in the Follows* query
+    * @param field2 the second field in the Follows* query
+    * @return a Result encapsulating all pairs of PKBFields 
+    *   that follow the provided relationship
+    */
     Result getFollowsT(PKBField field1, PKBField field2);
 
 private:
