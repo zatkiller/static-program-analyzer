@@ -1,4 +1,4 @@
-#include "handlerelations.h"
+#include "clausehandler.h"
 
 StatementType ClauseHandler::getStatementType(DesignEntity d) {
     if (d == DesignEntity::STMT) {

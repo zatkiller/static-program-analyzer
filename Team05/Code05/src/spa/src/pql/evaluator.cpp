@@ -97,7 +97,7 @@ std::list<std::string > Evaluator::evaluate(Query query) {
     std::vector<Pattern> pattern = query.getPattern();
 
     DesignEntity returnType = query.getDeclarationDesignEntity(variable[0]);
-    // TO DO: replace int with PKBField
+
     ResultTable resultTable;
     ResultTable& tableRef = resultTable;
     Query& queryRef = query;
