@@ -1,23 +1,60 @@
 #include "ModifiesExtractor.h"
+#include  "logging.h"
+
+#define DEBUG_LOG Logger(Level::DEBUG) << "ModifiesExtractor.cpp Extracted "
 
 void ModifiesExtractor::cascadeToContainer(const std::string& varName) {
     for (auto stmtNo : containerNumber) {
-        pkb->insert("modifies", std::make_pair<>(stmtNo, varName));
+        // local table for testing
+        table.insert(std::make_pair<>(stmtNo, varName));
+        DEBUG_LOG << "(" << stmtNo << "," << varName << ")";
+
+        pkb->insertRelationship(
+            PKBRelationship::MODIFIES,
+            PKBField::createConcrete(STMT_LO{ stmtNo, StatementType::Assignment }),
+            PKBField::createConcrete(VAR_NAME{ varName })
+        );
     }
     if (!currentProcedureName.empty()) {
-        pkb->insert("modifies", std::make_pair<>(currentProcedureName, varName));
+        // local table for testing
+        table.insert(std::make_pair<>(currentProcedureName, varName));
+        DEBUG_LOG << "(" << currentProcedureName << "," << varName << ")";
+
+        pkb->insertRelationship(
+            PKBRelationship::MODIFIES,
+            PKBField::createConcrete(PROC_NAME{ currentProcedureName }),
+            PKBField::createConcrete(VAR_NAME{ varName })
+        );
     }
 }
 
 void ModifiesExtractor::visit(const AST::Read& node) {
     std::string varName = node.getVar().getVarName();
-    pkb->insert("modifies", std::make_pair<>(node.getStmtNo(), varName));
+
+    table.insert(std::make_pair<>(node.getStmtNo(), varName));
+    DEBUG_LOG << "(" << node.getStmtNo() << "," << varName << ")";
+
+    pkb->insertRelationship(
+        PKBRelationship::MODIFIES,
+        PKBField::createConcrete(STMT_LO{ node.getStmtNo(), StatementType::Assignment}),
+        PKBField::createConcrete(VAR_NAME{ varName })
+    );
+
     cascadeToContainer(varName);
 }
 
 void ModifiesExtractor::visit(const AST::Assign& node) {
     std::string varName = node.getLHS().getVarName();
-    pkb->insert("modifies", std::make_pair<>(node.getStmtNo(), varName));
+
+    table.insert(std::make_pair<>(node.getStmtNo(), varName));
+    DEBUG_LOG << "(" << node.getStmtNo() << "," << varName << ")";
+
+    pkb->insertRelationship(
+        PKBRelationship::MODIFIES,
+        PKBField::createConcrete(STMT_LO{ node.getStmtNo(), StatementType::Assignment }),
+        PKBField::createConcrete(VAR_NAME{ varName })
+    );
+
     cascadeToContainer(varName);
 }
 

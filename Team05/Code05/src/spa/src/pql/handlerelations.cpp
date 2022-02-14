@@ -1,41 +1,45 @@
 #include "handlerelations.h"
 
-
-//return true if relations has no synonym and relationship holds.
-void ClauseHandler::handleModifies(Modifies* mPtr) {
-    Modifies m = *mPtr;
-    EntRef modified = m.modified;
-    StmtRef stmt = m.modifiesStmt;
-    std::vector<std::string> synonyms;
-    if (stmt.isDeclaration()){
-        synonyms.push_back(stmt.getDeclaration());
+StatementType ClauseHandler::getStatementType(DesignEntity d) {
+    if (d == DesignEntity::STMT) {
+        return StatementType::Statement;
+    } else if (d == DesignEntity::ASSIGN) {
+        return StatementType::Assignment;
+    } else if (d == DesignEntity::WHILE) {
+        return StatementType::While;
+    } else if (d == DesignEntity::IF) {
+        return StatementType::If;
+    } else if (d == DesignEntity::READ) {
+        return StatementType::Read;
+    } else if (d == DesignEntity::PRINT) {
+        return StatementType::Print;
+    } else if (d == DesignEntity::CALL) {
+        return StatementType::Call;
     }
-    if(modified.isDeclaration()) {
-        synonyms.push_back(modified.getDeclaration());
-    }
-    //get PKBResponse, then do result join
-    PKBResponse mResponse;
-    //PKBRespone mResponse = pkb->getrelations();
-    tableRef.join(mResponse, synonyms);
-
 }
 
-void ClauseHandler::handleUses(Uses* uPtr) {
-    Uses u = *uPtr;
-    StmtRef stmt = u.useStmt;
-    EntRef used = u.used;
-    std::vector<std::string> synonyms;
-    if (stmt.isDeclaration()){
-        synonyms.push_back(stmt.getDeclaration());
+PKBField ClauseHandler::wrapStmtRef(StmtRef stmtRef) {
+    PKBField stmtField;
+    if (stmtRef.isLineNo()) {
+        stmtField = PKBField::createConcrete(STMT_LO{stmtRef.getLineNo()});
+    } else if (stmtRef.isWildcard()) {
+        stmtField = PKBField::createWildcard(PKBEntityType::STATEMENT);
+    } else if (stmtRef.isDeclaration()) {
+        stmtField = PKBField::createDeclaration(getStatementType(query.getDeclarationDesignEntity(stmtRef.getDeclaration())));
     }
-    if (used.isDeclaration()) {
-        synonyms.push_back(used.getDeclaration());
-    }
-    //get PKBResponse
-    PKBResponse uResponse;
-    // API call here
-    tableRef.join(uResponse, synonyms);
+    return stmtField;
+}
 
+PKBField ClauseHandler::wrapEntRef(EntRef entRef) {
+    PKBField entField;
+    if (entRef.isVarName()) {
+        entField = PKBField::createConcrete(VAR_NAME{entRef.getVariableName()});
+    } else if (entRef.isWildcard()) {
+        entField = PKBField::createWildcard(PKBEntityType::VARIABLE);
+    } else if (entRef.isDeclaration()) {
+        entField = PKBField::createDeclaration(PKBEntityType::VARIABLE);
+    }
+    return entField;
 }
 
 void ClauseHandler::handleSynClauses(std::vector<std::shared_ptr<RelRef>> clauses) {
@@ -43,32 +47,55 @@ void ClauseHandler::handleSynClauses(std::vector<std::shared_ptr<RelRef>> clause
         RelRef* relRefPtr = c.get();
         RelRefType type = relRefPtr->getType();
         if (type == RelRefType::MODIFIESS) {
-            handleModifies(dynamic_cast<Modifies*>(relRefPtr));
+            evaluateRelationships(dynamic_cast<Modifies*>(relRefPtr), &Modifies::modifiesStmt,
+                                &Modifies::modified, PKBRelationship::MODIFIES);
         } else if (type == RelRefType::USESS) {
-            handleUses(dynamic_cast<Uses*>(relRefPtr));
+            evaluateRelationships(dynamic_cast<Uses*>(relRefPtr), &Uses::useStmt,
+                                &Uses::used, PKBRelationship::USES);
+        } else if (type == RelRefType::FOLLOWS) {
+            evaluateRelationships(dynamic_cast<Follows*>(relRefPtr), &Follows::follower,
+                                &Follows::followed, PKBRelationship::FOLLOWS);
+        } else if (type == RelRefType::FOLLOWST) {
+            evaluateRelationships(dynamic_cast<FollowsT*>(relRefPtr), &FollowsT::follower,
+                                &FollowsT::transitiveFollowed, PKBRelationship::FOLLOWST);
+        } else if (type == RelRefType::PARENT) {
+            evaluateRelationships(dynamic_cast<Parent*>(relRefPtr), &Parent::parent,
+                                &Parent::child, PKBRelationship::PARENT);
+        } else if (type == RelRefType::PARENTT) {
+            evaluateRelationships(dynamic_cast<ParentT*>(relRefPtr), &ParentT::parent,
+                                &ParentT::transitiveChild, PKBRelationship::PARENTT);
         }
     }
 }
 
-bool ClauseHandler::evaluateNoSynClauses(std::vector<std::shared_ptr<RelRef>> noSynClauses) {
-    bool hold = true;
+bool ClauseHandler::handleNoSynClauses(std::vector<std::shared_ptr<RelRef>> noSynClauses) {
     for (auto clause : noSynClauses) {
         RelRef* relRefPtr = clause.get();
         if (relRefPtr->getType() == RelRefType::MODIFIESS) {
             Modifies* mPtr= dynamic_cast<Modifies*>(relRefPtr);
-            EntRef modified = mPtr->modified;
-            StmtRef stmt = mPtr->modifiesStmt;
-            //add method enfRefGeneratePKBField and stmtRefGeneratePKBField
-//            PKBField modifiedField;
-//            PKBField Modified;
-//API call
-//        hold = hold && pkb->isRelationshipPresent(stmtPKBField, modified, PKBRelationship::MODIFIES);
-        } else if (relRefPtr->getType() == RelRefType::MODIFIESS) {
+            if (!evaluateNoSynRelRef(PKBRelationship::MODIFIES, mPtr, &Modifies::modifiesStmt,
+                                     &Modifies::modified)) return false;
+        } else if (relRefPtr->getType() == RelRefType::USESS) {
             Uses* uPtr = dynamic_cast<Uses*>(relRefPtr);
-            EntRef used = uPtr->used;
-            StmtRef stmt = uPtr->useStmt;
-            // create PKBField, make API call
+            if (!evaluateNoSynRelRef(PKBRelationship::USES, uPtr,  &Uses::useStmt,
+                                     &Uses::used)) return false;
+        } else if (relRefPtr->getType() == RelRefType::FOLLOWS) {
+            Follows* fPtr = dynamic_cast<Follows*>(relRefPtr);
+            if (!evaluateNoSynRelRef(PKBRelationship::FOLLOWS, fPtr, &Follows::follower,
+                                     &Follows::followed)) return false;
+        } else if (relRefPtr->getType() == RelRefType::FOLLOWST) {
+            FollowsT* ftPtr = dynamic_cast<FollowsT*>(relRefPtr);
+            if (!evaluateNoSynRelRef(PKBRelationship::FOLLOWST, ftPtr, &FollowsT::follower,
+                                     &FollowsT::transitiveFollowed)) return false;
+        } else if (relRefPtr->getType() == RelRefType::PARENT) {
+            Parent* pPtr = dynamic_cast<Parent*>(relRefPtr);
+            if (!evaluateNoSynRelRef(PKBRelationship::PARENT, pPtr, &Parent::parent,
+                                     &Parent::child)) return false;
+        } else if (relRefPtr->getType() == RelRefType::PARENTT) {
+            ParentT* ptPtr = dynamic_cast<ParentT*>(relRefPtr);
+            if (!evaluateNoSynRelRef(PKBRelationship::PARENTT, ptPtr, &ParentT::parent,
+                                     &ParentT::transitiveChild)) return false;
         }
     }
-    return hold;
+    return true;
 }

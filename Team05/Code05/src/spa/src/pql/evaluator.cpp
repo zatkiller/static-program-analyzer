@@ -4,15 +4,15 @@
 
 std::string Evaluator::PKBFieldToString(PKBField pkbField) {
     std::string res = "";
-    if(pkbField.tag == PKBType::STATEMENT) {
+    if(pkbField.entityType == PKBEntityType::STATEMENT) {
         int lineNo = std::get<STMT_LO>(pkbField.content).statementNum;
         res = std::to_string(lineNo);
-    } else if ( pkbField.tag == PKBType::CONST) {
+    } else if ( pkbField.entityType == PKBEntityType::CONST) {
         int c = std::get<CONST>(pkbField.content);
         res = std::to_string(c);
-    } else if (pkbField.tag == PKBType::VARIABLE) {
+    } else if (pkbField.entityType == PKBEntityType::VARIABLE) {
         res = std::get<VAR_NAME>(pkbField.content).name;
-    } else if (pkbField.tag == PKBType::PROCEDURE) {
+    } else if (pkbField.entityType == PKBEntityType::PROCEDURE) {
         res = std::get<PROC_NAME>(pkbField.content).name;
     }
     return res;
@@ -51,22 +51,22 @@ void Evaluator::processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, st
         RelRef* relRefPtr = r.get();
         if (relRefPtr->getType() == RelRefType::MODIFIESS) {
             Modifies* mPtr= dynamic_cast<Modifies*>(relRefPtr);
-            EntRef modified = mPtr->modified;
-            StmtRef stmt = mPtr->modifiesStmt;
-            if ((modified.isVarName() || modified.isWildcard()) && (stmt.isLineNo() || stmt.isWildcard())) {
-                noSyn.push_back(r);
-            } else {
-                hasSyn.push_back(r);
-            }
+            processSuchthatRelRef(r, mPtr->modifiesStmt, mPtr->modified, noSyn, hasSyn);
         } else if (relRefPtr->getType() == RelRefType::USESS) {
             Uses* uPtr = dynamic_cast<Uses*>(relRefPtr);
-            EntRef used = uPtr->used;
-            StmtRef stmt = uPtr->useStmt;
-            if ((used.isVarName() || used.isWildcard()) && (stmt.isLineNo() || stmt.isWildcard())) {
-                noSyn.push_back(r);
-            } else {
-                hasSyn.push_back(r);
-            }
+            processSuchthatRelRef(r, uPtr->useStmt, uPtr->used, noSyn, hasSyn);
+        } else if (relRefPtr->getType() == RelRefType::FOLLOWS) {
+            Follows* fPtr = dynamic_cast<Follows*>(relRefPtr);
+            processSuchthatRelRef(r, fPtr->follower, fPtr->followed, noSyn, hasSyn);
+        } else if (relRefPtr->getType() == RelRefType::FOLLOWST) {
+            FollowsT* ftPtr = dynamic_cast<FollowsT*>(relRefPtr);
+            processSuchthatRelRef(r, ftPtr->follower, ftPtr->transitiveFollowed, noSyn, hasSyn);
+        } else if (relRefPtr->getType() == RelRefType::PARENT) {
+            Parent* pPtr = dynamic_cast<Parent*>(relRefPtr);
+            processSuchthatRelRef(r, pPtr->parent, pPtr->child, noSyn, hasSyn);
+        } else if (relRefPtr->getType() == RelRefType::PARENTT) {
+            ParentT* ptPtr = dynamic_cast<ParentT*>(relRefPtr);
+            processSuchthatRelRef(r, ptPtr->parent, ptPtr->transitiveChild, noSyn, hasSyn);
         }
     }
 
@@ -100,12 +100,13 @@ std::list<std::string > Evaluator::evaluate(Query query) {
     // TO DO: replace int with PKBField
     ResultTable resultTable;
     ResultTable& tableRef = resultTable;
+    Query& queryRef = query;
 
 
     if (!suchthat.empty()) {
         processSuchthat(suchthat, noSyn, hasSyn);
-        ClauseHandler handler = ClauseHandler(pkb, tableRef);
-        if (!handler.evaluateNoSynClauses(noSyn)) return std::list<std::string>{};
+        ClauseHandler handler = ClauseHandler(pkb, tableRef, queryRef);
+        if (!handler.handleNoSynClauses(noSyn)) return std::list<std::string>{};
         handler.handleSynClauses(hasSyn);
     }
 

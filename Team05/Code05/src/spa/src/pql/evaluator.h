@@ -16,7 +16,7 @@
 #include "handlerelations.h"
 #include "PKB/PKBField.h"
 #include "PKB/PKBDataTypes.h"
-#include "PKB/PKBType.h"
+#include "PKB/PKBEntityType.h"
 #include "PKB/StatementType.h"
 #include "PKB/PKBResponse.h"
 #include "PKB.h"
@@ -38,6 +38,15 @@ public:
     static std::string PKBFieldToString(PKBField);
 
     void processSuchthat(std::vector<std::shared_ptr<RelRef>>, std::vector<std::shared_ptr<RelRef>>&, std::vector<std::shared_ptr<RelRef>>&);
+
+    template<typename F1, typename F2>
+    void processSuchthatRelRef(std::shared_ptr<RelRef> r, F1 f1, F2 f2, std::vector<std::shared_ptr<RelRef>>& noSyn, std::vector<std::shared_ptr<RelRef>>& hasSyn) {
+        if (!f1.isDeclaration() && !f2.isDeclaration()) {
+            noSyn.push_back(r);
+        } else {
+            hasSyn.push_back(r);
+        }
+    }
 
     std::list<std::string > getListOfResult(ResultTable&, std::string);
 

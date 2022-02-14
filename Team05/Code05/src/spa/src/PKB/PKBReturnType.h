@@ -3,10 +3,14 @@
 #include <variant>
 #include <vector>
 
-#include "PKBType.h"
+#include "PKBEntityType.h"
 
-using ReturnType = std::variant<PKBType, std::vector<PKBType>>;
+using ReturnType = std::variant<PKBEntityType, std::vector<PKBEntityType>>;
 
+/**
+* A data structure to represent the intended return type of a query, modelling 
+* synonym in 'Select' synonym [ suchthat-cl ] [ pattern-cl ]. 
+*/
 struct PKBReturnType {
     ReturnType ret;
 };
