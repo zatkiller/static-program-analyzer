@@ -6,7 +6,6 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#include "exceptions.h"
 #include "PKB/PKBResponse.h"
 
 namespace qps::evaluator {
