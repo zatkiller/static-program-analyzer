@@ -63,14 +63,14 @@ TEST_CASE("Testing Parser") {
                     AST::RelOp::GT,
                     make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("x"), make<AST::Const>(1)),
                     make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("y"), make<AST::Const>(2))
-                    );
+                );
             };
             auto relExpr2 = []() {
                 return make<AST::RelExpr>(
                     AST::RelOp::GT,
                     make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("z"), make<AST::Const>(1)),
                     make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("t"), make<AST::Const>(2))
-                    );
+                );
             };
 
             tokens = Lexer("((x+1)>(y+2))&&((z+1)>(t+2))").getTokens();
@@ -79,7 +79,7 @@ TEST_CASE("Testing Parser") {
                 AST::CondOp::AND,
                 relExpr1(),
                 relExpr2()
-                );
+            );
             REQUIRE(*ast == *expected);
 
             tokens = Lexer("((x+1)>(y+2))||((z+1)>(t+2))").getTokens();
@@ -88,14 +88,14 @@ TEST_CASE("Testing Parser") {
                 AST::CondOp::OR,
                 relExpr1(),
                 relExpr2()
-                );
+            );
             REQUIRE(*ast == *expected);
 
             tokens = Lexer("!((x+1)>(y+2))").getTokens();
             ast = CondExprParser::parse(tokens);
             expected = std::make_unique<AST::NotCondExpr>(
                 relExpr1()
-                );
+            );
             REQUIRE(*ast == *expected);
         }
 

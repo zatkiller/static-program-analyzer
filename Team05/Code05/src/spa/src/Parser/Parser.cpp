@@ -68,7 +68,8 @@ void checkAndConsume(string s, deque<Token>& tokens) {
     string* v = get_if<string>(&currToken.value);
     if (!v || *v != s) {
         throwUnexpectedToken(s);
-    }
+}
+
 }
 
 /** ================================ ATOMIC PARSER ================================ */
@@ -192,7 +193,8 @@ AST::BinOp charToBinOp(char c) {
     case '*': return AST::BinOp::MULT;
     case '/': return AST::BinOp::DIVIDE;
     case '%': return AST::BinOp::MOD;
-    }
+}
+
 }
 
 }  // namespace AtomicParser
