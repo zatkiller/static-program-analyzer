@@ -22,10 +22,10 @@ using namespace qps::evaluator;
 
 std::string PKBFieldToString(PKBField pkbField) {
     std::string res = "";
-    if(pkbField.entityType == PKBEntityType::STATEMENT) {
+    if (pkbField.entityType == PKBEntityType::STATEMENT) {
         int lineNo = std::get<STMT_LO>(pkbField.content).statementNum;
         res = std::to_string(lineNo);
-    } else if ( pkbField.entityType == PKBEntityType::CONST) {
+    } else if (pkbField.entityType == PKBEntityType::CONST) {
         int c = std::get<CONST>(pkbField.content);
         res = std::to_string(c);
     } else if (pkbField.entityType == PKBEntityType::VARIABLE) {
@@ -37,9 +37,9 @@ std::string PKBFieldToString(PKBField pkbField) {
 }
 
 void printTable(ResultTable table) {
-    for (auto r : table.getResult()) {
+    for (auto r: table.getResult()) {
         std::string record;
-        for (auto f : r) {
+        for (auto f: r) {
             record = record + PKBFieldToString(f) + " ";
         }
         TEST_LOG << record;
@@ -113,9 +113,9 @@ TEST_CASE("Test insert vector") {
     TEST_LOG << "create result table";
 
     std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> r{
-        std::vector<PKBField>{field1, field4},
-        std::vector<PKBField>{field2, field5},
-        std::vector<PKBField>{field3, field6}};
+            std::vector<PKBField>{field1, field4},
+            std::vector<PKBField>{field2, field5},
+            std::vector<PKBField>{field3, field6}};
     PKBResponse response{true, Response{r}};
 
     table.insert(response);
@@ -196,15 +196,24 @@ TEST_CASE("Test crossJoin with records inside") {
     REQUIRE(table2.getSynLocation("a") == 2);
     REQUIRE(table2.getSynLocation("c") == 3);
     table2.crossJoin(response2);
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field1, field4, newField1, newField3}) != table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field1, field4, newField1, newField4}) != table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field1, field4, newField2, newField3}) != table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field2, field5, newField1, newField3}) != table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field2, field5, newField1, newField4}) != table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field2, field5, newField2, newField3}) != table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field3, field6, newField1, newField3}) != table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field3, field6, newField1, newField4}) != table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field3, field6, newField2, newField3}) != table.getResult().end());
+    REQUIRE(table2.getResult().find(std::vector<PKBField>{field1, field4, newField1, newField3}) !=
+            table.getResult().end());
+    REQUIRE(table2.getResult().find(std::vector<PKBField>{field1, field4, newField1, newField4}) !=
+            table.getResult().end());
+    REQUIRE(table2.getResult().find(std::vector<PKBField>{field1, field4, newField2, newField3}) !=
+            table.getResult().end());
+    REQUIRE(table2.getResult().find(std::vector<PKBField>{field2, field5, newField1, newField3}) !=
+            table.getResult().end());
+    REQUIRE(table2.getResult().find(std::vector<PKBField>{field2, field5, newField1, newField4}) !=
+            table.getResult().end());
+    REQUIRE(table2.getResult().find(std::vector<PKBField>{field2, field5, newField2, newField3}) !=
+            table.getResult().end());
+    REQUIRE(table2.getResult().find(std::vector<PKBField>{field3, field6, newField1, newField3}) !=
+            table.getResult().end());
+    REQUIRE(table2.getResult().find(std::vector<PKBField>{field3, field6, newField1, newField4}) !=
+            table.getResult().end());
+    REQUIRE(table2.getResult().find(std::vector<PKBField>{field3, field6, newField2, newField3}) !=
+            table.getResult().end());
     printTable(table2);
 
 }
@@ -291,7 +300,7 @@ TEST_CASE("Test join method") {
             std::vector<PKBField>{newField2, newField5},
             std::vector<PKBField>{newField2, newField6},
             std::vector<PKBField>{newField3, newField4},
-            };
+    };
     PKBResponse responseVector{true, Response{testVector}};
 
     TEST_LOG << "========== 1 syn join (cross join 1)";

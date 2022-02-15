@@ -3,7 +3,15 @@
 #include "pql/parser.h"
 
 namespace qps::parser {
-    using namespace messages::qps::parser;
+    using qps::query::designEntityMap;
+    using qps::query::Uses;
+    using qps::query::Modifies;
+    using qps::query::Follows;
+    using qps::query::FollowsT;
+    using qps::query::Parent;
+    using qps::query::ParentT;
+    using qps::query::Pattern;
+
 
     std::string Parser::getParsedText() {
         return lexer.text;
@@ -27,7 +35,7 @@ namespace qps::parser {
 
     void Parser::checkType(Token token, TokenType tokenType) {
         if (token.getTokenType() != tokenType)
-            throw exceptions::PqlSyntaxException(notExpectingTokenMessage);
+            throw exceptions::PqlSyntaxException(messages::qps::parser::notExpectingTokenMessage);
     }
 
     Token Parser::getAndCheckNextToken(TokenType tt) {
@@ -63,7 +71,7 @@ namespace qps::parser {
         Token token = getAndCheckNextToken(TokenType::IDENTIFIER);
         auto iterator = designEntityMap.find(token.getText());
         if (iterator == designEntityMap.end())
-            throw exceptions::PqlSyntaxException(noSuchDesignEntityMessage);
+            throw exceptions::PqlSyntaxException(messages::qps::parser::noSuchDesignEntityMessage);
 
         DesignEntity designEntity = iterator->second;
         parseDeclaration(queryObj, designEntity);
@@ -88,7 +96,7 @@ namespace qps::parser {
         std::string name = t.getText();
 
         if (!queryObj.hasDeclaration(name))
-            throw exceptions::PqlSyntaxException(declarationDoesNotExistMessage);
+            throw exceptions::PqlSyntaxException(messages::qps::parser::declarationDoesNotExistMessage);
 
         queryObj.addVariable(name);
     }
@@ -152,22 +160,22 @@ namespace qps::parser {
         getAndCheckNextToken(TokenType::OPENING_PARAN);
 
         if (!isStmtRef(peekNextToken(), queryObj))
-            throw exceptions::PqlSyntaxException(invalidStmtRefMessage);
+            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidStmtRefMessage);
 
         StmtRef sr = parseStmtRef(queryObj);
 
         if (sr.isWildcard())
-            throw exceptions::PqlSemanticException(cannotBeWildcardMessage);
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
 
         getAndCheckNextToken(TokenType::COMMA);
 
         if (!isEntRef(peekNextToken(), queryObj))
-            throw exceptions::PqlSyntaxException(invalidEntRefMessage);
+            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidEntRefMessage);
 
         EntRef er = parseEntRef(queryObj);
 
         if (er.isDeclaration() && queryObj.getDeclarationDesignEntity(er.getDeclaration()) != DesignEntity::VARIABLE)
-            throw exceptions::PqlSemanticException(notVariableSynonymMessage);
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
 
         getAndCheckNextToken(TokenType::CLOSING_PARAN);
 
@@ -199,7 +207,7 @@ namespace qps::parser {
             return parseRelRefVariables<ParentT>(queryObj, &ParentT::parent, &ParentT::transitiveChild);
         }
 
-        throw exceptions::PqlSyntaxException(invalidRelRefMessage);
+        throw exceptions::PqlSyntaxException(messages::qps::parser::invalidRelRefMessage);
     }
 
     std::string Parser::parseExpSpec() {
@@ -235,7 +243,7 @@ namespace qps::parser {
         std::string declarationName = t.getText();
 
         if (queryObj.getDeclarationDesignEntity(declarationName) != DesignEntity::ASSIGN)
-            throw exceptions::PqlSyntaxException(notAnAssignmentMessage);
+            throw exceptions::PqlSyntaxException(messages::qps::parser::notAnAssignmentMessage);
 
         Pattern p;
 
@@ -281,4 +289,4 @@ namespace qps::parser {
 
         return queryObj;
     }
-}
+}  // namespace qps::parser

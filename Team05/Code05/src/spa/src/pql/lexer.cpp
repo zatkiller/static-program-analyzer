@@ -119,4 +119,5 @@ namespace qps::parser {
         text = copy;
         return token;
     }
-}
+}  // namespace qps::parser
+

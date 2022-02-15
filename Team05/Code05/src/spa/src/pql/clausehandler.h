@@ -16,12 +16,12 @@ namespace qps::evaluator {
      */
     class ClauseHandler {
     public:
-        PKB* pkb;
-        ResultTable& tableRef;
-        Query& query;
+        PKB *pkb;
+        ResultTable &tableRef;
+        Query &query;
 
         /** Constructor of the ClauseHandler */
-        ClauseHandler(PKB* pkb, ResultTable& tableRef, Query& query) : pkb(pkb), tableRef(tableRef), query(query) {};
+        ClauseHandler(PKB *pkb, ResultTable &tableRef, Query &query) : pkb(pkb), tableRef(tableRef), query(query) {};
 
         /**
          * Maps the corresponding PKB StatementType from the Design Entity type.

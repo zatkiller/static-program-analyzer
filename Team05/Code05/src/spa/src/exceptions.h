@@ -6,30 +6,30 @@
 #include "messages.h"
 
 namespace exceptions {
-    using namespace messages;
 
-    struct Exception : public std::exception {
-        const char* message;
+struct Exception : public std::exception {
+    const char* message;
 
-        Exception(const char* message) : message(message) {};
-        const char * what () const noexcept override{
-            return message;
-        }
-    };
+    explicit Exception(const char* message) : message(message) {}
+    const char * what () const noexcept override{
+        return message;
+    }
+};
 
-    struct PqlException : Exception {
-        PqlException() : Exception(qps::parser::defaultPqlExceptionMesssage) {};
-        PqlException(const char* message) : Exception(message) {} ;
-    };
+struct PqlException : Exception {
+    PqlException() : Exception(messages::qps::parser::defaultPqlExceptionMesssage) {}
+    explicit PqlException(const char* message) : Exception(message) {}
+};
 
-    struct PqlSyntaxException : PqlException  {
-        PqlSyntaxException() : PqlException(qps::parser::defaultPqlSyntaxExceptionMessage) {};
-        PqlSyntaxException(const char* message) : PqlException(message) {} ;
-    };
+struct PqlSyntaxException : PqlException  {
+    PqlSyntaxException() : PqlException(messages::qps::parser::defaultPqlSyntaxExceptionMessage) {}
+    explicit PqlSyntaxException(const char* message) : PqlException(message) {}
+};
 
-    struct PqlSemanticException : PqlException  {
-        PqlSemanticException() : PqlException(qps::parser::defaultPqlSemanticExceptionMessage) {};
-        PqlSemanticException(const char* message) : PqlException(message) {} ;
-    };
-}
+struct PqlSemanticException : PqlException  {
+    PqlSemanticException() : PqlException(messages::qps::parser::defaultPqlSemanticExceptionMessage) {}
+    explicit PqlSemanticException(const char* message) : PqlException(message) {}
+};
+
+} //namespace exceptions
 

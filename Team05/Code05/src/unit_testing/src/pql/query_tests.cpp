@@ -1,7 +1,23 @@
 #include "pql/query.h"
 #include "catch.hpp"
 
-using namespace qps::query;
+
+using qps::query::Query;
+using qps::query::StmtRef;
+using qps::query::EntRef;
+using qps::query::RelRef;
+using qps::query::RelRefType;
+using qps::query::Uses;
+using qps::query::Modifies;
+using qps::query::Parent;
+using qps::query::ParentT;
+using qps::query::Follows;
+using qps::query::FollowsT;
+using qps::query::Pattern;
+using qps::query::StmtRefType;
+using qps::query::EntRefType;
+using qps::query::DesignEntity;
+
 
 TEST_CASE("StmtRef") {
     StmtRef stmtRef;
@@ -30,7 +46,7 @@ TEST_CASE("EntRef") {
     REQUIRE(entRef1.isVarName());
     REQUIRE(entRef1.getVariableName() == "a");
 
-    EntRef entRef2  = EntRef::ofWildcard();
+    EntRef entRef2 = EntRef::ofWildcard();
     REQUIRE(entRef2.isWildcard());
 
     EntRef entRef3 = EntRef::ofDeclaration("a");
@@ -72,7 +88,7 @@ TEST_CASE("Parent*") {
 }
 
 TEST_CASE("Pattern") {
-    Pattern p = { "h", EntRef::ofWildcard(), "_x_"};
+    Pattern p = {"h", EntRef::ofWildcard(), "_x_"};
     REQUIRE(p.getSynonym() == "h");
     REQUIRE(p.getEntRef().getType() == EntRefType::WILDCARD);
     REQUIRE(p.getExpression() == "_x_");
@@ -95,7 +111,7 @@ TEST_CASE("Query") {
     REQUIRE(!query.getSuchthat().empty());
     REQUIRE(query.getSuchthat()[0] == ptr);
 
-    Pattern p = Pattern {"a", EntRef::ofWildcard(), "_x_"};
+    Pattern p = Pattern{"a", EntRef::ofWildcard(), "_x_"};
     query.addPattern(p);
     REQUIRE(!query.getPattern().empty());
     REQUIRE(query.getPattern()[0] == p);

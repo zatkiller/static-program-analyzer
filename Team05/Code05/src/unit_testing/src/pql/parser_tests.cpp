@@ -5,17 +5,33 @@
 
 #include "exceptions.h"
 
-using namespace messages::qps::parser;
-using namespace qps::parser;
+using qps::parser::Lexer;
+using qps::parser::Parser;
+using qps::parser::Token;
+using qps::parser::TokenType;
+using qps::parser::DesignEntity;
+
+using qps::query::Query;
+using qps::query::StmtRef;
+using qps::query::EntRef;
+using qps::query::RelRef;
+using qps::query::RelRefType;
+using qps::query::Uses;
+using qps::query::Modifies;
+using qps::query::Parent;
+using qps::query::ParentT;
+using qps::query::Follows;
+using qps::query::FollowsT;
+using qps::query::Pattern;
 
 TEST_CASE("Parser checkType") {
     Parser parser;
-    Token token = Token { "", TokenType::INVALID };
+    Token token = Token{"", TokenType::INVALID};
     REQUIRE_NOTHROW(parser.checkType(token, TokenType::INVALID));
 
-    Token token2 = Token { "", TokenType::STRING };
+    Token token2 = Token{"", TokenType::STRING};
     REQUIRE_THROWS_MATCHES(parser.checkType(token2, TokenType::INVALID), exceptions::PqlSyntaxException,
-       Catch::Message(notExpectingTokenMessage));
+                           Catch::Message(messages::qps::parser::notExpectingTokenMessage));
 }
 
 TEST_CASE("Parser getAndCheckNextToken and peekAndCheckNextToken") {
@@ -24,7 +40,7 @@ TEST_CASE("Parser getAndCheckNextToken and peekAndCheckNextToken") {
     REQUIRE_NOTHROW(parser.getAndCheckNextToken(TokenType::IDENTIFIER));
 
     REQUIRE_THROWS_MATCHES(parser.peekAndCheckNextToken(TokenType::IDENTIFIER), exceptions::PqlSyntaxException,
-       Catch::Message(notExpectingTokenMessage));
+                           Catch::Message(messages::qps::parser::notExpectingTokenMessage));
     REQUIRE_NOTHROW(parser.peekAndCheckNextToken(TokenType::NUMBER));
 }
 
@@ -34,7 +50,7 @@ TEST_CASE("Parser getAndCheckNextReservedToken and peekAndCheckNextReservedToken
     REQUIRE_NOTHROW(parser.getAndCheckNextReservedToken(TokenType::SELECT));
 
     REQUIRE_THROWS_MATCHES(parser.peekAndCheckNextReservedToken(TokenType::PATTERN), exceptions::PqlSyntaxException,
-                        Catch::Message(notExpectingTokenMessage));
+                           Catch::Message(messages::qps::parser::notExpectingTokenMessage));
     REQUIRE_NOTHROW(parser.peekAndCheckNextReservedToken(TokenType::SUCH_THAT));
 }
 
@@ -85,7 +101,7 @@ TEST_CASE("Parser parseDeclarations") {
     REQUIRE(queryObj.getDeclarationDesignEntity("a") == DesignEntity::ASSIGN);
 
     // Multiple declarations
-    queryObj = Query {};
+    queryObj = Query{};
     parser.lexer.text = "assign a, a1;\n";
     parser.parseDeclarations(queryObj);
 
@@ -96,7 +112,7 @@ TEST_CASE("Parser parseDeclarations") {
     REQUIRE(queryObj.getDeclarationDesignEntity("a1") == DesignEntity::ASSIGN);
 
     // Multiple declarations of different Design Entities
-    queryObj = Query {};
+    queryObj = Query{};
     parser.lexer.text = "assign a, a1; variable v;";
     parser.parseDeclarations(queryObj);
 
@@ -122,17 +138,16 @@ TEST_CASE("Parser parseSelectFields") {
 
     REQUIRE(queryObj.hasVariable("a"));
 
-    queryObj = Query {};
+    queryObj = Query{};
     parser.addPql("assign a; \n Select v");
 
     parser.parseDeclarations(queryObj);
 
     REQUIRE_THROWS_MATCHES(parser.parseSelectFields(queryObj), exceptions::PqlSyntaxException,
-                           Catch::Message(declarationDoesNotExistMessage));
+                           Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
 }
 
 TEST_CASE("Parser parseSuchThat - Uses") {
-
     SECTION ("Valid query with Uses relationship") {
         std::string testQuery = "assign a;\n Select a such that Uses (a, _)";
 
@@ -164,7 +179,7 @@ TEST_CASE("Parser parseSuchThat - Uses") {
         parser.parseDeclarations(queryObj);
         parser.parseSelectFields(queryObj);
         REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
-           Catch::Message(cannotBeWildcardMessage));
+                               Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
     }
 
     SECTION("Invalid second argument non-variable design entity for Uses") {
@@ -177,7 +192,7 @@ TEST_CASE("Parser parseSuchThat - Uses") {
         parser.parseDeclarations(queryObj);
         parser.parseSelectFields(queryObj);
         REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
-           Catch::Message(notVariableSynonymMessage));
+                               Catch::Message(messages::qps::parser::notVariableSynonymMessage));
     }
 }
 
@@ -213,7 +228,7 @@ TEST_CASE("Parser parseSuchThat - Modifies") {
         parser.parseDeclarations(queryObj);
         parser.parseSelectFields(queryObj);
         REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
-           Catch::Message(cannotBeWildcardMessage));
+                               Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
     }
 
     SECTION("Invalid second argument non-variable design entity for Modifies") {
@@ -226,7 +241,7 @@ TEST_CASE("Parser parseSuchThat - Modifies") {
         parser.parseDeclarations(queryObj);
         parser.parseSelectFields(queryObj);
         REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
-           Catch::Message(notVariableSynonymMessage));
+                               Catch::Message(messages::qps::parser::notVariableSynonymMessage));
     }
 }
 
@@ -392,7 +407,7 @@ TEST_CASE("Parser parsePattern - string expression with wildcard") {
 TEST_CASE("Parser isEntRef") {
     Parser parser;
     Query query;
-    Token token = { "", TokenType::STRING };
+    Token token = {"", TokenType::STRING};
     REQUIRE(parser.isEntRef(token, query));
     token = {"", TokenType::PATTERN};
     REQUIRE(!(parser.isEntRef(token, query)));
@@ -401,7 +416,7 @@ TEST_CASE("Parser isEntRef") {
 TEST_CASE("Parser isSmtRef") {
     Parser parser;
     Query query;
-    Token token = { "", TokenType::NUMBER };
+    Token token = {"", TokenType::NUMBER};
     REQUIRE(parser.isStmtRef(token, query));
     token = {"", TokenType::PATTERN};
     REQUIRE(!(parser.isEntRef(token, query)));
@@ -431,10 +446,11 @@ TEST_CASE("Parser parseRelRefVariables") {
 
     SECTION("parseRelRefVariables - Follows") {
         parser.lexer.text = "(3, 5)";
-        std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Follows>(queryObj, &Follows::follower, &Follows::followed);
+        std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Follows>(queryObj, &Follows::follower,
+                                                                           &Follows::followed);
         REQUIRE(ptr.get()->getType() == RelRefType::FOLLOWS);
 
-        Follows* fPtr = std::dynamic_pointer_cast<Follows>(ptr).get();
+        Follows *fPtr = std::dynamic_pointer_cast<Follows>(ptr).get();
         REQUIRE(fPtr->follower.isLineNo());
         REQUIRE(fPtr->follower.getLineNo() == 3);
         REQUIRE(fPtr->followed.isLineNo());
@@ -443,10 +459,11 @@ TEST_CASE("Parser parseRelRefVariables") {
 
     SECTION("parseRelRefVariables - FollowsT") {
         parser.lexer.text = "(3, 10)";
-        std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<FollowsT>(queryObj, &FollowsT::follower, &FollowsT::transitiveFollowed);
+        std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<FollowsT>(queryObj, &FollowsT::follower,
+                                                                            &FollowsT::transitiveFollowed);
         REQUIRE(ptr.get()->getType() == RelRefType::FOLLOWST);
 
-        FollowsT* fPtr = std::dynamic_pointer_cast<FollowsT>(ptr).get();
+        FollowsT *fPtr = std::dynamic_pointer_cast<FollowsT>(ptr).get();
         REQUIRE(fPtr->follower.isLineNo());
         REQUIRE(fPtr->follower.getLineNo() == 3);
         REQUIRE(fPtr->transitiveFollowed.isLineNo());
@@ -458,7 +475,7 @@ TEST_CASE("Parser parseRelRefVariables") {
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Parent>(queryObj, &Parent::parent, &Parent::child);
         REQUIRE(ptr.get()->getType() == RelRefType::PARENT);
 
-        Parent* pPtr = std::dynamic_pointer_cast<Parent>(ptr).get();
+        Parent *pPtr = std::dynamic_pointer_cast<Parent>(ptr).get();
         REQUIRE(pPtr->parent.isLineNo());
         REQUIRE(pPtr->parent.getLineNo() == 3);
         REQUIRE(pPtr->child.isLineNo());
@@ -467,10 +484,11 @@ TEST_CASE("Parser parseRelRefVariables") {
 
     SECTION("parseRelRefVariables - ParentT") {
         parser.lexer.text = "(3, 10)";
-        std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<ParentT>(queryObj, &ParentT::parent, &ParentT::transitiveChild);
+        std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<ParentT>(queryObj, &ParentT::parent,
+                                                                           &ParentT::transitiveChild);
         REQUIRE(ptr.get()->getType() == RelRefType::PARENTT);
 
-        ParentT* pPtr = std::dynamic_pointer_cast<ParentT>(ptr).get();
+        ParentT *pPtr = std::dynamic_pointer_cast<ParentT>(ptr).get();
         REQUIRE(pPtr->parent.isLineNo());
         REQUIRE(pPtr->parent.getLineNo() == 3);
         REQUIRE(pPtr->transitiveChild.isLineNo());
@@ -488,7 +506,7 @@ TEST_CASE("Parser parseModifiesOrUsesVariables") {
         REQUIRE(ptr.get()->getType() == RelRefType::MODIFIESS);
 
         std::shared_ptr<Modifies> sharedPtr = std::dynamic_pointer_cast<Modifies>(ptr);
-        Modifies* mPtr = sharedPtr.get();
+        Modifies *mPtr = sharedPtr.get();
         REQUIRE(mPtr->modifiesStmt.isLineNo());
         REQUIRE(mPtr->modifiesStmt.getLineNo() == 3);
         REQUIRE(mPtr->modified.isVarName());
@@ -498,7 +516,8 @@ TEST_CASE("Parser parseModifiesOrUsesVariables") {
     SECTION("Invalid Modifies Rel Variables - Wildcard in first argument") {
         parser.lexer.text = "(_, \"x\")";
         REQUIRE_THROWS_MATCHES(parser.parseModifiesOrUsesVariables(queryObj, TokenType::MODIFIES),
-            exceptions::PqlSemanticException, Catch::Message(cannotBeWildcardMessage));
+                               exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
     }
 
     SECTION("Invalid Modifies Rel Variables - synonym does not belong to variable") {
@@ -506,7 +525,8 @@ TEST_CASE("Parser parseModifiesOrUsesVariables") {
         queryObj = {};
         queryObj.addDeclaration("x", DesignEntity::ASSIGN);
         REQUIRE_THROWS_MATCHES(parser.parseModifiesOrUsesVariables(queryObj, TokenType::MODIFIES),
-                               exceptions::PqlSemanticException, Catch::Message(cannotBeWildcardMessage));
+                               exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
     }
 
     SECTION("Valid Uses Rel Variables") {
@@ -515,7 +535,7 @@ TEST_CASE("Parser parseModifiesOrUsesVariables") {
         REQUIRE(ptr.get()->getType() == RelRefType::USESS);
 
         std::shared_ptr<Uses> sharedPtr = std::dynamic_pointer_cast<Uses>(ptr);
-        Uses* uPtr = sharedPtr.get();
+        Uses *uPtr = sharedPtr.get();
         REQUIRE(uPtr->useStmt.isLineNo());
         REQUIRE(uPtr->useStmt.getLineNo() == 3);
         REQUIRE(uPtr->used.isVarName());
@@ -525,9 +545,9 @@ TEST_CASE("Parser parseModifiesOrUsesVariables") {
     SECTION("Invalid Uses Rel Variables - Wildcard in first argument") {
         parser.lexer.text = "(_, \"x\")";
         REQUIRE_THROWS_MATCHES(parser.parseModifiesOrUsesVariables(queryObj, TokenType::USES),
-                               exceptions::PqlSemanticException, Catch::Message(cannotBeWildcardMessage));
+                               exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
     }
-
 }
 
 TEST_CASE("Parser parseRelRef") {
@@ -539,7 +559,7 @@ TEST_CASE("Parser parseRelRef") {
     REQUIRE(ptr.get()->getType() == RelRefType::USESS);
 
     std::shared_ptr<Uses> sharedPtr = std::dynamic_pointer_cast<Uses>(ptr);
-    Uses* uPtr = sharedPtr.get();
+    Uses *uPtr = sharedPtr.get();
     REQUIRE(uPtr->useStmt.isDeclaration());
     REQUIRE(uPtr->used.isWildcard());
 }

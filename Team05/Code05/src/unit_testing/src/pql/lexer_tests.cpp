@@ -1,7 +1,9 @@
 #include "pql/lexer.h"
 #include "catch.hpp"
 
-using namespace qps::parser;
+using qps::parser::Lexer;
+using qps::parser::Token;
+using qps::parser::TokenType;
 
 TEST_CASE("Lexer getText") {
     std::string testQuery = "assign a; variable v;\n Select a such that Uses (a, v) pattern a (v, _)";
@@ -9,6 +11,7 @@ TEST_CASE("Lexer getText") {
 
     REQUIRE(lexer.getText() == testQuery);
 }
+
 TEST_CASE("Lexer eatWhitespace") {
     Lexer lexer1("   ");
     lexer1.eatWhitespace();

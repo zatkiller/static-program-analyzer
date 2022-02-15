@@ -175,4 +175,4 @@ namespace qps::query {
     std::string Pattern::getExpression() {
         return expression;
     }
-}
+}  // namespace qps::query
