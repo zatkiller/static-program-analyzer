@@ -45,17 +45,7 @@ namespace qps::evaluator {
             return;
         }
         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> newTable;
-        if (std::unordered_set<PKBField, PKBFieldHash> *ptr = std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(
-                &r.res)) {
-            std::unordered_set<PKBField, PKBFieldHash> queryRes = *ptr;
-            for (auto r : queryRes) {
-                for (auto record : table) {
-                    std::vector<PKBField> newRecord = record;
-                    newRecord.push_back(r);
-                    newTable.insert(newRecord);
-                }
-            }
-        } else if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr =
+        if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr =
                 std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&r.res)) {
             std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes = *ptr;
             for (auto r : queryRes) {
@@ -67,8 +57,6 @@ namespace qps::evaluator {
                     newTable.insert(newRecord);
                 }
             }
-        } else {
-            return;
         }
         this->table = newTable;
     }
