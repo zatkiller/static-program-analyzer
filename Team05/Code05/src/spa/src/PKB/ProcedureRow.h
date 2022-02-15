@@ -19,6 +19,7 @@ public:
     */
     PROC_NAME getProcName() const;
     bool operator == (const ProcedureRow&) const;
+    bool operator < (const ProcedureRow& other) const;
 
 private:
     PROC_NAME procedureName;

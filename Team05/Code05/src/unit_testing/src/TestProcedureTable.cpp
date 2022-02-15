@@ -56,6 +56,6 @@ TEST_CASE("ProcedureTable getAllProcs") {
 
     table.insert(PKBField::createConcrete(PROC_NAME{ "main" }));
     table.insert(PKBField::createConcrete(PROC_NAME{ "foo" }));
-    expected = { PROC_NAME{"main"}, PROC_NAME{"foo"} };
+    expected = { PROC_NAME{"foo"}, PROC_NAME{"main"} };
     REQUIRE(expected == table.getAllProcs());
 }

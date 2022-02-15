@@ -78,6 +78,8 @@ struct PKBField {
         return nullptr;
     }
 
+    bool isValidConcrete(PKBEntityType type);
+
     bool operator == (const PKBField&) const;
 
 private:

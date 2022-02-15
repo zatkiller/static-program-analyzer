@@ -65,3 +65,20 @@ TEST_CASE("PKBField createDeclaration constant") {
     REQUIRE_THROWS_AS(field.statementType.value(), std::bad_optional_access);
     REQUIRE(field.getContent<CONST>() == nullptr);  // content is uninitialized
 }
+
+TEST_CASE("PKBField isValidConcrete") {
+    PKBField field = PKBField::createDeclaration(PKBEntityType::CONST);
+    REQUIRE_FALSE(field.isValidConcrete(PKBEntityType::CONST));
+
+    field = PKBField::createWildcard(PKBEntityType::CONST);
+    REQUIRE_FALSE(field.isValidConcrete(PKBEntityType::CONST));
+
+    field = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
+    REQUIRE(field.isValidConcrete(PKBEntityType::STATEMENT));
+
+    field = PKBField::createConcrete(STMT_LO{ 1, StatementType::All });
+    REQUIRE_FALSE(field.isValidConcrete(PKBEntityType::STATEMENT));
+
+    field = PKBField::createConcrete(STMT_LO{ 1 });
+    REQUIRE_FALSE(field.isValidConcrete(PKBEntityType::STATEMENT));
+}

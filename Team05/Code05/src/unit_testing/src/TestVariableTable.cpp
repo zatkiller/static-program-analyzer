@@ -32,8 +32,8 @@ TEST_CASE("VariableTable getAllVars") {
     std::vector<VAR_NAME> expected{};
     REQUIRE(expected == table.getAllVars());
 
-    table.insert("a");
     table.insert("b");
+    table.insert("a");
     expected = { VAR_NAME{"a"}, VAR_NAME{"b"} };
     REQUIRE(expected == table.getAllVars());
 }

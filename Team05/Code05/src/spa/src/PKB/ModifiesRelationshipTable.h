@@ -33,6 +33,9 @@ public:
     */
     void insert(PKBField entity1, PKBField entity2);
 
+    bool isInsertOrContainsValid(PKBField field1, PKBField field2);
+    bool isRetrieveValid(PKBField field1, PKBField field2);
+
     /**
     * Retrieves all RelationshipRows matching Modifies(field1, field2).
     *

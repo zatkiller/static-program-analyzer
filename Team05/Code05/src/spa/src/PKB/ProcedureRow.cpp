@@ -10,6 +10,10 @@ bool ProcedureRow::operator == (const ProcedureRow& row) const {
     return procedureName == row.procedureName;
 }
 
+bool ProcedureRow::operator < (const ProcedureRow& other) const {
+    return std::tie(procedureName) < std::tie(other.procedureName);
+}
+
 PROC_NAME ProcedureRow::getProcName() const {
     return procedureName;
 }

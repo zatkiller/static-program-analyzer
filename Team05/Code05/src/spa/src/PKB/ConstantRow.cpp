@@ -4,6 +4,10 @@ bool ConstantRow::operator == (const ConstantRow& other) const {
     return constant == other.constant;
 }
 
+bool ConstantRow::operator < (const ConstantRow& other) const {
+    return std::tie(constant) < std::tie(other.constant);
+}
+
 CONST ConstantRow::getConst() const {
     return constant;
 }

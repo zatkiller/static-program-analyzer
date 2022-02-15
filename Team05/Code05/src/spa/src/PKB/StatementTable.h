@@ -1,8 +1,10 @@
 #pragma once
 
 #include <stdio.h>
-#include <unordered_set>
+#include <set>
 #include <vector>
+#include <algorithm>
+#include <iterator>
 
 #include "PKBField.h"
 #include "StatementRow.h"
@@ -54,5 +56,5 @@ public:
     StatementType getStmtTypeOfLine(int statementNum);
 
 private:
-    std::unordered_set<StatementRow, StatementRowHash> rows;
+    std::set<StatementRow> rows;
 };
