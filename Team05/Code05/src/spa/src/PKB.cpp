@@ -11,6 +11,9 @@ PKB::PKB() {
     variableTable = std::make_unique<VariableTable>();
     procedureTable = std::make_unique<ProcedureTable>();
     modifiesTable = std::make_unique<ModifiesRelationshipTable>();
+    followsTable = std::make_unique<FollowsRelationshipTable>();
+    parentTable = std::make_unique<ParentRelationshipTable>();
+    usesTable = std::make_unique<UsesRelationshipTable>();
 }
 
 int PKB::setProcToAST(PROC p, TNode* r) {
@@ -36,6 +39,14 @@ void PKB::insertRelationship(PKBRelationship type, PKBField entity1, PKBField en
     case PKBRelationship::MODIFIES:
         modifiesTable->insert(entity1, entity2);
         break;
+    case PKBRelationship::FOLLOWS:
+        followsTable->insert(entity1, entity2);
+        break;
+    case PKBRelationship::PARENT:
+        parentTable->insert(entity1, entity2);
+        break;
+    case PKBRelationship::USES:
+        usesTable->insert(entity1, entity2);
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
     }
@@ -49,7 +60,14 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
     switch (rs) {
     case PKBRelationship::MODIFIES:
         return modifiesTable->contains(field1, field2);
-
+    case PKBRelationship::FOLLOWS:
+        return followsTable->contains(field1, field2);
+    case PKBRelationship::PARENT:
+        return parentTable->contains(field1, field2);
+    case PKBRelationship::USES:
+        return usesTable->contains(field1, field2);
+    case PKBRelationship::FOLLOWST:
+        return followsTable->containsT(field1, field2);
     default:
         Logger(Level::INFO) << "Checking for an invalid relationship table\n";
         return false;
@@ -59,19 +77,50 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
 // GET API
 
 PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationship rs) {
+    // TODO(teo-jun-xiong): collapse into a function
+    if (field1.fieldType == PKBFieldType::CONCRETE && field1.entityType == PKBEntityType::STATEMENT) {
+        auto content = field1.getContent<STMT_LO>();
+
+        if (!content->hasStatementType()) {
+            StatementType type = statementTable->getStmtTypeOfLine(content->statementNum);
+            field1.content = STMT_LO{ content->statementNum, type };
+        }
+    }
+
+    if (field2.fieldType == PKBFieldType::CONCRETE && field2.entityType == PKBEntityType::STATEMENT) {
+        auto content = field2.getContent<STMT_LO>();
+
+        if (!content->hasStatementType()) {
+            StatementType type = statementTable->getStmtTypeOfLine(content->statementNum);
+            field2.content = STMT_LO{ content->statementNum, type };
+        }
+    }
+
+    FieldRowResponse extracted;
+
     switch (rs) {
     case PKBRelationship::MODIFIES:
-    {
-        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> extracted =
-            modifiesTable->retrieve(field1, field2);
-        return extracted.size() != 0
-            ? PKBResponse{ true, Response{extracted} }
-        : PKBResponse{ false, Response{extracted} };
+        extracted = modifiesTable->retrieve(field1, field2);
         break;
-    }
+    case PKBRelationship::FOLLOWS:
+        extracted = followsTable->retrieve(field1, field2);
+        break;
+    case PKBRelationship::PARENT:
+        extracted = parentTable->retrieve(field1, field2);
+        break;
+    case PKBRelationship::USES:
+        extracted = usesTable->retrieve(field1, field2);
+        break;
+    case PKBRelationship::FOLLOWST:
+        extracted = followsTable->retrieveT(field1, field2);
+        break;
     default:
         throw "Invalid relationship type used!";
     }
+
+    return extracted.size() != 0
+        ? PKBResponse{ true, Response{extracted} }
+        : PKBResponse{ false, Response{extracted} };
 }
 
 PKBResponse PKB::getStatements() {

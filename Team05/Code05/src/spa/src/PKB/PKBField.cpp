@@ -15,11 +15,32 @@ PKBField PKBField::createWildcard(PKBEntityType entityType) {
 }
 
 PKBField PKBField::createDeclaration(PKBEntityType entityType) {
+    if (entityType == PKBEntityType::STATEMENT) {
+        throw std::invalid_argument(
+            "Use the overloaded createDeclarations(StatementType) to create a statement declaration");
+    }
+
     return PKBField{ PKBFieldType::DECLARATION, entityType };
 }
 
 PKBField PKBField::createDeclaration(StatementType statementType) {
     return PKBField{ PKBFieldType::DECLARATION, PKBEntityType::STATEMENT, statementType };
+}
+
+bool PKBField::isValidConcrete(PKBEntityType type) {
+    if (fieldType != PKBFieldType::CONCRETE) return false;
+    if (entityType != type) return false;
+    if (content.index() == 0) return false;
+
+    if (entityType == PKBEntityType::STATEMENT) {
+        if (content.index() != 1) return false;
+
+        STMT_LO* stmt = getContent<STMT_LO>();
+        if (!stmt->hasStatementType()) return false;
+        if (stmt->type.value() == StatementType::All) return false;
+    }
+
+    return true;
 }
 
 size_t PKBFieldHash::operator() (const PKBField& other) const {
