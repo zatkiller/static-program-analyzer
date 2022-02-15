@@ -15,7 +15,6 @@ bool StatementTable::contains(int statementNumber) {
 }
 
 void StatementTable::insert(StatementType type, int statementNumber) {
-    // table can't have 2 rows with the same statement number
     if (!contains(statementNumber)) {
         rows.insert(StatementRow(type, statementNumber));
     }
@@ -48,14 +47,6 @@ std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType type) {
 }
 
 StatementType StatementTable::getStmtTypeOfLine(int statementNum) {
-    /*for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-        STMT_LO stmt = iter->getStmt();
-        if (stmt.statementNum == statementNum && stmt.hasStatementType()) {
-            return stmt.type.value();
-        }
-    }
-    */
-
     std::vector<StatementRow> filtered;
     std::copy_if(begin(rows), end(rows), std::back_inserter(filtered), 
         [statementNum](StatementRow row) { return row.getStmt().statementNum == statementNum; });

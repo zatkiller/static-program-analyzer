@@ -44,8 +44,8 @@ public:
     *
     * @param field1 the first STMT_LO in a Follows(u,v) query wrapped in a PKBField
     * @param field2 the second STMT_LO in a Follows(u,v) query wrapped in a PKBField
-    * @return bool whether Follows(field1, field2) is in the graph
     * 
+    * @return bool whether Follows(field1, field2) is in the graph
     * @see PKBField
     */
     bool getContains(PKBField field1, PKBField field2);
@@ -55,8 +55,8 @@ public:
     *
     * @param field1 the first STMT_LO in a Follows*(u,v) query wrapped in a PKBField
     * @param field2 the second STMT_LO in a Follows*(u,v) query wrapped in a PKBField
-    * @return bool whether Follows*(field1, field2) is in the graph
     * 
+    * @return bool whether Follows*(field1, field2) is in the graph 
     * @see PKBField
     */
     bool getContainsT(PKBField field1, PKBField field2);
@@ -66,9 +66,9 @@ public:
     *
     * @param field1 the first STMT_LO in a Follows(u,v) query wrapped in a PKBField
     * @param field2 the second STMT_LO in a Follows(u,v) query wrapped in a PKBField
+    * 
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields
     * that satisfy Follows(field1, field2)
-    * 
     * @see PKBField
     */
     Result getFollows(PKBField field1, PKBField field2);
@@ -78,6 +78,7 @@ public:
     *
     * @param field1 the first STMT_LO in a Follows*(u,v) query wrapped in a PKBField
     * @param field2 the second STMT_LO in a Follows*(u,v) query wrapped in a PKBField
+    * 
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields
     * that satisfy Follows*(field1, field2)
     */
@@ -93,6 +94,7 @@ private:
     * 
     * @param field1 a concrete field to begin the traversal from
     * @param field2 a statement declaration
+    * 
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
     * second item in each pair satisfy the statement declaration.
     * @see PKBField
@@ -117,6 +119,7 @@ private:
     *
     * @param field1 a concrete field to begin the traversal from
     * @param field2 a statement declaration
+    * 
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
     * second item in each pair satisfy the statement declaration.
     * @see PKBField
@@ -141,8 +144,9 @@ private:
     *
     * Internally, iterates through the nodes in the graph calls traverseStart with each node.
     * 
-    * @param field1 a statement declaration
-    * @param field2 a statement declaration
+    * @param field1 the first statement declaration
+    * @param field2 the second statement declaration
+    * 
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
     * second item in each pair satisfy the statement declarations.
     * @see PKBField
@@ -156,8 +160,9 @@ private:
     *
     * Internally, iterates through the nodes in the graph calls traverseStart with each node.
     *
-    * @param field1 a statement declaration
-    * @param field2 a statement declaration
+    * @param field1 the first statement declaration
+    * @param field2 the second statement declaration
+    * 
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
     * second item in each pair satisfy the statement declarations.
     * @see PKBField

@@ -14,24 +14,24 @@ public:
 
     /**
     * Checks whether the ModifiesRelationshipTable contains a RelationshipRow representing 
-    * Modifies(entity1, entity2).
+    * Modifies(field1, field2).
     *
-    * @param entity1 the first program design entity in the Modifies relationship
-    * @param entity2 the second program design entity in the Modifies relationship
+    * @param field1 the first program design entity in the Modifies relationship
+    * @param field2 the second program design entity in the Modifies relationship
     *
     * @returns whether the relationship is present in the ModifiesRelationshipTable
     */
-    bool contains(PKBField entity1, PKBField entity2);
+    bool contains(PKBField field1, PKBField field2);
 
     /**
-    * Inserts a RelationshipRow representing Modifies(entity1, entity2) into the ModifiesRelationshipTable. 
+    * Inserts a RelationshipRow representing Modifies(field1, field2) into the ModifiesRelationshipTable. 
     * If the first entity is not a Statement or a Procedure, or if the second one is not a statement,
     * no inserts will be done.
     *
-    * @param entity1 the first program design entity in the Modifies relationship
-    * @param entity2 the second program design entity in the Modifies relationship
+    * @param field1 the first program design entity in the Modifies relationship
+    * @param field2 the second program design entity in the Modifies relationship
     */
-    void insert(PKBField entity1, PKBField entity2);
+    void insert(PKBField field1, PKBField field2);
 
     bool isInsertOrContainsValid(PKBField field1, PKBField field2);
     bool isRetrieveValid(PKBField field1, PKBField field2);

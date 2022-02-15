@@ -6,10 +6,10 @@
 ModifiesRelationshipTable::ModifiesRelationshipTable() : RelationshipTable{ PKBRelationship::MODIFIES } {};
 
 // to ensure that both parameters are valid for ModifiesS or ModifiesP for retrieve or contain
-bool ModifiesRelationshipTable::isRetrieveValid(PKBField entity1, PKBField entity2) {
-    return (entity1.entityType == PKBEntityType::PROCEDURE ||
-        entity1.entityType == PKBEntityType::STATEMENT) &&
-        (entity2.entityType == PKBEntityType::VARIABLE);
+bool ModifiesRelationshipTable::isRetrieveValid(PKBField field1, PKBField field2) {
+    return (field1.entityType == PKBEntityType::PROCEDURE ||
+        field1.entityType == PKBEntityType::STATEMENT) &&
+        (field2.entityType == PKBEntityType::VARIABLE);
 }
 
 bool ModifiesRelationshipTable::isInsertOrContainsValid(PKBField field1, PKBField field2) {
@@ -17,16 +17,16 @@ bool ModifiesRelationshipTable::isInsertOrContainsValid(PKBField field1, PKBFiel
         && field2.isValidConcrete(PKBEntityType::VARIABLE);
 }
 
-bool ModifiesRelationshipTable::contains(PKBField entity1, PKBField entity2) {
-    if (!isInsertOrContainsValid(entity1, entity2)) return false;
+bool ModifiesRelationshipTable::contains(PKBField field1, PKBField field2) {
+    if (!isInsertOrContainsValid(field1, field2)) return false;
 
-    return rows.count(RelationshipRow(entity1, entity2)) == 1;
+    return rows.count(RelationshipRow(field1, field2)) == 1;
 }
 
-void ModifiesRelationshipTable::insert(PKBField entity1, PKBField entity2) {
-    if (!isInsertOrContainsValid(entity1, entity2)) return;
+void ModifiesRelationshipTable::insert(PKBField field1, PKBField field2) {
+    if (!isInsertOrContainsValid(field1, field2)) return;
 
-    rows.insert(RelationshipRow(entity1, entity2));
+    rows.insert(RelationshipRow(field1, field2));
 }
 
 std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>
