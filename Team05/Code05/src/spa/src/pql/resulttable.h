@@ -82,7 +82,7 @@ public:
      * @param queryRes the query result from PKB
      * @param newTable store the correct result filtered from the original result table
      */
-    void twoSynInnerJoin(std::string syn1, std::string syn2,
+    void twoSynInnerJoinTwo(std::string syn1, std::string syn2,
                          std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
                          std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable);
 

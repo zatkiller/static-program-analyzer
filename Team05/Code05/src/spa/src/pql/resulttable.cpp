@@ -61,21 +61,6 @@ namespace qps::evaluator {
         this->table = newTable;
     }
 
-    void ResultTable::twoSynInnerJoin(std::string syn1, std::string syn2,
-            std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
-            std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
-        int firstMatch = getSynLocation(syn1);
-        int secondMatch = getSynLocation(syn2);
-        for (auto r : queryRes) {
-            for (auto record : table) {
-                if (r[0] == record[firstMatch] && r[1] == record[secondMatch]) {
-                    std::vector<PKBField> newRecord = record;
-                    newTable.insert(newRecord);
-                }
-            }
-        }
-    }
-
     void ResultTable::oneSynInnerJoin(std::string synName,
                                       std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
                                       std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
@@ -83,6 +68,21 @@ namespace qps::evaluator {
         for (auto r : queryRes) {
             for (auto record : table) {
                 if (r[0] == record[pos]) {
+                    std::vector<PKBField> newRecord = record;
+                    newTable.insert(newRecord);
+                }
+            }
+        }
+    }
+
+    void ResultTable::twoSynInnerJoinTwo(std::string syn1, std::string syn2,
+                                         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
+                                         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
+        int firstMatch = getSynLocation(syn1);
+        int secondMatch = getSynLocation(syn2);
+        for (auto r : queryRes) {
+            for (auto record : table) {
+                if (r[0] == record[firstMatch] && r[1] == record[secondMatch]) {
                     std::vector<PKBField> newRecord = record;
                     newTable.insert(newRecord);
                 }
@@ -121,7 +121,7 @@ namespace qps::evaluator {
             if (allSyn.size() == 1) {  // Only one synonym in the clause
                 oneSynInnerJoin(allSyn[0], queryRes, newTable);
             } else if (isFirst && isSecond) {  // Two synonyms all in table already
-                twoSynInnerJoin(allSyn[0], allSyn[1], queryRes, newTable);
+                twoSynInnerJoinTwo(allSyn[0], allSyn[1], queryRes, newTable);
             } else {  // Two synonyms in the clause, one is already in the table
                 twoSynInnerJoinOne(allSyn[0], allSyn[1], isFirst, queryRes, newTable);
             }
