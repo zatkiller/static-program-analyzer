@@ -46,6 +46,16 @@ public:
     Result getFollowsT(PKBField field1, PKBField field2);
 
     /**
+    * Gets all pairs of PKBFields that satisfy the provided Follows relationship.
+    *
+    * @param field1 the first field in the Follows query
+    * @param field2 the second field in the Follows query
+    * @return a Result encapsulating all pairs of PKBFields
+    *   that follow the provided relationship
+    */
+    Result getFollows(PKBField field1, PKBField field2);
+
+    /**
     * Checks if the relationship Follows*(field1, field2) is true.
     * 
     * @param field1 the first field in the Follows* query
@@ -54,11 +64,22 @@ public:
     */
     bool getContainsT(PKBField field1, PKBField field2);
 
+    /**
+    * Checks if the relationship Follows(field1, field2) is true.
+    *
+    * @param field1 the first field in the Follows query
+    * @param field2 the second field in the Follows query
+    * @return true if Follows(field1, field2) is true and false otherwise
+    */
+    bool getContains(PKBField field1, PKBField field2);
+
 private:
     std::map<STMT_LO, FollowsNode*> nodes;
-    Result traverseStart(PKBField field1, PKBField field2);
-    Result traverseEnd(PKBField field1, PKBField field2);
+    Result traverseStartT(PKBField field1, PKBField field2);
+    Result traverseEndT(PKBField field1, PKBField field2);
+    Result traverseAllT(StatementType type1, StatementType type2);
+    void traverseStartT(std::set<STMT_LO>* stmtSetPtr, StatementType type, FollowsNode* node);
+    void traverseEndT(std::set<STMT_LO>* stmtSetPtr, StatementType type, FollowsNode* node);
+
     Result traverseAll(StatementType type1, StatementType type2);
-    void traverseStart(std::set<STMT_LO>* stmtSetPtr, StatementType type, FollowsNode* node);
-    void traverseEnd(std::set<STMT_LO>* stmtSetPtr, StatementType type, FollowsNode* node);
 };

@@ -18,7 +18,7 @@
 //private:
 //    std::map<STMT_LO, EdgeSet> edges;
 //    std::map<STMT_LO, STMT_LO> reversedEdges;
-//    Result traverseStart(PKBField entity1, PKBField entity2);
-//    Result traverseEnd(PKBField entity1, PKBField entity2);
+//    Result traverseStartT(PKBField entity1, PKBField entity2);
+//    Result traverseEndT(PKBField entity1, PKBField entity2);
 //    // TODO(pattan): May need additional helper functions
 //};

@@ -28,25 +28,25 @@ TEST_CASE("FollowsRelationshipTable contains and insert") {
     REQUIRE_FALSE(table->contains(field1, field3));
 }
 
-TEST_CASE("FollowsRelationshipTable getSize") {
-    auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
-    PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
-    PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::If });
-    PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Print });
-    PKBField field4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::Print });
-
-    REQUIRE(table->getSize() == 0);
-
-    table->insert(field1, field2);
-    table->insert(field2, field3);
-
-    REQUIRE(table->getSize() == 2);
-
-    table->insert(field1, field2);
-    REQUIRE(table->getSize() == 2);
-
-    table->insert(field1, field4);
-}
+//TEST_CASE("FollowsRelationshipTable getSize") {
+//    auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
+//    PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
+//    PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::If });
+//    PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Print });
+//    PKBField field4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::Print });
+//
+//    REQUIRE(table->getSize() == 0);
+//
+//    table->insert(field1, field2);
+//    table->insert(field2, field3);
+//
+//    REQUIRE(table->getSize() == 2);
+//
+//    table->insert(field1, field2);
+//    REQUIRE(table->getSize() == 2);
+//
+//    table->insert(field1, field4);
+//}
 
 TEST_CASE("FollowsRelationshipTable retrieve") {
     auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
