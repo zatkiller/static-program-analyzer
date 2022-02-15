@@ -25,14 +25,14 @@ namespace qps::evaluator {
     void ResultTable::insert(PKBResponse r) {
         if (std::unordered_set<PKBField, PKBFieldHash> *ptr = std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(
                 &r.res)) {
-            for (auto r: *ptr) {
+            for (auto r : *ptr) {
                 std::vector<PKBField> newRecord;
                 newRecord.push_back(r);
                 table.insert(newRecord);
             }
-        } else if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr = std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(
-                &r.res)) {
-            for (auto r: *ptr) {
+        } else if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr =
+                std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&r.res)) {
+            for (auto r : *ptr) {
                 table.insert(r);
             }
         }
@@ -48,20 +48,20 @@ namespace qps::evaluator {
         if (std::unordered_set<PKBField, PKBFieldHash> *ptr = std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(
                 &r.res)) {
             std::unordered_set<PKBField, PKBFieldHash> queryRes = *ptr;
-            for (auto r: queryRes) {
-                for (auto record: table) {
+            for (auto r : queryRes) {
+                for (auto record : table) {
                     std::vector<PKBField> newRecord = record;
                     newRecord.push_back(r);
                     newTable.insert(newRecord);
                 }
             }
-        } else if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr = std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(
-                &r.res)) {
+        } else if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr =
+                std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&r.res)) {
             std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes = *ptr;
-            for (auto r: queryRes) {
-                for (auto record: table) {
+            for (auto r : queryRes) {
+                for (auto record : table) {
                     std::vector<PKBField> newRecord = record;
-                    for (auto field: r) {
+                    for (auto field : r) {
                         newRecord.push_back(field);
                     }
                     newTable.insert(newRecord);
@@ -78,8 +78,8 @@ namespace qps::evaluator {
             std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
         int firstMatch = getSynLocation(syn1);
         int secondMatch = getSynLocation(syn2);
-        for (auto r: queryRes) {
-            for (auto record: table) {
+        for (auto r : queryRes) {
+            for (auto record : table) {
                 if (r[0] == record[firstMatch] && r[1] == record[secondMatch]) {
                     std::vector<PKBField> newRecord = record;
                     newTable.insert(newRecord);
@@ -92,8 +92,8 @@ namespace qps::evaluator {
                                       std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
                                       std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
         int pos = getSynLocation(synName);
-        for (auto r: queryRes) {
-            for (auto record: table) {
+        for (auto r : queryRes) {
+            for (auto record : table) {
                 if (r[0] == record[pos]) {
                     std::vector<PKBField> newRecord = record;
                     newTable.insert(newRecord);
@@ -110,11 +110,11 @@ namespace qps::evaluator {
         int mPos = isFirst ? 0 : 1;
         int aPos = isFirst ? 1 : 0;
         int matchedPos = getSynLocation(matched);
-        for (auto r: queryRes) {
-            for (auto record: table) {
+        for (auto r : queryRes) {
+            for (auto record : table) {
                 if ((r[mPos] == record[matchedPos])) {
                     std::vector<PKBField> newRecord = record;
-                    newRecord.push_back(r[aPos]);  //ensure new field is added at last
+                    newRecord.push_back(r[aPos]);
                     newTable.insert(newRecord);
                 }
             }
@@ -126,15 +126,15 @@ namespace qps::evaluator {
             return;
         }
         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> newTable;
-        if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr = std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(
-                &r.res)) {
+        if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr =
+                std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&r.res)) {
             std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes = *ptr;
-            // two synonyms all in table already
-            if (isFirst && isSecond) {
-                twoSynInnerJoin(allSyn[0], allSyn[1], queryRes, newTable);
-            } else if (allSyn.size() == 1) {
+
+            if (allSyn.size() == 1) {  // Only one synonym in the clause
                 oneSynInnerJoin(allSyn[0], queryRes, newTable);
-            } else { //one synonym in the tabel
+            } else if (isFirst && isSecond) {  // Two synonyms all in table already
+                twoSynInnerJoin(allSyn[0], allSyn[1], queryRes, newTable);
+            } else {  // Two synonyms in the clause, one is already in the table
                 twoSynInnerJoinOne(allSyn[0], allSyn[1], isFirst, queryRes, newTable);
             }
         }
@@ -167,6 +167,5 @@ namespace qps::evaluator {
                 crossJoin(response);
             }
         }
-
     }
-}
+}  // namespace qps::evaluator

@@ -19,20 +19,20 @@ namespace qps::evaluator {
         return res;
     }
 
-    PKBResponse Evaluator::getAll(DesignEntity type) {
+    PKBResponse Evaluator::getAll(query::DesignEntity type) {
         PKBResponse result;
 
         switch (type) {
-            case DesignEntity::PROCEDURE:
+            case query::DesignEntity::PROCEDURE:
                 result = pkb->getProcedures();
                 break;
-            case DesignEntity::CONSTANT:
+            case query::DesignEntity::CONSTANT:
                 result = pkb->getConstants();
                 break;
-            case DesignEntity::VARIABLE:
+            case query::DesignEntity::VARIABLE:
                 result = pkb->getVariables();
                 break;
-            case DesignEntity::STMT:
+            case query::DesignEntity::STMT:
                 result = pkb->getStatements();
                 break;
             default:
@@ -42,28 +42,28 @@ namespace qps::evaluator {
         return result;
     }
 
-    void Evaluator::processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses,
-                                    std::vector<std::shared_ptr<RelRef>> &noSyn,
-                                    std::vector<std::shared_ptr<RelRef>> &hasSyn) {
+    void Evaluator::processSuchthat(std::vector<std::shared_ptr<query::RelRef>> clauses,
+                                    std::vector<std::shared_ptr<query::RelRef>> &noSyn,
+                                    std::vector<std::shared_ptr<query::RelRef>> &hasSyn) {
         for (auto r : clauses) {
-            RelRef *relRefPtr = r.get();
-            if (relRefPtr->getType() == RelRefType::MODIFIESS) {
-                Modifies *mPtr = dynamic_cast<Modifies *>(relRefPtr);
+            query::RelRef *relRefPtr = r.get();
+            if (relRefPtr->getType() == query::RelRefType::MODIFIESS) {
+                query::Modifies *mPtr = dynamic_cast<query::Modifies *>(relRefPtr);
                 processSuchthatRelRef(r, mPtr->modifiesStmt, mPtr->modified, noSyn, hasSyn);
-            } else if (relRefPtr->getType() == RelRefType::USESS) {
-                Uses *uPtr = dynamic_cast<Uses *>(relRefPtr);
+            } else if (relRefPtr->getType() == query::RelRefType::USESS) {
+                query::Uses *uPtr = dynamic_cast<query::Uses *>(relRefPtr);
                 processSuchthatRelRef(r, uPtr->useStmt, uPtr->used, noSyn, hasSyn);
-            } else if (relRefPtr->getType() == RelRefType::FOLLOWS) {
-                Follows *fPtr = dynamic_cast<Follows *>(relRefPtr);
+            } else if (relRefPtr->getType() == query::RelRefType::FOLLOWS) {
+                query::Follows *fPtr = dynamic_cast<query::Follows *>(relRefPtr);
                 processSuchthatRelRef(r, fPtr->follower, fPtr->followed, noSyn, hasSyn);
-            } else if (relRefPtr->getType() == RelRefType::FOLLOWST) {
-                FollowsT *ftPtr = dynamic_cast<FollowsT *>(relRefPtr);
+            } else if (relRefPtr->getType() == query::RelRefType::FOLLOWST) {
+                query::FollowsT *ftPtr = dynamic_cast<query::FollowsT *>(relRefPtr);
                 processSuchthatRelRef(r, ftPtr->follower, ftPtr->transitiveFollowed, noSyn, hasSyn);
-            } else if (relRefPtr->getType() == RelRefType::PARENT) {
-                Parent *pPtr = dynamic_cast<Parent *>(relRefPtr);
+            } else if (relRefPtr->getType() == query::RelRefType::PARENT) {
+                query::Parent *pPtr = dynamic_cast<query::Parent *>(relRefPtr);
                 processSuchthatRelRef(r, pPtr->parent, pPtr->child, noSyn, hasSyn);
-            } else if (relRefPtr->getType() == RelRefType::PARENTT) {
-                ParentT *ptPtr = dynamic_cast<ParentT *>(relRefPtr);
+            } else if (relRefPtr->getType() == query::RelRefType::PARENTT) {
+                query::ParentT *ptPtr = dynamic_cast<query::ParentT *>(relRefPtr);
                 processSuchthatRelRef(r, ptPtr->parent, ptPtr->transitiveChild, noSyn, hasSyn);
             }
         }
@@ -84,19 +84,19 @@ namespace qps::evaluator {
         return listResult;
     }
 
-    std::list<std::string> Evaluator::evaluate(Query query) {
+    std::list<std::string> Evaluator::evaluate(query::Query query) {
         // std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
         std::vector<std::string> variable = query.getVariable();
-        std::vector<std::shared_ptr<RelRef>> suchthat = query.getSuchthat();
-        std::vector<std::shared_ptr<RelRef>> noSyn;
-        std::vector<std::shared_ptr<RelRef>> hasSyn;
-        std::vector<Pattern> pattern = query.getPattern();
+        std::vector<std::shared_ptr<query::RelRef>> suchthat = query.getSuchthat();
+        std::vector<std::shared_ptr<query::RelRef>> noSyn;
+        std::vector<std::shared_ptr<query::RelRef>> hasSyn;
+        std::vector<query::Pattern> pattern = query.getPattern();
 
-        DesignEntity returnType = query.getDeclarationDesignEntity(variable[0]);
+        query::DesignEntity returnType = query.getDeclarationDesignEntity(variable[0]);
         // TO DO: replace int with PKBField
         ResultTable resultTable;
         ResultTable &tableRef = resultTable;
-        Query &queryRef = query;
+        query::Query &queryRef = query;
 
 
         if (!suchthat.empty()) {

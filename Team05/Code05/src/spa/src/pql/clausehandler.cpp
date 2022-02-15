@@ -1,25 +1,25 @@
 #include "clausehandler.h"
 
 namespace qps::evaluator {
-    StatementType ClauseHandler::getStatementType(DesignEntity d) {
-        if (d == DesignEntity::STMT) {
+    StatementType ClauseHandler::getStatementType(query::DesignEntity d) {
+        if (d == query::DesignEntity::STMT) {
             return StatementType::Statement;
-        } else if (d == DesignEntity::ASSIGN) {
+        } else if (d == query::DesignEntity::ASSIGN) {
             return StatementType::Assignment;
-        } else if (d == DesignEntity::WHILE) {
+        } else if (d == query::DesignEntity::WHILE) {
             return StatementType::While;
-        } else if (d == DesignEntity::IF) {
+        } else if (d == query::DesignEntity::IF) {
             return StatementType::If;
-        } else if (d == DesignEntity::READ) {
+        } else if (d == query::DesignEntity::READ) {
             return StatementType::Read;
-        } else if (d == DesignEntity::PRINT) {
+        } else if (d == query::DesignEntity::PRINT) {
             return StatementType::Print;
-        } else if (d == DesignEntity::CALL) {
+        } else if (d == query::DesignEntity::CALL) {
             return StatementType::Call;
         }
     }
 
-    PKBField ClauseHandler::wrapStmtRef(StmtRef stmtRef) {
+    PKBField ClauseHandler::wrapStmtRef(query::StmtRef stmtRef) {
         PKBField stmtField;
         if (stmtRef.isLineNo()) {
             stmtField = PKBField::createConcrete(STMT_LO{stmtRef.getLineNo()});
@@ -32,7 +32,7 @@ namespace qps::evaluator {
         return stmtField;
     }
 
-    PKBField ClauseHandler::wrapEntRef(EntRef entRef) {
+    PKBField ClauseHandler::wrapEntRef(query::EntRef entRef) {
         PKBField entField;
         if (entRef.isVarName()) {
             entField = PKBField::createConcrete(VAR_NAME{entRef.getVariableName()});
@@ -44,67 +44,67 @@ namespace qps::evaluator {
         return entField;
     }
 
-    void ClauseHandler::handleSynClauses(std::vector<std::shared_ptr<RelRef>> clauses) {
-        for (auto c: clauses) {
-            RelRef *relRefPtr = c.get();
-            RelRefType type = relRefPtr->getType();
-            if (type == RelRefType::MODIFIESS) {
-                evaluateRelationships(dynamic_cast<Modifies *>(relRefPtr), &Modifies::modifiesStmt,
-                                      &Modifies::modified, PKBRelationship::MODIFIES);
-            } else if (type == RelRefType::USESS) {
-                evaluateRelationships(dynamic_cast<Uses *>(relRefPtr), &Uses::useStmt,
-                                      &Uses::used, PKBRelationship::USES);
-            } else if (type == RelRefType::FOLLOWS) {
-                evaluateRelationships(dynamic_cast<Follows *>(relRefPtr), &Follows::follower,
-                                      &Follows::followed, PKBRelationship::FOLLOWS);
-            } else if (type == RelRefType::FOLLOWST) {
-                evaluateRelationships(dynamic_cast<FollowsT *>(relRefPtr), &FollowsT::follower,
-                                      &FollowsT::transitiveFollowed, PKBRelationship::FOLLOWST);
-            } else if (type == RelRefType::PARENT) {
-                evaluateRelationships(dynamic_cast<Parent *>(relRefPtr), &Parent::parent,
-                                      &Parent::child, PKBRelationship::PARENT);
-            } else if (type == RelRefType::PARENTT) {
-                evaluateRelationships(dynamic_cast<ParentT *>(relRefPtr), &ParentT::parent,
-                                      &ParentT::transitiveChild, PKBRelationship::PARENTT);
+    void ClauseHandler::handleSynClauses(std::vector<std::shared_ptr<query::RelRef>> clauses) {
+        for (auto c : clauses) {
+            query::RelRef *relRefPtr = c.get();
+            query::RelRefType type = relRefPtr->getType();
+            if (type == query::RelRefType::MODIFIESS) {
+                evaluateRelationships(dynamic_cast<query::Modifies *>(relRefPtr), &query::Modifies::modifiesStmt,
+                                      &query::Modifies::modified, PKBRelationship::MODIFIES);
+            } else if (type == query::RelRefType::USESS) {
+                evaluateRelationships(dynamic_cast<query::Uses *>(relRefPtr), &query::Uses::useStmt,
+                                      &query::Uses::used, PKBRelationship::USES);
+            } else if (type == query::RelRefType::FOLLOWS) {
+                evaluateRelationships(dynamic_cast<query::Follows *>(relRefPtr), &query::Follows::follower,
+                                      &query::Follows::followed, PKBRelationship::FOLLOWS);
+            } else if (type == query::RelRefType::FOLLOWST) {
+                evaluateRelationships(dynamic_cast<query::FollowsT *>(relRefPtr), &query::FollowsT::follower,
+                                      &query::FollowsT::transitiveFollowed, PKBRelationship::FOLLOWST);
+            } else if (type == query::RelRefType::PARENT) {
+                evaluateRelationships(dynamic_cast<query::Parent *>(relRefPtr), &query::Parent::parent,
+                                      &query::Parent::child, PKBRelationship::PARENT);
+            } else if (type == query::RelRefType::PARENTT) {
+                evaluateRelationships(dynamic_cast<query::ParentT *>(relRefPtr), &query::ParentT::parent,
+                                      &query::ParentT::transitiveChild, PKBRelationship::PARENTT);
             }
         }
     }
 
-    bool ClauseHandler::handleNoSynClauses(std::vector<std::shared_ptr<RelRef>> noSynClauses) {
-        for (auto clause: noSynClauses) {
-            RelRef *relRefPtr = clause.get();
-            if (relRefPtr->getType() == RelRefType::MODIFIESS) {
-                Modifies *mPtr = dynamic_cast<Modifies *>(relRefPtr);
-                if (!evaluateNoSynRelRef(PKBRelationship::MODIFIES, mPtr, &Modifies::modifiesStmt,
-                                         &Modifies::modified))
+    bool ClauseHandler::handleNoSynClauses(std::vector<std::shared_ptr<query::RelRef>> noSynClauses) {
+        for (auto clause : noSynClauses) {
+            query::RelRef *relRefPtr = clause.get();
+            if (relRefPtr->getType() == query::RelRefType::MODIFIESS) {
+                query::Modifies *mPtr = dynamic_cast<query::Modifies *>(relRefPtr);
+                if (!evaluateNoSynRelRef(PKBRelationship::MODIFIES, mPtr, &query::Modifies::modifiesStmt,
+                                         &query::Modifies::modified))
                     return false;
-            } else if (relRefPtr->getType() == RelRefType::USESS) {
-                Uses *uPtr = dynamic_cast<Uses *>(relRefPtr);
-                if (!evaluateNoSynRelRef(PKBRelationship::USES, uPtr, &Uses::useStmt,
-                                         &Uses::used))
+            } else if (relRefPtr->getType() == query::RelRefType::USESS) {
+                query::Uses *uPtr = dynamic_cast<query::Uses *>(relRefPtr);
+                if (!evaluateNoSynRelRef(PKBRelationship::USES, uPtr, &query::Uses::useStmt,
+                                         &query::Uses::used))
                     return false;
-            } else if (relRefPtr->getType() == RelRefType::FOLLOWS) {
-                Follows *fPtr = dynamic_cast<Follows *>(relRefPtr);
-                if (!evaluateNoSynRelRef(PKBRelationship::FOLLOWS, fPtr, &Follows::follower,
-                                         &Follows::followed))
+            } else if (relRefPtr->getType() == query::RelRefType::FOLLOWS) {
+                query::Follows *fPtr = dynamic_cast<query::Follows *>(relRefPtr);
+                if (!evaluateNoSynRelRef(PKBRelationship::FOLLOWS, fPtr, &query::Follows::follower,
+                                         &query::Follows::followed))
                     return false;
-            } else if (relRefPtr->getType() == RelRefType::FOLLOWST) {
-                FollowsT *ftPtr = dynamic_cast<FollowsT *>(relRefPtr);
-                if (!evaluateNoSynRelRef(PKBRelationship::FOLLOWST, ftPtr, &FollowsT::follower,
-                                         &FollowsT::transitiveFollowed))
+            } else if (relRefPtr->getType() == query::RelRefType::FOLLOWST) {
+                query::FollowsT *ftPtr = dynamic_cast<query::FollowsT *>(relRefPtr);
+                if (!evaluateNoSynRelRef(PKBRelationship::FOLLOWST, ftPtr, &query::FollowsT::follower,
+                                         &query::FollowsT::transitiveFollowed))
                     return false;
-            } else if (relRefPtr->getType() == RelRefType::PARENT) {
-                Parent *pPtr = dynamic_cast<Parent *>(relRefPtr);
-                if (!evaluateNoSynRelRef(PKBRelationship::PARENT, pPtr, &Parent::parent,
-                                         &Parent::child))
+            } else if (relRefPtr->getType() == query::RelRefType::PARENT) {
+                query::Parent *pPtr = dynamic_cast<query::Parent *>(relRefPtr);
+                if (!evaluateNoSynRelRef(PKBRelationship::PARENT, pPtr, &query::Parent::parent,
+                                         &query::Parent::child))
                     return false;
-            } else if (relRefPtr->getType() == RelRefType::PARENTT) {
-                ParentT *ptPtr = dynamic_cast<ParentT *>(relRefPtr);
-                if (!evaluateNoSynRelRef(PKBRelationship::PARENTT, ptPtr, &ParentT::parent,
-                                         &ParentT::transitiveChild))
+            } else if (relRefPtr->getType() == query::RelRefType::PARENTT) {
+                query::ParentT *ptPtr = dynamic_cast<query::ParentT *>(relRefPtr);
+                if (!evaluateNoSynRelRef(PKBRelationship::PARENTT, ptPtr, &query::ParentT::parent,
+                                         &query::ParentT::transitiveChild))
                     return false;
             }
         }
         return true;
     }
-}
+}  // namespace qps::evaluator
