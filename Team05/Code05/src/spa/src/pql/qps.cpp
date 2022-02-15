@@ -14,4 +14,4 @@ namespace qps {
         qps::evaluator::Evaluator evaluator(pkbPtr);
         results = evaluator.evaluate(query);
     }
-}
+}  // namespace qps

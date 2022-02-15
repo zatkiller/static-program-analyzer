@@ -48,7 +48,8 @@ namespace qps::evaluator {
 
     //classify the clauses into has Synonym and without Synonym
     void
-    Evaluator::processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, std::vector<std::shared_ptr<RelRef>> &noSyn,
+    Evaluator::processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses,
+                               std::vector<std::shared_ptr<RelRef>> &noSyn,
                                std::vector<std::shared_ptr<RelRef>> &hasSyn) {
         for (auto r: clauses) {
             RelRef *relRefPtr = r.get();
