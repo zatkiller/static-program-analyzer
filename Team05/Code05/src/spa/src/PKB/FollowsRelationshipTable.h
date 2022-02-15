@@ -61,8 +61,8 @@ public:
     /**
     * Checks if the two PKBFields provided can be inserted into the table
     */
-    bool isInsertValid(PKBField field1, PKBField field2);
-    bool isContainsOrRetrieveValid(PKBField field1, PKBField field2);
+    bool isInsertOrContainsValid(PKBField field1, PKBField field2);
+    bool isRetrieveValid(PKBField field1, PKBField field2);
 
 
 private:
