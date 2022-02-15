@@ -42,12 +42,10 @@ namespace qps::evaluator {
         return result;
     }
 
-
-    //classify the clauses into has Synonym and without Synonym
-    void
-    Evaluator::processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses, std::vector<std::shared_ptr<RelRef>> &noSyn,
-                               std::vector<std::shared_ptr<RelRef>> &hasSyn) {
-        for (auto r: clauses) {
+    void Evaluator::processSuchthat(std::vector<std::shared_ptr<RelRef>> clauses,
+                                    std::vector<std::shared_ptr<RelRef>> &noSyn,
+                                    std::vector<std::shared_ptr<RelRef>> &hasSyn) {
+        for (auto r : clauses) {
             RelRef *relRefPtr = r.get();
             if (relRefPtr->getType() == RelRefType::MODIFIESS) {
                 Modifies *mPtr = dynamic_cast<Modifies *>(relRefPtr);
@@ -69,7 +67,6 @@ namespace qps::evaluator {
                 processSuchthatRelRef(r, ptPtr->parent, ptPtr->transitiveChild, noSyn, hasSyn);
             }
         }
-
     }
 
 
@@ -80,7 +77,7 @@ namespace qps::evaluator {
         }
         int synPos = table.getSynLocation(variable);
         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> resultTable = table.getResult();
-        for (auto field: resultTable) {
+        for (auto field : resultTable) {
             listResult.push_back(PKBFieldToString(field[synPos]));
         }
 
@@ -109,7 +106,7 @@ namespace qps::evaluator {
             handler.handleSynClauses(hasSyn);
         }
 
-        //after process suchthat and pattern if select variable not in result table, add all
+        // After process suchthat and pattern if select variable not in result table, add all
         if (suchthat.empty() && pattern.empty() || !tableRef.synExists(variable[0])) {
             PKBResponse queryResult = getAll(returnType);
             std::vector<std::string> synonyms{variable[0]};
@@ -117,7 +114,5 @@ namespace qps::evaluator {
         }
 
         return getListOfResult(tableRef, variable[0]);
-
     }
-
-}
+}  // namespace qps::evaluator
