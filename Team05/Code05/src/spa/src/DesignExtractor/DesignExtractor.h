@@ -8,6 +8,8 @@
 #include "DesignExtractor/EntityExtractor/StatementExtractor.h"
 #include "DesignExtractor/EntityExtractor/VariableExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/FollowsExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/ParentExtractor.h"
 
 
 class DesignExtractor {
@@ -19,6 +21,8 @@ public:
         extractors.push_back(std::make_shared<StatementExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<VariableExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<ModifiesExtractor>(pkbStrategy));
+        extractors.push_back(std::make_shared<FollowsExtractor>(pkbStrategy));
+        extractors.push_back(std::make_shared<ParentExtractor>(pkbStrategy));
     };
 
     void extract(AST::ASTNode* ast) {
