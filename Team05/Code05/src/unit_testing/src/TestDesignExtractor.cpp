@@ -267,13 +267,10 @@ namespace AST {
         TEST_LOG << "Testing Assign Pattern matcher";
 
         // only support _ or string, treat synonyms as _.
-        auto extractAssign = [](AST::ASTNode *ast, std::string s1, std::string s2){
+        auto extractAssignHelper = [](AST::ASTNode *ast, std::string s1, std::string s2){
             auto field1 = s1 == "_" ? std::nullopt : std::make_optional<>(s1);
             auto field2 = s2 == "_" ? std::nullopt : std::make_optional<>(s2);
-
-            auto ape = std::make_shared<AssignmentPatternExtractor>(field1, field2);
-            ast->accept(ape);
-            return ape->nodes;
+            return extractAssign(ast, field1, field2);
         };
 
         // assignment: z = 1 + x - 2 + y
@@ -293,12 +290,12 @@ namespace AST {
                 )
             );
 
-            REQUIRE(extractAssign(ast.get(), "z", "_").size() == 1);
-            REQUIRE(extractAssign(ast.get(), "_", "y").size() == 1);
-            REQUIRE(extractAssign(ast.get(), "_", "x-1").size() == 0);
-            REQUIRE(extractAssign(ast.get(), "_", "1 +   x - 2 + y").size() == 1);
-            REQUIRE(extractAssign(ast.get(), "_", "(1 + x) - 2 + y").size() == 1);
-            REQUIRE(extractAssign(ast.get(), "_", "(1 + x) - 2 + y + 1").size() == 0);
+            REQUIRE(extractAssignHelper(ast.get(), "z", "_").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "y").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "x-1").size() == 0);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "1 +   x - 2 + y").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "(1 + x) - 2 + y").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "(1 + x) - 2 + y + 1").size() == 0);
         }
 
         // assignment: x = v + x * (y + z) * t
@@ -325,14 +322,14 @@ namespace AST {
                 )
             );
 
-            REQUIRE(extractAssign(ast.get(), "x", "_").size() == 1);
-            REQUIRE(extractAssign(ast.get(), "x", "v").size() == 1);
-            REQUIRE(extractAssign(ast.get(), "_", "v").size() == 1);
-            REQUIRE(extractAssign(ast.get(), "_", "v+x").size() == 0);
-            REQUIRE(extractAssign(ast.get(), "_", "v + x * (y + z) * t").size() == 1);
-            REQUIRE(extractAssign(ast.get(), "_", "y + z").size() == 1);
-            REQUIRE(extractAssign(ast.get(), "_", "(y + z) * t").size() == 0);
-            REQUIRE(extractAssign(ast.get(), "_", "x * (y + z)").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "x", "_").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "x", "v").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "v").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "v+x").size() == 0);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "v + x * (y + z) * t").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "y + z").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "(y + z) * t").size() == 0);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "x * (y + z)").size() == 1);
         }
     }
 
