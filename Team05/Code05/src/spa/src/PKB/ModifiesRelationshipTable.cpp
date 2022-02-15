@@ -5,31 +5,36 @@
 
 ModifiesRelationshipTable::ModifiesRelationshipTable() : RelationshipTable{ PKBRelationship::MODIFIES } {};
 
-// to ensure that both parameters are valid for ModifiesS or ModifiesP
-bool arePKBFieldsValid(PKBField entity1, PKBField entity2) {
+// to ensure that both parameters are valid for ModifiesS or ModifiesP for retrieve or contain
+bool ModifiesRelationshipTable::isContainsOrRetrieveValid(PKBField entity1, PKBField entity2) {
     return (entity1.entityType == PKBEntityType::PROCEDURE ||
         entity1.entityType == PKBEntityType::STATEMENT) &&
         (entity2.entityType == PKBEntityType::VARIABLE);
 }
 
+bool ModifiesRelationshipTable::isInsertValid(PKBField field1, PKBField field2) {
+    return (field1.isValidConcrete(PKBEntityType::STATEMENT) || field1.isValidConcrete(PKBEntityType::PROCEDURE))
+        && field2.isValidConcrete(PKBEntityType::VARIABLE);
+}
+
 bool ModifiesRelationshipTable::contains(PKBField entity1, PKBField entity2) {
-    if (!arePKBFieldsValid(entity1, entity2)) return false;
+    if (!isContainsOrRetrieveValid(entity1, entity2)) return false;
 
     return rows.count(RelationshipRow(entity1, entity2)) == 1;
 }
 
 void ModifiesRelationshipTable::insert(PKBField entity1, PKBField entity2) {
-    if (!arePKBFieldsValid(entity1, entity2)) return;
+    if (!isInsertValid(entity1, entity2)) return;
 
     rows.insert(RelationshipRow(entity1, entity2));
 }
 
-std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> 
+std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>
 ModifiesRelationshipTable::retrieve(PKBField field1, PKBField field2) {
     std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> res;
-    if (!arePKBFieldsValid(field1, field2)) return res;
+    if (!isContainsOrRetrieveValid(field1, field2)) return res;
 
-    if (!(field1.fieldType == PKBFieldType::CONCRETE) && 
+    if (!(field1.fieldType == PKBFieldType::CONCRETE) &&
         !(field2.fieldType == PKBFieldType::CONCRETE)) {
         for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
             std::vector<PKBField> temp;
@@ -90,3 +95,4 @@ ModifiesRelationshipTable::retrieve(PKBField field1, PKBField field2) {
 
     return res;
 }
+

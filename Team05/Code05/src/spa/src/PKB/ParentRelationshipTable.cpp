@@ -6,6 +6,11 @@ ParentRelationshipTable::ParentRelationshipTable() : RelationshipTable{ PKBRelat
 //     parentGraph = std::make_unique<ParentGraph>();
 // };
 
+bool ParentRelationshipTable::isContainsOrRetrieveValid(PKBField entity1, PKBField entity2) {
+    return entity1.entityType == PKBEntityType::STATEMENT &&
+        entity2.entityType == PKBEntityType::STATEMENT;
+}
+
 bool ParentRelationshipTable::contains(PKBField entity1, PKBField entity2) {
     bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT &&
         entity2.entityType == PKBEntityType::STATEMENT;
@@ -157,3 +162,7 @@ bool ParentRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
 // FieldRowResponse ParentRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
 //
 // }
+
+bool ParentRelationshipTable::isInsertValid(PKBField field1, PKBField field2) {
+    return field1.isValidConcrete(PKBEntityType::STATEMENT) && field2.isValidConcrete(PKBEntityType::STATEMENT);
+}

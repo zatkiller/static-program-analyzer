@@ -6,6 +6,11 @@ FollowsRelationshipTable::FollowsRelationshipTable() : TransitiveRelationshipTab
     followsGraph = std::make_unique<FollowsGraph>();
 };
 
+bool FollowsRelationshipTable::isContainsOrRetrieveValid(PKBField entity1, PKBField entity2) {
+    return entity1.entityType == PKBEntityType::STATEMENT &&
+        entity2.entityType == PKBEntityType::STATEMENT;
+}
+
 bool FollowsRelationshipTable::contains(PKBField entity1, PKBField entity2) {
     bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT &&
         entity2.entityType == entity1.entityType;
@@ -183,4 +188,8 @@ FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField 
     }
 
     return followsGraph->getFollowsT(entity1, entity2);
+}
+
+bool FollowsRelationshipTable::isInsertValid(PKBField field1, PKBField field2) {
+    return field1.isValidConcrete(PKBEntityType::STATEMENT) && field2.isValidConcrete(PKBEntityType::STATEMENT);
 }

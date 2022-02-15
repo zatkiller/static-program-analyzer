@@ -11,3 +11,6 @@ PKBRelationship RelationshipTable::getType() {
 int RelationshipTable::getSize() {
     return rows.size();
 }
+
+
+

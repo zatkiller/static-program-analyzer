@@ -16,6 +16,8 @@ public:
     void insert(PKBField entity1, PKBField entity2);
     FieldRowResponse retrieve(PKBField entity1, PKBField entity2);
     bool containsT(PKBField entity1, PKBField entity2);
+    bool isInsertValid(PKBField field1, PKBField field2);
+    bool isContainsOrRetrieveValid(PKBField field1, PKBField field2);
 
     // TODO(Patrick): implement retrieveT with graphs
     // FieldRowResponse retrieveT(PKBField entity1, PKBField entity2);
