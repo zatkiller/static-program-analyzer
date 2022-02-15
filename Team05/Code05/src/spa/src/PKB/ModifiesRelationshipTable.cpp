@@ -36,59 +36,43 @@ ModifiesRelationshipTable::retrieve(PKBField field1, PKBField field2) {
 
     if (!(field1.fieldType == PKBFieldType::CONCRETE) &&
         !(field2.fieldType == PKBFieldType::CONCRETE)) {
-        for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-            std::vector<PKBField> temp;
-
-            RelationshipRow current = *iter;
+        for (auto row : rows) {
+            RelationshipRow current = row;
             PKBField first = current.getFirst();
             PKBField second = current.getSecond();
 
             if (first.entityType == field1.entityType && second.entityType == field2.entityType) {
-                temp.push_back(first);
-                temp.push_back(second);
-                res.insert(temp);
+                res.insert(std::vector<PKBField>{first, second});
             }
         }
     } else if (field1.fieldType == PKBFieldType::CONCRETE && !(field2.fieldType == PKBFieldType::CONCRETE)) {
-        for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-            std::vector<PKBField> temp;
-
-            RelationshipRow current = *iter;
+        for (auto row : rows) {
+            RelationshipRow current = row;
             PKBField first = current.getFirst();
             PKBField second = current.getSecond();
 
             if (first == field1 && second.entityType == field2.entityType) {
-                temp.push_back(first);
-                temp.push_back(second);
-                res.insert(temp);
+                res.insert(std::vector<PKBField>{first, second});
             }
         }
     } else if (!(field1.fieldType == PKBFieldType::CONCRETE) && field2.fieldType == PKBFieldType::CONCRETE) {
-        for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-            std::vector<PKBField> temp;
-
-            RelationshipRow current = *iter;
+        for (auto row : rows) {
+            RelationshipRow current = row;
             PKBField first = current.getFirst();
             PKBField second = current.getSecond();
 
             if (first.entityType == field1.entityType && second == field2) {
-                temp.push_back(first);
-                temp.push_back(second);
-                res.insert(temp);
+                res.insert(std::vector<PKBField>{first, second});
             }
         }
     } else {
-        for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-            std::vector<PKBField> temp;
-
-            RelationshipRow current = *iter;
+        for (auto row : rows) {
+            RelationshipRow current = row;
             PKBField first = current.getFirst();
             PKBField second = current.getSecond();
 
             if (first == field1 && second == field2) {
-                temp.push_back(first);
-                temp.push_back(second);
-                res.insert(temp);
+                res.insert(std::vector<PKBField>{first, second});
             }
         }
     }
