@@ -6,13 +6,13 @@ ParentRelationshipTable::ParentRelationshipTable() : RelationshipTable{ PKBRelat
 //     parentGraph = std::make_unique<ParentGraph>();
 // };
 
-bool ParentRelationshipTable::contains(PKBField entity1, PKBField entity2) {
-    bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT &&
+bool ParentRelationshipTable::isRetrieveValid(PKBField entity1, PKBField entity2) {
+    return entity1.entityType == PKBEntityType::STATEMENT &&
         entity2.entityType == PKBEntityType::STATEMENT;
-    bool checkConcreteEnt = entity1.fieldType == PKBFieldType::CONCRETE &&
-        entity2.fieldType == entity1.fieldType;
+}
 
-    if (!checkEntTypeMatch || !checkConcreteEnt) {
+bool ParentRelationshipTable::contains(PKBField entity1, PKBField entity2) {
+    if (!isInsertOrContainsValid(entity1, entity2)) {
         throw "Only concrete statements are allowed!";
     } 
     
@@ -20,12 +20,7 @@ bool ParentRelationshipTable::contains(PKBField entity1, PKBField entity2) {
 }
 
 void ParentRelationshipTable::insert(PKBField entity1, PKBField entity2) {
-    bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT &&
-        entity2.entityType == entity1.entityType;
-    bool checkConcreteEnt = entity1.fieldType == PKBFieldType::CONCRETE &&
-        entity2.fieldType == entity1.fieldType;
-
-    if (!checkEntTypeMatch || !checkConcreteEnt) {
+    if (!isInsertOrContainsValid(entity1, entity2)) {
         throw "Only concrete statements can be inserted into the Parent table!";
     }
 
@@ -34,7 +29,7 @@ void ParentRelationshipTable::insert(PKBField entity1, PKBField entity2) {
 
 FieldRowResponse ParentRelationshipTable::retrieve(PKBField entity1, PKBField entity2) {
     // Check both fields are statement types
-    if (entity1.entityType != PKBEntityType::STATEMENT || entity2.entityType != PKBEntityType::STATEMENT) {
+    if (!isRetrieveValid(entity1, entity2)) {
         throw "Parent relationship is only defined for statements!";
     }
 
@@ -157,3 +152,7 @@ bool ParentRelationshipTable::containsT(PKBField entity1, PKBField entity2) {
 // FieldRowResponse ParentRelationshipTable::retrieveT(PKBField entity1, PKBField entity2) {
 //
 // }
+
+bool ParentRelationshipTable::isInsertOrContainsValid(PKBField field1, PKBField field2) {
+    return field1.isValidConcrete(PKBEntityType::STATEMENT) && field2.isValidConcrete(PKBEntityType::STATEMENT);
+}

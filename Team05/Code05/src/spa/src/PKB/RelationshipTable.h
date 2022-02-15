@@ -36,12 +36,16 @@ public:
 
     virtual FieldRowResponse retrieve(PKBField entity1, PKBField entity2) = 0;
 
+    virtual bool isInsertOrContainsValid(PKBField field1, PKBField field2) = 0;
+    virtual bool isRetrieveValid(PKBField field1, PKBField field2) = 0;
+
     /** 
     * Retrieves the type of relationships the RelationshipTable stores.
     * 
     * @returns type of relationship
     */
     PKBRelationship getType();
+
     int getSize();
 
 protected:

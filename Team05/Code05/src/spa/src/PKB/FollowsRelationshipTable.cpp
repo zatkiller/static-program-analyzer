@@ -6,13 +6,13 @@ FollowsRelationshipTable::FollowsRelationshipTable() : TransitiveRelationshipTab
     followsGraph = std::make_unique<FollowsGraph>();
 };
 
-bool FollowsRelationshipTable::contains(PKBField entity1, PKBField entity2) {
-    bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT &&
-        entity2.entityType == entity1.entityType;
-    bool checkConcreteEnt = entity1.fieldType == PKBFieldType::CONCRETE &&
-        entity2.fieldType == entity1.fieldType;
+bool FollowsRelationshipTable::isRetrieveValid(PKBField entity1, PKBField entity2) {
+    return entity1.entityType == PKBEntityType::STATEMENT &&
+        entity2.entityType == PKBEntityType::STATEMENT;
+}
 
-    if (!checkConcreteEnt || !checkEntTypeMatch) {
+bool FollowsRelationshipTable::contains(PKBField entity1, PKBField entity2) {
+    if (!isInsertOrContainsValid(entity1, entity2)) {
         throw "Only concrete statements are allowed!";
     }
 
@@ -20,12 +20,7 @@ bool FollowsRelationshipTable::contains(PKBField entity1, PKBField entity2) {
 }
 
 void FollowsRelationshipTable::insert(PKBField entity1, PKBField entity2) {
-    bool checkEntTypeMatch = entity1.entityType == PKBEntityType::STATEMENT &&
-        entity2.entityType == entity1.entityType;
-    bool checkConcreteEnt = entity1.fieldType == PKBFieldType::CONCRETE &&
-        entity2.fieldType == entity1.fieldType;
-
-    if (!checkEntTypeMatch || !checkConcreteEnt) {
+    if (!isInsertOrContainsValid(entity1, entity2)) {
         throw "Only concrete statements can be inserted into the Follows table!";
     }
 
@@ -34,7 +29,7 @@ void FollowsRelationshipTable::insert(PKBField entity1, PKBField entity2) {
 
 FieldRowResponse FollowsRelationshipTable::retrieve(PKBField entity1, PKBField entity2) {
     // Both fields have to be a statement type
-    if (entity1.entityType != PKBEntityType::STATEMENT || entity2.entityType != PKBEntityType::STATEMENT) {
+    if (!isRetrieveValid(entity1, entity2)) {
         throw "Follows relationship is only defined for statements!";
     }
 
@@ -72,4 +67,8 @@ FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField entity1, PKBField 
     }
 
     return followsGraph->getFollowsT(entity1, entity2);
+}
+
+bool FollowsRelationshipTable::isInsertOrContainsValid(PKBField field1, PKBField field2) {
+    return field1.isValidConcrete(PKBEntityType::STATEMENT) && field2.isValidConcrete(PKBEntityType::STATEMENT);
 }

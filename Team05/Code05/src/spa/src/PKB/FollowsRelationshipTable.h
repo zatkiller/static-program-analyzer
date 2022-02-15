@@ -49,14 +49,21 @@ public:
 
     /**
     * Retrieves all RelationshipRows that match Follows*(entity1, entity2).
-    * 
+    *
     * @param entity1 the first program design entity in the Follows* relationship
     * @param entity2 the second program design entity in the Follows* relationship
-    * 
-    * @return an unordered set of vectors of PKBfields, where each vector represents the two program design 
+    *
+    * @return an unordered set of vectors of PKBfields, where each vector represents the two program design
     * entities in a Follows* relationship i.e. Follows*(field1, field2) -> [field1, field2].
     */
     FieldRowResponse retrieveT(PKBField entity1, PKBField entity2);
+
+    /**
+    * Checks if the two PKBFields provided can be inserted into the table
+    */
+    bool isInsertOrContainsValid(PKBField field1, PKBField field2);
+    bool isRetrieveValid(PKBField field1, PKBField field2);
+
 
 private:
     std::unique_ptr<FollowsGraph> followsGraph;
