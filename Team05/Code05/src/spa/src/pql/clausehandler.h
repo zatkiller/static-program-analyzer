@@ -29,7 +29,7 @@ namespace qps::evaluator {
          * @param d a DesignEntity
          * @return StatementType corresponds to the given DesignEntity
          */
-        StatementType getStatementType(DesignEntity d);
+        static StatementType getStatementType(DesignEntity d);
 
         /**
          * Wraps a stmtRef into a PKBField.
@@ -56,7 +56,7 @@ namespace qps::evaluator {
          * @param relationship PKBRelationship type of the current relationship clause
          */
         template<typename T, typename F1, typename F2>
-        void evaluateRelationships(T *ptr, F1 f1, F2 f2, PKBRelationship relationship) {
+        void evaluateRelationships(T *ptr, F1 (T::*f1), F2 (T::*f2), PKBRelationship relationship) {
             PKBField f1Field;
             PKBField f2Field;
             std::vector<std::string> synonyms;
@@ -111,7 +111,7 @@ namespace qps::evaluator {
          * @return bool value indicates whether the relationship holds
          */
         template<typename T, typename F1, typename F2>
-        bool evaluateNoSynRelRef(PKBRelationship r, T *ptr, F1 f1, F2 f2) {
+        bool evaluateNoSynRelRef(PKBRelationship r, T *ptr, F1 (T::*f1), F2 (T::*f2)) {
             PKBField f1Field;
             PKBField f2Field;
 

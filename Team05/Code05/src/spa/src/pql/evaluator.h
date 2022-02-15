@@ -13,7 +13,7 @@
 #include <list>
 
 #include "pql/query.h"
-#include "clausehandler.h"
+#include "pql/clausehandler.h"
 #include "PKB/PKBField.h"
 #include "PKB/PKBDataTypes.h"
 #include "PKB/PKBEntityType.h"
@@ -70,8 +70,8 @@ namespace qps::evaluator {
          * Classifies one clause into noSynonym group and withSynonym group.
          *
          * @param r the shared pointer of the relRef
-         * @param f1 the memory address of the first RelRef variable
-         * @param f2 the memory address of the second RelRef variable
+         * @param f1 the first RelRef variable
+         * @param f2 the second RelRef variable
          * @param noSyn group of clauses without synonyms
          * @param hasSyn group of clasues with synonyms
          */

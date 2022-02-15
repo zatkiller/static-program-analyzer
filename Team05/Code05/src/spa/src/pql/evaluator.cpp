@@ -20,27 +20,24 @@ namespace qps::evaluator {
     }
 
     PKBResponse Evaluator::getAll(DesignEntity type) {
-        std::unordered_map<DesignEntity, StatementType> StatementTypeMap = {
-                {DesignEntity::ASSIGN, StatementType::Assignment},
-                {DesignEntity::WHILE,  StatementType::While},
-                {DesignEntity::IF,     StatementType::If},
-                {DesignEntity::READ,   StatementType::Read},
-                {DesignEntity::PRINT,  StatementType::Print},
-                {DesignEntity::CALL,   StatementType::Call}
-        };
         PKBResponse result;
 
-        if (type == DesignEntity::PROCEDURE) {
-            result = pkb->getProcedures();
-        } else if (type == DesignEntity::CONSTANT) {
-            result = pkb->getConstants();
-        } else if (type == DesignEntity::VARIABLE) {
-            result = pkb->getVariables();
-        } else if (type == DesignEntity::STMT) {
-            result = pkb->getStatements();
-        } else {
-            StatementType sType = StatementTypeMap.find(type)->second;
-            result = pkb->getStatements(sType);
+        switch (type) {
+            case DesignEntity::PROCEDURE:
+                result = pkb->getProcedures();
+                break;
+            case DesignEntity::CONSTANT:
+                result = pkb->getConstants();
+                break;
+            case DesignEntity::VARIABLE:
+                result = pkb->getVariables();
+                break;
+            case DesignEntity::STMT:
+                result = pkb->getStatements();
+                break;
+            default:
+                StatementType sType = ClauseHandler::getStatementType(type);
+                result = pkb->getStatements(sType);
         }
         return result;
     }
