@@ -28,8 +28,8 @@ int StatementTable::getSize() {
 std::vector<STMT_LO> StatementTable::getAllStmt() {
     std::vector<STMT_LO> res;
 
-    for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-        res.push_back(iter->getStmt());
+    for (const auto& row : rows) {
+        res.push_back(row.getStmt());
     }
 
     return res;
@@ -38,9 +38,9 @@ std::vector<STMT_LO> StatementTable::getAllStmt() {
 std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType type) {
     std::vector<STMT_LO> res;
 
-    for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-        if (iter->getStmt().type == type) {
-            res.push_back(iter->getStmt());
+    for (const auto& row : rows) {
+        if (row.getStmt().type.value() == type) {
+            res.push_back(row.getStmt());
         }
     }
 

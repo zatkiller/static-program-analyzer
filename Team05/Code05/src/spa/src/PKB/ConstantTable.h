@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_set>
+#include <set>
 
 #include "PKBField.h"
 #include "ConstantRow.h"
@@ -40,5 +40,5 @@ public:
      std::vector<CONST> getAllConst() const;
 
 private:
-    std::unordered_set<ConstantRow, ConstantRowHash> rows;
+    std::set<ConstantRow> rows;
 };

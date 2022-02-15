@@ -19,6 +19,7 @@ public:
     */
     STMT_LO getStmt() const;
     bool operator == (const StatementRow&) const;
+    bool operator < (const StatementRow& other) const;
 
 private:
     STMT_LO stmt;
