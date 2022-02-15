@@ -408,33 +408,6 @@ unique_ptr<AST::CondExpr> parse(deque<Token>& tokens) {
 /** ================================= STMT PARSER ================================= */
 namespace StmtLstParser {
 
-AST::StmtLst parse(deque<Token>& tokens) {
-    vector<unique_ptr<AST::Statement>> list;
-    do {
-        Token currToken = tokens.front();
-        string* keyword = get_if<string>(&currToken.value);
-        if (!keyword) {
-            Logger(Level::ERROR) << "String Expected";
-            throw invalid_argument("String expected!");
-        }
-        if (*keyword == "read") {
-            list.push_back(move(parseReadStmt(tokens)));
-        } else if (*keyword == "print") {
-            list.push_back(move(parsePrintStmt(tokens)));
-        } else if (*keyword == "while") {
-            list.push_back(move(parseWhileStmt(tokens)));
-        } else if (*keyword == "if") {
-            list.push_back(move(parseIfStmt(tokens)));
-        } else {
-            list.push_back(move(parseAssignStmt(tokens)));
-        }
-    } while (
-        (tokens.front().type != TokenType::special ||
-            get<char>(tokens.front().value) != '}') &&
-        tokens.front().type != TokenType::eof);
-    return AST::StmtLst(list);
-}    
-
 unique_ptr<AST::Statement> parseReadStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
     checkAndConsume("read", tokens);
@@ -507,10 +480,38 @@ unique_ptr<AST::Statement> parseIfStmt(deque<Token>& tokens) {
     );
 }
 
+AST::StmtLst parse(deque<Token>& tokens) {
+    vector<unique_ptr<AST::Statement>> list;
+    do {
+        Token currToken = tokens.front();
+        string* keyword = get_if<string>(&currToken.value);
+        if (!keyword) {
+            Logger(Level::ERROR) << "String Expected";
+            throw invalid_argument("String expected!");
+        }
+        if (*keyword == "read") {
+            list.push_back(move(parseReadStmt(tokens)));
+        } else if (*keyword == "print") {
+            list.push_back(move(parsePrintStmt(tokens)));
+        } else if (*keyword == "while") {
+            list.push_back(move(parseWhileStmt(tokens)));
+        } else if (*keyword == "if") {
+            list.push_back(move(parseIfStmt(tokens)));
+        } else {
+            list.push_back(move(parseAssignStmt(tokens)));
+        }
+    } while (
+        (tokens.front().type != TokenType::special ||
+            get<char>(tokens.front().value) != '}') &&
+        tokens.front().type != TokenType::eof);
+    return AST::StmtLst(list);
+}    
+
 }  // namespace StmtLstParser
+
 /** ================================ PARSER CLASS ================================= */
 
-unique_ptr<AST::Procedure> Parser::parseProcedure(deque<Token>& tokens) {
+unique_ptr<AST::Procedure> parseProcedure(deque<Token>& tokens) {
     // consume "procedure"
     checkAndConsume("procedure", tokens);
     // get procName
@@ -526,7 +527,7 @@ unique_ptr<AST::Procedure> Parser::parseProcedure(deque<Token>& tokens) {
     return make_unique<AST::Procedure>(move(procName), move(stmtLst));
 }
 
-unique_ptr<AST::Program> Parser::parseProgram(deque<Token>& tokens) {
+unique_ptr<AST::Program> parseProgram(deque<Token>& tokens) {
     Token currToken = tokens.front();
     if (get<string>(currToken.value) != "procedure") {
         throwUnexpectedToken("procedure");
@@ -536,7 +537,7 @@ unique_ptr<AST::Program> Parser::parseProgram(deque<Token>& tokens) {
     return make_unique<AST::Program>(move(resultProc));
 }
 
-unique_ptr<AST::Program> Parser::parse(const string& source) {
+unique_ptr<AST::Program> parse(const string& source) {
     // we first tokenise the source code
     deque<Token> lexedTokens = Lexer(source).getTokens();
     try {

@@ -5,10 +5,8 @@
 #include "Parser/Parser.h"
 #include "DesignExtractor/DesignExtractor.h"
 
-using SimpleParser::Parser;
-
 bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb) {
-    auto ast = Parser().parse(sourceCode);
+    auto ast = SimpleParser::parse(sourceCode);
     // parsing failed
     if (!ast) {
         return false;
@@ -21,5 +19,5 @@ bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb) {
 }
 
 std::unique_ptr<AST::Program> SourceProcessor::parse(const std::string& sourceCode) {
-    return Parser().parse(sourceCode);
+    return SimpleParser::parse(sourceCode);
 }
