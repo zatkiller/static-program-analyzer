@@ -2,7 +2,7 @@
 
 
 void ActualPKBStrategy::insertStatement(STMT_LO stmt) {
-    pkb->insertStatement(stmt.type, stmt.statementNum);
+    pkb->insertStatement(stmt.type.value_or(StatementType::All), stmt.statementNum);
 };
 
 void ActualPKBStrategy::insertVariable(std::string name) {

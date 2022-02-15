@@ -13,10 +13,10 @@
 TEST_CASE("PKB testing") {
     std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
 
-    PKBField field1 = PKBField::createConcrete(PROC_NAME{"main"});
-    PKBField field2 = PKBField::createConcrete(VAR_NAME{"a"});
-    PKBField field3 = PKBField::createConcrete(VAR_NAME{"b"});
-    PKBField field4 = PKBField::createConcrete(PROC_NAME{"foo"});
+    PKBField field1 = PKBField::createConcrete(PROC_NAME{ "main" });
+    PKBField field2 = PKBField::createConcrete(VAR_NAME{ "a" });
+    PKBField field3 = PKBField::createConcrete(VAR_NAME{ "b" });
+    PKBField field4 = PKBField::createConcrete(PROC_NAME{ "foo" });
     PKBField procDeclaration = PKBField::createDeclaration(PKBEntityType::PROCEDURE);
     PKBField varDeclaration = PKBField::createDeclaration(PKBEntityType::VARIABLE);
 
@@ -24,8 +24,8 @@ TEST_CASE("PKB testing") {
     pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field2);
     REQUIRE(pkb->isRelationshipPresent(field1, field2, PKBRelationship::MODIFIES));
     REQUIRE(pkb->isRelationshipPresent(
-        PKBField::createConcrete(PROC_NAME{"main"}), 
-        PKBField::createConcrete(VAR_NAME{"a"}), 
+        PKBField::createConcrete(PROC_NAME{ "main" }),
+        PKBField::createConcrete(VAR_NAME{ "a" }),
         PKBRelationship::MODIFIES));
     REQUIRE_FALSE(pkb->isRelationshipPresent(field1, field3, PKBRelationship::MODIFIES));
     REQUIRE(*(field3.getContent<VAR_NAME>()) == VAR_NAME{ "b" });
@@ -46,7 +46,7 @@ TEST_CASE("PKB testing") {
     pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field3);
     pkb->insertRelationship(PKBRelationship::MODIFIES, field4, field2);
     PKBResponse getRes2 = pkb->getRelationship(procDeclaration, varDeclaration, PKBRelationship::MODIFIES);
-    PKBResponse getExpected2 = PKBResponse{ true, 
+    PKBResponse getExpected2 = PKBResponse{ true,
         Response{ FieldRowResponse{{field1, field2}, {field1, field3}, {field4, field2}} } };
     REQUIRE(getRes2 == getExpected2);
 
@@ -68,7 +68,7 @@ TEST_CASE("PKB testing") {
     REQUIRE(pkb->variableTable->getSize() == 1);
 
     pkb->insertStatement(StatementType::Assignment, 1);
-    pkb->insertStatement(StatementType::While, 1);
+    pkb->insertStatement(StatementType::While, 2);
 
     PKBResponse res2 = pkb->getStatements();
     auto content3 = res2.getResponse<FieldResponse>();
@@ -77,4 +77,17 @@ TEST_CASE("PKB testing") {
     PKBResponse res3 = pkb->getStatements(StatementType::Assignment);
     auto content4 = res3.getResponse<FieldResponse>();
     REQUIRE(content4->size() == 1);
+}
+
+TEST_CASE("PKB STMT_LO empty type") {
+    std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+    pkb->insertStatement(StatementType::Assignment, 5);
+    PKBField field1 = PKBField::createConcrete(STMT_LO{ 5 });
+    PKBField field2 = PKBField::createConcrete(VAR_NAME{ "a" });
+    PKBField field3 = PKBField::createConcrete(STMT_LO{ 5, StatementType::Assignment });
+
+    pkb->insertRelationship(PKBRelationship::MODIFIES, field3, field2);
+    PKBResponse res = pkb->getRelationship(field1, field2, PKBRelationship::MODIFIES);
+    auto content = res.getResponse<FieldRowResponse>();
+    REQUIRE(content->size() == 1);
 }

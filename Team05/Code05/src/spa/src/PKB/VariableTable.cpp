@@ -18,8 +18,10 @@ int VariableTable::getSize() {
 
 std::vector<VAR_NAME> VariableTable::getAllVars() {
     std::vector<VAR_NAME> res;
-    for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-        res.push_back(iter->getVarName());
+
+    for (const auto& row : rows) {
+        res.push_back(row.getVarName());
     }
+
     return res;
 }

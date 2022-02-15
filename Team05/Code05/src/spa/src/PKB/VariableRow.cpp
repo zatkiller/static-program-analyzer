@@ -10,6 +10,10 @@ bool VariableRow::operator == (const VariableRow& row) const {
     return variableName == row.variableName;
 }
 
+bool VariableRow::operator < (const VariableRow& other) const {
+    return std::tie(variableName) < std::tie(other.variableName);
+}
+
 VAR_NAME VariableRow::getVarName() const {
     return variableName;
 }

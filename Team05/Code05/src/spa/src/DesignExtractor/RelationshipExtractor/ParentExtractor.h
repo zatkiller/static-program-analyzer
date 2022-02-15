@@ -10,7 +10,7 @@ private:
         // A saved statement at the previous depth means there is a container statement that contains our current stmt.
         if (bucket.find(depth-1) != bucket.end()) {
             // The saved statement at the previous depth should be parent of our current statement.
-            pkb->insertRelationship(PKBRelationship::PARENTS, bucket.at(depth-1), stmt);
+            pkb->insertRelationship(PKBRelationship::PARENT, bucket.at(depth-1), stmt);
         }
     };
 };

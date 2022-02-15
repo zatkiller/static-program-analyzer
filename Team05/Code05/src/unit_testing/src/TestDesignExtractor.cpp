@@ -256,7 +256,7 @@ namespace AST {
                     p(STMT_LO{7, StatementType::If}, STMT_LO{9, StatementType::Print}),
                     p(STMT_LO{3, StatementType::While}, STMT_LO{10, StatementType::Assignment}),
                 };
-                REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENTS] == expected);
+                REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENT] == expected);
             }
         }
     }

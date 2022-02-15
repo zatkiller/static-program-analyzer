@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdio.h>
-#include <unordered_set>
+#include <set>
 #include <vector>
 
 #include "VariableRow.h"
@@ -43,5 +43,5 @@ public:
     std::vector<VAR_NAME> getAllVars();
 
 private:
-    std::unordered_set<VariableRow, VariableRowHash> rows;
+    std::set<VariableRow> rows;
 };
