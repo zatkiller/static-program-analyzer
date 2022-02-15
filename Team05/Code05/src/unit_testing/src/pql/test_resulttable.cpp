@@ -241,7 +241,9 @@ TEST_CASE("Test innerJoin with empty table") {
 TEST_CASE("Test innerJoin with records in table") {
     //Test : PKBResponse = set<PKBField>
 
-    std::unordered_set<PKBField, PKBFieldHash> testR1{newField1, newField2, newField3};
+    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> testR1{std::vector<PKBField>{newField1},
+                                                                         std::vector<PKBField>{newField2},
+                                                                         std::vector<PKBField>{newField3}};
     PKBResponse response1{true, Response{testR1}};
     TEST_LOG << "========== one synonym join s";
     ResultTable table = createNonEmptyTable();
@@ -326,7 +328,9 @@ TEST_CASE("Test join method") {
     TEST_LOG << "========== 1 syn join (inner join 1)";
     ResultTable table4 = createNonEmptyTable();
     std::vector<std::string> synonyms4{"s"};
-    std::unordered_set<PKBField, PKBFieldHash> testR4{newField1, newField2, newField3};
+    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> testR4{std::vector<PKBField>{newField1},
+                                                      std::vector<PKBField>{newField2},
+                                                      std::vector<PKBField>{newField3}};
     PKBResponse response4{true, Response{testR4}};
     table4.join(response4, synonyms4);
     REQUIRE(table4.getSynLocation("s") == 1);

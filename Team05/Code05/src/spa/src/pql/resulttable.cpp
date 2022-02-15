@@ -73,53 +73,69 @@ namespace qps::evaluator {
         this->table = newTable;
     }
 
+    void ResultTable::twoSynInnerJoin(std::string syn1, std::string syn2,
+            std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
+            std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
+        int firstMatch = getSynLocation(syn1);
+        int secondMatch = getSynLocation(syn2);
+        for (auto r: queryRes) {
+            for (auto record: table) {
+                if (r[0] == record[firstMatch] && r[1] == record[secondMatch]) {
+                    std::vector<PKBField> newRecord = record;
+                    newTable.insert(newRecord);
+                }
+            }
+        }
+    }
+
+    void ResultTable::oneSynInnerJoin(std::string synName,
+                                      std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
+                                      std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
+        int pos = getSynLocation(synName);
+        for (auto r: queryRes) {
+            for (auto record: table) {
+                if (r[0] == record[pos]) {
+                    std::vector<PKBField> newRecord = record;
+                    newTable.insert(newRecord);
+                }
+            }
+        }
+    }
+
+    void ResultTable::twoSynInnerJoinOne(std::string syn1, std::string syn2, bool isFirst,
+                                         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
+                                         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
+        std::string matched = isFirst ? syn1 : syn2;
+        std::string another = isFirst ? syn2 : syn1;
+        int mPos = isFirst ? 0 : 1;
+        int aPos = isFirst ? 1 : 0;
+        int matchedPos = getSynLocation(matched);
+        for (auto r: queryRes) {
+            for (auto record: table) {
+                if ((r[mPos] == record[matchedPos])) {
+                    std::vector<PKBField> newRecord = record;
+                    newRecord.push_back(r[aPos]);  //ensure new field is added at last
+                    newTable.insert(newRecord);
+                }
+            }
+        }
+    }
+
     void ResultTable::innerJoin(PKBResponse r, bool isFirst, bool isSecond, std::vector<std::string> allSyn) {
         if (table.empty()) {
             return;
         }
         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> newTable;
-        if (std::unordered_set<PKBField, PKBFieldHash> *ptr = std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(
-                &r.res)) {
-            int pos = getSynLocation(allSyn[0]);
-            std::unordered_set<PKBField, PKBFieldHash> queryRes = *ptr;
-            for (auto r: queryRes) {
-                for (auto record: table) {
-                    if (r == record[pos]) {
-                        std::vector<PKBField> newRecord = record;
-                        newTable.insert(newRecord);
-                    }
-                }
-            }
-        } else if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr = std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(
+        if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr = std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(
                 &r.res)) {
             std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes = *ptr;
             // two synonyms all in table already
             if (isFirst && isSecond) {
-                int firstMatch = getSynLocation(allSyn[0]);
-                int secondMatch = getSynLocation(allSyn[1]);
-                for (auto r: queryRes) {
-                    for (auto record: table) {
-                        if (r[0] == record[firstMatch] && r[1] == record[secondMatch]) {
-                            std::vector<PKBField> newRecord = record;
-                            newTable.insert(newRecord);
-                        }
-                    }
-                }
+                twoSynInnerJoin(allSyn[0], allSyn[1], queryRes, newTable);
+            } else if (allSyn.size() == 1) {
+                oneSynInnerJoin(allSyn[0], queryRes, newTable);
             } else { //one synonym in the tabel
-                std::string matched = isFirst ? allSyn[0] : allSyn[1];
-                std::string another = isFirst ? allSyn[1] : allSyn[0];
-                int m = isFirst ? 0 : 1;
-                int a = isFirst ? 1 : 0;
-                int matchedPos = getSynLocation(matched);
-                for (auto r: queryRes) {
-                    for (auto record: table) {
-                        if ((r[m] == record[matchedPos])) {
-                            std::vector<PKBField> newRecord = record;
-                            newRecord.push_back(r[a]);  //ensure new field is added at last, otherwise use insert()
-                            newTable.insert(newRecord);
-                        }
-                    }
-                }
+                twoSynInnerJoinOne(allSyn[0], allSyn[1], isFirst, queryRes, newTable);
             }
         }
         this->table = newTable;

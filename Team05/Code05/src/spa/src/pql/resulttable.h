@@ -62,6 +62,47 @@ namespace qps::evaluator {
         void insert(PKBResponse r);
 
         /**
+         * If there is one synonym in clause and it already appears in the evaluated clauses, inner join the result
+         * to the table with one synonym.
+         *
+         * @param synName synonym in clause
+         * @param queryRes the query result from PKB
+         * @param newTable store the correct result filtered from the original result table
+         */
+        void oneSynInnerJoin(std::string synName, std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
+                             std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable);
+
+        /**
+         * If there are two synonyms in the clause and two of them already appears in evaluated clauses,
+         * inner join the result to the table with two synonyms.
+         *
+         * @param syn1 first synonym in clause
+         * @param syn2 second synonym in clause
+         * @param queryRes the query result from PKB
+         * @param newTable store the correct result filtered from the original result table
+         */
+        void twoSynInnerJoin(std::string syn1, std::string syn2,
+                             std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
+                             std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable);
+
+
+
+        /**
+         * If there are two synonyms in the clause but only one of the synonyms has appeared in evaluated clauses,
+         * inner join the result to the table with two one synonym but insert the value of the second synonym into the
+         * new result table.
+         *
+         * @param syn1 first synonym in clause
+         * @param syn2 second synonym in clause
+         * @param isFirst bool value indicates whether the first synonym is already inside the result table
+         * @param queryRes the query result from PKB
+         * @param newTable store the correct result filtered from the original result table
+         */
+        void twoSynInnerJoinOne(std::string syn1, std::string syn2, bool isFirst,
+                                std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
+                                std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable);
+
+        /**
          * CrossJoins the PKBResponse to the current response table when the synonyms of the result are different from
          * all synonyms in the table.
          *
