@@ -10,29 +10,12 @@
 
 #define TEST_LOG Logger() << "TestParseAndStore.cpp "
 
-// helper type for the visitor #4
-template<typename... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-// explicit deduction guide (not needed as of C++20)
-template<typename... Ts> overloaded(Ts...)->overloaded<Ts...>;
+auto p = [](auto first, auto second) {
+    return std::make_pair<>(first, second);
+};
 
-std::variant<int, std::string> extractField(PKBField v) {
-    if (v.fieldType != PKBFieldType::CONCRETE) {
-        throw std::invalid_argument("No value to extract from PKBField, not concrete");
-    }
-
-    switch (v.entityType) {
-    case PKBEntityType::VARIABLE: return std::get<VAR_NAME>(v.content).name;
-    case PKBEntityType::STATEMENT: return std::get<STMT_LO>(v.content).statementNum;
-    case PKBEntityType::PROCEDURE: return std::get<PROC_NAME>(v.content).name;
-    case PKBEntityType::CONST: return std::get<CONST>(v.content);
-    }
-}
-
-
-TEST_CASE("Test parse and store") {
-    PKB pkb;
-    SourceProcessor sp;
-    sp.processSimple(R"(
+struct TestParseAndStorePackage1 {
+    std::string sourceCode = R"(
         procedure sumDigits {
             read number;
             sum = 0;
@@ -45,7 +28,94 @@ TEST_CASE("Test parse and store") {
 
             print sum;
         }
-    )", &pkb);
+    )";
+
+    std::map<PKBEntityType, std::set<Content>> expectedEntities;
+    std::map<PKBRelationship, std::set<std::pair<Content, Content>>> expectedRelationships;
+
+    template <typename T>
+    bool isCorrect(std::set<T> result, PKBEntityType targetType) {
+        auto targetSet = expectedEntities[targetType];
+        std::set<T> expected;
+        std::transform(targetSet.begin(), targetSet.end(), 
+            std::inserter(expected, expected.begin()), 
+            [](auto v) {
+                return std::get<T>(v);
+            }
+        );
+        return result == expected;
+    }
+    
+    template <typename T, typename K>
+    bool isCorrect(std::set<std::pair<T,K>> result, PKBRelationship targetType) {
+        auto targetSet = expectedRelationships[targetType];
+        std::set<std::pair<T,K>> expected;
+        // transform and insert
+        for (auto e : targetSet) {
+            try {
+                expected.insert(p(std::get<T>(e.first), std::get<K>(e.second)));
+            } catch (std::bad_variant_access ex) {
+                // ignore 
+                continue;
+            }
+        }
+
+        return result == expected;
+    }
+
+    void initEntities() {
+        expectedEntities.emplace(
+            PKBEntityType::VARIABLE, 
+            std::set<Content>({
+                VAR_NAME{"number"},
+                VAR_NAME{"sum"}, 
+                VAR_NAME{"digit"}
+            })
+        );
+        expectedEntities.emplace(
+            PKBEntityType::STATEMENT, 
+            std::set<Content>({
+                STMT_LO{1, StatementType::Read},
+                STMT_LO{2, StatementType::Assignment},
+                STMT_LO{3, StatementType::While},
+                STMT_LO{4, StatementType::Assignment},
+                STMT_LO{5, StatementType::Assignment},
+                STMT_LO{6, StatementType::Assignment},
+                STMT_LO{7, StatementType::Print}
+            })
+        );
+    }
+    void initRelationships() {
+        expectedRelationships.emplace(
+            PKBRelationship::MODIFIES,
+            std::set<std::pair<Content, Content>> {
+                p(STMT_LO{1, StatementType::Read}, VAR_NAME{"number"}),
+                p(STMT_LO{2, StatementType::Assignment}, VAR_NAME{"sum"}),
+                p(STMT_LO{3, StatementType::While}, VAR_NAME{"digit"}),
+                p(STMT_LO{3, StatementType::While}, VAR_NAME{"sum"}),
+                p(STMT_LO{3, StatementType::While}, VAR_NAME{"number"}),
+                p(STMT_LO{4, StatementType::Assignment}, VAR_NAME{"digit"}),
+                p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"sum"}),
+                p(STMT_LO{6, StatementType::Assignment}, VAR_NAME{"number"}),
+                p(PROC_NAME{"sumDigits"}, VAR_NAME{"number"}),
+                p(PROC_NAME{"sumDigits"}, VAR_NAME{"digit"}),
+                p(PROC_NAME{"sumDigits"}, VAR_NAME{"sum"})
+            }
+        );
+
+
+    }
+    TestParseAndStorePackage1() {
+        initEntities();
+        initRelationships();
+    }
+};
+
+TEST_CASE("Test parse and store") {
+    PKB pkb;
+    SourceProcessor sp;
+    TestParseAndStorePackage1 test1;
+    sp.processSimple(test1.sourceCode, &pkb);
 
 
     TEST_LOG << "Variable extraction from PKB";
@@ -55,13 +125,12 @@ TEST_CASE("Test parse and store") {
 
         auto resultSet = std::get<std::unordered_set<PKBField, PKBFieldHash>>(response.res);
 
-        std::set<std::string> vars;
+        std::set<VAR_NAME> vars;
         for (auto v : resultSet) {
-            vars.insert(std::get<std::string>(extractField(v)));
+            vars.insert(std::get<VAR_NAME>(v.content));
         }
-        std::set<std::string> expected = { "number", "sum", "digit" };
 
-        REQUIRE(vars == expected);
+        REQUIRE(test1.isCorrect(vars, PKBEntityType::VARIABLE));
     }
 
     TEST_LOG << "Modifies extraction from PKB";
@@ -70,7 +139,7 @@ TEST_CASE("Test parse and store") {
 
         TEST_LOG << "Statement modifies extraction from PKB";
         {
-            // 3rd param in PKBField construction is unused in getRelationship.
+            
             auto response = pkb.getRelationship(
                 PKBField::createDeclaration(StatementType::Assignment),
                 PKBField::createDeclaration(PKBEntityType::VARIABLE),
@@ -84,22 +153,7 @@ TEST_CASE("Test parse and store") {
                 auto var = std::get<VAR_NAME>(row[1].content);
                 stmtModifies.insert(std::make_pair<>(stmt, var));
             }
-
-            auto p = [](STMT_LO s, VAR_NAME v) {
-                return std::make_pair<>(s, v);
-            };
-
-            std::set<std::pair<STMT_LO, VAR_NAME>> expected = {
-                p(STMT_LO{1, StatementType::Read}, VAR_NAME{"number"}),
-                p(STMT_LO{2, StatementType::Assignment}, VAR_NAME{"sum"}),
-                p(STMT_LO{3, StatementType::While}, VAR_NAME{"digit"}),
-                p(STMT_LO{3, StatementType::While}, VAR_NAME{"sum"}),
-                p(STMT_LO{3, StatementType::While}, VAR_NAME{"number"}),
-                p(STMT_LO{4, StatementType::Assignment}, VAR_NAME{"digit"}),
-                p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"sum"}),
-                p(STMT_LO{6, StatementType::Assignment}, VAR_NAME{"number"})
-            };
-            REQUIRE(expected == stmtModifies);
+            REQUIRE(test1.isCorrect(stmtModifies, PKBRelationship::MODIFIES));
         }
         TEST_LOG << "Procedure modifies extraction from PKB";
         {
@@ -111,23 +165,13 @@ TEST_CASE("Test parse and store") {
             REQUIRE(response.hasResult);
             auto resultSet = std::get<Rows>(response.res);
 
-            std::set<std::pair<std::string, std::string>> stmtModifies;
+            std::set<std::pair<PROC_NAME, VAR_NAME>> procModifies;
             for (auto& row : resultSet) {
-                auto proc = std::get<std::string>(extractField(row[0]));
-                auto var = std::get<std::string>(extractField(row[1]));
-                stmtModifies.insert(std::make_pair<>(proc, var));
+                auto proc = std::get<PROC_NAME>(row[0].content);
+                auto var = std::get<VAR_NAME>(row[1].content);
+                procModifies.insert(std::make_pair<>(proc, var));
             }
-
-            auto p = [](std::string p, std::string v) {
-                return std::make_pair<>(p, v);
-            };
-
-            std::set<std::pair<std::string, std::string>> expected = {
-                p("sumDigits", "number"),
-                p("sumDigits", "sum"),
-                p("sumDigits", "digit")
-            };
-            REQUIRE(expected == stmtModifies);
+            REQUIRE(test1.isCorrect(procModifies, PKBRelationship::MODIFIES));
         }
     }
 
@@ -141,15 +185,6 @@ TEST_CASE("Test parse and store") {
         for (auto v : resultSet) {
             statements.insert(std::get<STMT_LO>(v.content));
         }
-        std::set<STMT_LO> expected = {
-            STMT_LO{1, StatementType::Read},
-            STMT_LO{2, StatementType::Assignment},
-            STMT_LO{3, StatementType::While},
-            STMT_LO{4, StatementType::Assignment},
-            STMT_LO{5, StatementType::Assignment},
-            STMT_LO{6, StatementType::Assignment},
-            STMT_LO{7, StatementType::Print}
-        };
-        REQUIRE(statements == expected);
+        REQUIRE(test1.isCorrect(statements, PKBEntityType::STATEMENT));
     }
 }
