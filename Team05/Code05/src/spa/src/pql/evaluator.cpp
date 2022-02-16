@@ -69,7 +69,6 @@ namespace qps::evaluator {
         std::vector<query::Pattern> pattern = query.getPattern();
 
         query::DesignEntity returnType = query.getDeclarationDesignEntity(variable[0]);
-        // TO DO: replace int with PKBField
         ResultTable resultTable;
         ResultTable &tableRef = resultTable;
         query::Query &queryRef = query;
