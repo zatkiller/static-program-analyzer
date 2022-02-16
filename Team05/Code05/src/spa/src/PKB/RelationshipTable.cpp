@@ -29,7 +29,7 @@ bool RelationshipTable::contains(PKBField field1, PKBField field2) {
 void RelationshipTable::insert(PKBField field1, PKBField field2) {
     if (!isInsertOrContainsValid(field1, field2)) {
         Logger(Level::ERROR) <<
-            "RelationshipTable can only contain concrete fields and STATEMENT or PROCEDURE entity types.";
+            "RelationshipTable only allow inserts of concrete fields and STATEMENT or PROCEDURE entity types.";
         return;
     }
 
@@ -43,7 +43,7 @@ FieldRowResponse RelationshipTable::retrieve(PKBField field1, PKBField field2) {
     FieldRowResponse res;
     if (!isRetrieveValid(field1, field2)) {
         Logger(Level::ERROR) <<
-            "RelationshipTable can only contain fields of STATEMENT or PROCEDURE entity types.";
+            "Only fields of STATEMENT or PROCEDURE entity types can be retrieved from RelationshipTable.";
         return res;
     }
 
