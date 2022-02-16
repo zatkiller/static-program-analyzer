@@ -8,7 +8,8 @@ FollowsRelationshipTable::FollowsRelationshipTable() : TransitiveRelationshipTab
 
 void FollowsRelationshipTable::insert(PKBField field1, PKBField field2) {
     if (!isInsertOrContainsValid(field1, field2)) {
-        throw "Only concrete statements can be inserted into the Follows table!";
+        Logger(Level::ERROR) << "Only concrete statements can be inserted into the Follows table!";
+        return;
     }
 
     followsGraph->addEdge(*field1.getContent<STMT_LO>(), *field2.getContent<STMT_LO>());
@@ -16,18 +17,18 @@ void FollowsRelationshipTable::insert(PKBField field1, PKBField field2) {
 
 bool FollowsRelationshipTable::contains(PKBField field1, PKBField field2) {
     if (!isInsertOrContainsValid(field1, field2)) {
-        throw "Only concrete statements are allowed!";
+        Logger(Level::ERROR) << "Only concrete statements can be inserted into the Follows table!";
+        return;
     }
 
     return followsGraph->getContains(field1, field2);
 }
 
 bool FollowsRelationshipTable::containsT(PKBField field1, PKBField field2) {
-    if (field1.entityType != PKBEntityType::STATEMENT || field2.entityType != PKBEntityType::STATEMENT) {
-        throw "Input fields must be statements!";
-    }
-    if (field1.fieldType != PKBFieldType::CONCRETE || field2.fieldType != PKBFieldType::CONCRETE) {
-        throw "Input fields must be concrete!";
+    if (!isInsertOrContainsValid(field1, field2)) {
+        Logger(Level::ERROR) << 
+            "FollowsRelationshipTable can only contain concrete fields and STATEMENT entity types.";
+        return;
     }
 
     return followsGraph->getContainsT(field1, field2);

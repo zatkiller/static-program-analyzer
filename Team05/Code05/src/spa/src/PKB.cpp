@@ -35,24 +35,24 @@ void PKB::insertVariable(std::string name) {
 }
 
 
-void PKB::insertRelationship(PKBRelationship type, PKBField entity1, PKBField entity2) {
+void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField field2) {
     // if both fields are not concrete, no insert can be done
-    if (entity1.fieldType != PKBFieldType::CONCRETE || entity2.fieldType != PKBFieldType::CONCRETE) {
+    if (field1.fieldType != PKBFieldType::CONCRETE || field2.fieldType != PKBFieldType::CONCRETE) {
         return;
     }
 
     switch (type) {
     case PKBRelationship::MODIFIES:
-        modifiesTable->insert(entity1, entity2);
+        modifiesTable->insert(field1, field2);
         break;
     case PKBRelationship::FOLLOWS:
-        followsTable->insert(entity1, entity2);
+        followsTable->insert(field1, field2);
         break;
     case PKBRelationship::PARENT:
-        // parentTable->insert(entity1, entity2);
+        // parentTable->insert(field1, field2);
         break;
     case PKBRelationship::USES:
-        usesTable->insert(entity1, entity2);
+        usesTable->insert(field1, field2);
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
     }
