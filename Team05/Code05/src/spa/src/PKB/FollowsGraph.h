@@ -4,82 +4,169 @@
 #include <vector>
 #include <set>
 #include <unordered_set>
-#include <stack>
+#include <algorithm>
 #include "PKBField.h"
 #include <memory>
+#include <iterator>
 
 using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
 /**
-* A Node inside a FollowsGraph which is bidirectional
+* A bi-drectional node inside a FollowsGraph.
+* 
+* @see FollowsGraph
 */
 struct FollowsNode {
     FollowsNode(STMT_LO stmt, FollowsNode* prev, FollowsNode* next) : stmt(stmt), prev(prev), next(next) {}
 
-    STMT_LO stmt;
-    FollowsNode* prev;
-    FollowsNode* next;
+    STMT_LO stmt; 
+    FollowsNode* prev; /**< The predecessor of this FollowsNode. */
+    FollowsNode* next; /**< The descendant of this FollowsNode. */
 };
 
 /**
-* A data structure that supports the lookup of transitive Follows* relationships
+* A data structure that consists of FollowNodes, where each edge represents a valid Follows relationship.
+* 
+* @see FollowsNode
 */
 class FollowsGraph {
 public:
     /**
-    * Adds an edge between two STMT_LOs to represent a Follows relationship.
+    * Adds an edge between two STMT_LOs to represent a Follows relationship. Initialise FollowsNodes for 
+    * the STMT_LOs if they are not present in the graph.
     * 
-    * @param u the first STMT_LO in the Follows(u,v) relationship
-    * @param v the second STMT_LO in the Follows(u,v) relationship
+    * @param u the first STMT_LO in a Follows(u,v) relationship
+    * @param v the second STMT_LO in a Follows(u,v) relationship
     */
     void addEdge(STMT_LO u, STMT_LO v);
-    // wildcard should be converted to Statement::All
 
     /**
-    * Gets all pairs of PKBFields that satisfy the provided Follows* relationship.
-    * 
-    * @param field1 the first field in the Follows* query
-    * @param field2 the second field in the Follows* query
-    * @return a Result encapsulating all pairs of PKBFields 
-    *   that follow the provided relationship
-    */
-    Result getFollowsT(PKBField field1, PKBField field2);
-
-    /**
-    * Gets all pairs of PKBFields that satisfy the provided Follows relationship.
+    * Checks if Follows(field1, field2) is in the graph.
     *
-    * @param field1 the first field in the Follows query
-    * @param field2 the second field in the Follows query
-    * @return a Result encapsulating all pairs of PKBFields
-    *   that follow the provided relationship
+    * @param field1 the first STMT_LO in a Follows(u,v) query wrapped in a PKBField
+    * @param field2 the second STMT_LO in a Follows(u,v) query wrapped in a PKBField
+    * 
+    * @return bool whether Follows(field1, field2) is in the graph
+    * @see PKBField
     */
-    Result getFollows(PKBField field1, PKBField field2);
+    bool getContains(PKBField field1, PKBField field2);
 
     /**
-    * Checks if the relationship Follows*(field1, field2) is true.
+    * Checks if Follows*(field1, field2) is in the graph.
+    *
+    * @param field1 the first STMT_LO in a Follows*(u,v) query wrapped in a PKBField
+    * @param field2 the second STMT_LO in a Follows*(u,v) query wrapped in a PKBField
     * 
-    * @param field1 the first field in the Follows* query
-    * @param field2 the second field in the Follows* query
-    * @return true if Follows*(field1, field2) is true and false otherwise
+    * @return bool whether Follows*(field1, field2) is in the graph 
+    * @see PKBField
     */
     bool getContainsT(PKBField field1, PKBField field2);
 
     /**
-    * Checks if the relationship Follows(field1, field2) is true.
+    * Gets all pairs of PKBFields that satisfy the provided Follows relationship, Follows(field1, field2).
     *
-    * @param field1 the first field in the Follows query
-    * @param field2 the second field in the Follows query
-    * @return true if Follows(field1, field2) is true and false otherwise
+    * @param field1 the first STMT_LO in a Follows(u,v) query wrapped in a PKBField
+    * @param field2 the second STMT_LO in a Follows(u,v) query wrapped in a PKBField
+    * 
+    * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields
+    * that satisfy Follows(field1, field2)
+    * @see PKBField
     */
-    bool getContains(PKBField field1, PKBField field2);
+    Result getFollows(PKBField field1, PKBField field2);
+
+    /**
+    * Gets all pairs of PKBFields that satisfy the provided Follows* relationship, Follows*(field1, field2).
+    *
+    * @param field1 the first STMT_LO in a Follows*(u,v) query wrapped in a PKBField
+    * @param field2 the second STMT_LO in a Follows*(u,v) query wrapped in a PKBField
+    * 
+    * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields
+    * that satisfy Follows*(field1, field2)
+    */
+    Result getFollowsT(PKBField field1, PKBField field2);
 
 private:
-    std::map<STMT_LO, FollowsNode*> nodes;
-    Result traverseStartT(PKBField field1, PKBField field2);
-    Result traverseEndT(PKBField field1, PKBField field2);
-    Result traverseAllT(StatementType type1, StatementType type2);
-    void traverseStartT(std::set<STMT_LO>* stmtSetPtr, StatementType type, FollowsNode* node);
-    void traverseEndT(std::set<STMT_LO>* stmtSetPtr, StatementType type, FollowsNode* node);
+    std::map<STMT_LO, FollowsNode*> nodes; /**< The list of nodes in this FollowsGraph */
 
+    /**
+    * Gets all pairs of PKBFields that satisfy the provided Follows* relationship, Follows*(field1, field2),
+    * where field1 is a concrete field and field2 is either a statement declaration or a statement wildcard.
+    * Statement wildcards are treated as a statement declaration for any statement type.
+    * 
+    * @param field1 a concrete field to begin the traversal from
+    * @param field2 a statement declaration
+    * 
+    * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
+    * second item in each pair satisfy the statement declaration.
+    * @see PKBField
+    */
+    Result traverseStartT(PKBField field1, PKBField field2);
+
+    /**
+    * An overloaded helper function that traverses the graph forward starting at the provided node 
+    * until there is no next node.
+    * 
+    * @param stmtSetPtr a pointer to a set of STMT_LO that stores the possible STMT_LO for the second field in a 
+    * Follows* relationship.
+    * @param node a pointer to the node to begin traversal from
+    * @see PKBField
+    */
+    void traverseStartT(std::set<STMT_LO>* stmtSetPtr, FollowsNode* node);
+
+    /**
+    * Gets all pairs of PKBFields that satisfy the provided Follows* relationship, Follows*(field1, field2),
+    * where field1 is either a statement declaration or a statement wildcard and field2 is a concrete field.
+    * Statement wildcards are treated as a statement declaration for any statement type.
+    *
+    * @param field1 a concrete field to begin the traversal from
+    * @param field2 a statement declaration
+    * 
+    * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
+    * second item in each pair satisfy the statement declaration.
+    * @see PKBField
+    */
+    Result traverseEndT(PKBField field1, PKBField field2);
+
+    /**
+    * An overloaded helper function that traverses the graph backwards starting at the provided node 
+    * until there is no next node.
+    *
+    * @param stmtSetPtr a pointer to a set of STMT_LO that stores the possible STMT_LO for the first field in a
+    * Follows* relationship.
+    * @param node a pointer to the node to begin traversal from
+    * @see PKBField
+    */
+    void traverseEndT(std::set<STMT_LO>* stmtSetPtr, FollowsNode* node);
+
+    /**
+    * Gets all pairs of PKBFields that satisfy the provided Follows relationship, Follows(field1, field2),
+    * where both field1 and field2 are either statement declarations or statement wildcards.
+    * Statement wildcards are treated as a statement declaration for any statement type.
+    *
+    * Internally, iterates through the nodes in the graph calls traverseStart with each node.
+    * 
+    * @param field1 the first statement declaration
+    * @param field2 the second statement declaration
+    * 
+    * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
+    * second item in each pair satisfy the statement declarations.
+    * @see PKBField
+    */
     Result traverseAll(StatementType type1, StatementType type2);
+
+    /**
+    * Gets all pairs of PKBFields that satisfy the provided Follows* relationship, Follows*(field1, field2),
+    * where both field1 and field2 are either statement declarations or statement wildcards.
+    * Statement wildcards are treated as a statement declaration for any statement type.
+    *
+    * Internally, iterates through the nodes in the graph calls traverseStart with each node.
+    *
+    * @param field1 the first statement declaration
+    * @param field2 the second statement declaration
+    * 
+    * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
+    * second item in each pair satisfy the statement declarations.
+    * @see PKBField
+    */
+    Result traverseAllT(StatementType type1, StatementType type2);
 };

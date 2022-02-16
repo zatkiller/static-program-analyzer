@@ -38,8 +38,8 @@ TEST_CASE("StatementTable getAllStmt") {
     std::vector<STMT_LO> expected{};
     REQUIRE(expected == table.getAllStmt());
 
-    table.insert(StatementType::Assignment, 1);
     table.insert(StatementType::Assignment, 2);
+    table.insert(StatementType::Assignment, 1);
     expected = { STMT_LO{1, StatementType::Assignment}, STMT_LO{2, StatementType::Assignment} };
     REQUIRE(expected == table.getAllStmt());
 }

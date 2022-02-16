@@ -12,7 +12,7 @@ PKB::PKB() {
     procedureTable = std::make_unique<ProcedureTable>();
     modifiesTable = std::make_unique<ModifiesRelationshipTable>();
     followsTable = std::make_unique<FollowsRelationshipTable>();
-    parentTable = std::make_unique<ParentRelationshipTable>();
+    // parentTable = std::make_unique<ParentRelationshipTable>();
     usesTable = std::make_unique<UsesRelationshipTable>();
 }
 
@@ -34,19 +34,25 @@ void PKB::insertVariable(std::string name) {
     variableTable->insert(name);
 }
 
-void PKB::insertRelationship(PKBRelationship type, PKBField entity1, PKBField entity2) {
+
+void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField field2) {
+    // if both fields are not concrete, no insert can be done
+    if (field1.fieldType != PKBFieldType::CONCRETE || field2.fieldType != PKBFieldType::CONCRETE) {
+        return;
+    }
+
     switch (type) {
     case PKBRelationship::MODIFIES:
-        modifiesTable->insert(entity1, entity2);
+        modifiesTable->insert(field1, field2);
         break;
     case PKBRelationship::FOLLOWS:
-        followsTable->insert(entity1, entity2);
+        followsTable->insert(field1, field2);
         break;
     case PKBRelationship::PARENT:
-        parentTable->insert(entity1, entity2);
+        // parentTable->insert(field1, field2);
         break;
     case PKBRelationship::USES:
-        usesTable->insert(entity1, entity2);
+        usesTable->insert(field1, field2);
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
     }
@@ -63,7 +69,7 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
     case PKBRelationship::FOLLOWS:
         return followsTable->contains(field1, field2);
     case PKBRelationship::PARENT:
-        return parentTable->contains(field1, field2);
+        return true; // parentTable->contains(field1, field2);
     case PKBRelationship::USES:
         return usesTable->contains(field1, field2);
     case PKBRelationship::FOLLOWST:
@@ -76,25 +82,20 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
 
 // GET API
 
+void PKB::getStatementTypeOfConcreteField(PKBField* field) {
+    if (field->fieldType == PKBFieldType::CONCRETE && field->entityType == PKBEntityType::STATEMENT) {
+        auto content = field->getContent<STMT_LO>();
+
+        if (!content->hasStatementType()) {
+            StatementType type = statementTable->getStmtTypeOfLine(content->statementNum);
+            field->content = STMT_LO{ content->statementNum, type };
+        }
+    }
+}
+
 PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationship rs) {
-    // TODO(teo-jun-xiong): collapse into a function
-    if (field1.fieldType == PKBFieldType::CONCRETE && field1.entityType == PKBEntityType::STATEMENT) {
-        auto content = field1.getContent<STMT_LO>();
-
-        if (!content->hasStatementType()) {
-            StatementType type = statementTable->getStmtTypeOfLine(content->statementNum);
-            field1.content = STMT_LO{ content->statementNum, type };
-        }
-    }
-
-    if (field2.fieldType == PKBFieldType::CONCRETE && field2.entityType == PKBEntityType::STATEMENT) {
-        auto content = field2.getContent<STMT_LO>();
-
-        if (!content->hasStatementType()) {
-            StatementType type = statementTable->getStmtTypeOfLine(content->statementNum);
-            field2.content = STMT_LO{ content->statementNum, type };
-        }
-    }
+    getStatementTypeOfConcreteField(&field1);
+    getStatementTypeOfConcreteField(&field2);
 
     FieldRowResponse extracted;
 
@@ -106,7 +107,7 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
         extracted = followsTable->retrieve(field1, field2);
         break;
     case PKBRelationship::PARENT:
-        extracted = parentTable->retrieve(field1, field2);
+        // extracted = parentTable->retrieve(field1, field2);
         break;
     case PKBRelationship::USES:
         extracted = usesTable->retrieve(field1, field2);
@@ -127,8 +128,8 @@ PKBResponse PKB::getStatements() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
     std::vector<STMT_LO> extracted = statementTable->getAllStmt();
-    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBField::createConcrete(*iter));
+    for (auto row : extracted) {
+        res.insert(PKBField::createConcrete(row));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -138,8 +139,8 @@ PKBResponse PKB::getStatements(StatementType stmtType) {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
     std::vector<STMT_LO> extracted = statementTable->getStmtOfType(stmtType);
-    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBField::createConcrete(*iter));
+    for (auto row : extracted) {
+        res.insert(PKBField::createConcrete(row));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -149,8 +150,8 @@ PKBResponse PKB::getVariables() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
     std::vector<VAR_NAME> extracted = variableTable->getAllVars();
-    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBField::createConcrete(*iter));
+    for (auto row : extracted) {
+        res.insert(PKBField::createConcrete(row));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -160,8 +161,8 @@ PKBResponse PKB::getProcedures() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
     std::vector<PROC_NAME> extracted = procedureTable->getAllProcs();
-    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBField::createConcrete(*iter));
+    for (auto row : extracted) {
+        res.insert(PKBField::createConcrete(row));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -171,8 +172,8 @@ PKBResponse PKB::getConstants() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
     std::vector<CONST> extracted = constantTable->getAllConst();
-    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBField::createConcrete(*iter));
+    for (auto row : extracted) {
+        res.insert(PKBField::createConcrete(row));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };

@@ -50,10 +50,10 @@ public:
     * Inserts a relationship into the PKB.
     *
     * @param type relationship type
-    * @param entity1 the first program design entity in the relationship
-    * @param entity2 the second program design entity in the relationship
+    * @param field1 the first program design entity in the relationship
+    * @param field2 the second program design entity in the relationship
     */
-    void insertRelationship(PKBRelationship type, PKBField entity1, PKBField entity2);
+    void insertRelationship(PKBRelationship type, PKBField field1, PKBField field2);
 
     // void insertAST();
 
@@ -107,13 +107,15 @@ public:
     */
     PKBResponse getConstants();
 
-public:
+private:
     std::unique_ptr<StatementTable> statementTable;
     std::unique_ptr<VariableTable> variableTable;
     std::unique_ptr<ProcedureTable> procedureTable;
     std::unique_ptr<ModifiesRelationshipTable> modifiesTable;
     std::unique_ptr<FollowsRelationshipTable> followsTable;
     std::unique_ptr<ConstantTable> constantTable;
-    std::unique_ptr<ParentRelationshipTable> parentTable;
+    // std::unique_ptr<ParentRelationshipTable> parentTable;
     std::unique_ptr<UsesRelationshipTable> usesTable;
+
+    void getStatementTypeOfConcreteField(PKBField* field);
 };
