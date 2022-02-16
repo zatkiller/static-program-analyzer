@@ -7,23 +7,23 @@
 #define TEST_LOG Logger() << "evaluator_tests.cpp"
 
 TEST_CASE("Process such that") {
-    std::shared_ptr<qps::evaluator::Parent> ptr1 = std::make_shared<qps::evaluator::Parent>();
-    ptr1.get()->parent = qps::evaluator::StmtRef::ofLineNo(3);
-    ptr1.get()->child = qps::evaluator::StmtRef::ofLineNo(6);
+    std::shared_ptr<qps::query::Parent> ptr1 = std::make_shared<qps::query::Parent>();
+    ptr1.get()->parent = qps::query::StmtRef::ofLineNo(3);
+    ptr1.get()->child = qps::query::StmtRef::ofLineNo(6);
 
-    std::shared_ptr<qps::evaluator::Modifies> ptr2 = std::make_shared<qps::evaluator::Modifies>();
-    ptr2.get()->modifiesStmt = qps::evaluator::StmtRef::ofWildcard();
-    ptr2.get()->modified = qps::evaluator::EntRef::ofWildcard();
+    std::shared_ptr<qps::query::Modifies> ptr2 = std::make_shared<qps::query::Modifies>();
+    ptr2.get()->modifiesStmt = qps::query::StmtRef::ofWildcard();
+    ptr2.get()->modified = qps::query::EntRef::ofWildcard();
 
-    std::shared_ptr<qps::evaluator::Uses> ptr3 = std::make_shared<qps::evaluator::Uses>();
-    ptr3.get()->useStmt = qps::evaluator::StmtRef::ofDeclaration("s1");
-    ptr3.get()->used = qps::evaluator::EntRef::ofWildcard();
+    std::shared_ptr<qps::query::Uses> ptr3 = std::make_shared<qps::query::Uses>();
+    ptr3.get()->useStmt = qps::query::StmtRef::ofDeclaration("s1");
+    ptr3.get()->used = qps::query::EntRef::ofWildcard();
 
-    std::vector<std::shared_ptr<qps::evaluator::RelRef>> suchThat1 = {ptr1};
-    std::vector<std::shared_ptr<qps::evaluator::RelRef>> suchThat2 = {ptr2};
-    std::vector<std::shared_ptr<qps::evaluator::RelRef>> suchThat3 = {ptr3};
-    std::vector<std::shared_ptr<qps::evaluator::RelRef>> noSyn;
-    std::vector<std::shared_ptr<qps::evaluator::RelRef>> hasSyn;
+    std::vector<std::shared_ptr<qps::query::RelRef>> suchThat1 = {ptr1};
+    std::vector<std::shared_ptr<qps::query::RelRef>> suchThat2 = {ptr2};
+    std::vector<std::shared_ptr<qps::query::RelRef>> suchThat3 = {ptr3};
+    std::vector<std::shared_ptr<qps::query::RelRef>> noSyn;
+    std::vector<std::shared_ptr<qps::query::RelRef>> hasSyn;
 
     PKB pkb = PKB();
     PKB* ptr = &pkb;
@@ -36,13 +36,13 @@ TEST_CASE("Process such that") {
     evaluator.processSuchthat(suchThat2, noSyn, hasSyn);
     REQUIRE(noSyn.size() == 1);
     REQUIRE(hasSyn.empty());
-    REQUIRE(noSyn[0]->getType() == qps::evaluator::RelRefType::MODIFIESS);
+    REQUIRE(noSyn[0]->getType() == qps::query::RelRefType::MODIFIESS);
     noSyn.clear();
 
     evaluator.processSuchthat(suchThat3, noSyn, hasSyn);
     REQUIRE(hasSyn.size() == 1);
     REQUIRE(noSyn.empty());
-    REQUIRE(hasSyn[0]->getType() == qps::evaluator::RelRefType::USESS);
+    REQUIRE(hasSyn[0]->getType() == qps::query::RelRefType::USESS);
 }
 
 TEST_CASE("Get list of result") {
@@ -57,9 +57,9 @@ TEST_CASE("Get list of result") {
     pkb.insertStatement(StatementType::Print, 7);
 
     qps::evaluator::Evaluator evaluator(ptr);
-    qps::evaluator::Query query{};
+    qps::query::Query query{};
     TEST_LOG << "log";
-    query.addDeclaration("if", qps::evaluator::DesignEntity::IF);
+    query.addDeclaration("if", qps::query::DesignEntity::IF);
     query.addVariable("if");
     REQUIRE(query.getSuchthat().empty());
     std::list<std::string> result = evaluator.evaluate(query);
