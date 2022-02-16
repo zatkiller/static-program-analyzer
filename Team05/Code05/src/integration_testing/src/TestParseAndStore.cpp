@@ -116,7 +116,7 @@ struct TestParseAndStorePackage1 {
                 p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"sum"}),
                 p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"digit"}),
                 p(STMT_LO{6, StatementType::Assignment}, VAR_NAME{"number"}),
-                p(STMT_LO{7, StatementType::Assignment}, VAR_NAME{"sum"}),
+                p(STMT_LO{7, StatementType::Print}, VAR_NAME{"sum"}),
             }
         );
 
