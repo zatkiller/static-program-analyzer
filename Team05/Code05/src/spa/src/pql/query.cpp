@@ -118,6 +118,18 @@ namespace qps::query {
         return type == EntRefType::WILDCARD;
     }
 
+    PKBField EntRef::wrapEntRef() {
+        PKBField entField;
+        if (this->isVarName()) {
+            entField = PKBField::createConcrete(VAR_NAME{this->getVariableName()});
+        } else if (this->isWildcard()) {
+            entField = PKBField::createWildcard(PKBEntityType::VARIABLE);
+        } else if (this->isDeclaration()) {
+            entField = PKBField::createDeclaration(PKBEntityType::VARIABLE);
+        }
+        return entField;
+    }
+
     StmtRef StmtRef::ofDeclaration(std::string d) {
         StmtRef s;
         s.type = StmtRefType::DECLARATION;
@@ -172,18 +184,6 @@ namespace qps::query {
             stmtField = PKBField::createDeclaration(PKBEntityType::STATEMENT);
         }
         return stmtField;
-    }
-
-    PKBField EntRef::wrapEntRef() {
-        PKBField entField;
-        if (this->isVarName()) {
-            entField = PKBField::createConcrete(VAR_NAME{this->getVariableName()});
-        } else if (this->isWildcard()) {
-            entField = PKBField::createWildcard(PKBEntityType::VARIABLE);
-        } else if (this->isDeclaration()) {
-            entField = PKBField::createDeclaration(PKBEntityType::VARIABLE);
-        }
-        return entField;
     }
 
     std::string Pattern::getSynonym() {
