@@ -69,7 +69,7 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
     case PKBRelationship::FOLLOWS:
         return followsTable->contains(field1, field2);
     case PKBRelationship::PARENT:
-        return true; // parentTable->contains(field1, field2);
+        return parentTable->contains(field1, field2);
     case PKBRelationship::USES:
         return usesTable->contains(field1, field2);
     case PKBRelationship::FOLLOWST:
