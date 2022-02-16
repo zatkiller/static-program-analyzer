@@ -577,10 +577,8 @@ TEST_CASE("Parser parseExpSpec") {
     REQUIRE(parser.parseExpSpec() == "_");
 
     parser.lexer.text = "_\"x\"";
-    REQUIRE(parser.parseExpSpec() == "_x");
-
-    parser.lexer.text = "\"x\"_";
-    REQUIRE(parser.parseExpSpec() == "x_");
+    REQUIRE_THROWS_MATCHES(parser.parseExpSpec(), exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::notExpectingTokenMessage));
 }
 
 TEST_CASE("Parser parseQuery") {
