@@ -21,7 +21,7 @@ public:
     bool isRetrieveValid(PKBField field1, PKBField field2);
 
     // TODO(Patrick): implement retrieveT with graphs
-    // FieldRowResponse retrieveT(PKBField field1, PKBField field2);
+    FieldRowResponse retrieveT(PKBField field1, PKBField field2);
 // private:
 //    std::unique_ptr<ParentGraph> parentGraph;
     std::unordered_set<RelationshipRow, RelationshipRowHash> rows;

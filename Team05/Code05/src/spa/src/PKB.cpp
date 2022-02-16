@@ -12,7 +12,7 @@ PKB::PKB() {
     procedureTable = std::make_unique<ProcedureTable>();
     modifiesTable = std::make_unique<ModifiesRelationshipTable>();
     followsTable = std::make_unique<FollowsRelationshipTable>();
-    // parentTable = std::make_unique<ParentRelationshipTable>();
+    parentTable = std::make_unique<ParentRelationshipTable>();
     usesTable = std::make_unique<UsesRelationshipTable>();
 }
 
@@ -49,7 +49,7 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
         followsTable->insert(field1, field2);
         break;
     case PKBRelationship::PARENT:
-        // parentTable->insert(field1, field2);
+        parentTable->insert(field1, field2);
         break;
     case PKBRelationship::USES:
         usesTable->insert(field1, field2);

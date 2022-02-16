@@ -149,9 +149,9 @@ bool ParentRelationshipTable::containsT(PKBField field1, PKBField entity2) {
     return this->containsT(resEntity, entity2);
 }
 
-// FieldRowResponse ParentRelationshipTable::retrieveT(PKBField field1, PKBField entity2) {
-//
-// }
+ FieldRowResponse ParentRelationshipTable::retrieveT(PKBField field1, PKBField entity2) {
+     return FieldRowResponse{};
+ }
 
 bool ParentRelationshipTable::isInsertOrContainsValid(PKBField field1, PKBField field2) {
     return field1.isValidConcrete(PKBEntityType::STATEMENT) && field2.isValidConcrete(PKBEntityType::STATEMENT);
