@@ -169,7 +169,10 @@ TEST_CASE("Test crossJoin with records inside") {
     PKBField newField1 = PKBField::createConcrete(STMT_LO{2, StatementType::Assignment});
     PKBField newField2 = PKBField::createConcrete(STMT_LO{5, StatementType::Assignment});
     table.insertSynLocationToLast("a");
-    std::unordered_set<PKBField, PKBFieldHash> r1{newField1, newField2};
+    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> r1{
+        std::vector<PKBField>{newField1},
+        std::vector<PKBField>{newField2}
+    };
     PKBResponse response1{true, Response{r1}};
     table.crossJoin(response1);
 
@@ -301,7 +304,11 @@ TEST_CASE("Test join method") {
     TEST_LOG << "========== 1 syn join (cross join 1)";
     qps::evaluator::ResultTable table1{};
     std::vector<std::string> synonyms1{"v"};
-    std::unordered_set<PKBField, PKBFieldHash> testR1{field1, field2, field3};
+    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> testR1{
+            std::vector<PKBField>{field1},
+            std::vector<PKBField>{field2},
+            std::vector<PKBField>{field3}
+    };
     PKBResponse response1{true, Response{testR1}};
 
     table1.join(response1, synonyms1);
@@ -312,7 +319,11 @@ TEST_CASE("Test join method") {
     TEST_LOG << "========== 1 syn join (cross join 2)";
     qps::evaluator::ResultTable table2 = createNonEmptyTable();
     std::vector<std::string> synonyms2{"v1"};
-    std::unordered_set<PKBField, PKBFieldHash> testR2{newField4, newField5, newField6};
+    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> testR2{
+            std::vector<PKBField>{newField4},
+            std::vector<PKBField>{newField5},
+            std::vector<PKBField>{newField6}
+    };
     PKBResponse response2{true, Response{testR2}};
     table2.join(response2, synonyms2);
     REQUIRE(table2.getSynLocation("v1") == 2);

@@ -66,26 +66,6 @@ public:
                          std::vector<std::shared_ptr<query::RelRef>> &hasSyn);
 
     /**
-     * Classifies one clause into noSynonym group and withSynonym group.
-     *
-     * @param r the shared pointer of the relRef
-     * @param f1 the first RelRef variable
-     * @param f2 the second RelRef variable
-     * @param noSyn group of clauses without synonyms
-     * @param hasSyn group of clasues with synonyms
-     */
-    template<typename F1, typename F2>
-    void processSuchthatRelRef(std::shared_ptr<query::RelRef> r, F1 f1, F2 f2,
-                               std::vector<std::shared_ptr<query::RelRef>> &noSyn,
-                               std::vector<std::shared_ptr<query::RelRef>> &hasSyn) {
-        if (!f1.isDeclaration() && !f2.isDeclaration()) {
-            noSyn.push_back(r);
-        } else {
-            hasSyn.push_back(r);
-        }
-    }
-
-    /**
      * Retrieves the final result from the result table.
      *
      * @param table the reference the result table

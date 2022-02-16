@@ -3,6 +3,7 @@
 #define DEBUG Logger(Level::DEBUG) << "evaluator.cpp "
 
 namespace qps::evaluator {
+
     std::string Evaluator::PKBFieldToString(PKBField pkbField) {
         std::string res = "";
         if (pkbField.entityType == PKBEntityType::STATEMENT) {
@@ -47,24 +48,10 @@ namespace qps::evaluator {
                                     std::vector<std::shared_ptr<query::RelRef>> &hasSyn) {
         for (auto r : clauses) {
             query::RelRef *relRefPtr = r.get();
-            if (relRefPtr->getType() == query::RelRefType::MODIFIESS) {
-                query::Modifies *mPtr = dynamic_cast<query::Modifies *>(relRefPtr);
-                processSuchthatRelRef(r, mPtr->modifiesStmt, mPtr->modified, noSyn, hasSyn);
-            } else if (relRefPtr->getType() == query::RelRefType::USESS) {
-                query::Uses *uPtr = dynamic_cast<query::Uses *>(relRefPtr);
-                processSuchthatRelRef(r, uPtr->useStmt, uPtr->used, noSyn, hasSyn);
-            } else if (relRefPtr->getType() == query::RelRefType::FOLLOWS) {
-                query::Follows *fPtr = dynamic_cast<query::Follows *>(relRefPtr);
-                processSuchthatRelRef(r, fPtr->follower, fPtr->followed, noSyn, hasSyn);
-            } else if (relRefPtr->getType() == query::RelRefType::FOLLOWST) {
-                query::FollowsT *ftPtr = dynamic_cast<query::FollowsT *>(relRefPtr);
-                processSuchthatRelRef(r, ftPtr->follower, ftPtr->transitiveFollowed, noSyn, hasSyn);
-            } else if (relRefPtr->getType() == query::RelRefType::PARENT) {
-                query::Parent *pPtr = dynamic_cast<query::Parent *>(relRefPtr);
-                processSuchthatRelRef(r, pPtr->parent, pPtr->child, noSyn, hasSyn);
-            } else if (relRefPtr->getType() == query::RelRefType::PARENTT) {
-                query::ParentT *ptPtr = dynamic_cast<query::ParentT *>(relRefPtr);
-                processSuchthatRelRef(r, ptPtr->parent, ptPtr->transitiveChild, noSyn, hasSyn);
+            if (relRefPtr->getSyns().empty()){
+                noSyn.push_back(r);
+            } else {
+                hasSyn.push_back(r);
             }
         }
     }

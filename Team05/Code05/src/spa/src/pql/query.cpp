@@ -37,7 +37,6 @@ namespace qps::query {
         return declarations.find(name)->second;
     }
 
-
     std::unordered_map<std::string, DesignEntity> Query::getDeclarations() {
         return declarations;
     }
@@ -163,6 +162,29 @@ namespace qps::query {
         return type == StmtRefType::WILDCARD;
     }
 
+    PKBField StmtRef::wrapStmtRef() {
+        PKBField stmtField;
+        if (this->isLineNo()) {
+            stmtField = PKBField::createConcrete(STMT_LO{this->getLineNo()});
+        } else if (this->isWildcard()) {
+            stmtField = PKBField::createWildcard(PKBEntityType::STATEMENT);
+        } else if (this->isDeclaration()) {
+            stmtField = PKBField::createDeclaration(PKBEntityType::STATEMENT);
+        }
+        return stmtField;
+    }
+
+    PKBField EntRef::wrapEntRef() {
+        PKBField entField;
+        if (this->isVarName()) {
+            entField = PKBField::createConcrete(VAR_NAME{this->getVariableName()});
+        } else if (this->isWildcard()) {
+            entField = PKBField::createWildcard(PKBEntityType::VARIABLE);
+        } else if (this->isDeclaration()) {
+            entField = PKBField::createDeclaration(PKBEntityType::VARIABLE);
+        }
+        return entField;
+    }
 
     std::string Pattern::getSynonym() {
         return synonym;
