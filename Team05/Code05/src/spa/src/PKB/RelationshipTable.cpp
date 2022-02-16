@@ -4,7 +4,6 @@
 
 RelationshipTable::RelationshipTable(PKBRelationship rsType) : type(rsType) {}
 
-
 // to ensure that both parameters are valid for ModifiesS or ModifiesP for retrieve or contain
 bool RelationshipTable::isRetrieveValid(PKBField field1, PKBField field2) {
     return (field1.entityType == PKBEntityType::PROCEDURE ||
@@ -18,23 +17,35 @@ bool RelationshipTable::isInsertOrContainsValid(PKBField field1, PKBField field2
 }
 
 bool RelationshipTable::contains(PKBField field1, PKBField field2) {
-    if (!isInsertOrContainsValid(field1, field2)) return false;
+    if (!isInsertOrContainsValid(field1, field2)) {
+        Logger(Level::ERROR) <<
+            "RelationshipTable can only contain concrete fields and STATEMENT or PROCEDURE entity types.";
+        return false;
+    };
 
     return rows.count(RelationshipRow(field1, field2)) == 1;
 }
 
 void RelationshipTable::insert(PKBField field1, PKBField field2) {
-    if (!isInsertOrContainsValid(field1, field2)) return;
+    if (!isInsertOrContainsValid(field1, field2)) {
+        Logger(Level::ERROR) <<
+            "RelationshipTable can only contain concrete fields and STATEMENT or PROCEDURE entity types.";
+        return;
+    }
 
     rows.insert(RelationshipRow(field1, field2));
 }
 
-std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>
-RelationshipTable::retrieve(PKBField field1, PKBField field2) {
+FieldRowResponse RelationshipTable::retrieve(PKBField field1, PKBField field2) {
     PKBFieldType fieldType1 = field1.fieldType;
     PKBFieldType fieldType2 = field2.fieldType;
 
     FieldRowResponse res;
+    if (!isRetrieveValid(field1, field2)) {
+        Logger(Level::ERROR) <<
+            "RelationshipTable can only contain fields of STATEMENT or PROCEDURE entity types.";
+        return res;
+    }
 
     if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 == PKBFieldType::CONCRETE) {
         if (this->contains(field1, field2)) res.insert({ field1, field2 });

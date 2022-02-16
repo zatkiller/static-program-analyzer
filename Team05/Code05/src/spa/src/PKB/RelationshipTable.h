@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <unordered_set>
 
+#include "logging.h"
 #include "RelationshipRow.h"
 #include "PKBRelationship.h"
 

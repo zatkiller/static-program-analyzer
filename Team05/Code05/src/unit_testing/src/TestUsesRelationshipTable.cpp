@@ -85,7 +85,7 @@ TEST_CASE("UsesRelationshipTable regression test") {
         REQUIRE(table->retrieve(stmt1, var1) == FieldRowResponse{ {stmt1, var1} });
         REQUIRE(table->retrieve(stmt2, var2) == FieldRowResponse{ {stmt2, var2} });
         REQUIRE(table->retrieve(proc, var2) == FieldRowResponse{ {proc,var2} });
-        REQUIRE_THROWS(table->retrieve(PKBField::createDeclaration(StatementType::All),
+        REQUIRE(table->retrieve(PKBField::createDeclaration(StatementType::All),
             PKBField::createDeclaration(PKBEntityType::PROCEDURE)) == FieldRowResponse{ });
     }
 }
