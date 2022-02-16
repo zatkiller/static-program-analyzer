@@ -172,5 +172,9 @@ TEST_CASE("PKB regression test") {
         pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field3);
         REQUIRE(pkb->isRelationshipPresent(field1, field3, PKBRelationship::MODIFIES));
         REQUIRE(pkb->isRelationshipPresent(field2, field3, PKBRelationship::MODIFIES));
+
+        // statement not in the statement table and STMT_LO initialised without a type
+        PKBField field4 = PKBField::createConcrete(STMT_LO{ 3 });
+        REQUIRE_FALSE(pkb->isRelationshipPresent(field4, field3, PKBRelationship::MODIFIES));
     }
 }

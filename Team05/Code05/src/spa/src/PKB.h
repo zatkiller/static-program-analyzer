@@ -58,15 +58,24 @@ public:
     // void insertAST();
 
     /**
-    * Checks whether there exist
+    * Checks whether there exist. If any fields are invalid, return false.
+    * 
+    * @param field1 the first program design entity in the relationship
+    * @param field2 the second program design entity in the relationship
+    * @param rs the relationship type 
+    * 
+    * @return bool
     */
     bool isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationship rs);
 
     /**
-    * Retrieve all relationships matching rs(field1, field2).
+    * Retrieve all relationships matching rs(field1, field2). If any fields are invalid, 
+    * an empty PKBResponse is returned.
     *
     * @param field1 the first program design entity in the relationship
     * @param field2 the second program design entity in the relationship
+    * @param rs the relationship type 
+    * 
     * @return matching relationships wrapped in PKBResponse
     */
     PKBResponse getRelationship(PKBField field1, PKBField field2, PKBRelationship rs);
@@ -117,5 +126,13 @@ private:
     std::unique_ptr<ParentRelationshipTable> parentTable;
     std::unique_ptr<UsesRelationshipTable> usesTable;
 
-    void getStatementTypeOfConcreteField(PKBField* field);
+    /**
+    * Check whether field is a concrete statement. Returns false if it is a 
+    * concrete statement with an uninitialized statement type and its statement number is absent in
+    * the StatementTable. 
+    * 
+    * @param field
+    * @return bool
+    */
+    bool getStatementTypeOfConcreteField(PKBField* field);
 };
