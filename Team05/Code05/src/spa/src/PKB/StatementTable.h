@@ -55,6 +55,13 @@ public:
     */
     std::vector<STMT_LO> getStmtOfType(StatementType);
 
+    /**
+    * Retrieve the statement type of a statement row with statementNum. If there doesn't exist one,
+    * return a null optional.
+    *
+    * @param statementNum
+    * @return std::optional<StatementType>
+    */
     std::optional<StatementType> getStmtTypeOfLine(int statementNum);
 
 private:
