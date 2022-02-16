@@ -31,48 +31,62 @@ void ModifiesRelationshipTable::insert(PKBField field1, PKBField field2) {
 
 std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>
 ModifiesRelationshipTable::retrieve(PKBField field1, PKBField field2) {
-    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> res;
-    if (!isRetrieveValid(field1, field2)) return res;
+    PKBFieldType fieldType1 = field1.fieldType;
+    PKBFieldType fieldType2 = field2.fieldType;
 
-    if (!(field1.fieldType == PKBFieldType::CONCRETE) &&
-        !(field2.fieldType == PKBFieldType::CONCRETE)) {
+    FieldRowResponse res;
+
+    if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 == PKBFieldType::CONCRETE) {
+        if (this->contains(field1, field2)) res.insert({ field1, field2 });
+
+    } else if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 != PKBFieldType::CONCRETE) {
         for (auto row : rows) {
-            RelationshipRow current = row;
-            PKBField first = current.getFirst();
-            PKBField second = current.getSecond();
+            RelationshipRow curr = row;
+            PKBField first = curr.getFirst();
+            PKBField second = curr.getSecond();
 
-            if (first.entityType == field1.entityType && second.entityType == field2.entityType) {
-                res.insert(std::vector<PKBField>{first, second});
+            if (first == field1) {
+                res.insert({ first,second });
             }
         }
-    } else if (field1.fieldType == PKBFieldType::CONCRETE && !(field2.fieldType == PKBFieldType::CONCRETE)) {
+        // either statement declaration or wildcard, or procedure wildcard/declaration
+    } else if (fieldType1 != PKBFieldType::CONCRETE && fieldType2 == PKBFieldType::CONCRETE) {
+        // field1 cannot be both statement and wildcard, invalid syntax
         for (auto row : rows) {
-            RelationshipRow current = row;
-            PKBField first = current.getFirst();
-            PKBField second = current.getSecond();
+            RelationshipRow curr = row;
+            PKBField first = curr.getFirst();
+            PKBField second = curr.getSecond();
 
-            if (first == field1 && second.entityType == field2.entityType) {
-                res.insert(std::vector<PKBField>{first, second});
+            // If first declaration looking for Procedures
+            if (field1.entityType == PKBEntityType::PROCEDURE && first.entityType == PKBEntityType::PROCEDURE) {
+                if (second == field2) {
+                    res.insert({ first,second });
+                }
+            }
+
+            if (field1.entityType == PKBEntityType::STATEMENT && first.entityType == PKBEntityType::STATEMENT) {
+                if (second == field2) {
+                    if (field1.statementType.value() == StatementType::All || field1.statementType == first.getContent<STMT_LO>()->type.value()) {
+                        res.insert({ first,second });
+                    }
+                }
             }
         }
-    } else if (!(field1.fieldType == PKBFieldType::CONCRETE) && field2.fieldType == PKBFieldType::CONCRETE) {
+    } else { // both declaration/wild
         for (auto row : rows) {
-            RelationshipRow current = row;
-            PKBField first = current.getFirst();
-            PKBField second = current.getSecond();
+            RelationshipRow curr = row;
+            PKBField first = curr.getFirst();
+            PKBField second = curr.getSecond();
 
-            if (first.entityType == field1.entityType && second == field2) {
-                res.insert(std::vector<PKBField>{first, second});
+            // If first declaration looking for Procedures
+            if (field1.entityType == PKBEntityType::PROCEDURE && first.entityType == PKBEntityType::PROCEDURE) {
+                res.insert({ first,second });
             }
-        }
-    } else {
-        for (auto row : rows) {
-            RelationshipRow current = row;
-            PKBField first = current.getFirst();
-            PKBField second = current.getSecond();
 
-            if (first == field1 && second == field2) {
-                res.insert(std::vector<PKBField>{first, second});
+            if (field1.entityType == PKBEntityType::STATEMENT && first.entityType == PKBEntityType::STATEMENT) {
+                if (field1.statementType.value() == StatementType::All || field1.statementType == first.getContent<STMT_LO>()->type.value()) {
+                    res.insert({ first,second });
+                }
             }
         }
     }

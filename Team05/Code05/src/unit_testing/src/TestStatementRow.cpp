@@ -6,7 +6,7 @@
 TEST_CASE("StatementRow getStmt") {
     StatementRow row1{ StatementType::Assignment, 1 };
 
-    REQUIRE(row1.getStmt() == STMT_LO{1, StatementType::Assignment});
+    REQUIRE(row1.getStmt() == STMT_LO{ 1, StatementType::Assignment });
 }
 
 TEST_CASE("StatementRow ==") {

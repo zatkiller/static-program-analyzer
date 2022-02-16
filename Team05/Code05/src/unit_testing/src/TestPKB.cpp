@@ -95,3 +95,68 @@ TEST_CASE("PKB STMT_LO empty type") {
     auto content2 = res2.getResponse<FieldRowResponse>();
     REQUIRE(*content == *content2); // checks that getStatementTypeOfConcreteField works
 }
+
+TEST_CASE("PKB regression test") {
+    SECTION("PKB regression test #140.1") {
+        std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+        pkb->getRelationship(
+            PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(PKBEntityType::VARIABLE),
+            PKBRelationship::USES
+        );
+    }
+    SECTION("PKB regression test #140.2") {
+        std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+        pkb->insertRelationship(PKBRelationship::USES,
+            PKBField::createConcrete(STMT_LO{ 1, StatementType::Print }),
+            PKBField::createConcrete(VAR_NAME("x"))
+        );
+        pkb->getRelationship(
+            PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(PKBEntityType::VARIABLE),
+            PKBRelationship::USES
+        );
+    }
+
+    SECTION("PKB regression test #142.1") {
+        std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+        pkb->insertRelationship(PKBRelationship::USES,
+            PKBField::createConcrete(STMT_LO{ 1, StatementType::Print }),
+            PKBField::createConcrete(VAR_NAME("x"))
+        );
+        pkb->insertRelationship(PKBRelationship::USES,
+            PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment }),
+            PKBField::createConcrete(VAR_NAME("y"))
+        );
+        pkb->insertRelationship(PKBRelationship::USES,
+            PKBField::createConcrete(PROC_NAME{ "main" }),
+            PKBField::createConcrete(VAR_NAME("y"))
+        );
+        REQUIRE_NOTHROW(pkb->getRelationship(
+            PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(PKBEntityType::VARIABLE),
+            PKBRelationship::USES
+        ));
+    }
+
+    SECTION("PKB regression test #142.2") {
+        std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+        pkb->insertRelationship(PKBRelationship::MODIFIES,
+            PKBField::createConcrete(STMT_LO{ 1, StatementType::Print }),
+            PKBField::createConcrete(VAR_NAME("x"))
+        );
+        pkb->insertRelationship(PKBRelationship::MODIFIES,
+            PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment }),
+            PKBField::createConcrete(VAR_NAME("y"))
+        );
+        pkb->insertRelationship(PKBRelationship::MODIFIES,
+            PKBField::createConcrete(PROC_NAME{ "main" }),
+            PKBField::createConcrete(VAR_NAME("y"))
+        );
+        REQUIRE_NOTHROW(pkb->getRelationship(
+            PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(PKBEntityType::VARIABLE),
+            PKBRelationship::MODIFIES
+        ));
+    }
+}
