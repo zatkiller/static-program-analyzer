@@ -63,8 +63,9 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
         return false;
     }
 
-    getStatementTypeOfConcreteField(&field1);
-    getStatementTypeOfConcreteField(&field2);
+    if (!getStatementTypeOfConcreteField(&field1) || !getStatementTypeOfConcreteField(&field2)) {
+        return false;
+    }
 
     switch (rs) {
     case PKBRelationship::MODIFIES:
@@ -85,20 +86,30 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
 
 // GET API
 
-void PKB::getStatementTypeOfConcreteField(PKBField* field) {
+// if false, it means the statement number does not exist in the statement table
+bool PKB::getStatementTypeOfConcreteField(PKBField* field) {
     if (field->fieldType == PKBFieldType::CONCRETE && field->entityType == PKBEntityType::STATEMENT) {
         auto content = field->getContent<STMT_LO>();
 
         if (!content->hasStatementType()) {
-            StatementType type = statementTable->getStmtTypeOfLine(content->statementNum);
-            field->content = STMT_LO{ content->statementNum, type };
+            auto type = statementTable->getStmtTypeOfLine(content->statementNum);
+
+            if (type.has_value()) {
+                field->content = STMT_LO{ content->statementNum, type.value() };
+                return true;
+            } else {
+                return false;
+            }
         }
     }
+
+    return true;
 }
 
 PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationship rs) {
-    getStatementTypeOfConcreteField(&field1);
-    getStatementTypeOfConcreteField(&field2);
+    if (!getStatementTypeOfConcreteField(&field1) || !getStatementTypeOfConcreteField(&field2)) {
+        return PKBResponse{ false, Response{} };
+    }
 
     FieldRowResponse extracted;
 
@@ -124,7 +135,7 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
 
     return extracted.size() != 0
         ? PKBResponse{ true, Response{extracted} }
-        : PKBResponse{ false, Response{extracted} };
+    : PKBResponse{ false, Response{extracted} };
 }
 
 PKBResponse PKB::getStatements() {
