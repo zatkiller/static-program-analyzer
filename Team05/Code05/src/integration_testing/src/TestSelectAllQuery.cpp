@@ -42,12 +42,18 @@ TEST_CASE("Test get statements") {
     PKBResponse resPrint = evaluator.getAll(DesignEntity::PRINT);
     PKBResponse resRead = evaluator.getAll(DesignEntity::READ);
 
-    std::unordered_set<PKBField, PKBFieldHash> setAll = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resAll.res));
-    std::unordered_set<PKBField, PKBFieldHash> setAss = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resAss.res));
-    std::unordered_set<PKBField, PKBFieldHash> setWhile = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resWhile.res));
-    std::unordered_set<PKBField, PKBFieldHash> setIf = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resIf.res));
-    std::unordered_set<PKBField, PKBFieldHash> setPrint = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resPrint.res));
-    std::unordered_set<PKBField, PKBFieldHash> setRead = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resRead.res));
+    std::unordered_set<PKBField, PKBFieldHash> setAll =
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resAll.res));
+    std::unordered_set<PKBField, PKBFieldHash> setAss =
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resAss.res));
+    std::unordered_set<PKBField, PKBFieldHash> setWhile =
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resWhile.res));
+    std::unordered_set<PKBField, PKBFieldHash> setIf =
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resIf.res));
+    std::unordered_set<PKBField, PKBFieldHash> setPrint =
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resPrint.res));
+    std::unordered_set<PKBField, PKBFieldHash> setRead =
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resRead.res));
 
 
     int countAssign = setAss.size();
@@ -60,7 +66,6 @@ TEST_CASE("Test get statements") {
     REQUIRE(setPrint == expectedSelectPrint);
     REQUIRE(resRead.hasResult == false);
     REQUIRE(setRead == expectedSelectRead);
-
 }
 
 TEST_CASE("Test get variables") {
@@ -81,9 +86,9 @@ TEST_CASE("Test get variables") {
     std::unordered_set<PKBField, PKBFieldHash> expectedSelectVar{v1, v2, v3};
 
     PKBResponse resVar = evaluator.getAll(DesignEntity::VARIABLE);
-    std::unordered_set<PKBField, PKBFieldHash> setVar = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resVar.res));
+    std::unordered_set<PKBField, PKBFieldHash> setVar =
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resVar.res));
     REQUIRE(setVar == expectedSelectVar);
-
 }
 
 TEST_CASE("Test evaluate select s") {

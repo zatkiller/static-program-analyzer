@@ -1,4 +1,7 @@
+#pragma once
+
 #include <memory>
+#include <string>
 
 #include "Parser/AST.h"
 #include "PKB.h"

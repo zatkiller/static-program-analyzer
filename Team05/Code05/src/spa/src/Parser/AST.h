@@ -6,6 +6,10 @@
 #include <utility>
 #include <variant>
 
+/**
+ * @namespace AST
+ * @brief Namespace to encapsulate the AST.
+ */
 namespace AST {
 
 struct ASTNodeVisitor;
@@ -66,26 +70,30 @@ struct ASTNodeVisitor {
 };
 
 
-
 /**
-    * Base class for Var/Const/BinExpr in the AST.
-    * Identified by:
-    *  expr | term | factor
-    * where:
-    *  expr: expr ‘+’ term | expr ‘-’ term | term
-    *  term: term ‘*’ factor | term ‘/’ factor | term ‘%’ factor | factor
-    *  factor: var_name | const_value | ‘(’ expr ‘)’
-    */
+ * @class Expr
+ * @brief Class that represents an expression in the AST
+ * and is the base class for Var, Const and BinExpr. 
+ * @details Expr is identified by: expr | term | factor \n 
+ * where:
+ * - expr: expr '+' term | expr '-' term | term
+ * - term: term '*' factor | term '/' factor | term '%' factor | factor
+ * - factor: var_name | const_value | '(' expr ')'
+ * @see Var, Const, BinExpr
+ */
 class Expr : public ASTNode {
 public:
     virtual ~Expr() {}
 };
 
 /**
-* Represents a variable in the AST.
-* Identified by:
-*  var_name
-*/
+ * @class Var
+ * @brief Class that represents a variable in the AST. 
+ * @details Var is identified by: var_name \n 
+ * where:
+ * - var_name: NAME
+ *     - NAME: LETTER (LETTER | DIGIT)*
+ */
 class Var : public Expr {
 private:
     std::string varName;
@@ -99,11 +107,18 @@ public:
 
 
 /**
-    * Represents a statement in the AST.
-    * Base class for: 'read', 'print', 'while', 'if' and 'assign' statements.
-    * Identified by:
-    *  read | print | while | if | assign
-    */
+ * @class Statement
+ * @brief Class that represents a statement in the AST
+ * and is the base class for Read, Print, While, If and Assign statements. 
+ * @details Statement is identified by: read | print | while | if | assign \n 
+ * where:
+ * - read: 'read' var_name';'
+ * - print: 'print' var_name';'
+ * - while: 'while' '(' cond_expr ')' '{' stmtLst '}'
+ * - if: 'if' '(' cond_expr ')' 'then' '{' stmtLst '}' 'else' '{' stmtLst '}'
+ * - assign: var_name '=' expr ';'
+ * @see Read, Print, While, If, Assign
+ */
 class Statement : public ASTNode {
 private:
     int stmtNo;
@@ -116,23 +131,33 @@ public:
 };
 
 /**
-    * Represents a conditional expression in the AST
-    * Identified by:
-    *  cond_expr | rel_expr | rel_factor
-    * where:
-    *  cond_expr: rel_expr | '!' '(' cond_expr ')' |
-    *    '(' cond_expr ')' '&&' '(' cond_expr ')' |
-    *    '(' cond_expr ')' '||' '(' cond_expr ')'
-    *  rel_expr: rel_factor '>' rel_factor | rel_factor '>=' rel_factor |
-    *    rel_factor '<' rel_factor | rel_factor '<' rel_factor |
-    *    rel_factor '==' rel_factor | rel_factor '!=' rel_factor
-    *  rel_factor: var_name | const_value | expr
-    */
+ * @class CondExpr
+ * @brief Class that represents a conditional expression in the AST
+ * and is the base class for CondBinExpr, NotCondExpr and RelExpr. 
+ * @details CondExpr is identified by: cond_expr | rel_expr | rel_factor \n 
+ * where: 
+ * - cond_expr: rel_expr | '!' '(' cond_expr ')' | 
+ * '(' cond_expr ')' '&&' '(' cond_expr ')' |
+ * '(' cond_expr ')' '||' '(' cond_expr ')'
+ * -  rel_expr: rel_factor '>' rel_factor | rel_factor '>=' rel_factor |
+ * rel_factor '<' rel_factor | rel_factor '<' rel_factor |
+ * rel_factor '==' rel_factor | rel_factor '!=' rel_factor
+ * - rel_factor: var_name | const_value | expr
+ * @see Var, Const, Expr
+ */
 class CondExpr : public ASTNode {
 public:
     virtual ~CondExpr() {}
 };
 
+/**
+ * @class StmtLst
+ * @brief Class that represents 0..* Statement in the AST.
+ * @details StmtLst is identified by: stmt+
+ * where: 
+ * - stmt: read | print | while | if | assign
+ * @see Read, Print, While, If, Assign
+ */
 class StmtLst : public ASTNode {
 private:
     std::vector<std::unique_ptr<Statement>> list;
@@ -146,10 +171,15 @@ public:
 };
 
 /**
-    * Represents a procedure in the AST.
-    * Identified by:
-    *  'procedure' procName stmtlst
-    */
+ * @class Procedure
+ * @brief Class that represents a Procedure in the AST.
+ * @details Procedure is identified by: 'procedure' proc_name '{' stmtLst '}'
+ * where: 
+ * - stmtLst: stmt+
+ * - proc_name: NAME
+ *     - NAME: LETTER (LETTER | DIGIT)*
+ * @see Statement
+ */
 class Procedure : public ASTNode {
 private:
     std::string procName;
@@ -165,11 +195,14 @@ public:
 };
 
 /**
-    * Represents the Program in the AST.
-    * Program contains a single Procedure.
-    * Identified by:
-    *  procedure
-    */
+ * @class Program
+ * @brief Class that represents a Program in the AST.
+ * @details Currently a Program contains a single Procedure. \n
+ * It is therefore identified by: procedure \n
+ * where:
+ * - procedure: 'procedure' proc_name '{' stmtLst '}'
+ * @see Procedure
+ */
 class Program : public ASTNode {
 private:
     std::unique_ptr<Procedure> procedure;
@@ -183,10 +216,17 @@ public:
 };
 
 /**
-    * Represents an 'if' statement in the AST.
-    * Identified by:
-    *  'if' '(' cond_expr ')' 'then' '{' stmtLst '}' 'else' '{' stmtLst '}'
-    */
+ * @class If
+ * @brief Class that Represents an If statement in the AST.
+ * @details If is identified by: 'if' '(' cond_expr ')' 
+ * 'then' '{' stmtLst '}' 'else' '{' stmtLst '}' \n
+ * where:
+ * - cond_expr: rel_expr | '!' '(' cond_expr ')' |
+ * '(' cond_expr ')' '&&' '(' cond_expr ')' |
+ * '(' cond_expr ')' '||' '(' cond_expr ')'
+ * - stmtLst: stmt+
+ * @see Statement, StmtLst, CondExpr, RelExpr
+ */
 class If : public Statement {
 private:
     std::unique_ptr<CondExpr> condExpr;
@@ -205,15 +245,24 @@ public:
         elseBlk(std::move(elseBlk)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    CondExpr* getCondExpr() const {
+        return condExpr.get();
+    }
 
     virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
-    * Represents an 'while' statement in the AST.
-    * Identified by:
-    *  'while' '(' cond_expr ')' '{' stmtLst '}'
-    */
+ * @class While
+ * @brief Class that Represents a While statement in the AST.
+ * @details While is identified by: 'while' '(' cond_expr ')' '{' stmtLst '}' \n 
+ * where:
+ * - cond_expr: rel_expr | '!' '(' cond_expr ')' |
+ * '(' cond_expr ')' '&&' '(' cond_expr ')' |
+ * '(' cond_expr ')' '||' '(' cond_expr ')'
+ * - stmtLst: stmt+
+ * @see Statement, StmtLst, CondExpr, RelExpr
+ */
 class While : public Statement {
 private:
     std::unique_ptr<CondExpr> condExpr;
@@ -229,19 +278,28 @@ public:
         stmtLst(std::move(stmtLst)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    CondExpr* getCondExpr() const {
+        return condExpr.get();
+    }
 
     virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
-    * Represents an 'assign' statement in the AST.
-    * Identified by:
-    *  var_name '=' expr ';'
-    */
+ * @class Assign
+ * @brief Class that represents an Assign statement in the AST.
+ * @details Assign is identified by: var_name '=' expr ';' \n 
+ * where: 
+ * - expr: expr '+' term | expr '-' term | term
+ * - term '*' factor | term '/' factor | term '%' factor | factor
+ * - factor: var_name | const_value | '(' expr ')'
+ * @see Var, Const, Expr, BinExpr
+ */
 class Assign : public Statement {
 private:
     std::unique_ptr<Var> var;
     std::unique_ptr<Expr> expr;
+
 public:
     Assign(
         int stmtNo,
@@ -254,8 +312,12 @@ public:
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 
-    const Var getLHS() const {
-        return *var;
+    Var* getLHS() const {
+        return var.get();
+    }
+
+    Expr* getRHS() const {
+        return expr.get();
     }
 
     virtual bool operator==(ASTNode const& o) const;
@@ -263,9 +325,15 @@ public:
 
 
 /**
-    * Represents an input/output statement in the AST.
-    * Base class for 'Read and 'Print' statements.
-    */
+ * @class IO
+ * @brief Class that represents an input/output statement in the AST
+ * and is the base class for Read and Print statements.
+ * @details IO is identified by: read | print \n
+ * where: 
+ * - read: 'read' var_name';'
+ * - print: 'print' var_name';'
+ * @see Var, Const, Expr, BinExpr
+ */
 class IO : public Statement {
 protected:
     std::unique_ptr<Var> var;
@@ -283,10 +351,11 @@ public:
 };
 
 /**
-    * Represents a Read statement in the AST.
-    * Identified by:
-    *  'read' var_name;
-    */
+ * @class Read
+ * @brief Class that represents a Read statement in the AST.
+ * @details Read is identified by: 'read' var_name;
+ * @see Var
+ */
 class Read : public IO {
 public:
     using IO::IO;
@@ -294,10 +363,11 @@ public:
 };
 
 /**
-    * Represents a Print statement in the AST.
-    * Identified by:
-    *  'print' var_name;
-    */
+ * @class Print
+ * @brief Class that represents a Print statement in the AST.
+ * @details Print is identified by: 'print' var_name;
+ * @see Var
+ */
 class Print : public IO {
 public:
     using IO::IO;
@@ -305,10 +375,14 @@ public:
 };
 
 /**
-    * Represents a const in the AST.
-    * Identified by:
-    *  const_value
-    */
+ * @class Const
+ * @brief Class that represents a constant in the AST.
+ * @details Const is identified by: const_value \n
+ * where:
+ * - const_value: INTEGER
+ *     - INTEGER: DIGIT+
+ *     - DIGIT: 0-9
+ */
 class Const : public Expr {
 private:
     int constValue;
@@ -321,22 +395,27 @@ public:
 };
 
 /**
-    * Represents possible operators in BinExpr.
-    */
+ * @enum BinOp
+ * @brief Enum that represents all possible operators in BinExpr.
+ * @see BinExpr
+ */
 enum class BinOp {
-    PLUS   = '+',
-    MINUS  = '-',
-    DIVIDE = '/',
-    MULT   = '*',
-    MOD    = '%'
+    PLUS   = '+',  /**< Addition operator '+' */
+    MINUS  = '-',  /**< Subtraction operator '-' */
+    DIVIDE = '/',  /**< Division operator '/' */
+    MULT   = '*',  /**< Multiplication operator '*' */
+    MOD    = '%'  /**< Modulo operator '%' */
 };
 
 /**
-    * Represents an expression with 2 Expr and an operator in the AST.
-    * Identified by:
-    *  from expr: expr '+' term | expr '-' term |
-    *  from term: term '*' factor | term '/' factor | term '%' factor
-    */
+ * @class BinExpr
+ * @brief Class that represents a binary expression (2 Expr and a ::BinOp operator) in the AST.
+ * @details BinExpr is composed of a ::BinOp operator and two Expr LHS and RHS. \n
+ * BinExpr is identified by:
+ * - from expr: expr '+' term | expr '-' term |
+ * - from term: term '*' factor | term '/' factor | term '%' factor
+ * @see Expr, Var, Const, ::BinOp
+ */
 class BinExpr: public Expr {
 private:
     BinOp Op;
@@ -357,24 +436,31 @@ public:
 };
 
 /**
-    * Represents the possible operators in RelExpr
-    */
+ * @enum RelOp
+ * @brief Enum that represents all possible operators in RelExpr.
+ * @see RelExpr
+ */
 enum class RelOp {
-    LTE,  // <=
-    GTE,  // >=
-    LT,   // <
-    GT,   // >
-    EQ,   // ==
-    NE    // !=
+    LTE,  /**< Less than or equals to operator "<=" */
+    GTE,  /**< Greater than or equals to operator ">=" */
+    LT,   /**< Less than "<" */
+    GT,   /**< Greater than ">" */
+    EQ,   /**< Equals operator "==" */
+    NE    /**< Not equals operator "!=" */
 };
 
 /**
-    * Represents a RelExpr in the AST.
-    * Identified by: 
-    *  rel_expr: rel_factor '>' rel_factor | rel_factor '>=' rel_factor | 
-    *    rel_factor '<' rel_factor | rel_factor '<' rel_factor | 
-    *    rel_factor '==' rel_factor | rel_factor '!=' rel_factor
-    */
+ * @class RelExpr
+ * @brief Class that represents a relational expression (2 Expr and a ::RelOp operator) in the AST. 
+ * @details RelExpr is composed of a ::RelOp operator and two Expr LHS and RHS. \n 
+ * RelExpr is identified by: \n
+ * rel_expr: rel_factor '>' rel_factor | rel_factor '>=' rel_factor | 
+ * rel_factor '<' rel_factor | rel_factor '<' rel_factor | 
+ * rel_factor '==' rel_factor | rel_factor '!=' rel_factor \n 
+ * where: 
+ * - rel_factor: var_name | const_value | expr
+ * @see Expr, Var, Const, ::RelOp
+ */
 class RelExpr : public CondExpr {
 private:
     RelOp Op;
@@ -395,19 +481,27 @@ public:
 };
 
 /**
-    * Represents the possible operators in CondBinExpr and NotCondExpr
-    */
+ * @enum CondOp
+ * @brief Enum that represents all the possible operators in CondBinExpr and NotCondExpr.
+ * @see CondBinExpr, NotCondExpr
+ */
 enum class CondOp {
-    NOT,  // !
-    AND,  // &&
-    OR    // ||
+    NOT,  /**< NOT operator "!" */
+    AND,  /**< AND operator "&&" */
+    OR    /**< OR operator "||" */
 };
+
+
 /**
-    * Represents CondBinExpr in the AST.
-    * Identified by:
-    *  from cont_expr: ‘(’ cond_expr ‘)’ ‘&&’ ‘(’ cond_expr ‘)’ |
-    *    ‘(’ cond_expr ‘)’ ‘||’ ‘(’ cond_expr ‘)’
-    */
+ * @class CondBinExpr
+ * @brief Represents a binary conditional expression (2 CondExpr and a ::CondOp operator)
+ *  in the AST.
+ * @details CondBinExpr is composed of a ::CondOp operator and two CondExpr LHS and RHS. \n 
+ * CondBinExpr is identified by:
+ * - from cond_expr: '(' cond_expr ')' '&&' '(' cond_expr ')' |
+ * '(' cond_expr ')' '||' '(' cond_expr ')'
+ * @see CondExpr, ::RelOp
+ */
 class CondBinExpr : public CondExpr {
 private:
     CondOp Op;
@@ -428,10 +522,14 @@ public:
 };
 
 /**
-    * Represents the condition expression with '!' in the AST.
-    * Identified by:
-    *   from cont_expr: ‘!’ ‘(’ cond_expr ‘)’
-    */
+ * @class NotCondExpr
+ * @brief Represents the negated conditional expression (::CondOp::NOT operator and a CondExpr)
+ *  in the AST.
+ * @details NotCondExpr is composed of a ::CondOp::NOT operator and a CondExpr. \n 
+ * NotCondExpr is identified by:
+ * - from cont_expr: '!' '(' cond_expr ')'
+ * @see CondExpr, ::CondOp::NOT
+ */
 class NotCondExpr : public CondExpr {
 private:
     CondOp Op = CondOp::NOT;
@@ -447,27 +545,78 @@ public:
     virtual bool operator==(ASTNode const& o) const;
 };
 
-
+/**
+ * @brief Factory method for ASTNode with 1 argument.
+ * 
+ * @tparam T returning ASTNode type.
+ * @tparam K parameter type that is used to construct the T object.
+ * @param arg parameter of type K used to construct the T object. 
+ * @return std::unique_ptr<T> a unique pointer to the T object. 
+ */
 template <class T, typename K>
 std::unique_ptr<T> make(K arg) {
     return std::make_unique<T>(arg);
 }
 
+/**
+ * @brief Factory method for ASTNode with 2 arguments.
+ * 
+ * @tparam T returning ASTNode type.
+ * @tparam K parameter type that is used to construct the T object.
+ * @tparam H parameter type that is used to construct the T object.
+ * @param arg1 parameter of type K used to construct the T object. 
+ * @param arg2 parameter of type H used to construct the T object. 
+ * @return std::unique_ptr<T> a unique pointer to the T object. 
+ */
 template <class T, typename K, typename H>
 std::unique_ptr<T> make(K arg1, H arg2) {
     return std::make_unique<T>(arg1, std::move(arg2));
 }
 
+/**
+ * @brief Factory method for ASTNode with 3 arguments.
+ * 
+ * @tparam T returning ASTNode type.
+ * @tparam K parameter type that is used to construct the T object.
+ * @tparam H parameter type that is used to construct the T object.
+ * @tparam V parameter type that is used to construct the T object.
+ * @param arg1 parameter of type K used to construct the T object. 
+ * @param arg2 parameter of type H used to construct the T object. 
+ * @param arg3 parameter of type V used to construct the T object. 
+ * @return std::unique_ptr<T> a unique pointer to the T object. 
+ */
 template <class T, typename K, typename H, typename V>
 std::unique_ptr<T> make(K arg1, H arg2, V arg3) {
     return std::make_unique<T>(arg1, std::move(arg2), std::move(arg3));
 }
 
+/**
+ * @brief Factory method for ASTNode with 4 arguments.
+ * 
+ * @tparam T returning ASTNode type.
+ * @tparam K parameter type that is used to construct the T object.
+ * @tparam H parameter type that is used to construct the T object.
+ * @tparam V parameter type that is used to construct the T object.
+ * @tparam Z parameter type that is used to construct the T object.
+ * @param arg1 parameter of type K used to construct the T object. 
+ * @param arg2 parameter of type H used to construct the T object. 
+ * @param arg3 parameter of type V used to construct the T object. 
+ * @param arg4 parameter of type Z used to construct the t object. 
+ * @return std::unique_ptr<T> a unique pointer to the T object. 
+ */
 template <class T, typename K, typename H, typename V, typename Z>
 std::unique_ptr<T> make(K arg1, H arg2, V arg3, Z arg4) {
     return std::make_unique<T>(arg1, std::move(arg2), std::move(arg3), std::move(arg4));
 }
 
+/**
+ * @brief Variadic method for StmtLst with any number of arguments.
+ * 
+ * @tparam Ts parameter type that is used to construct the StmtLst object.
+ * @param ts parameter of type T used to construct the StmtLst object.
+ * @return StmtLst a list of statements.
+ * @see StmtLst
+ */
 template <typename ... Ts>
 StmtLst makeStmts(Ts &&... ts) {
     std::unique_ptr<Statement> stmtArr[] = { std::move(ts)... };
