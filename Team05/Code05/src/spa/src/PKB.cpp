@@ -63,6 +63,9 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
         return false;
     }
 
+    getStatementTypeOfConcreteField(&field1);
+    getStatementTypeOfConcreteField(&field2);
+
     switch (rs) {
     case PKBRelationship::MODIFIES:
         return modifiesTable->contains(field1, field2);

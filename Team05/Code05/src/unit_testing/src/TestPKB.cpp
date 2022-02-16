@@ -159,4 +159,18 @@ TEST_CASE("PKB regression test") {
             PKBRelationship::MODIFIES
         ));
     }
+
+    SECTION("PKB regression test #148") {
+        std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+        pkb->insertStatement(StatementType::Assignment, 2);
+        PKBField field1 = PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment });
+        PKBField field2 = PKBField::createConcrete(STMT_LO{ 2 });
+        PKBField field3 = PKBField::createConcrete(VAR_NAME{ "a" });
+        pkb->insertRelationship(PKBRelationship::MODIFIES, field2, field3);
+        REQUIRE_FALSE(pkb->isRelationshipPresent(field2, field3, PKBRelationship::MODIFIES));
+
+        pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field3);
+        REQUIRE(pkb->isRelationshipPresent(field1, field3, PKBRelationship::MODIFIES));
+        REQUIRE(pkb->isRelationshipPresent(field2, field3, PKBRelationship::MODIFIES));
+    }
 }
