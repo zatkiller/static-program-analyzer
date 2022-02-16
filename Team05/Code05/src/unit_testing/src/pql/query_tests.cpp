@@ -107,9 +107,21 @@ TEST_CASE("Query") {
     REQUIRE(query.hasVariable("a"));
 
     std::shared_ptr<Modifies> ptr = std::make_shared<Modifies>();
+    ptr.get()->modifiesStmt = StmtRef::ofLineNo(4);
+    ptr.get()->modified = EntRef::ofDeclaration("v");
     query.addSuchthat(ptr);
     REQUIRE(!query.getSuchthat().empty());
     REQUIRE(query.getSuchthat()[0] == ptr);
+
+    std::vector<std::shared_ptr<RelRef>> suchThat = query.getSuchthat();
+    REQUIRE(suchThat[0]->getSyns() == std::vector<std::string>{"v"});
+
+    std::vector<PKBField> fields = suchThat[0]->getField();
+    REQUIRE(fields[0].entityType == PKBEntityType::STATEMENT);
+    REQUIRE(fields[0].fieldType == PKBFieldType::CONCRETE);
+    REQUIRE(fields[0].getContent<STMT_LO>()->statementNum == 4);
+    REQUIRE(fields[1].entityType == PKBEntityType::VARIABLE);
+    REQUIRE(fields[1].fieldType == PKBFieldType::DECLARATION);
 
     Pattern p = Pattern{"a", EntRef::ofWildcard(), "_x_"};
     query.addPattern(p);
