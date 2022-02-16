@@ -110,6 +110,8 @@ FieldRowResponse UsesRelationshipTable::retrieve(PKBField entity1, PKBField enti
             res.insert(std::vector<PKBField>{entity1, entity2});
         }
     }
+
+    return res;
 }
 
 bool UsesRelationshipTable::isInsertOrContainsValid(PKBField field1, PKBField field2) {
