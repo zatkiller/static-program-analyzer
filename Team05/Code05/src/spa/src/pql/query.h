@@ -195,7 +195,9 @@ struct RelRef {
     virtual RelRefType getType() { return type; }
 
     virtual std::vector<PKBField> getField() = 0;
+    virtual std::vector<std::string> getSyns() = 0;
 
+protected:
     template<typename T, typename F1, typename F2>
     std::vector<PKBField> getFieldHelper(const F1 T::*f1, const F2 T::*f2) {
         const auto derivedPtr = static_cast<T*>(this);
@@ -216,8 +218,6 @@ struct RelRef {
 
         return std::vector<PKBField>{ field1, field2 };
     }
-
-    virtual std::vector<std::string> getSyns() = 0;
 
     template<typename T, typename F1, typename F2>
     std::vector<std::string> getSynsHelper(const F1 T::*f1, const F2 T::*f2) {
