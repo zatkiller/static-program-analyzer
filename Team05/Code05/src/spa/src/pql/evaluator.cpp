@@ -51,7 +51,8 @@ std::list<std::string> Evaluator::getListOfResult(PKBResponse queryResult) {
         return listResult;
     }
 
-    std::unordered_set<PKBField, PKBFieldHash> result = *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&queryResult.res));
+    std::unordered_set<PKBField, PKBFieldHash> result =
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&queryResult.res));
 
     for (auto field : result) {
         listResult.push_back(PKBFieldToString(field));

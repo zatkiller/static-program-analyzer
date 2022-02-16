@@ -47,9 +47,9 @@ struct TestParseAndStorePackage1 {
     }
     
     template <typename T, typename K>
-    bool isCorrect(std::set<std::pair<T,K>> result, PKBRelationship targetType) {
+    bool isCorrect(std::set<std::pair<T, K>> result, PKBRelationship targetType) {
         auto targetSet = expectedRelationships[targetType];
-        std::set<std::pair<T,K>> expected;
+        std::set<std::pair<T, K>> expected;
         // transform and insert
         for (auto e : targetSet) {
             try {
@@ -139,7 +139,6 @@ struct TestParseAndStorePackage1 {
                 p(STMT_LO{3, StatementType::While}, STMT_LO{6, StatementType::Assignment}),
             }
         );
-
     }
     TestParseAndStorePackage1() {
         initEntities();
@@ -184,10 +183,8 @@ TEST_CASE("Test parse and store") {
 
     TEST_LOG << "Modifies extraction from PKB";
     {
-
         TEST_LOG << "Statement modifies extraction from PKB";
         {
-            
             auto response = pkb.getRelationship(
                 PKBField::createDeclaration(StatementType::All),
                 PKBField::createDeclaration(PKBEntityType::VARIABLE),
@@ -225,7 +222,6 @@ TEST_CASE("Test parse and store") {
 
     TEST_LOG << "Uses extraction from PKB";
     {
-
         TEST_LOG << "Statement uses extraction from PKB";
         {
             auto response = pkb.getRelationship(

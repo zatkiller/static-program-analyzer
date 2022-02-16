@@ -69,7 +69,6 @@ void checkAndConsume(string s, deque<Token>& tokens) {
     if (!v || *v != s) {
         throwUnexpectedToken(s);
 }
-
 }
 
 /** ================================ ATOMIC PARSER ================================ */
@@ -194,7 +193,6 @@ AST::BinOp charToBinOp(char c) {
     case '/': return AST::BinOp::DIVIDE;
     case '%': return AST::BinOp::MOD;
 }
-
 }
 
 }  // namespace AtomicParser
@@ -404,8 +402,7 @@ unique_ptr<AST::CondExpr> parse(deque<Token>& tokens) {
     auto rhsCondExprResult = move(parse(tokens));
     return make_unique<AST::CondBinExpr>(condOp, move(condExprResult), move(rhsCondExprResult));
 }
-
-} // namespace CondExprParser
+}  // namespace CondExprParser
 
 /** ================================= STMT PARSER ================================= */
 namespace StmtLstParser {

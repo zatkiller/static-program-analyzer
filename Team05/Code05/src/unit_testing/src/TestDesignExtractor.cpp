@@ -100,7 +100,7 @@ namespace AST {
 
         TestPKBStrategy pkbStrategy;
         auto p = [] (auto p1, auto p2) {
-            return std::make_pair<>(p1,p2);
+            return std::make_pair<>(p1, p2);
         };  // Helper method to make pairs.
 
         SECTION("whileBlk walking test") {
@@ -191,7 +191,6 @@ namespace AST {
                     p(STMT_LO{7, StatementType::If}, VAR_NAME{"sum"}),
                     p(STMT_LO{8, StatementType::Assignment}, VAR_NAME{"sum"}),
                     p(STMT_LO{10, StatementType::Assignment}, VAR_NAME{"x"}),
-
                 };
                 REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
             }

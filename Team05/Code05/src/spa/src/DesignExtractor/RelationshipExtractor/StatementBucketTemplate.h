@@ -26,37 +26,39 @@ private:
     }
 
     virtual void insert(const Bucket&, Depth, Content) const = 0;
+
 public:
     using Extractor::Extractor;
     void visit(const AST::If& node) override {
         auto stmt = STMT_LO{node.getStmtNo(), StatementType::If};
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
-    };
+    }
     void visit(const AST::While& node) override {
         auto stmt = STMT_LO{node.getStmtNo(), StatementType::While};
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
-    };
+    }
     void visit(const AST::Read& node) override {
         auto stmt = STMT_LO{node.getStmtNo(), StatementType::Read};
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
-    };
+    }
     void visit(const AST::Print& node) override {
         auto stmt = STMT_LO{node.getStmtNo(), StatementType::Print};
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
-    };
+    }
     void visit(const AST::Assign& node) override {
         auto stmt = STMT_LO{node.getStmtNo(), StatementType::Assignment};
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
-    };
+    }
 
     void enterContainer(std::variant<int, std::string> containerId) override {
         currentDepth++;
-    };
+    }
+    
     void exitContainer() override {
         /**
          * Clear the saved statement on exit. To prevent 2 container having a relationship.
@@ -68,5 +70,5 @@ public:
          */
         bucket.erase(bucket.find(currentDepth));
         currentDepth--;
-    };
+    }
 };

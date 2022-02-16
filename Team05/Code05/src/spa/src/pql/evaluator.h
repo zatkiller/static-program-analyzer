@@ -25,7 +25,7 @@ class Evaluator {
     PKB* pkb;
 
 public:
-    Evaluator(PKB* pkb) {
+    explicit Evaluator(PKB* pkb) {
         this->pkb = pkb;
     }
 

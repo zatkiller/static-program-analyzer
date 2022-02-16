@@ -18,14 +18,14 @@ private:
     std::list<std::shared_ptr<Extractor>> extractors;
     PKBStrategy* pkbStrategy;
 public:
-    DesignExtractor(PKBStrategy* pkbStrategy) : pkbStrategy(pkbStrategy) {
+    explicit DesignExtractor(PKBStrategy* pkbStrategy) : pkbStrategy(pkbStrategy) {
         extractors.push_back(std::make_shared<StatementExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<VariableExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<ModifiesExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<UsesExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<FollowsExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<ParentExtractor>(pkbStrategy));
-    };
+    }
 
     void extract(AST::ASTNode* ast) {
         for (auto extractor : extractors) {

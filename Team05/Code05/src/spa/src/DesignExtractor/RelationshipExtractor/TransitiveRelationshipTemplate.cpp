@@ -23,7 +23,7 @@ void TransitiveRelationshipTemplate::cascadeToContainer(const std::set<VAR_NAME>
             insert(currentProcedure, var);
         }
     }
-};
+}
 
 std::set<VAR_NAME> RelExtractorTemplate::extract(const AST::ASTNode *part) {
     VariablePKBStrategy vps;
@@ -31,7 +31,7 @@ std::set<VAR_NAME> RelExtractorTemplate::extract(const AST::ASTNode *part) {
     part->accept(ve);
 
     return vps.variables;
-};
+}
 
 void TransitiveRelationshipTemplate::extractAndInsert(Content a1, const AST::ASTNode *part) {
     auto vars = extract(part);
@@ -48,7 +48,7 @@ void TransitiveRelationshipTemplate::enterContainer(std::variant<int, std::strin
     } else {
         currentProcedure = PROC_NAME{ std::get<std::string>(containerId) };
     }
-};
+}
 void TransitiveRelationshipTemplate::exitContainer() {
     container.pop_front();
-};
+}

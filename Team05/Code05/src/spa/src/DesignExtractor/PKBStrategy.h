@@ -37,7 +37,6 @@ struct PKBStrategy {
  * Insert into null space. No data will be saved.
  */
 class NullPKBStrategy : public PKBStrategy {
-
 public:
     void insertStatement(STMT_LO) override {};
     void insertVariable(std::string) override {};
@@ -51,7 +50,7 @@ class ActualPKBStrategy : public PKBStrategy {
 private:
     PKB *pkb;
 public:
-    ActualPKBStrategy(PKB *pkb) : pkb(pkb) {};
+    explicit ActualPKBStrategy(PKB *pkb) : pkb(pkb) {}
     void insertStatement(STMT_LO) override;
     void insertVariable(std::string) override;
     void insertRelationship(PKBRelationship, Content, Content) override;

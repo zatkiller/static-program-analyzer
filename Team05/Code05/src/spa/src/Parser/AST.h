@@ -299,6 +299,7 @@ class Assign : public Statement {
 private:
     std::unique_ptr<Var> var;
     std::unique_ptr<Expr> expr;
+
 public:
     Assign(
         int stmtNo,

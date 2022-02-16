@@ -11,7 +11,6 @@ void StatementExtractor::visit(const AST::Read& node) {
 void StatementExtractor::visit(const AST::Print& node) {
     DEBUG_LOG << "Print Stmt " << node.getStmtNo();
     pkb->insertStatement(STMT_LO{node.getStmtNo(), StatementType::Print});
-    
 }
 
 void StatementExtractor::visit(const AST::While& node) {

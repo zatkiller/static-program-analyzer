@@ -165,7 +165,6 @@ TEST_CASE("Testing Parser") {
 
             REQUIRE(*ast == *expected);
         }
-
     }
 
     SECTION("Complete procedure test") {
@@ -232,7 +231,6 @@ TEST_CASE("Testing Parser") {
     
         })";
         REQUIRE(parse(generatedCode1) != nullptr);
-
     }    
 }
 
