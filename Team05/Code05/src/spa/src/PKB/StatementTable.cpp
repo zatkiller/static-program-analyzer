@@ -11,7 +11,8 @@ bool StatementTable::contains(int statementNumber) {
         contains(StatementType::Call, statementNumber) ||
         contains(StatementType::If, statementNumber) ||
         contains(StatementType::Read, statementNumber) ||
-        contains(StatementType::Print, statementNumber);
+        contains(StatementType::Print, statementNumber) ||
+        contains(StatementType::While, statementNumber);
 }
 
 void StatementTable::insert(StatementType type, int statementNumber) {

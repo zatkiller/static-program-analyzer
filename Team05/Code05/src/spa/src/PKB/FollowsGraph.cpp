@@ -6,6 +6,7 @@ void FollowsGraph::addEdge(STMT_LO u, STMT_LO v) {
     FollowsNode* vNode;
 
     if (u.statementNum == v.statementNum) return; 
+    if (u.statementNum > v.statementNum) return;
 
     // should have at most 2 
     std::map<STMT_LO, FollowsNode*> filtered;

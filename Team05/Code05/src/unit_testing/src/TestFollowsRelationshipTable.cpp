@@ -5,7 +5,6 @@
 #include "PKB/PKBField.h"
 #include "catch.hpp"
 
-
 TEST_CASE("FollowsRelationshipTable getType") {
     auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
     PKBRelationship type = table->getType();
@@ -39,6 +38,16 @@ TEST_CASE("FollowsRelationshipTable::insert, FollowsRelationshipTable::contains"
     table->insert(duplicate, field2);
     REQUIRE(table->contains(field1, field2));
     REQUIRE_FALSE(table->contains(duplicate, field2));
+
+    // No inserting of Follows(u, v) where u > v. Contains will not need the check
+    PKBField u = PKBField::createConcrete(STMT_LO{ 7, StatementType::Print });
+    PKBField v = PKBField::createConcrete(STMT_LO{ 6, StatementType::Print });
+    table->insert(u, v);
+    REQUIRE_FALSE(table->contains(u, v));
+
+    table->insert(v, u);
+    REQUIRE_FALSE(table->contains(u, v));
+    REQUIRE(table->contains(v, u));
 }
 
 TEST_CASE("FollowsRelationshipTable::retrieve") {

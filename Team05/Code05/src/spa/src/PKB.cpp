@@ -34,7 +34,13 @@ void PKB::insertVariable(std::string name) {
     variableTable->insert(name);
 }
 
+
 void PKB::insertRelationship(PKBRelationship type, PKBField entity1, PKBField entity2) {
+    // if both fields are not concrete, no insert can be done
+    if (entity1.fieldType != PKBFieldType::CONCRETE || entity2.fieldType != PKBFieldType::CONCRETE) {
+        return;
+    }
+
     switch (type) {
     case PKBRelationship::MODIFIES:
         modifiesTable->insert(entity1, entity2);
