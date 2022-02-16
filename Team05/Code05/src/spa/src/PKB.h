@@ -114,7 +114,7 @@ private:
     std::unique_ptr<ModifiesRelationshipTable> modifiesTable;
     std::unique_ptr<FollowsRelationshipTable> followsTable;
     std::unique_ptr<ConstantTable> constantTable;
-    std::unique_ptr<ParentRelationshipTable> parentTable;
+    // std::unique_ptr<ParentRelationshipTable> parentTable;
     std::unique_ptr<UsesRelationshipTable> usesTable;
 
     void getStatementTypeOfConcreteField(PKBField* field);

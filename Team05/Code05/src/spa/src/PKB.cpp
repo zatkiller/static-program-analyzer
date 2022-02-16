@@ -12,7 +12,7 @@ PKB::PKB() {
     procedureTable = std::make_unique<ProcedureTable>();
     modifiesTable = std::make_unique<ModifiesRelationshipTable>();
     followsTable = std::make_unique<FollowsRelationshipTable>();
-    parentTable = std::make_unique<ParentRelationshipTable>();
+    // parentTable = std::make_unique<ParentRelationshipTable>();
     usesTable = std::make_unique<UsesRelationshipTable>();
 }
 
@@ -49,7 +49,7 @@ void PKB::insertRelationship(PKBRelationship type, PKBField entity1, PKBField en
         followsTable->insert(entity1, entity2);
         break;
     case PKBRelationship::PARENT:
-        parentTable->insert(entity1, entity2);
+        // parentTable->insert(entity1, entity2);
         break;
     case PKBRelationship::USES:
         usesTable->insert(entity1, entity2);
@@ -69,7 +69,7 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
     case PKBRelationship::FOLLOWS:
         return followsTable->contains(field1, field2);
     case PKBRelationship::PARENT:
-        return parentTable->contains(field1, field2);
+        return true; // parentTable->contains(field1, field2);
     case PKBRelationship::USES:
         return usesTable->contains(field1, field2);
     case PKBRelationship::FOLLOWST:
@@ -107,7 +107,7 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
         extracted = followsTable->retrieve(field1, field2);
         break;
     case PKBRelationship::PARENT:
-        extracted = parentTable->retrieve(field1, field2);
+        // extracted = parentTable->retrieve(field1, field2);
         break;
     case PKBRelationship::USES:
         extracted = usesTable->retrieve(field1, field2);

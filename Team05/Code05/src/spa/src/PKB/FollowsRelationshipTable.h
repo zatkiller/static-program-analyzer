@@ -2,7 +2,7 @@
 
 #include <unordered_set>
 #include <memory>
-#include "RelationshipTable.h"
+#include "TransitiveRelationshipTable.h"
 #include "FollowsGraph.h"
 
 using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;

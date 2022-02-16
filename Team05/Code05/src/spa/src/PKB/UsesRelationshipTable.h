@@ -1,19 +1,11 @@
 #pragma once
 
-#include <unordered_set>
-
 #include "RelationshipTable.h"
 
-using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
-
+/**
+* A data structure to store Uses program design abstractions as RelationshipRows. Inherits RelationshipTable.
+*/
 class UsesRelationshipTable : public RelationshipTable {
 public:
     UsesRelationshipTable();
-
-    bool contains(PKBField entity1, PKBField entity2);
-    void insert(PKBField entity1, PKBField entity2);
-    bool isInsertOrContainsValid(PKBField field1, PKBField field2);
-    bool isRetrieveValid(PKBField field1, PKBField field2);
-
-    FieldRowResponse retrieve(PKBField entity1, PKBField entity2);
 };

@@ -33,21 +33,31 @@ TEST_CASE("UsesRelationshipTable::insert, UsesRelationshipTable::contains invali
     PKBField invalidStmt = PKBField::createConcrete(STMT_LO{ 2 });
     PKBField field1 = PKBField::createConcrete(VAR_NAME{ "invalid" });
     PKBField field2 = PKBField::createConcrete(VAR_NAME{ "a" });
+    REQUIRE_FALSE(table->contains(field1, field2));
 
-    CHECK_THROWS(table->insert(field1, field2));
+    table->insert(field1, field2);
+    REQUIRE_FALSE(table->contains(field1, field2));
+    REQUIRE(table->getSize() == 0);
 
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 1 });
-    REQUIRE_THROWS(table->insert(field3, field2));
+    table->insert(field3, field2);
+    REQUIRE_FALSE(table->contains(field3, field2));
+    REQUIRE(table->getSize() == 0);
 
     PKBField field4 = PKBField::createDeclaration(PKBEntityType::VARIABLE);
-    REQUIRE_THROWS(table->insert(validStmt, field4));
+    table->insert(validStmt, field4);
+    REQUIRE_FALSE(table->contains(validStmt, field4));
+    REQUIRE(table->getSize() == 0);
 
     PKBField field5 = PKBField::createDeclaration(PKBEntityType::PROCEDURE);
-    REQUIRE_THROWS(table->insert(field5, field2));
+    table->insert(field5, field2);
+    REQUIRE_FALSE(table->contains(field5, field2));
+    REQUIRE(table->getSize() == 0);
 
-    REQUIRE_THROWS(table->insert(invalidStmt, field2));
+    table->insert(invalidStmt, field2);
+    REQUIRE_FALSE(table->contains(invalidStmt, field2));
+    REQUIRE(table->getSize() == 0);
 }
-
 
 TEST_CASE("UsesRelationshipTable regression test") {
     SECTION("UsesRelationshipTable regression test #140") {
@@ -75,5 +85,7 @@ TEST_CASE("UsesRelationshipTable regression test") {
         REQUIRE(table->retrieve(stmt1, var1) == FieldRowResponse{ {stmt1, var1} });
         REQUIRE(table->retrieve(stmt2, var2) == FieldRowResponse{ {stmt2, var2} });
         REQUIRE(table->retrieve(proc, var2) == FieldRowResponse{ {proc,var2} });
+        REQUIRE_THROWS(table->retrieve(PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(PKBEntityType::PROCEDURE)) == FieldRowResponse{ });
     }
 }
