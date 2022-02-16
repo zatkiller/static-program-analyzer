@@ -2,7 +2,7 @@
 #include "catch.hpp"
 #include "logging.h"
 
-#define TEST_LOG Logger() << "test_resultTable.cpp "
+#define TEST_LOG Logger() << "resulttable_tests.cpp "
 
 PKBField field1 = PKBField::createConcrete(VAR_NAME{"main"});
 PKBField field2 = PKBField::createConcrete(VAR_NAME{"a"});
