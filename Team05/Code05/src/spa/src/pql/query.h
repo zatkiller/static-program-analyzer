@@ -405,7 +405,6 @@ public:
      * @return DesignEntity of the specified declaration
      */
      DesignEntity getDeclarationDesignEntity(std::string declaration);
-
 };
 
 }  // namespace qps::query

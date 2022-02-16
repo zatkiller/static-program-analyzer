@@ -21,26 +21,15 @@ namespace qps::evaluator {
     }
 
     PKBResponse Evaluator::getAll(query::DesignEntity type) {
-        PKBResponse result;
-
         switch (type) {
-            case query::DesignEntity::PROCEDURE:
-                result = pkb->getProcedures();
-                break;
-            case query::DesignEntity::CONSTANT:
-                result = pkb->getConstants();
-                break;
-            case query::DesignEntity::VARIABLE:
-                result = pkb->getVariables();
-                break;
-            case query::DesignEntity::STMT:
-                result = pkb->getStatements();
-                break;
+            case query::DesignEntity::PROCEDURE: return pkb->getProcedures();
+            case query::DesignEntity::CONSTANT: return pkb->getConstants();
+            case query::DesignEntity::VARIABLE: return pkb->getVariables();
+            case query::DesignEntity::STMT: return pkb->getStatements();
             default:
                 StatementType sType = ClauseHandler::getStatementType(type);
-                result = pkb->getStatements(sType);
+                return pkb->getStatements(sType);
         }
-        return result;
     }
 
     void Evaluator::processSuchthat(std::vector<std::shared_ptr<query::RelRef>> clauses,
@@ -48,7 +37,7 @@ namespace qps::evaluator {
                                     std::vector<std::shared_ptr<query::RelRef>> &hasSyn) {
         for (auto r : clauses) {
             query::RelRef *relRefPtr = r.get();
-            if (relRefPtr->getSyns().empty()){
+            if (relRefPtr->getSyns().empty()) {
                 noSyn.push_back(r);
             } else {
                 hasSyn.push_back(r);

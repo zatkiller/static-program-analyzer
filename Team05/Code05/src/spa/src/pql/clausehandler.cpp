@@ -2,39 +2,25 @@
 
 namespace qps::evaluator {
     PKBRelationship ClauseHandler::getPKBRelationship(query::RelRefType r) {
-        PKBRelationship relationship;
-        if (r == query::RelRefType::MODIFIESS) {
-            relationship = PKBRelationship::MODIFIES;
-        } else if (r == query::RelRefType::USESS) {
-            relationship = PKBRelationship::USES;
-        } else if (r == query::RelRefType::FOLLOWS) {
-            relationship = PKBRelationship::FOLLOWS;
-        } else if (r == query::RelRefType::FOLLOWST) {
-            relationship = PKBRelationship::FOLLOWST;
-        } else if (r == query::RelRefType::PARENT) {
-            relationship = PKBRelationship::PARENT;
-        } else if (r == query::RelRefType::PARENTT) {
-            relationship = PKBRelationship::PARENTT;
+        switch (r) {
+            case query::RelRefType::MODIFIESS: return PKBRelationship::MODIFIES;
+            case query::RelRefType::USESS: return PKBRelationship::USES;
+            case query::RelRefType::FOLLOWS: return PKBRelationship::FOLLOWS;
+            case query::RelRefType::FOLLOWST: return PKBRelationship::FOLLOWST;
+            case query::RelRefType::PARENT: return PKBRelationship::PARENT;
+            case query::RelRefType::PARENTT: return PKBRelationship::PARENTT;
         }
-        return relationship;
     }
 
     StatementType ClauseHandler::getStatementType(query::DesignEntity d) {
         switch (d) {
-            case query::DesignEntity::STMT:
-                return StatementType::Statement;
-            case query::DesignEntity::ASSIGN:
-                return StatementType::Assignment;
-            case query::DesignEntity::WHILE:
-                return StatementType::While;
-            case query::DesignEntity::IF:
-                return StatementType::If;
-            case query::DesignEntity::READ:
-                return StatementType::Read;
-            case query::DesignEntity::PRINT:
-                return StatementType::Print;
-            case query::DesignEntity::CALL:
-                return StatementType::Call;
+            case query::DesignEntity::STMT: return StatementType::Statement;
+            case query::DesignEntity::ASSIGN: return StatementType::Assignment;
+            case query::DesignEntity::WHILE: return StatementType::While;
+            case query::DesignEntity::IF: return StatementType::If;
+            case query::DesignEntity::READ: return StatementType::Read;
+            case query::DesignEntity::PRINT: return StatementType::Print;
+            case query::DesignEntity::CALL: return StatementType::Call;
         }
     }
 
