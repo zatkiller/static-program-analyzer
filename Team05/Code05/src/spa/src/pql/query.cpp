@@ -118,18 +118,6 @@ namespace qps::query {
         return type == EntRefType::WILDCARD;
     }
 
-    PKBField EntRef::wrapEntRef() {
-        PKBField entField;
-        if (this->isVarName()) {
-            entField = PKBField::createConcrete(VAR_NAME{this->getVariableName()});
-        } else if (this->isWildcard()) {
-            entField = PKBField::createWildcard(PKBEntityType::VARIABLE);
-        } else if (this->isDeclaration()) {
-            entField = PKBField::createDeclaration(PKBEntityType::VARIABLE);
-        }
-        return entField;
-    }
-
     StmtRef StmtRef::ofDeclaration(std::string d) {
         StmtRef s;
         s.type = StmtRefType::DECLARATION;
@@ -174,18 +162,29 @@ namespace qps::query {
         return type == StmtRefType::WILDCARD;
     }
 
-    PKBField StmtRef::wrapStmtRef() {
+    PKBField PKBFieldTransformer::transformStmtRef(StmtRef s) {
         PKBField stmtField;
-        if (this->isLineNo()) {
-            stmtField = PKBField::createConcrete(STMT_LO{this->getLineNo()});
-        } else if (this->isWildcard()) {
+        if (s.isLineNo()) {
+            stmtField = PKBField::createConcrete(STMT_LO{s.getLineNo()});
+        } else if (s.isWildcard()) {
             stmtField = PKBField::createWildcard(PKBEntityType::STATEMENT);
-        } else if (this->isDeclaration()) {
+        } else if (s.isDeclaration()) {
             stmtField = PKBField::createDeclaration(PKBEntityType::STATEMENT);
         }
         return stmtField;
     }
 
+    PKBField PKBFieldTransformer::transformEntRef(EntRef e) {
+        PKBField entField;
+        if (e.isVarName()) {
+            entField = PKBField::createConcrete(VAR_NAME{e.getVariableName()});
+        } else if (e.isWildcard()) {
+            entField = PKBField::createWildcard(PKBEntityType::VARIABLE);
+        } else if (e.isDeclaration()) {
+            entField = PKBField::createDeclaration(PKBEntityType::VARIABLE);
+        }
+        return entField;
+    }
     std::string Pattern::getSynonym() {
         return synonym;
     }
@@ -196,5 +195,107 @@ namespace qps::query {
 
     std::string Pattern::getExpression() {
         return expression;
+    }
+
+    std::vector<PKBField> Modifies::getField() {
+        PKBField mStmtField = PKBFieldTransformer::transformStmtRef(modifiesStmt);
+        PKBField modifiedField = PKBFieldTransformer::transformEntRef(modified);
+        return std::vector<PKBField>{mStmtField, modifiedField};
+    }
+
+    std::vector<std::string> Modifies::getSyns(){
+        std::vector<std::string> synonyms;
+        if (modifiesStmt.isDeclaration()) {
+            synonyms.push_back(modifiesStmt.getDeclaration());
+        }
+        if (modified.isDeclaration()) {
+            synonyms.push_back(modified.getDeclaration());
+        }
+        return synonyms;
+    }
+
+    std::vector<PKBField> Uses::getField() {
+        PKBField uStmtField = PKBFieldTransformer::transformStmtRef(useStmt);
+        PKBField usedField = PKBFieldTransformer::transformEntRef(used);
+        return std::vector<PKBField>{uStmtField, usedField};
+    }
+
+    std::vector<std::string> Uses::getSyns()  {
+        std::vector<std::string> synonyms;
+        if (useStmt.isDeclaration()) {
+            synonyms.push_back(useStmt.getDeclaration());
+        }
+        if (used.isDeclaration()) {
+            synonyms.push_back(used.getDeclaration());
+        }
+        return synonyms;
+    }
+
+    std::vector<PKBField> Follows::getField() {
+        PKBField followerField = PKBFieldTransformer::transformStmtRef(follower);
+        PKBField followedField = PKBFieldTransformer::transformStmtRef(followed);
+        return std::vector<PKBField>{followerField, followedField};
+    }
+
+    std::vector<std::string> Follows::getSyns() {
+        std::vector<std::string> synonyms;
+        if (follower.isDeclaration()) {
+            synonyms.push_back(follower.getDeclaration());
+        }
+        if (followed.isDeclaration()) {
+            synonyms.push_back(followed.getDeclaration());
+        }
+        return synonyms;
+    }
+
+    std::vector<PKBField> FollowsT::getField() {
+        PKBField followerField = PKBFieldTransformer::transformStmtRef(follower);
+        PKBField followedField = PKBFieldTransformer::transformStmtRef(transitiveFollowed);
+        return std::vector<PKBField>{followerField, followedField};
+    }
+
+    std::vector<std::string> FollowsT::getSyns() {
+        std::vector<std::string> synonyms;
+        if (follower.isDeclaration()) {
+            synonyms.push_back(follower.getDeclaration());
+        }
+        if (transitiveFollowed.isDeclaration()) {
+            synonyms.push_back(transitiveFollowed.getDeclaration());
+        }
+        return synonyms;
+    }
+
+    std::vector<PKBField> Parent::getField() {
+        PKBField followerField = PKBFieldTransformer::transformStmtRef(parent);
+        PKBField followedField = PKBFieldTransformer::transformStmtRef(child);
+        return std::vector<PKBField>{followerField, followedField};
+    }
+
+    std::vector<std::string> Parent::getSyns() {
+        std::vector<std::string> synonyms;
+        if (parent.isDeclaration()) {
+            synonyms.push_back(parent.getDeclaration());
+        }
+        if (child.isDeclaration()) {
+            synonyms.push_back(child.getDeclaration());
+        }
+        return synonyms;
+    }
+
+    std::vector<PKBField> ParentT::getField() {
+        PKBField followerField = PKBFieldTransformer::transformStmtRef(parent);
+        PKBField followedField = PKBFieldTransformer::transformStmtRef(transitiveChild);
+        return std::vector<PKBField>{followerField, followedField};
+    }
+
+    std::vector<std::string> ParentT::getSyns() {
+        std::vector<std::string> synonyms;
+        if (parent.isDeclaration()) {
+            synonyms.push_back(parent.getDeclaration());
+        }
+        if (transitiveChild.isDeclaration()) {
+            synonyms.push_back(transitiveChild.getDeclaration());
+        }
+        return synonyms;
     }
 }  // namespace qps::query
