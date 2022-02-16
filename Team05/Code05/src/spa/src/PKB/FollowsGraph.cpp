@@ -1,25 +1,65 @@
 #include "FollowsGraph.h"
+#include <iterator>
 
 void FollowsGraph::addEdge(STMT_LO u, STMT_LO v) {
     FollowsNode* uNode;
     FollowsNode* vNode;
 
-    if (nodes.count(u) == 0) {
+    if (u.statementNum == v.statementNum) return; 
+
+    // should have at most 2 
+    std::map<STMT_LO, FollowsNode*> filtered;
+    std::copy_if(nodes.begin(), nodes.end(), std::inserter(filtered, filtered.end()),
+        [u, v](decltype(nodes)::value_type const& pair) {
+            return pair.first.statementNum == u.statementNum || pair.first.statementNum == v.statementNum; 
+        });
+
+    bool hasExistingStatementNumber = false;
+    for (auto [stmt, node] : filtered) {
+        if (stmt == u) {
+            uNode = nodes.at(u);
+            hasExistingStatementNumber = true;
+            break;
+        }
+
+        if (stmt.statementNum == u.statementNum) {
+            if (stmt.type.value() != u.type.value()) {
+                return;
+            }
+        }
+    }
+
+    // if there exists a node with the same statement number as u but different type,
+    // it is an invalid insert. 
+    if (!hasExistingStatementNumber) {
         uNode = new FollowsNode(u, nullptr, nullptr);
         nodes.emplace(u, uNode);
-    } else {
-        uNode = nodes.at(u);
+    } 
+
+    hasExistingStatementNumber = false;
+    for (auto [stmt, node] : filtered) {
+        if (stmt == v) {
+            vNode = nodes.at(v);
+            hasExistingStatementNumber = true;
+            break;
+        }
+
+        if (stmt.statementNum == v.statementNum) {
+            if (stmt.type.value() != v.type.value()) {
+                return;
+            }
+        }
     }
 
-    if (nodes.count(v) == 0) {
+    // if there exists a node with the same statement number as u but different type,
+    // it is an invalid insert. 
+    if (!hasExistingStatementNumber) {
         vNode = new FollowsNode(v, nullptr, nullptr);
         nodes.emplace(v, vNode);
-    } else {
-        vNode = nodes.at(v);
     }
 
-    uNode->next = vNode;
-    vNode->prev = uNode;
+    if (!uNode->next) uNode->next = vNode;
+    if (!vNode->next) vNode->prev = uNode;
 }
 
 bool FollowsGraph::getContains(PKBField field1, PKBField field2) {
@@ -27,7 +67,7 @@ bool FollowsGraph::getContains(PKBField field1, PKBField field2) {
     STMT_LO target = *(field2.getContent<STMT_LO>());
     if (nodes.count(stmt) != 0) {
         FollowsNode* curr = nodes.at(stmt);
-        return curr->next->stmt == target;
+        return curr->next && curr->next->stmt == target;
     }
     return false;
 }
@@ -58,7 +98,7 @@ Result FollowsGraph::getFollows(PKBField field1, PKBField field2) {
         STMT_LO stmt = *(field1.getContent<STMT_LO>());
         if (nodes.count(stmt) != 0) {
             FollowsNode* curr = nodes.at(stmt);
-            
+
             if (curr->next != nullptr) {
                 STMT_LO nextStmt = curr->next->stmt;
                 StatementType type = field2.statementType.value();
@@ -188,7 +228,7 @@ Result FollowsGraph::traverseAllT(StatementType type1, StatementType type2) {
 
             for (auto stmt : stmtSet) {
                 if (type2 == StatementType::All || type2 == stmt.type.value()) {
-                    res.insert(std::vector<PKBField>{PKBField::createConcrete(node->stmt), 
+                    res.insert(std::vector<PKBField>{PKBField::createConcrete(node->stmt),
                         PKBField::createConcrete(stmt)});
                 }
             }
