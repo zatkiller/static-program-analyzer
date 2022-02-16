@@ -5,6 +5,9 @@
 #include <string>
 #include <memory>
 #include "PKB/PKBField.h"
+#include "logging.h"
+
+#define LOGGER Logger()
 
 namespace qps::query {
 
@@ -65,11 +68,11 @@ public:
 
     StmtRefType getType();
 
-    std::string getDeclaration();
+    std::string getDeclaration() const;
 
     int getLineNo();
 
-    bool isDeclaration();
+    bool isDeclaration() const;
 
     bool isLineNo();
 
@@ -127,11 +130,11 @@ public:
 
     EntRefType getType();
 
-    std::string getDeclaration();
+    std::string getDeclaration() const;
 
     std::string getVariableName();
 
-    bool isDeclaration();
+    bool isDeclaration() const;
 
     bool isVarName();
 
@@ -193,7 +196,43 @@ struct RelRef {
 
     virtual std::vector<PKBField> getField() = 0;
 
+    template<typename T, typename F1, typename F2>
+    std::vector<PKBField> getFieldHelper(const F1 T::*f1, const F2 T::*f2) {
+        const auto derivedPtr = static_cast<T*>(this);
+        PKBField field1 = [&](){
+            if constexpr(std::is_same_v<F1, StmtRef>) {
+                return PKBFieldTransformer::transformStmtRef(derivedPtr->*f1);
+            } else {
+                return PKBFieldTransformer::transformEntRef(derivedPtr->*f1);
+            }
+        }();
+        PKBField field2 = [&](){
+            if constexpr(std::is_same_v<F2, StmtRef>) {
+                return PKBFieldTransformer::transformStmtRef(derivedPtr->*f2);
+            } else {
+                return PKBFieldTransformer::transformEntRef(derivedPtr->*f2);
+            }
+        }();
+
+        return std::vector<PKBField>{ field1, field2 };
+    }
+
     virtual std::vector<std::string> getSyns() = 0;
+
+    template<typename T, typename F1, typename F2>
+    std::vector<std::string> getSynsHelper(const F1 T::*f1, const F2 T::*f2) {
+        std::vector<std::string> synonyms;
+        const auto derivedPtr = static_cast<T*>(this);
+        if ((derivedPtr->*f1).isDeclaration()) {
+            synonyms.push_back((derivedPtr->*f1).getDeclaration());
+        }
+
+        if ((derivedPtr->*f2).isDeclaration()) {
+            synonyms.push_back((derivedPtr->*f2).getDeclaration());
+        }
+
+        return synonyms;
+    }
 };
 
 /**
