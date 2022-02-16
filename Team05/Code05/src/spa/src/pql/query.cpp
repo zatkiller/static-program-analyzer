@@ -37,7 +37,6 @@ namespace qps::query {
         return declarations.find(name)->second;
     }
 
-
     std::unordered_map<std::string, DesignEntity> Query::getDeclarations() {
         return declarations;
     }
@@ -99,7 +98,7 @@ namespace qps::query {
         return type;
     }
 
-    std::string EntRef::getDeclaration() {
+    std::string EntRef::getDeclaration() const{
         return declaration;
     }
 
@@ -107,7 +106,7 @@ namespace qps::query {
         return variable;
     }
 
-    bool EntRef::isDeclaration() {
+    bool EntRef::isDeclaration() const {
         return type == EntRefType::DECLARATION;
     }
 
@@ -143,7 +142,7 @@ namespace qps::query {
         return type;
     }
 
-    std::string StmtRef::getDeclaration() {
+    std::string StmtRef::getDeclaration() const {
         return declaration;
     }
 
@@ -151,7 +150,7 @@ namespace qps::query {
         return lineNo;
     }
 
-    bool StmtRef::isDeclaration() {
+    bool StmtRef::isDeclaration() const {
         return type == StmtRefType::DECLARATION;
     }
 
@@ -163,6 +162,29 @@ namespace qps::query {
         return type == StmtRefType::WILDCARD;
     }
 
+    PKBField PKBFieldTransformer::transformStmtRef(StmtRef s) {
+        PKBField stmtField;
+        if (s.isLineNo()) {
+            stmtField = PKBField::createConcrete(STMT_LO{s.getLineNo()});
+        } else if (s.isWildcard()) {
+            stmtField = PKBField::createWildcard(PKBEntityType::STATEMENT);
+        } else if (s.isDeclaration()) {
+            stmtField = PKBField::createDeclaration(PKBEntityType::STATEMENT);
+        }
+        return stmtField;
+    }
+
+    PKBField PKBFieldTransformer::transformEntRef(EntRef e) {
+        PKBField entField;
+        if (e.isVarName()) {
+            entField = PKBField::createConcrete(VAR_NAME{e.getVariableName()});
+        } else if (e.isWildcard()) {
+            entField = PKBField::createWildcard(PKBEntityType::VARIABLE);
+        } else if (e.isDeclaration()) {
+            entField = PKBField::createDeclaration(PKBEntityType::VARIABLE);
+        }
+        return entField;
+    }
 
     std::string Pattern::getSynonym() {
         return synonym;
@@ -174,5 +196,53 @@ namespace qps::query {
 
     std::string Pattern::getExpression() {
         return expression;
+    }
+
+    std::vector<PKBField> Modifies::getField() {
+        return getFieldHelper(&Modifies::modifiesStmt, &Modifies::modified);
+    }
+
+    std::vector<std::string> Modifies::getSyns(){
+        return getSynsHelper(&Modifies::modifiesStmt, &Modifies::modified);
+    }
+
+    std::vector<PKBField> Uses::getField() {
+        return getFieldHelper(&Uses::useStmt, &Uses::used);
+    }
+
+    std::vector<std::string> Uses::getSyns()  {
+        return getSynsHelper(&Uses::useStmt, &Uses::used);
+    }
+
+    std::vector<PKBField> Follows::getField() {
+        return getFieldHelper(&Follows::follower, &Follows::followed);
+    }
+
+    std::vector<std::string> Follows::getSyns() {
+        return getSynsHelper(&Follows::follower, &Follows::followed);
+    }
+
+    std::vector<PKBField> FollowsT::getField() {
+        return getFieldHelper(&FollowsT::follower, &FollowsT::transitiveFollowed);
+    }
+
+    std::vector<std::string> FollowsT::getSyns() {
+        return getSynsHelper(&FollowsT::follower, &FollowsT::transitiveFollowed);
+    }
+
+    std::vector<PKBField> Parent::getField() {
+        return getFieldHelper(&Parent::parent, &Parent::child);
+    }
+
+    std::vector<std::string> Parent::getSyns() {
+        return getSynsHelper(&Parent::parent, &Parent::child);
+    }
+
+    std::vector<PKBField> ParentT::getField() {
+        return getFieldHelper(&ParentT::parent, &ParentT::transitiveChild);
+    }
+
+    std::vector<std::string> ParentT::getSyns() {
+        return getSynsHelper(&ParentT::parent, &ParentT::transitiveChild);
     }
 }  // namespace qps::query

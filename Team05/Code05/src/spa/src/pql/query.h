@@ -4,6 +4,10 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include "PKB/PKBField.h"
+#include "logging.h"
+
+#define LOGGER Logger()
 
 namespace qps::query {
 
@@ -64,11 +68,11 @@ public:
 
     StmtRefType getType();
 
-    std::string getDeclaration();
+    std::string getDeclaration() const;
 
     int getLineNo();
 
-    bool isDeclaration();
+    bool isDeclaration() const;
 
     bool isLineNo();
 
@@ -126,11 +130,11 @@ public:
 
     EntRefType getType();
 
-    std::string getDeclaration();
+    std::string getDeclaration() const;
 
     std::string getVariableName();
 
-    bool isDeclaration();
+    bool isDeclaration() const;
 
     bool isVarName();
 
@@ -144,6 +148,25 @@ public:
 
         return type == EntRefType::WILDCARD && o.type == EntRefType::WILDCARD;
     }
+};
+
+struct PKBFieldTransformer {
+    /**
+     * Transforms a entRef into a PKBField.
+     *
+     * @param entRef
+     * @return a PKBField of the given entRef
+     */
+    static PKBField transformEntRef(EntRef e);
+
+
+    /**
+     * Transforms a stmtRef into a PKBField.
+     *
+     * @param stmtRef
+     * @return a PKBField of the given stmtRef
+     */
+    static PKBField transformStmtRef(StmtRef s);
 };
 
 //  Following grammar rules naming convention: https://github.com/nus-cs3203/project-wiki/wiki/Iteration-1-Scope
@@ -170,6 +193,46 @@ struct RelRef {
     virtual ~RelRef() {}
 
     virtual RelRefType getType() { return type; }
+
+    virtual std::vector<PKBField> getField() = 0;
+    virtual std::vector<std::string> getSyns() = 0;
+
+protected:
+    template<typename T, typename F1, typename F2>
+    std::vector<PKBField> getFieldHelper(const F1 T::*f1, const F2 T::*f2) {
+        const auto derivedPtr = static_cast<T*>(this);
+        PKBField field1 = [&](){
+            if constexpr(std::is_same_v<F1, StmtRef>) {
+                return PKBFieldTransformer::transformStmtRef(derivedPtr->*f1);
+            } else {
+                return PKBFieldTransformer::transformEntRef(derivedPtr->*f1);
+            }
+        }();
+        PKBField field2 = [&](){
+            if constexpr(std::is_same_v<F2, StmtRef>) {
+                return PKBFieldTransformer::transformStmtRef(derivedPtr->*f2);
+            } else {
+                return PKBFieldTransformer::transformEntRef(derivedPtr->*f2);
+            }
+        }();
+
+        return std::vector<PKBField>{ field1, field2 };
+    }
+
+    template<typename T, typename F1, typename F2>
+    std::vector<std::string> getSynsHelper(const F1 T::*f1, const F2 T::*f2) {
+        std::vector<std::string> synonyms;
+        const auto derivedPtr = static_cast<T*>(this);
+        if ((derivedPtr->*f1).isDeclaration()) {
+            synonyms.push_back((derivedPtr->*f1).getDeclaration());
+        }
+
+        if ((derivedPtr->*f2).isDeclaration()) {
+            synonyms.push_back((derivedPtr->*f2).getDeclaration());
+        }
+
+        return synonyms;
+    }
 };
 
 /**
@@ -180,6 +243,10 @@ struct Modifies : RelRef {
 
     EntRef modified;
     StmtRef modifiesStmt;
+
+    std::vector<PKBField> getField() override;
+
+    std::vector<std::string> getSyns() override;
 };
 
 /**
@@ -190,6 +257,10 @@ struct Uses : RelRef {
 
     EntRef used;
     StmtRef useStmt;
+
+    std::vector<PKBField> getField() override;
+
+    std::vector<std::string> getSyns() override;
 };
 
 struct Follows : RelRef {
@@ -197,6 +268,10 @@ struct Follows : RelRef {
 
     StmtRef follower;
     StmtRef followed;
+
+    std::vector<PKBField> getField() override;
+
+    std::vector<std::string> getSyns() override;
 };
 
 struct FollowsT : RelRef {
@@ -204,6 +279,10 @@ struct FollowsT : RelRef {
 
     StmtRef follower;
     StmtRef transitiveFollowed;
+
+    std::vector<PKBField> getField() override;
+
+    std::vector<std::string> getSyns() override;
 };
 
 struct Parent : RelRef {
@@ -211,6 +290,10 @@ struct Parent : RelRef {
 
     StmtRef parent;
     StmtRef child;
+
+    std::vector<PKBField> getField() override;
+
+    std::vector<std::string> getSyns() override;
 };
 
 struct ParentT : RelRef {
@@ -218,6 +301,10 @@ struct ParentT : RelRef {
 
     StmtRef parent;
     StmtRef transitiveChild;
+
+    std::vector<PKBField> getField() override;
+
+    std::vector<std::string> getSyns() override;
 };
 
 /**
@@ -281,7 +368,7 @@ public:
      * @param declaration the name of the declaration
      * @return DesignEntity of the specified declaration
      */
-    DesignEntity getDeclarationDesignEntity(std::string declaration);
+     DesignEntity getDeclarationDesignEntity(std::string declaration);
 };
 
 }  // namespace qps::query
