@@ -1,5 +1,4 @@
 #include "FollowsGraph.h"
-#include <iterator>
 
 void FollowsGraph::addEdge(STMT_LO u, STMT_LO v) {
     FollowsNode* uNode;
@@ -8,7 +7,7 @@ void FollowsGraph::addEdge(STMT_LO u, STMT_LO v) {
     if (u.statementNum == v.statementNum) return; 
     if (u.statementNum > v.statementNum) return;
 
-    // should have at most 2 
+    // filters nodes with matching statement numbers as the inputs
     std::map<STMT_LO, FollowsNode*> filtered;
     std::copy_if(nodes.begin(), nodes.end(), std::inserter(filtered, filtered.end()),
         [u, v](decltype(nodes)::value_type const& pair) {

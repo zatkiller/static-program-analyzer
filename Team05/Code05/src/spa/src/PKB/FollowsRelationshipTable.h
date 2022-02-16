@@ -2,6 +2,8 @@
 
 #include <unordered_set>
 #include <memory>
+
+#include "logging.h"
 #include "TransitiveRelationshipTable.h"
 #include "FollowsGraph.h"
 

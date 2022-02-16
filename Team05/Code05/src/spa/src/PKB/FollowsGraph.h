@@ -4,10 +4,10 @@
 #include <vector>
 #include <set>
 #include <unordered_set>
-#include <stack>
 #include <algorithm>
 #include "PKBField.h"
 #include <memory>
+#include <iterator>
 
 using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 

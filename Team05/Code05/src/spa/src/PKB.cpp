@@ -128,8 +128,8 @@ PKBResponse PKB::getStatements() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
     std::vector<STMT_LO> extracted = statementTable->getAllStmt();
-    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBField::createConcrete(*iter));
+    for (auto row : extracted) {
+        res.insert(PKBField::createConcrete(row));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -139,8 +139,8 @@ PKBResponse PKB::getStatements(StatementType stmtType) {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
     std::vector<STMT_LO> extracted = statementTable->getStmtOfType(stmtType);
-    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBField::createConcrete(*iter));
+    for (auto row : extracted) {
+        res.insert(PKBField::createConcrete(row));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -150,8 +150,8 @@ PKBResponse PKB::getVariables() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
     std::vector<VAR_NAME> extracted = variableTable->getAllVars();
-    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBField::createConcrete(*iter));
+    for (auto row : extracted) {
+        res.insert(PKBField::createConcrete(row));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -161,8 +161,8 @@ PKBResponse PKB::getProcedures() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
     std::vector<PROC_NAME> extracted = procedureTable->getAllProcs();
-    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBField::createConcrete(*iter));
+    for (auto row : extracted) {
+        res.insert(PKBField::createConcrete(row));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
@@ -172,8 +172,8 @@ PKBResponse PKB::getConstants() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
     std::vector<CONST> extracted = constantTable->getAllConst();
-    for (auto iter = extracted.begin(); iter != extracted.end(); ++iter) {
-        res.insert(PKBField::createConcrete(*iter));
+    for (auto row : extracted) {
+        res.insert(PKBField::createConcrete(row));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
