@@ -107,7 +107,7 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
         extracted = followsTable->retrieve(field1, field2);
         break;
     case PKBRelationship::PARENT:
-        // extracted = parentTable->retrieve(field1, field2);
+        extracted = parentTable->retrieve(field1, field2);
         break;
     case PKBRelationship::USES:
         extracted = usesTable->retrieve(field1, field2);
