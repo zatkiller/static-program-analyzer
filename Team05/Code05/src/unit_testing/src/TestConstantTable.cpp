@@ -14,7 +14,7 @@ TEST_CASE("ConstantTable::insert, ConstantTable::contains") {
     REQUIRE_FALSE(table.contains(CONST{ 2 }));
 }
 
-TEST_CASE("ConstantTable getSize") {
+TEST_CASE("ConstantTable::getSize") {
     ConstantTable table{};
     REQUIRE(table.getSize() == 0);
 
@@ -26,7 +26,8 @@ TEST_CASE("ConstantTable getSize") {
     REQUIRE(table.getSize() == 1);
 }
 
-TEST_CASE("ConstantTable getAllConst") {
+TEST_CASE("ConstantTable::getAllConst") {
+    // Empty table
     ConstantTable table{};
     std::vector<CONST> expected{};
     REQUIRE(expected == table.getAllConst());
@@ -35,6 +36,10 @@ TEST_CASE("ConstantTable getAllConst") {
     table.insert(CONST{ 2 });
     expected = { CONST{1}, CONST{2} };
     REQUIRE(expected == table.getAllConst());
+
+    std::vector<CONST> wrong_order{};
+    wrong_order = { CONST{2}, CONST{1} };
+    REQUIRE_FALSE(wrong_order == table.getAllConst());
 
     // Ordering check
     table.insert(CONST{ 4 });

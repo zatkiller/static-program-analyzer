@@ -76,25 +76,20 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
 
 // GET API
 
+void PKB::getStatementTypeOfConcreteField(PKBField* field) {
+    if (field->fieldType == PKBFieldType::CONCRETE && field->entityType == PKBEntityType::STATEMENT) {
+        auto content = field->getContent<STMT_LO>();
+
+        if (!content->hasStatementType()) {
+            StatementType type = statementTable->getStmtTypeOfLine(content->statementNum);
+            field->content = STMT_LO{ content->statementNum, type };
+        }
+    }
+}
+
 PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationship rs) {
-    // TODO(teo-jun-xiong): collapse into a function
-    if (field1.fieldType == PKBFieldType::CONCRETE && field1.entityType == PKBEntityType::STATEMENT) {
-        auto content = field1.getContent<STMT_LO>();
-
-        if (!content->hasStatementType()) {
-            StatementType type = statementTable->getStmtTypeOfLine(content->statementNum);
-            field1.content = STMT_LO{ content->statementNum, type };
-        }
-    }
-
-    if (field2.fieldType == PKBFieldType::CONCRETE && field2.entityType == PKBEntityType::STATEMENT) {
-        auto content = field2.getContent<STMT_LO>();
-
-        if (!content->hasStatementType()) {
-            StatementType type = statementTable->getStmtTypeOfLine(content->statementNum);
-            field2.content = STMT_LO{ content->statementNum, type };
-        }
-    }
+    getStatementTypeOfConcreteField(&field1);
+    getStatementTypeOfConcreteField(&field2);
 
     FieldRowResponse extracted;
 

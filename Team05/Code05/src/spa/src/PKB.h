@@ -107,7 +107,7 @@ public:
     */
     PKBResponse getConstants();
 
-public:
+private:
     std::unique_ptr<StatementTable> statementTable;
     std::unique_ptr<VariableTable> variableTable;
     std::unique_ptr<ProcedureTable> procedureTable;
@@ -116,4 +116,6 @@ public:
     std::unique_ptr<ConstantTable> constantTable;
     std::unique_ptr<ParentRelationshipTable> parentTable;
     std::unique_ptr<UsesRelationshipTable> usesTable;
+
+    void getStatementTypeOfConcreteField(PKBField* field);
 };
