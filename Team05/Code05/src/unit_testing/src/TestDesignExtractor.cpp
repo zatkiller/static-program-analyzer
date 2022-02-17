@@ -13,6 +13,7 @@
 #include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/FollowsExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/ParentExtractor.h"
+#include "DesignExtractor/PatternMatcher.h"
 #include "PKB.h"
 #include "logging.h"
 
@@ -257,6 +258,77 @@ namespace AST {
                 };
                 REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENT] == expected);
             }
+        }
+    
+    }
+
+    TEST_CASE("Pattern matcher test") {
+        TEST_LOG << "Testing Assign Pattern matcher";
+
+        // only support _ or string, treat synonyms as _.
+        auto extractAssignHelper = [](AST::ASTNode *ast, std::string s1, std::string s2){
+            auto field1 = s1 == "_" ? std::nullopt : std::make_optional<>(s1);
+            auto field2 = s2 == "_" ? std::nullopt : std::make_optional<>(s2);
+            return extractAssign(ast, field1, field2);
+        };
+
+        // assignment: z = 1 + x - 2 + y
+        SECTION("Simple Assignment") {
+            auto ast = make<Assign>(
+                1,
+                make<Var>("z"),
+                make<BinExpr>(
+                    BinOp::PLUS, make<BinExpr>(
+                        BinOp::MINUS, make<BinExpr>(
+                            BinOp::PLUS,
+                            make<Const>(1),
+                            make<Var>("x")
+                        ),
+                        make<Const>(2)
+                    ), make<Var>("y")
+                )
+            );
+
+            REQUIRE(extractAssignHelper(ast.get(), "z", "_").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "y").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "x-1").size() == 0);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "1 +   x - 2 + y").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "(1 + x) - 2 + y").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "(1 + x) - 2 + y + 1").size() == 0);
+        }
+
+        // assignment: x = v + x * (y + z) * t
+        SECTION("Complex Assignment") {
+            auto ast = make<Assign>(
+                1,
+                make<Var>("x"),
+                make<BinExpr>(
+                    BinOp::PLUS, 
+                    make<Var>("v"),
+                    make<BinExpr>(
+                        BinOp::MULT,
+                        make<BinExpr>(
+                            BinOp::MULT,
+                            make<Var>("x"),
+                            make<BinExpr>(
+                                BinOp::PLUS,
+                                make<Var>("y"),
+                                make<Var>("z")
+                            )
+                        ),
+                        make<Var>("t")
+                    )
+                )
+            );
+
+            REQUIRE(extractAssignHelper(ast.get(), "x", "_").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "x", "v").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "v").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "v+x").size() == 0);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "v + x * (y + z) * t").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "y + z").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "(y + z) * t").size() == 0);
+            REQUIRE(extractAssignHelper(ast.get(), "_", "x * (y + z)").size() == 1);
         }
     }
 
