@@ -223,10 +223,11 @@ namespace qps::parser {
             value = t.getText();
         }
 
-        if (peekNextToken().getTokenType() == TokenType::UNDERSCORE) {
-            getNextToken();
+        if ((prefix.size() != 0) && (value.size() != 0)) {
+            getAndCheckNextToken(TokenType::UNDERSCORE);
             suffix = "_";
         }
+
         return prefix + value + suffix;
     }
 
