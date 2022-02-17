@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdio.h>
-#include <unordered_set>
+#include <set>
 
 #include "ProcedureRow.h"
 #include "PKBField.h"
@@ -41,5 +41,5 @@ public:
     std::vector<PROC_NAME> getAllProcs();
 
 private:
-    std::unordered_set<ProcedureRow, ProcedureRowHash> rows;
+    std::set<ProcedureRow> rows;
 };

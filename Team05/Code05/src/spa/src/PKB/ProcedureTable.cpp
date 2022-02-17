@@ -4,7 +4,6 @@
 #include "PKBField.h"
 #include "ProcedureTable.h"
 
-// count of an item in a set can only be 0 or 1
 bool ProcedureTable::contains(PKBField field) {
     if (field.entityType != PKBEntityType::PROCEDURE) {
         throw "Only procedures are accepted!";
@@ -28,8 +27,8 @@ int ProcedureTable::getSize() {
 std::vector<PROC_NAME> ProcedureTable::getAllProcs() {
     std::vector<PROC_NAME> res;
 
-    for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-        res.push_back(iter->getProcName());
+    for (const auto& row : rows) {
+        res.push_back(row.getProcName());
     }
 
     return res;

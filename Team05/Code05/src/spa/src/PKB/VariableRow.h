@@ -19,6 +19,7 @@ public:
     */
     VAR_NAME getVarName() const;
     bool operator == (const VariableRow&) const;
+    bool operator < (const VariableRow& other) const;
 
 private:
     VAR_NAME variableName;

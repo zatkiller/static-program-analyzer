@@ -1,30 +1,22 @@
 #include "ConstantTable.h"
 
-bool ConstantTable::contains(PKBField entry) {
-    if (entry.entityType != PKBEntityType::CONST) {
-        throw "Only constants are accepted!";
-    }
-    CONST constant = std::get<CONST>(entry.content);
+bool ConstantTable::contains(CONST constant) const {
     return rows.count(ConstantRow(constant)) == 1;
 }
 
-void ConstantTable::insert(PKBField entry) {
-    if (entry.entityType != PKBEntityType::CONST) {
-        throw "Only constants are accepted!";
-    }
-    CONST constant = std::get<CONST>(entry.content);
+void ConstantTable::insert(CONST constant) {
     rows.insert(ConstantRow(constant));
 }
 
-int ConstantTable::getSize() {
+int ConstantTable::getSize() const {
     return rows.size();
 }
 
-std::vector<CONST> ConstantTable::getAllConst() {
+std::vector<CONST> ConstantTable::getAllConst() const {
     std::vector<CONST> res;
 
-    for (auto iter = rows.begin(); iter != rows.end(); ++iter) {
-        res.push_back(iter->getConst());
+    for (const auto& row : rows) {
+        res.push_back(row.getConst());
     }
 
     return res;

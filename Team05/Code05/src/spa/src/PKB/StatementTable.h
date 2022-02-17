@@ -1,9 +1,13 @@
 #pragma once
 
 #include <stdio.h>
-#include <unordered_set>
+#include <set>
 #include <vector>
+#include <algorithm>
+#include <iterator>
+#include <optional>
 
+#include "logging.h"
 #include "PKBField.h"
 #include "StatementRow.h"
 
@@ -19,6 +23,8 @@ public:
     * @returns whether the statement information is present in the ConstantTable
     */
     bool contains(StatementType, int);
+
+    bool contains(int);
 
     /**
     * Inserts statement information wrapped in a PKBField into the StatementTable.
@@ -49,6 +55,15 @@ public:
     */
     std::vector<STMT_LO> getStmtOfType(StatementType);
 
+    /**
+    * Retrieve the statement type of a statement row with statementNum. If there doesn't exist one,
+    * return a null optional.
+    *
+    * @param statementNum
+    * @return std::optional<StatementType>
+    */
+    std::optional<StatementType> getStmtTypeOfLine(int statementNum);
+
 private:
-    std::unordered_set<StatementRow, StatementRowHash> rows;
+    std::set<StatementRow> rows;
 };

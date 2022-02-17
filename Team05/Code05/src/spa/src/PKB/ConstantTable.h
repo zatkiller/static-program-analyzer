@@ -1,44 +1,49 @@
 #pragma once
 
-#include <unordered_set>
+#include <set>
 
 #include "PKBField.h"
 #include "ConstantRow.h"
 
 /**
 * A data structure to store ConstantRows.
+* 
+* @see ConstantRow
 */
 class ConstantTable {
 public:
     /**
     * Checks whether the ConstantTable contains the constant wrapped in a PKBField.
     * 
-    * @param entry the PKBField containing the constant to be checked
-    * @returns whether the constant is present in the ConstantTable
+    * @param const the constant to be checked
+    * @return bool whether constant is present in the ConstantTable
+    * @see CONST
     */
-    bool contains(PKBField entry);
+    bool contains(CONST constant) const;
 
     /**
-    * Inserts a constant wrapped in a PKBField into the ConstantTable.
+    * Inserts a constant wrapped in a CONST into the ConstantTable.
     *
-    * @param entry the PKBField containing the constant to be inserted
+    * @param entry the constant to be inserted
+    * @see CONST
     */
-    void insert(PKBField entry);
+    void insert(CONST constant);
 
     /**
-    * Returns the number of ConstantRows.
+    * Returns the number of ConstantRows in the ConstantTable.
     * 
-    * @return number of ConstantRows
+    * @return int number of ConstantRows in the ConstantTable
     */
-    int getSize();
+    int getSize() const;
 
     /**
-    * Retrieves all constants stored in the ConstantTable.
+    * Retrieves a vector of all constants stored in the ConstantTable.
     * 
-    * @return a vector of constants
+    * @return std::vector<CONST> a vector of constants
+    * @see CONST
     */
-     std::vector<CONST> getAllConst();
+     std::vector<CONST> getAllConst() const;
 
 private:
-    std::unordered_set<ConstantRow, ConstantRowHash> rows;
+    std::set<ConstantRow> rows;
 };

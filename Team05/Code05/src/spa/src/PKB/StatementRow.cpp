@@ -9,6 +9,10 @@ bool StatementRow::operator == (const StatementRow& row) const {
     return stmt == row.stmt;
 }
 
+bool StatementRow::operator < (const StatementRow& other) const {
+    return std::tie(stmt) < std::tie(other.stmt);
+}
+
 STMT_LO StatementRow::getStmt() const {
     return stmt;
 }
