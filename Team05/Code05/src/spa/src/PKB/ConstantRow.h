@@ -16,6 +16,7 @@ public:
     */
     CONST getConst() const;
     bool operator == (const ConstantRow&) const;
+    bool operator < (const ConstantRow& other) const;
 
 private:
     CONST constant;

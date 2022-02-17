@@ -2,6 +2,7 @@
 
 #include <string>
 #include <tuple>
+#include <optional>
 #include "StatementType.h"
 
 typedef int CONST;
@@ -23,11 +24,12 @@ typedef struct PROC_NAME {
 } PROC_NAME;
 
 typedef struct STMT_LO {
+    STMT_LO(int statementNum) : statementNum(statementNum), type(std::nullopt) {}
     STMT_LO(int statementNum, StatementType type) : statementNum(statementNum), type(type) {}
-    STMT_LO(int statementNum) : statementNum(statementNum) {}
     int statementNum;
-    StatementType type;
+    std::optional<StatementType> type;
 
+    bool hasStatementType();
     bool operator == (const STMT_LO&) const;
     bool operator < (const STMT_LO&) const;
 } STMT_LO;

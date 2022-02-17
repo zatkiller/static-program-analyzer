@@ -169,7 +169,7 @@ namespace qps::query {
         } else if (s.isWildcard()) {
             stmtField = PKBField::createWildcard(PKBEntityType::STATEMENT);
         } else if (s.isDeclaration()) {
-            stmtField = PKBField::createDeclaration(PKBEntityType::STATEMENT);
+            stmtField = PKBField::createDeclaration(StatementType::All);
         }
         return stmtField;
     }

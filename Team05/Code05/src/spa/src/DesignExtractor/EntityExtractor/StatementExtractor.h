@@ -1,4 +1,4 @@
-#include "DesignExtractor.h"
+#include "DesignExtractor/Extractor.h"
 
 class StatementExtractor : public Extractor {
 public:

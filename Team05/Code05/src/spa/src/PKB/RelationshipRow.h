@@ -24,8 +24,8 @@ public:
     bool operator == (const RelationshipRow&) const;
 
 private:
-    PKBField entity1;
-    PKBField entity2;
+    PKBField field1;
+    PKBField field2;
 };
 
 /** 

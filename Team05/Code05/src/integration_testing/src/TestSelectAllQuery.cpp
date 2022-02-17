@@ -42,18 +42,17 @@ TEST_CASE("Test get statements") {
     PKBResponse resRead = evaluator.getAll(qps::query::DesignEntity::READ);
 
     std::unordered_set<PKBField, PKBFieldHash> setAll =
-            *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resAll.res));
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resAll.res));
     std::unordered_set<PKBField, PKBFieldHash> setAss =
-            *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resAss.res));
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resAss.res));
     std::unordered_set<PKBField, PKBFieldHash> setWhile =
-            *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resWhile.res));
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resWhile.res));
     std::unordered_set<PKBField, PKBFieldHash> setIf =
-            *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resIf.res));
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resIf.res));
     std::unordered_set<PKBField, PKBFieldHash> setPrint =
-            *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resPrint.res));
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resPrint.res));
     std::unordered_set<PKBField, PKBFieldHash> setRead =
-            *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resRead.res));
-
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resRead.res));
 
     int countAssign = setAss.size();
     REQUIRE(countAssign == 3);
@@ -84,9 +83,9 @@ TEST_CASE("Test get variables") {
 
     std::unordered_set<PKBField, PKBFieldHash> expectedSelectVar{v1, v2, v3};
 
-    PKBResponse resVar = evaluator.getAll(qps::query::DesignEntity::VARIABLE);
+    PKBResponse resVar = evaluator.getAll(DesignEntity::VARIABLE);
     std::unordered_set<PKBField, PKBFieldHash> setVar =
-            *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resVar.res));
+        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resVar.res));
     REQUIRE(setVar == expectedSelectVar);
 }
 
