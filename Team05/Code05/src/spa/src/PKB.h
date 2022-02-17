@@ -47,6 +47,20 @@ public:
     void insertVariable(std::string name);
 
     /**
+    * Inserts a constant into the PKB.
+    *
+    * @param constnat
+    */
+    void insertConstant(int constant);
+
+    /**
+    * Inserts a procedure into the PKB.
+    *
+    * @param name procedure name
+    */
+    void insertProcedure(std::string name);
+
+    /**
     * Inserts a relationship into the PKB.
     *
     * @param type relationship type

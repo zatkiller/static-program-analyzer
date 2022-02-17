@@ -9,6 +9,7 @@
 PKB::PKB() {
     statementTable = std::make_unique<StatementTable>();
     variableTable = std::make_unique<VariableTable>();
+    constantTable = std::make_unique<ConstantTable>();
     procedureTable = std::make_unique<ProcedureTable>();
     modifiesTable = std::make_unique<ModifiesRelationshipTable>();
     followsTable = std::make_unique<FollowsRelationshipTable>();
@@ -32,6 +33,14 @@ void PKB::insertStatement(StatementType type, int statementNumber) {
 
 void PKB::insertVariable(std::string name) {
     variableTable->insert(name);
+}
+
+void PKB::insertProcedure(std::string name) {
+    procedureTable->insert(name);
+}
+
+void PKB::insertConstant(int constant) {
+    constantTable->insert(constant);
 }
 
 
