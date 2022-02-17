@@ -13,9 +13,143 @@ TEST_CASE("Testing Parser") {
         std::deque<Token> tokens;
         using AST::make;
         std::unique_ptr<AST::ASTNode> ast, expected;
-        lineCount = 1;
+        lineCount = 1;  // resetting line count
 
         SECTION("ExprParser::parse") {
+            // single const
+            tokens = Lexer("5").getTokens();
+            ast = ExprParser::parse(tokens);
+            expected = make<AST::Const>(5);
+            REQUIRE(*ast == *expected);
+
+            // single var
+            tokens = Lexer("ooga").getTokens();
+            ast = ExprParser::parse(tokens);
+            expected = make<AST::Var>("ooga");
+            REQUIRE(*ast == *expected);
+
+            // var only basic expression
+            tokens = Lexer("ooga / booga").getTokens();
+            ast = ExprParser::parse(tokens);
+            expected = make<AST::BinExpr>(
+                AST::BinOp::DIVIDE,
+                make<AST::Var>("ooga"),
+                make<AST::Var>("booga")
+            );
+            REQUIRE(*ast == *expected);
+
+            // const only basic expression
+            tokens = Lexer("17 * 42 / 5").getTokens();
+            ast = ExprParser::parse(tokens);
+            expected = make<AST::BinExpr>(
+                AST::BinOp::DIVIDE,
+                make<AST::BinExpr>(
+                    AST::BinOp::MULT,
+                    make<AST::Const>(17),
+                    make<AST::Const>(42)
+                ),
+                make<AST::Const>(5)
+            );
+            REQUIRE(*ast == *expected);
+            
+            // basic expression with var and const
+            tokens = Lexer("ooga + 1 * booga").getTokens();
+            ast = ExprParser::parse(tokens);
+            expected = make<AST::BinExpr>(
+                AST::BinOp::PLUS,
+                make<AST::Var>("ooga"),
+                make<AST::BinExpr>(
+                    AST::BinOp::MULT,
+                    make<AST::Const>(1),
+                    make<AST::Var>("booga")
+                )
+            );
+            REQUIRE(*ast == *expected);
+
+            // basic expression nested in parenthesis
+            tokens = Lexer("(((((ooga + 1)))))").getTokens();
+            ast = ExprParser::parse(tokens);
+            expected = make<AST::BinExpr>(
+                AST::BinOp::PLUS,
+                make<AST::Var>("ooga"),
+                make<AST::Const>(1)
+            );
+            REQUIRE(*ast == *expected);
+
+            // Should be able to parse subexpressions without brackets
+            tokens = Lexer("x + y * z - 12 % 7 - x + z * ooga / booga").getTokens();
+            expected = make<AST::BinExpr>(
+                AST::BinOp::PLUS,
+                make<AST::BinExpr>(
+                    AST::BinOp::MINUS,
+                    make<AST::BinExpr>(
+                        AST::BinOp::MINUS,
+                        make<AST::BinExpr>(
+                            AST::BinOp::PLUS,
+                            make<AST::Var>("x"),
+                            make<AST::BinExpr>(
+                                AST::BinOp::MULT,
+                                make<AST::Var>("y"),
+                                make<AST::Var>("z")
+                            )
+                        ),
+                        make<AST::BinExpr>(
+                            AST::BinOp::MOD,
+                            make<AST::Const>(12),
+                            make<AST::Const>(7)
+                        )
+                    ),
+                    make<AST::Var>("x")
+                ),
+                make<AST::BinExpr>(
+                    AST::BinOp::DIVIDE,
+                    make<AST::BinExpr>(
+                        AST::BinOp::MULT,
+                        make<AST::Var>("z"),
+                        make<AST::Var>("ooga")
+                    ),
+                    make<AST::Var>("booga")
+                )
+            );
+            // Should be able to parse many subexpressions with brackets
+            tokens = Lexer("(x + y * z) - (12 % 7 - x) + (z * ooga / booga)").getTokens();
+            ast = ExprParser::parse(tokens);
+            expected = make<AST::BinExpr>(
+                AST::BinOp::PLUS,
+                make<AST::BinExpr>(
+                    AST::BinOp::MINUS,
+                    make<AST::BinExpr>(
+                        AST::BinOp::PLUS,
+                        make<AST::Var>("x"),
+                        make<AST::BinExpr>(
+                            AST::BinOp::MULT,
+                            make<AST::Var>("y"),
+                            make<AST::Var>("z")
+                        )
+                    ),
+                    make<AST::BinExpr>(
+                        AST::BinOp::MINUS,
+                        make<AST::BinExpr>(
+                            AST::BinOp::MOD,
+                            make<AST::Const>(12),
+                            make<AST::Const>(7)
+                        ),
+                        make<AST::Var>("x")
+                    )
+                ),
+                make<AST::BinExpr>(
+                    AST::BinOp::DIVIDE,
+                    make<AST::BinExpr>(
+                        AST::BinOp::MULT,
+                        make<AST::Var>("z"),
+                        make<AST::Var>("ooga")
+                    ),
+                    make<AST::Var>("booga")
+                )
+            );
+
+            // Should be able to parse many subexpressions with and without brackets
+            REQUIRE(*ast == *expected);
             tokens = Lexer("4+x*2/(1-y)-6%8").getTokens();
             ast = ExprParser::parse(tokens);
             expected = make<AST::BinExpr>(
@@ -43,8 +177,7 @@ TEST_CASE("Testing Parser") {
                     make<AST::Const>(8)
                 )
             );
-            REQUIRE(*ast == *expected);
-            
+            REQUIRE(*ast == *expected);            
 
             // Left associativity test
             tokens = Lexer("4+3+2").getTokens();
@@ -55,6 +188,7 @@ TEST_CASE("Testing Parser") {
             auto ast3 = ExprParser::parse(tokens);
             REQUIRE(*ast1 == *ast2);
             REQUIRE(!(*ast1 == *ast3));
+
         }
         
         SECTION("CondExprParser::parse") {
