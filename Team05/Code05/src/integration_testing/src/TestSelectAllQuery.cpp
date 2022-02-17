@@ -83,7 +83,7 @@ TEST_CASE("Test get variables") {
 
     std::unordered_set<PKBField, PKBFieldHash> expectedSelectVar{v1, v2, v3};
 
-    PKBResponse resVar = evaluator.getAll(DesignEntity::VARIABLE);
+    PKBResponse resVar = evaluator.getAll(qps::query::DesignEntity::VARIABLE);
     std::unordered_set<PKBField, PKBFieldHash> setVar =
         *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resVar.res));
     REQUIRE(setVar == expectedSelectVar);
