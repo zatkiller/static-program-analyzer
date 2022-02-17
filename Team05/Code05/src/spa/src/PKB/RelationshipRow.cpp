@@ -4,18 +4,18 @@
 #include "PKBField.h"
 #include "RelationshipRow.h"
 
-RelationshipRow::RelationshipRow(PKBField e1, PKBField e2): entity1(e1), entity2(e2) {}
+RelationshipRow::RelationshipRow(PKBField e1, PKBField e2): field1(e1), field2(e2) {}
 
 bool RelationshipRow::operator == (const RelationshipRow& row) const {
-    return entity1 == row.entity1 && entity2 == row.entity2;
+    return field1 == row.field1 && field2 == row.field2;
 }
 
 PKBField RelationshipRow::getFirst() const {
-    return entity1;
+    return field1;
 }
 
 PKBField RelationshipRow::getSecond() const {
-    return entity2;
+    return field2;
 }
 
 size_t RelationshipRowHash::operator() (const RelationshipRow& other) const {

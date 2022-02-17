@@ -50,23 +50,32 @@ public:
     * Inserts a relationship into the PKB.
     *
     * @param type relationship type
-    * @param entity1 the first program design entity in the relationship
-    * @param entity2 the second program design entity in the relationship
+    * @param field1 the first program design entity in the relationship
+    * @param field2 the second program design entity in the relationship
     */
-    void insertRelationship(PKBRelationship type, PKBField entity1, PKBField entity2);
+    void insertRelationship(PKBRelationship type, PKBField field1, PKBField field2);
 
     // void insertAST();
 
     /**
-    * Checks whether there exist
+    * Checks whether there exist. If any fields are invalid, return false.
+    * 
+    * @param field1 the first program design entity in the relationship
+    * @param field2 the second program design entity in the relationship
+    * @param rs the relationship type 
+    * 
+    * @return bool
     */
     bool isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationship rs);
 
     /**
-    * Retrieve all relationships matching rs(field1, field2).
+    * Retrieve all relationships matching rs(field1, field2). If any fields are invalid, 
+    * an empty PKBResponse is returned.
     *
     * @param field1 the first program design entity in the relationship
     * @param field2 the second program design entity in the relationship
+    * @param rs the relationship type 
+    * 
     * @return matching relationships wrapped in PKBResponse
     */
     PKBResponse getRelationship(PKBField field1, PKBField field2, PKBRelationship rs);
@@ -107,7 +116,7 @@ public:
     */
     PKBResponse getConstants();
 
-public:
+private:
     std::unique_ptr<StatementTable> statementTable;
     std::unique_ptr<VariableTable> variableTable;
     std::unique_ptr<ProcedureTable> procedureTable;
@@ -116,4 +125,14 @@ public:
     std::unique_ptr<ConstantTable> constantTable;
     std::unique_ptr<ParentRelationshipTable> parentTable;
     std::unique_ptr<UsesRelationshipTable> usesTable;
+
+    /**
+    * Check whether field is a concrete statement. Returns false if it is a 
+    * concrete statement with an uninitialized statement type and its statement number is absent in
+    * the StatementTable. 
+    * 
+    * @param field
+    * @return bool
+    */
+    bool getStatementTypeOfConcreteField(PKBField* field);
 };

@@ -5,7 +5,9 @@
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#include <optional>
 
+#include "logging.h"
 #include "PKBField.h"
 #include "StatementRow.h"
 
@@ -53,7 +55,14 @@ public:
     */
     std::vector<STMT_LO> getStmtOfType(StatementType);
 
-    StatementType getStmtTypeOfLine(int statementNum);
+    /**
+    * Retrieve the statement type of a statement row with statementNum. If there doesn't exist one,
+    * return a null optional.
+    *
+    * @param statementNum
+    * @return std::optional<StatementType>
+    */
+    std::optional<StatementType> getStmtTypeOfLine(int statementNum);
 
 private:
     std::set<StatementRow> rows;

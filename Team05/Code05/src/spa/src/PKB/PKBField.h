@@ -78,6 +78,9 @@ struct PKBField {
         return nullptr;
     }
 
+    /**
+    * Checks whether a PKBField is valid given an entity type.
+    */
     bool isValidConcrete(PKBEntityType type);
 
     bool operator == (const PKBField&) const;

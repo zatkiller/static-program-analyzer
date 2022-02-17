@@ -4,7 +4,6 @@
 #include "PKBField.h"
 #include "ProcedureTable.h"
 
-// count of an item in a set can only be 0 or 1
 bool ProcedureTable::contains(PKBField field) {
     if (field.entityType != PKBEntityType::PROCEDURE) {
         throw "Only procedures are accepted!";
