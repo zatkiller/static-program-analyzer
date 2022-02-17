@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+namespace qps::parser {
+
 enum class TokenType {
     END_OF_FILE,
     INVALID,
@@ -20,6 +22,10 @@ enum class TokenType {
     // Relationships
     USES,
     MODIFIES,
+    FOLLOWS,
+    FOLLOWS_T,
+    PARENT,
+    PARENT_T,
 
     // Reserved Keywords
     SELECT,
@@ -27,6 +33,9 @@ enum class TokenType {
     PATTERN
 };
 
+/**
+* Struct used to represent a Token
+*/
 struct Token {
     std::string text;
     TokenType type;
@@ -44,6 +53,10 @@ struct Token {
     }
 };
 
+/**
+* Struct used to represent a Lexer, which is responsible for tokenizing the
+* the PQL query input
+*/
 struct Lexer {
     std::string text;
 
@@ -51,18 +64,52 @@ struct Lexer {
 
     void eatWhitespace();
 
+    /*
+     * Returns a boolean if the curent lexified query
+     * has the specified prefix
+     *
+     * @param prefix the prefix to check
+     * @return a boolean
+     */
     bool hasPrefix(std::string prefix);
 
     std::string getText();
 
+    /*
+     * Returns the next token from the lexified query
+     *
+     * @return a token
+     */
     Token getNextToken();
+
+    /*
+     * Returns the next token that belongs to a reserved word
+     *
+     * @return a token
+     */
     Token getNextReservedToken();
+
+    /*
+     * Returns the next token of the query without modifying
+     * the lexified query
+     *
+     * @return a token
+     */
     Token peekNextToken();
+
+    /*
+     * Returns the next token that belongs to a reserved word
+     * without modifying the lexified queryy
+     *
+     * @return a token
+     */
     Token peekNextReservedToken();
 
     bool operator==(const Lexer &o) const {
         return this->text == o.text;
     }
 };
+
+}  // namespace qps::parser
 
 

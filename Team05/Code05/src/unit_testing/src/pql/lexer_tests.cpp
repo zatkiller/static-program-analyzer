@@ -1,12 +1,17 @@
 #include "pql/lexer.h"
 #include "catch.hpp"
 
-TEST_CASE("Lexer getTexxt") {
+using qps::parser::Lexer;
+using qps::parser::Token;
+using qps::parser::TokenType;
+
+TEST_CASE("Lexer getText") {
     std::string testQuery = "assign a; variable v;\n Select a such that Uses (a, v) pattern a (v, _)";
     Lexer lexer(testQuery);
 
     REQUIRE(lexer.getText() == testQuery);
 }
+
 TEST_CASE("Lexer eatWhitespace") {
     Lexer lexer1("   ");
     lexer1.eatWhitespace();
@@ -26,7 +31,7 @@ TEST_CASE("Lexer hasPrefx") {
     REQUIRE(lexer.hasPrefix("assign"));
 }
 
-TEST_CASE("Lexer getNextReservedToken") {
+TEST_CASE("Lexer getNextToken") {
     Lexer lexer("123 hi123 hi \"test\" ;()_,.");
 
     auto t1 = lexer.getNextToken();
@@ -79,8 +84,8 @@ TEST_CASE("Lexer peekNextToken") {
     REQUIRE(lexer.getNextToken() == Token{"hello", TokenType::IDENTIFIER});
 }
 
-TEST_CASE("Lexer getNextToken") {
-    Lexer lexer("Select Modifies Uses pattern such that");
+TEST_CASE("Lexer getNextReservedToken") {
+    Lexer lexer("Select Modifies Uses Follows Follows* Parent Parent* pattern such that");
 
     auto t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::SELECT);
@@ -93,6 +98,22 @@ TEST_CASE("Lexer getNextToken") {
     t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::USES);
     REQUIRE(t1.getText() == "Uses");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::FOLLOWS);
+    REQUIRE(t1.getText() == "Follows");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::FOLLOWS_T);
+    REQUIRE(t1.getText() == "Follows*");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::PARENT);
+    REQUIRE(t1.getText() == "Parent");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::PARENT_T);
+    REQUIRE(t1.getText() == "Parent*");
 
     t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::PATTERN);
