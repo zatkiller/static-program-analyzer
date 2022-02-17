@@ -47,6 +47,7 @@ void PKB::insertConstant(int constant) {
 void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField field2) {
     // if both fields are not concrete, no insert can be done
     if (field1.fieldType != PKBFieldType::CONCRETE || field2.fieldType != PKBFieldType::CONCRETE) {
+        Logger(Level::INFO) << "Both fields have to be concrete.\n";
         return;
     }
 
@@ -62,8 +63,10 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
         break;
     case PKBRelationship::USES:
         usesTable->insert(field1, field2);
+        break;
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
+        break;
     }
 }
 
@@ -117,7 +120,7 @@ bool PKB::getStatementTypeOfConcreteField(PKBField* field) {
 
 PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationship rs) {
     if (!getStatementTypeOfConcreteField(&field1) || !getStatementTypeOfConcreteField(&field2)) {
-        return PKBResponse{ false, Response{} };
+        return PKBResponse{ false, FieldRowResponse{} };
     }
 
     FieldRowResponse extracted;

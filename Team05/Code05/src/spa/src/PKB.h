@@ -72,7 +72,7 @@ public:
     // void insertAST();
 
     /**
-    * Checks whether there exist. If any fields are invalid, return false.
+    * Checks whether there exist. If any fields are invalid, return false. Both fields must be concrete.
     * 
     * @param field1 the first program design entity in the relationship
     * @param field2 the second program design entity in the relationship
