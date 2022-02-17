@@ -96,6 +96,275 @@ TEST_CASE("PKB STMT_LO empty type") {
     REQUIRE(*content == *content2); // checks that getStatementTypeOfConcreteField works
 }
 
+TEST_CASE("ASDASD") {
+    std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+
+    /*
+    procedure Example {
+     1    x = 2;
+     2    z = 3;
+     3    i = 5;
+     4    read monke;
+     5    while (i!=0) {
+     6    x = x - 1;
+     7    if (x==1) then {
+     8        z = x + 1; }
+        else {
+     9        y = z + x; }
+    10    z = z + x + i;
+    11    i = i - 1; }
+    12    print monke;
+    }
+    */
+
+    pkb->insertProcedure("Example");
+    pkb->insertVariable("x");
+    pkb->insertVariable("z");
+    pkb->insertVariable("i");
+    pkb->insertVariable("y");
+    pkb->insertVariable("monke");
+    pkb->insertConstant(2);
+    pkb->insertConstant(3);
+    pkb->insertConstant(5);
+    pkb->insertConstant(1);
+    pkb->insertStatement(StatementType::Assignment, 1);
+    pkb->insertStatement(StatementType::Assignment, 2);
+    pkb->insertStatement(StatementType::Assignment, 3);
+    pkb->insertStatement(StatementType::Read, 4);
+    pkb->insertStatement(StatementType::While, 5);
+    pkb->insertStatement(StatementType::Assignment, 6);
+    pkb->insertStatement(StatementType::If, 7);
+    pkb->insertStatement(StatementType::Assignment, 8);
+    pkb->insertStatement(StatementType::Assignment, 9);
+    pkb->insertStatement(StatementType::Assignment, 10);
+    pkb->insertStatement(StatementType::Assignment, 11);
+    pkb->insertStatement(StatementType::Print, 12);
+
+    PKBField const1 = PKBField::createConcrete(CONST{ 1 });
+    PKBField const2 = PKBField::createConcrete(CONST{ 2 });
+    PKBField const3 = PKBField::createConcrete(CONST{ 3 });
+    PKBField const5 = PKBField::createConcrete(CONST{ 5 });
+    PKBField stmt1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
+    PKBField stmt2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment });
+    PKBField stmt3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
+    PKBField stmt4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::Read });
+    PKBField stmt5 = PKBField::createConcrete(STMT_LO{ 5, StatementType::While });
+    PKBField stmt6 = PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment });
+    PKBField stmt7 = PKBField::createConcrete(STMT_LO{ 7, StatementType::If });
+    PKBField stmt8 = PKBField::createConcrete(STMT_LO{ 8, StatementType::Assignment });
+    PKBField stmt9 = PKBField::createConcrete(STMT_LO{ 9, StatementType::Assignment });
+    PKBField stmt10 = PKBField::createConcrete(STMT_LO{ 10, StatementType::Assignment });
+    PKBField stmt11 = PKBField::createConcrete(STMT_LO{ 11, StatementType::Assignment });
+    PKBField stmt12 = PKBField::createConcrete(STMT_LO{ 12, StatementType::Print });
+    PKBField proc = PKBField::createConcrete(PROC_NAME{ "Example" });
+    PKBField x = PKBField::createConcrete(VAR_NAME{ "x" });
+    PKBField y = PKBField::createConcrete(VAR_NAME{ "y" });
+    PKBField z = PKBField::createConcrete(VAR_NAME{ "z" });
+    PKBField i = PKBField::createConcrete(VAR_NAME{ "i" });
+    PKBField monke = PKBField::createConcrete(VAR_NAME{ "monke" });
+
+    pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt1, stmt2);
+    pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt2, stmt3);
+    pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt3, stmt4);
+    pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt4, stmt5);
+    pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt5, stmt12);
+    pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt6, stmt7);
+    pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt7, stmt10);
+    pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt10, stmt11);
+
+    pkb->insertRelationship(PKBRelationship::MODIFIES, stmt1, x);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, stmt2, z);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, stmt3, i);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, stmt4, monke);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, stmt6, x);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, stmt8, z);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, stmt9, y);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, stmt10, z);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, stmt11, i);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, proc, x);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, proc, y);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, proc, z);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, proc, i);
+    pkb->insertRelationship(PKBRelationship::MODIFIES, proc, monke);
+
+    pkb->insertRelationship(PKBRelationship::USES, proc, x);
+    pkb->insertRelationship(PKBRelationship::USES, proc, z);
+    pkb->insertRelationship(PKBRelationship::USES, proc, i);
+    pkb->insertRelationship(PKBRelationship::USES, proc, monke);
+    pkb->insertRelationship(PKBRelationship::USES, stmt5, i);
+    pkb->insertRelationship(PKBRelationship::USES, stmt6, x);
+    pkb->insertRelationship(PKBRelationship::USES, stmt7, x);
+    pkb->insertRelationship(PKBRelationship::USES, stmt8, x);
+    pkb->insertRelationship(PKBRelationship::USES, stmt9, x);
+    pkb->insertRelationship(PKBRelationship::USES, stmt9, z);
+    pkb->insertRelationship(PKBRelationship::USES, stmt10, x);
+    pkb->insertRelationship(PKBRelationship::USES, stmt10, z);
+    pkb->insertRelationship(PKBRelationship::USES, stmt10, i);
+    pkb->insertRelationship(PKBRelationship::USES, stmt11, i);
+    pkb->insertRelationship(PKBRelationship::USES, stmt12, monke);
+
+    // Add parents relationship
+
+    SECTION("PKB::getConstants, PKB::getProcedures, PKB::getVariables, PKB::getStatements") {
+        REQUIRE(pkb->getConstants() == PKBResponse{ true, FieldResponse{ const1, const2, const3, const5 } });
+        REQUIRE(pkb->getProcedures() == PKBResponse{ true, FieldResponse{ proc } });
+        REQUIRE(pkb->getVariables() == PKBResponse{ true, FieldResponse{ x, y, z, i, monke } });
+        REQUIRE(pkb->getStatements() == PKBResponse{ true, FieldResponse{ stmt1, stmt2, stmt3, stmt4, stmt5, stmt6,
+            stmt7, stmt8, stmt9, stmt10, stmt11, stmt12} });
+    }
+
+    SECTION("PKB::isRelationshipPresent") {
+        REQUIRE(pkb->isRelationshipPresent(stmt1, stmt2, PKBRelationship::FOLLOWS));
+        REQUIRE(pkb->isRelationshipPresent(stmt1, stmt3, PKBRelationship::FOLLOWST));
+        
+        // Incomplete concrete statement fields
+        REQUIRE(pkb->isRelationshipPresent(PKBField::createConcrete(STMT_LO{ 1 }), stmt2, 
+            PKBRelationship::FOLLOWS));
+        REQUIRE(pkb->isRelationshipPresent(PKBField::createConcrete(STMT_LO{ 1 }), stmt3,
+            PKBRelationship::FOLLOWST));
+        REQUIRE(pkb->isRelationshipPresent(PKBField::createConcrete(STMT_LO{ 1 }), 
+            PKBField::createConcrete(STMT_LO{ 2 }),
+            PKBRelationship::FOLLOWS));
+
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt5, stmt6, PKBRelationship::FOLLOWS));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt8, stmt9, PKBRelationship::FOLLOWS));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(proc, stmt9, PKBRelationship::FOLLOWS));
+
+        // Invalid 
+        REQUIRE_FALSE(pkb->isRelationshipPresent(PKBField::createWildcard(PKBEntityType::STATEMENT), 
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(PKBField::createWildcard(PKBEntityType::PROCEDURE),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(PKBField::createWildcard(PKBEntityType::PROCEDURE),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::FOLLOWS));
+    }
+
+    SECTION("PKB::getRelationship") {
+        using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
+
+        // Follows*(_, _)
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::FOLLOWST) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, stmt2}, {stmt1, stmt3}, {stmt1, stmt4}, {stmt1, stmt5}, {stmt1, stmt12},
+            {stmt2, stmt3}, {stmt2, stmt4}, {stmt2, stmt5}, {stmt2, stmt12}, {stmt3, stmt4}, {stmt3, stmt5},
+            {stmt3, stmt12}, {stmt4, stmt5}, {stmt4, stmt12}, {stmt5, stmt12}, {stmt6, stmt7}, {stmt6, stmt10},
+            {stmt6, stmt11}, {stmt7, stmt10}, {stmt7, stmt11}, {stmt10, stmt11} } });
+
+        // Follows*(s, _)
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::FOLLOWST) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, stmt2}, {stmt1, stmt3}, {stmt1, stmt4}, {stmt1, stmt5}, {stmt1, stmt12},
+            {stmt2, stmt3}, {stmt2, stmt4}, {stmt2, stmt5}, {stmt2, stmt12}, {stmt3, stmt4}, {stmt3, stmt5},
+            {stmt3, stmt12}, {stmt4, stmt5}, {stmt4, stmt12}, {stmt5, stmt12}, {stmt6, stmt7}, {stmt6, stmt10},
+            {stmt6, stmt11}, {stmt7, stmt10}, {stmt7, stmt11}, {stmt10, stmt11} } });
+
+        // Follows*(_, s)
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createDeclaration(StatementType::All), PKBRelationship::FOLLOWST) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, stmt2}, {stmt1, stmt3}, {stmt1, stmt4}, {stmt1, stmt5}, {stmt1, stmt12},
+            {stmt2, stmt3}, {stmt2, stmt4}, {stmt2, stmt5}, {stmt2, stmt12}, {stmt3, stmt4}, {stmt3, stmt5},
+            {stmt3, stmt12}, {stmt4, stmt5}, {stmt4, stmt12}, {stmt5, stmt12}, {stmt6, stmt7}, {stmt6, stmt10},
+            {stmt6, stmt11}, {stmt7, stmt10}, {stmt7, stmt11}, {stmt10, stmt11} } });
+
+        // Follows*(a, _)
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::Assignment),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::FOLLOWST) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, stmt2}, {stmt1, stmt3}, {stmt1, stmt4}, {stmt1, stmt5}, {stmt1, stmt12},
+            {stmt2, stmt3}, {stmt2, stmt4}, {stmt2, stmt5}, {stmt2, stmt12}, {stmt3, stmt4}, {stmt3, stmt5},
+            {stmt3, stmt12}, {stmt6, stmt7}, {stmt6, stmt10}, {stmt6, stmt11}, {stmt10, stmt11} } });
+
+        // Follows*(_, a)
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::FOLLOWST) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, stmt2}, {stmt1, stmt3}, {stmt2, stmt3}, {stmt6, stmt10},
+            {stmt6, stmt11}, {stmt7, stmt10}, {stmt7, stmt11}, {stmt10, stmt11} } });
+
+        // Follows*(1, _)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment }),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::FOLLOWST) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, stmt2}, {stmt1, stmt3}, {stmt1, stmt4}, {stmt1, stmt5}, {stmt1, stmt12} } });
+
+        // Follows*(1, _) without statement type
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 1 }),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::FOLLOWST) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, stmt2}, {stmt1, stmt3}, {stmt1, stmt4}, {stmt1, stmt5}, {stmt1, stmt12} } });
+
+        // Follows*(1, 2) 
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 1 }),
+            PKBField::createConcrete(STMT_LO{ 2 }), PKBRelationship::FOLLOWST) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, stmt2} } });
+
+        // Follows(1, 2) with wrong statement type
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 1, StatementType::While }),
+            PKBField::createConcrete(STMT_LO{ 2 }), PKBRelationship::FOLLOWS) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
+        // Follows*(1, 2) with wrong statement type
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 1, StatementType::While }),
+            PKBField::createConcrete(STMT_LO{ 2 }), PKBRelationship::FOLLOWST) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
+        // Follows(p, _) invalid parameter
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(PKBEntityType::PROCEDURE),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::FOLLOWS) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
+        // Modifies(_, _) 
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
+        // Modifies(_, _) 
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::PROCEDURE),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
+        // Modifies(p, _) 
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(PKBEntityType::PROCEDURE),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ true,
+            FieldRowResponse{ {proc, x}, {proc, y}, {proc, z}, {proc, i}, {proc, monke} } });
+
+        // Modifies(w, _) 
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::While),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
+        // Modifies(10, _) 
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{10}),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ true,
+            FieldRowResponse{ {stmt10, z} } });
+
+        // Modifies(s, _) 
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, x}, {stmt2, z}, {stmt3, i}, {stmt4, monke}, {stmt6, x}, {stmt8, z},
+            {stmt9, y}, {stmt10, z}, {stmt11, i} } });
+
+        // Modifies(s, v) 
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, x}, {stmt2, z}, {stmt3, i}, {stmt4, monke}, {stmt6, x}, {stmt8, z},
+            {stmt9, y}, {stmt10, z}, {stmt11, i} } });
+
+        // Modifies(s, "z")
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All), z,
+            PKBRelationship::MODIFIES) == PKBResponse{ true,
+            FieldRowResponse{ {stmt2, z}, {stmt8, z}, {stmt10, z} } });
+
+        // Modifies(a, _) 
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::Assignment),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, x}, {stmt2, z}, {stmt3, i}, {stmt6, x}, {stmt8, z},
+            {stmt9, y}, {stmt10, z}, {stmt11, i} } });
+
+        // Modifies(r, _) 
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::Read),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ true,
+            FieldRowResponse{ {stmt4, monke} } });
+
+    }
+}
+
 TEST_CASE("PKB regression test") {
     SECTION("PKB regression test #140.1") {
         std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
