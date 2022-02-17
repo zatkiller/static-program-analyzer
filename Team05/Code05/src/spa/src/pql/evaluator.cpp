@@ -73,7 +73,6 @@ namespace qps::evaluator {
         ResultTable &tableRef = resultTable;
         query::Query &queryRef = query;
 
-
         if (!suchthat.empty()) {
             processSuchthat(suchthat, noSyn, hasSyn);
             ClauseHandler handler = ClauseHandler(pkb, tableRef, queryRef);
