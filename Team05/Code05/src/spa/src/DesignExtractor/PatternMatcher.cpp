@@ -1,4 +1,8 @@
 #include "PatternMatcher.h"
+#include "Parser/Lexer.h"
+#include "Parser/Parser.h"
+#include "PKB/PKBDataTypes.h"
+#include "DesignExtractor.h"
 
 struct ExprFlattener : public TreeWalker {
     std::list<std::reference_wrapper<const AST::ASTNode>> nodes;

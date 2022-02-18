@@ -5,6 +5,7 @@
 
 #include "logging.h"
 #include "PKB.h"
+#include <DesignExtractor/EntityExtractor/VariableExtractor.h>
 
 PKB::PKB() {
     statementTable = std::make_unique<StatementTable>();
@@ -34,6 +35,9 @@ void PKB::insertVariable(std::string name) {
     variableTable->insert(name);
 }
 
+void PKB::insertAST(std::unique_ptr<AST::Program> root) {
+    this->root = std::move(root);
+}
 
 void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField field2) {
     // if both fields are not concrete, no insert can be done
@@ -191,4 +195,29 @@ PKBResponse PKB::getConstants() {
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
+}
+
+PKBResponse PKB::match(StatementType type, PatternParam lhs, PatternParam rhs) {
+    auto matchedStmts = extractAssign(root.get(), lhs, rhs);
+    FieldRowResponse res;
+
+    if (matchedStmts.size() == 0) {
+        return PKBResponse{ false, Response{res} };
+    }
+
+    for (auto& node : matchedStmts) {
+        std::vector<PKBField> stmtRes;
+
+        int statementNumber = node.get().getStmtNo();
+        auto stmt = PKBField::createConcrete(
+            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() });
+        stmtRes.emplace_back(stmt);
+
+        auto varname = node.get().getLHS()->getVarName();
+        stmtRes.emplace_back(PKBField::createConcrete(VAR_NAME{ varname }));
+
+        res.insert(stmtRes);
+    }
+
+    return PKBResponse{ true, Response{res} };
 }
