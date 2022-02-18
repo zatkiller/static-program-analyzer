@@ -23,6 +23,7 @@ using qps::query::ParentT;
 using qps::query::Follows;
 using qps::query::FollowsT;
 using qps::query::Pattern;
+using qps::query::ExpSpec;
 
 TEST_CASE("Parser checkType") {
     Parser parser;
@@ -341,14 +342,39 @@ TEST_CASE("Parser parseSuchThat - Parent*") {
     }
 }
 
+TEST_CASE("Parser parseExpSpec") {
+    std::string testQuery = "_";
+
+    Parser parser;
+    parser.addPql(testQuery);
+
+    REQUIRE(parser.parseExpSpec() == ExpSpec::ofWildcard());
+
+    testQuery = "_\"x\"_";
+    parser.addPql(testQuery);
+
+    REQUIRE(parser.parseExpSpec() == ExpSpec::ofPartialMatch("x"));
+
+    testQuery = "\"x\"";
+    parser.addPql(testQuery);
+
+    REQUIRE(parser.parseExpSpec() == ExpSpec::ofFullMatch("x"));
+
+    testQuery = "_\"x\"";
+    parser.addPql(testQuery);
+    REQUIRE_THROWS_MATCHES(parser.parseExpSpec(), exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::notExpectingTokenMessage));
+}
+
 TEST_CASE("Parser parsePattern - wildcard expression") {
-    std::string testQuery = "assign a; \n Select a pattern a (v, _)";
+    std::string testQuery = "assign a; variable v;\n Select a pattern a (v, _)";
 
     Parser parser;
     parser.addPql(testQuery);
 
     Query queryObj;
 
+    parser.parseDeclarations(queryObj);
     parser.parseDeclarations(queryObj);
     parser.parseSelectFields(queryObj);
     parser.parsePattern(queryObj);
@@ -359,17 +385,18 @@ TEST_CASE("Parser parsePattern - wildcard expression") {
     REQUIRE(pattern.getSynonym() == "a");
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == "_");
+    REQUIRE(pattern.getExpression() == ExpSpec::ofWildcard());
 }
 
 TEST_CASE("Parser parsePattern - string expression") {
-    std::string testQuery = "assign a; \n Select a pattern a (v, \"x\")";
+    std::string testQuery = "assign a; variable v;\n Select a pattern a (v, \"x\")";
 
     Parser parser;
     parser.addPql(testQuery);
 
     Query queryObj;
 
+    parser.parseDeclarations(queryObj);
     parser.parseDeclarations(queryObj);
     parser.parseSelectFields(queryObj);
     parser.parsePattern(queryObj);
@@ -380,28 +407,47 @@ TEST_CASE("Parser parsePattern - string expression") {
     REQUIRE(pattern.getSynonym() == "a");
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == "x");
+    REQUIRE(pattern.getExpression() == ExpSpec::ofFullMatch("x"));
 }
 
 TEST_CASE("Parser parsePattern - string expression with wildcard") {
-    std::string testQuery = "assign a; \n Select a pattern a (v, _\"x\"_)";
 
-    Parser parser;
-    parser.addPql(testQuery);
+    SECTION("Valid Pattern semantics") {
+        std::string testQuery = "assign a; variable v;\n Select a pattern a (v, _\"x\"_)";
 
-    Query queryObj;
+        Parser parser;
+        parser.addPql(testQuery);
 
-    parser.parseDeclarations(queryObj);
-    parser.parseSelectFields(queryObj);
-    parser.parsePattern(queryObj);
+        Query queryObj;
 
-    std::vector<Pattern> patterns = queryObj.getPattern();
-    Pattern pattern = patterns[0];
+        parser.parseDeclarations(queryObj);
+        parser.parseDeclarations(queryObj);
+        parser.parseSelectFields(queryObj);
+        parser.parsePattern(queryObj);
 
-    REQUIRE(pattern.getSynonym() == "a");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
-    REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == "_x_");
+        std::vector<Pattern> patterns = queryObj.getPattern();
+        Pattern pattern = patterns[0];
+
+        REQUIRE(pattern.getSynonym() == "a");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+        REQUIRE(validDeclaration);
+        REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
+    }
+
+    SECTION("Invalid Pattern semantics") {
+        std::string testQuery = "assign a;\n Select a pattern a (a, _\"x\"_)";
+
+        Parser parser;
+        parser.addPql(testQuery);
+
+        Query queryObj;
+
+        parser.parseDeclarations(queryObj);
+        parser.parseSelectFields(queryObj);
+        REQUIRE_THROWS_MATCHES(parser.parsePattern(queryObj),
+                               exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::notVariableSynonymMessage));
+    }
 }
 
 TEST_CASE("Parser isEntRef") {
@@ -441,10 +487,10 @@ TEST_CASE("Parser parseEntRef") {
 }
 
 TEST_CASE("Parser parseRelRefVariables") {
-    Query queryObj;
-    Parser parser;
 
     SECTION("parseRelRefVariables - Follows") {
+        Query queryObj;
+        Parser parser;
         parser.lexer.text = "(3, 5)";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Follows>(queryObj, &Follows::follower,
                                                                            &Follows::followed);
@@ -458,6 +504,8 @@ TEST_CASE("Parser parseRelRefVariables") {
     }
 
     SECTION("parseRelRefVariables - FollowsT") {
+        Query queryObj;
+        Parser parser;
         parser.lexer.text = "(3, 10)";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<FollowsT>(queryObj, &FollowsT::follower,
                                                                             &FollowsT::transitiveFollowed);
@@ -471,6 +519,8 @@ TEST_CASE("Parser parseRelRefVariables") {
     }
 
     SECTION("parseRelRefVariables - Parent") {
+        Query queryObj;
+        Parser parser;
         parser.lexer.text = "(3, 5)";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Parent>(queryObj, &Parent::parent, &Parent::child);
         REQUIRE(ptr.get()->getType() == RelRefType::PARENT);
@@ -483,6 +533,8 @@ TEST_CASE("Parser parseRelRefVariables") {
     }
 
     SECTION("parseRelRefVariables - ParentT") {
+        Query queryObj;
+        Parser parser;
         parser.lexer.text = "(3, 10)";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<ParentT>(queryObj, &ParentT::parent,
                                                                            &ParentT::transitiveChild);
@@ -493,6 +545,16 @@ TEST_CASE("Parser parseRelRefVariables") {
         REQUIRE(pPtr->parent.getLineNo() == 3);
         REQUIRE(pPtr->transitiveChild.isLineNo());
         REQUIRE(pPtr->transitiveChild.getLineNo() == 10);
+    }
+
+    SECTION("parseRelRefVariables - Follows") {
+        Query queryObj;
+        Parser parser;
+        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+        parser.lexer.text = "(v, v)";
+        REQUIRE_THROWS_MATCHES(parser.parseRelRefVariables<Follows>(queryObj, &Follows::follower, &Follows::followed),
+                               exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::notStatementSynonymMessage));
     }
 }
 
@@ -564,23 +626,6 @@ TEST_CASE("Parser parseRelRef") {
     REQUIRE(uPtr->used.isWildcard());
 }
 
-TEST_CASE("Parser parseExpSpec") {
-    Query queryObj;
-    Parser parser;
-    parser.lexer.text = "_\"x\"_";
-    REQUIRE(parser.parseExpSpec() == "_x_");
-
-    parser.lexer.text = "\"x\"";
-    REQUIRE(parser.parseExpSpec() == "x");
-
-    parser.lexer.text = "_";
-    REQUIRE(parser.parseExpSpec() == "_");
-
-    parser.lexer.text = "_\"x\"";
-    REQUIRE_THROWS_MATCHES(parser.parseExpSpec(), exceptions::PqlSyntaxException,
-                           Catch::Message(messages::qps::parser::notExpectingTokenMessage));
-}
-
 TEST_CASE("Parser parseQuery") {
     Parser parser;
     parser.lexer.text = "Select c";
@@ -617,7 +662,7 @@ TEST_CASE("Parser parseQuery") {
     REQUIRE(pattern.getSynonym() == "a1");
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == "_x_");
+    REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 }
 
 TEST_CASE("Parser parsePql") {
@@ -655,7 +700,7 @@ TEST_CASE("Parser parsePql") {
     REQUIRE(pattern.getSynonym() == "a");
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == "_x_");
+    REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 }
 
 
