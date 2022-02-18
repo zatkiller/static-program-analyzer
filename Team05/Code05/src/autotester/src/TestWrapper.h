@@ -30,7 +30,7 @@ public:
 private:
     PKB pkb;
     SourceProcessor sp;
-    QPS qps;
+    qps::QPS qps;
 };
 
 #endif
