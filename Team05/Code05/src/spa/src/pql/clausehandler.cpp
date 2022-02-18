@@ -36,17 +36,31 @@ namespace qps::evaluator {
         }
     }
 
-    PKBResponse ClauseHandler::selectPKBResponse(PKBResponse& response, bool isFirstDec) {
-        int erasePos = isFirstDec ? 1 : 0;
+    PKBResponse ClauseHandler::selectDeclaredValue(PKBResponse& response, bool isFirstSyn) {
+        int erasePos = isFirstSyn ? 1 : 0;
         if (!response.hasResult) return response;
         PKBResponse newResponse;
         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> res;
-        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr =
+        auto *ptr =
                 std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&response.res);
         for (auto v : *ptr) {
             std::vector<PKBField> newrecord = v;
             newrecord.erase(newrecord.begin() + erasePos);
             res.insert(newrecord);
+        }
+        newResponse = PKBResponse{response.hasResult, Response {res}};
+        return newResponse;
+    }
+
+    PKBResponse ClauseHandler::filterPKBResponse(PKBResponse& response, bool isSame) {
+        if (!response.hasResult) return response;
+        PKBResponse newResponse;
+        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> res;
+        auto *ptr =
+                std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&response.res);
+        for (auto v : *ptr) {
+            std::vector<PKBField> newrecord = v;
+            if ((newrecord[0] == newrecord[1]) == isSame) res.insert(newrecord);
         }
         newResponse = PKBResponse{response.hasResult, Response {res}};
         return newResponse;
@@ -60,10 +74,12 @@ namespace qps::evaluator {
             processStmtField(fields, synonyms);
             PKBResponse response = pkb->getRelationship(fields[0], fields[1],
                                                         getPKBRelationship(relRefPtr->getType()));
-            bool isFirstDec = fields[0].fieldType == PKBFieldType::DECLARATION;
-            bool isSecondDec = fields[1].fieldType == PKBFieldType::DECLARATION;
-            if (!isFirstDec || !isSecondDec) {
-                response = selectPKBResponse(response, isFirstDec);
+            bool isFirstSyn = fields[0].fieldType == PKBFieldType::DECLARATION;
+            bool isSecondSyn = fields[1].fieldType == PKBFieldType::DECLARATION;
+            if (!isFirstSyn || !isSecondSyn) {
+                response = selectDeclaredValue(response, isFirstSyn);
+            } else {
+                response = filterPKBResponse(response, synonyms[0] == synonyms[1]);
             }
             tableRef.join(response, synonyms);
         }

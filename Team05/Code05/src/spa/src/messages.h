@@ -21,6 +21,7 @@ namespace parser {
 
     inline constexpr char cannotBeWildcardMessage[] = "cannot be a wildcard!";
     inline constexpr char notVariableSynonymMessage[] = "synonym has to be of variable design entity";
+    inline constexpr char notStatementSynonymMessage[] = "synonym has to be of statement design entity";
 }  //  namespace parser
 
 }  //  namespace qps

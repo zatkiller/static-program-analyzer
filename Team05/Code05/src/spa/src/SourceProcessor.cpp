@@ -14,7 +14,7 @@ bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb) {
 
     ActualPKBStrategy actualPKBStrategy(pkb);
     DesignExtractor(&actualPKBStrategy).extract(ast.get());
-    
+    pkb->insertAST(std::move(ast));
     return true;
 }
 

@@ -162,6 +162,34 @@ namespace qps::query {
         return type == StmtRefType::WILDCARD;
     }
 
+    ExpSpec ExpSpec::ofWildcard() {
+        return ExpSpec {true, false, ""};
+    }
+
+    ExpSpec ExpSpec::ofPartialMatch(std::string str) {
+        return ExpSpec { false, true, str };
+    }
+
+    ExpSpec ExpSpec::ofFullMatch(std::string str) {
+        return ExpSpec { false, true, str };
+    }
+
+    bool ExpSpec::isPartialMatch() {
+        return partialMatch && (pattern.length() > 0) && !wildCard;
+    }
+
+    bool ExpSpec::isFullMatch() {
+        return !partialMatch && (pattern.length() > 0) && !wildCard;
+    }
+
+    bool ExpSpec::isWildcard() {
+        return wildCard && (pattern.length() < 0) && !partialMatch;
+    }
+
+    std::string ExpSpec::getPattern() {
+        return pattern;
+    }
+
     PKBField PKBFieldTransformer::transformStmtRef(StmtRef s) {
         PKBField stmtField;
         if (s.isLineNo()) {
@@ -194,7 +222,7 @@ namespace qps::query {
         return lhs;
     }
 
-    std::string Pattern::getExpression() {
+    ExpSpec Pattern::getExpression() {
         return expression;
     }
 

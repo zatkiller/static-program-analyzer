@@ -37,15 +37,15 @@ struct TestParseAndStorePackage1 {
     bool isCorrect(std::set<T> result, PKBEntityType targetType) {
         auto targetSet = expectedEntities[targetType];
         std::set<T> expected;
-        std::transform(targetSet.begin(), targetSet.end(), 
-            std::inserter(expected, expected.begin()), 
+        std::transform(targetSet.begin(), targetSet.end(),
+            std::inserter(expected, expected.begin()),
             [](auto v) {
                 return std::get<T>(v);
             }
         );
         return result == expected;
     }
-    
+
     template <typename T, typename K>
     bool isCorrect(std::set<std::pair<T, K>> result, PKBRelationship targetType) {
         auto targetSet = expectedRelationships[targetType];
@@ -65,15 +65,15 @@ struct TestParseAndStorePackage1 {
 
     void initEntities() {
         expectedEntities.emplace(
-            PKBEntityType::VARIABLE, 
+            PKBEntityType::VARIABLE,
             std::set<Content>({
                 VAR_NAME{"number"},
-                VAR_NAME{"sum"}, 
+                VAR_NAME{"sum"},
                 VAR_NAME{"digit"}
             })
         );
         expectedEntities.emplace(
-            PKBEntityType::STATEMENT, 
+            PKBEntityType::STATEMENT,
             std::set<Content>({
                 STMT_LO{1, StatementType::Read},
                 STMT_LO{2, StatementType::Assignment},
@@ -89,54 +89,54 @@ struct TestParseAndStorePackage1 {
         expectedRelationships.emplace(
             PKBRelationship::MODIFIES,
             std::set<std::pair<Content, Content>> {
-                p(STMT_LO{1, StatementType::Read}, VAR_NAME{"number"}),
-                p(STMT_LO{2, StatementType::Assignment}, VAR_NAME{"sum"}),
-                p(STMT_LO{3, StatementType::While}, VAR_NAME{"digit"}),
-                p(STMT_LO{3, StatementType::While}, VAR_NAME{"sum"}),
-                p(STMT_LO{3, StatementType::While}, VAR_NAME{"number"}),
-                p(STMT_LO{4, StatementType::Assignment}, VAR_NAME{"digit"}),
-                p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"sum"}),
-                p(STMT_LO{6, StatementType::Assignment}, VAR_NAME{"number"}),
-                p(PROC_NAME{"sumDigits"}, VAR_NAME{"number"}),
-                p(PROC_NAME{"sumDigits"}, VAR_NAME{"digit"}),
-                p(PROC_NAME{"sumDigits"}, VAR_NAME{"sum"})
+                p(STMT_LO{ 1, StatementType::Read }, VAR_NAME{ "number" }),
+                p(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{ "sum" }),
+                p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "digit" }),
+                p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "sum" }),
+                p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "number" }),
+                p(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{ "digit" }),
+                p(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{ "sum" }),
+                p(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{ "number" }),
+                p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "number" }),
+                p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "digit" }),
+                p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "sum" })
             }
         );
 
         expectedRelationships.emplace(
             PKBRelationship::USES,
             std::set<std::pair<Content, Content>> {
-                p(PROC_NAME{"sumDigits"}, VAR_NAME{"number"}),
-                p(PROC_NAME{"sumDigits"}, VAR_NAME{"digit"}),
-                p(PROC_NAME{"sumDigits"}, VAR_NAME{"sum"}),
-                p(STMT_LO{3, StatementType::While}, VAR_NAME{"number"}),
-                p(STMT_LO{3, StatementType::While}, VAR_NAME{"sum"}),
-                p(STMT_LO{3, StatementType::While}, VAR_NAME{"digit"}),
-                p(STMT_LO{4, StatementType::Assignment}, VAR_NAME{"number"}),
-                p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"sum"}),
-                p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"digit"}),
-                p(STMT_LO{6, StatementType::Assignment}, VAR_NAME{"number"}),
-                p(STMT_LO{7, StatementType::Print}, VAR_NAME{"sum"}),
+            p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "number" }),
+                p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "digit" }),
+                p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "sum" }),
+                p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "number" }),
+                p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "sum" }),
+                p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "digit" }),
+                p(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{ "number" }),
+                p(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{ "sum" }),
+                p(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{ "digit" }),
+                p(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{ "number" }),
+                p(STMT_LO{ 7, StatementType::Print }, VAR_NAME{ "sum" }),
             }
         );
 
         expectedRelationships.emplace(
             PKBRelationship::FOLLOWS,
             std::set<std::pair<Content, Content>> {
-                p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
-                p(STMT_LO{2, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
-                p(STMT_LO{3, StatementType::While}, STMT_LO{7, StatementType::Print}),
-                p(STMT_LO{4, StatementType::Assignment}, STMT_LO{5, StatementType::Assignment}),
-                p(STMT_LO{5, StatementType::Assignment}, STMT_LO{6, StatementType::Assignment}),
+                p(STMT_LO{ 1, StatementType::Read }, STMT_LO{ 2, StatementType::Assignment }),
+                p(STMT_LO{ 2, StatementType::Assignment }, STMT_LO{ 3, StatementType::While }),
+                p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 7, StatementType::Print }),
+                p(STMT_LO{ 4, StatementType::Assignment }, STMT_LO{ 5, StatementType::Assignment }),
+                p(STMT_LO{ 5, StatementType::Assignment }, STMT_LO{ 6, StatementType::Assignment }),
             }
         );
 
         expectedRelationships.emplace(
             PKBRelationship::PARENT,
             std::set<std::pair<Content, Content>> {
-                p(STMT_LO{3, StatementType::While}, STMT_LO{4, StatementType::Assignment}),
-                p(STMT_LO{3, StatementType::While}, STMT_LO{5, StatementType::Assignment}),
-                p(STMT_LO{3, StatementType::While}, STMT_LO{6, StatementType::Assignment}),
+                p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 4, StatementType::Assignment }),
+                p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 5, StatementType::Assignment }),
+                p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 6, StatementType::Assignment }),
             }
         );
     }
@@ -151,6 +151,34 @@ TEST_CASE("Test parse and store") {
     SourceProcessor sp;
     TestParseAndStorePackage1 test1;
     sp.processSimple(test1.sourceCode, &pkb);
+
+    auto row = [](auto a, auto b) {
+        return std::vector<PKBField>({
+            PKBField::createConcrete(a),
+            PKBField::createConcrete(b),
+        });
+    };
+
+    auto expectedResponse = [](auto rows) {
+        return PKBResponse{ true, rows };
+    };
+
+    REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, "digit") ==
+        expectedResponse(FieldRowResponse{
+            row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"})}));
+
+    REQUIRE(pkb.match(StatementType::Assignment, "sum", std::nullopt) ==
+        expectedResponse(FieldRowResponse{
+            row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
+            row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"})}));
+
+    REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, std::nullopt) ==
+        expectedResponse(FieldRowResponse{
+            row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
+            row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"}),
+            row(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{"digit"}),
+            row(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{"number"})}));
+
     using Rows = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
     TEST_LOG << "Variable extraction from PKB";
@@ -168,7 +196,7 @@ TEST_CASE("Test parse and store") {
         REQUIRE(test1.isCorrect(vars, PKBEntityType::VARIABLE));
     }
 
-    TEST_LOG << "Statement extraction from PKB"; 
+    TEST_LOG << "Statement extraction from PKB";
     {
         auto response = pkb.getStatements();
         REQUIRE(response.hasResult);
@@ -269,9 +297,9 @@ TEST_CASE("Test parse and store") {
         REQUIRE(response.hasResult);
         auto resultSet = std::get<Rows>(response.res);
         std::set<std::pair<STMT_LO, STMT_LO>> followsPairs;
-        for (auto &row : resultSet) {
+        for (auto& row : resultSet) {
             followsPairs.insert(p(
-                std::get<STMT_LO>(row[0].content), 
+                std::get<STMT_LO>(row[0].content),
                 std::get<STMT_LO>(row[1].content)
             ));
         }
@@ -288,9 +316,9 @@ TEST_CASE("Test parse and store") {
         REQUIRE(response.hasResult);
         auto resultSet = std::get<Rows>(response.res);
         std::set<std::pair<STMT_LO, STMT_LO>> followsPairs;
-        for (auto &row : resultSet) {
+        for (auto& row : resultSet) {
             followsPairs.insert(p(
-                std::get<STMT_LO>(row[0].content), 
+                std::get<STMT_LO>(row[0].content),
                 std::get<STMT_LO>(row[1].content)
             ));
         }
