@@ -162,6 +162,13 @@ struct Parser {
     std::shared_ptr<RelRef> parseRelRef(Query &query);
 
 
+    /**
+     * Checks whether a synonym wrapped in StmtRef has the correct Design Entity.
+     *
+     * @param query the query object
+     * @param s the StmtRef
+     * @return a bool value indicates whether a synonym is declared as a statement reference.
+     */
     bool isValidStatementType(Query &query, StmtRef s);
 
     /*
@@ -184,7 +191,7 @@ struct Parser {
 
         StmtRef s1 = parseStmtRef(query);
 
-        if (!isValidStatementType(query,s1))
+        if (!isValidStatementType(query, s1))
             throw exceptions::PqlSemanticException(messages::qps::parser::notStatementSynonymMessage);
 
         ptr.get()->*f1 = s1;

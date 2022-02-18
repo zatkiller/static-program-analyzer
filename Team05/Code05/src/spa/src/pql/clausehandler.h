@@ -63,6 +63,11 @@ public:
      */
     bool handleNoSynClauses(std::vector<std::shared_ptr<query::RelRef>> noSynClauses);
 
+    /**
+     * Handles pattern clauses
+     *
+     * @param patterns a group of pattern clauses
+     */
     void handlePatterns(std::vector<query::Pattern> patterns);
 };
 }  // namespace qps::evaluator

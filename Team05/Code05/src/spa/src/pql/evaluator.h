@@ -32,7 +32,6 @@ class Evaluator {
     ResultTable resultTable;
 
 public:
-
     /** Constructor for the evaluator. */
     explicit Evaluator(PKB *pkb) {
         this->pkb = pkb;
