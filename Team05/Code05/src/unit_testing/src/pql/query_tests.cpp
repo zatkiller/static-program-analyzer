@@ -17,7 +17,7 @@ using qps::query::Pattern;
 using qps::query::StmtRefType;
 using qps::query::EntRefType;
 using qps::query::DesignEntity;
-
+using qps::query::ExpSpec;
 
 TEST_CASE("StmtRef") {
     StmtRef stmtRef;
@@ -88,12 +88,12 @@ TEST_CASE("Parent*") {
 }
 
 TEST_CASE("Pattern") {
-    Pattern p = {"h", EntRef::ofWildcard(), "_x_"};
+    Pattern p = {"h", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x")};
     REQUIRE(p.getSynonym() == "h");
     REQUIRE(p.getEntRef().getType() == EntRefType::WILDCARD);
-    REQUIRE(p.getExpression() == "_x_");
+    REQUIRE(p.getExpression() == ExpSpec::ofFullMatch("x"));
 
-    Pattern p2 = {"g", EntRef::ofWildcard(), "_x_"};
+    Pattern p2 = {"g", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x")};
     REQUIRE(!(p == p2));
     REQUIRE(p2 == p2);
 }
@@ -123,7 +123,7 @@ TEST_CASE("Query") {
     REQUIRE(fields[1].entityType == PKBEntityType::VARIABLE);
     REQUIRE(fields[1].fieldType == PKBFieldType::DECLARATION);
 
-    Pattern p = Pattern{"a", EntRef::ofWildcard(), "_x_"};
+    Pattern p = Pattern{"a", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x")};
     query.addPattern(p);
     REQUIRE(!query.getPattern().empty());
     REQUIRE(query.getPattern()[0] == p);

@@ -178,9 +178,6 @@ TEST_CASE("Test get Uses") {
     result3.sort();
     printResult(result3);
     REQUIRE(result3 == std::list<std::string>{"current", "x", "y"});
-
-
-
 }
 
 TEST_CASE("Test get Follows FollowsT") {
@@ -228,6 +225,20 @@ TEST_CASE("Test get Follows FollowsT") {
     result3.sort();
     printResult(result3);
     REQUIRE(result3 == std::list<std::string>{"2", "3", "4", "5", "6"});
+
+    TEST_LOG << "select s such that Follows(s, s)";
+    qps::query::Query query4;
+    query4.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query4.addVariable("s");
+    std::shared_ptr<qps::query::Follows> mPtr4 = std::make_shared<qps::query::Follows>();
+    mPtr4->follower = qps::query::StmtRef::ofDeclaration("s");
+    mPtr4->followed = qps::query::StmtRef::ofDeclaration("s");
+    query4.addSuchthat(mPtr4);
+    qps::evaluator::Evaluator e4 = qps::evaluator::Evaluator{pkbPtr};
+    std::list<std::string> result4 = e3.evaluate(query4);
+    result4.sort();
+    printResult(result4);
+    REQUIRE(result4.empty());
 }
 
 TEST_CASE("Test Parent") {
@@ -247,6 +258,19 @@ TEST_CASE("Test Parent") {
     result1.sort();
     printResult(result1);
     REQUIRE(result1 == std::list<std::string>{"4", "5"});
+
+    TEST_LOG << "select a such that Parent(a, a)";
+    qps::query::Query query2;
+    query2.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query2.addVariable("a");
+    std::shared_ptr<qps::query::Parent> mPtr2 = std::make_shared<qps::query::Parent>();
+    mPtr2->parent = qps::query::StmtRef::ofDeclaration("a");
+    mPtr2->child = qps::query::StmtRef::ofDeclaration("a");
+    query2.addSuchthat(mPtr2);
+    qps::evaluator::Evaluator e2 = qps::evaluator::Evaluator{pkbPtr};
+    std::list<std::string> result2 = e2.evaluate(query2);
+    printResult(result2);
+    REQUIRE(result2.empty());
 }
 
 TEST_CASE("Test isRelationshipPresent") {
