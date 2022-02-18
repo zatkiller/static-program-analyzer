@@ -77,7 +77,7 @@ public:
 
         // Parse RHS to AST expression.
         auto tokens = sp::parser::Lexer(rhs.value()).getTokens();
-        auto expr = sp::parser::ExprParser::parse(tokens);
+        auto expr = sp::parser::expr_parser::parse(tokens);
 
         // Flatten the trees to lists by walking it in preorder.
         auto assignList = flatten(node.getRHS());

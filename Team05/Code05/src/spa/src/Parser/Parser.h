@@ -10,15 +10,15 @@ namespace sp {
 namespace parser {
 extern int lineCount;
 
-namespace ExprParser {
+namespace expr_parser {
     std::unique_ptr<ast::Expr> parse(std::deque<Token>& tokens);
 }
 
-namespace StmtLstParser {
+namespace statement_list_parser {
     ast::StmtLst parse(std::deque<Token>& tokens);
 }
 
-namespace CondExprParser {
+namespace cond_expr_parser {
     std::unique_ptr<ast::CondExpr> parse(std::deque<Token>& tokens);
 }
 

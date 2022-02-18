@@ -19,7 +19,7 @@ TEST_CASE("Testing Parser") {
         SECTION("ExprParser::parse") {
             // var only basic expression
             tokens = Lexer("ooga / booga").getTokens();
-            ast = ExprParser::parse(tokens);
+            ast = expr_parser::parse(tokens);
             expected = make<ast::BinExpr>(
                 ast::BinOp::DIVIDE,
                 make<ast::Var>("ooga"),
@@ -29,7 +29,7 @@ TEST_CASE("Testing Parser") {
 
             // const only basic expression
             tokens = Lexer("17 * 42 / 5").getTokens();
-            ast = ExprParser::parse(tokens);
+            ast = expr_parser::parse(tokens);
             expected = make<ast::BinExpr>(
                 ast::BinOp::DIVIDE,
                 make<ast::BinExpr>(
@@ -43,7 +43,7 @@ TEST_CASE("Testing Parser") {
             
             // basic expression with var and const
             tokens = Lexer("ooga + 1 * booga").getTokens();
-            ast = ExprParser::parse(tokens);
+            ast = expr_parser::parse(tokens);
             expected = make<ast::BinExpr>(
                 ast::BinOp::PLUS,
                 make<ast::Var>("ooga"),
@@ -57,7 +57,7 @@ TEST_CASE("Testing Parser") {
 
             // basic expression nested in parenthesis
             tokens = Lexer("(((((ooga + 1)))))").getTokens();
-            ast = ExprParser::parse(tokens);
+            ast = expr_parser::parse(tokens);
             expected = make<ast::BinExpr>(
                 ast::BinOp::PLUS,
                 make<ast::Var>("ooga"),
@@ -102,7 +102,7 @@ TEST_CASE("Testing Parser") {
             );
             // Should be able to parse many subexpressions with brackets
             tokens = Lexer("(x + y * z) - (12 % 7 - x) + (z * ooga / booga)").getTokens();
-            ast = ExprParser::parse(tokens);
+            ast = expr_parser::parse(tokens);
             expected = make<ast::BinExpr>(
                 ast::BinOp::PLUS,
                 make<ast::BinExpr>(
@@ -140,7 +140,7 @@ TEST_CASE("Testing Parser") {
             // Should be able to parse many subexpressions with and without brackets
             REQUIRE(*ast == *expected);
             tokens = Lexer("4+x*2/(1-y)-6%8").getTokens();
-            ast = ExprParser::parse(tokens);
+            ast = expr_parser::parse(tokens);
             expected = make<ast::BinExpr>(
                 ast::BinOp::MINUS,
                 make<ast::BinExpr>(
@@ -170,11 +170,11 @@ TEST_CASE("Testing Parser") {
 
             // Left associativity test
             tokens = Lexer("4+3+2").getTokens();
-            auto ast1 = ExprParser::parse(tokens);
+            auto ast1 = expr_parser::parse(tokens);
             tokens = Lexer("(4+3)+2").getTokens();
-            auto ast2 = ExprParser::parse(tokens);
+            auto ast2 = expr_parser::parse(tokens);
             tokens = Lexer("4+(3+2)").getTokens();
-            auto ast3 = ExprParser::parse(tokens);
+            auto ast3 = expr_parser::parse(tokens);
             REQUIRE(*ast1 == *ast2);
             REQUIRE(!(*ast1 == *ast3));
 
@@ -197,7 +197,7 @@ TEST_CASE("Testing Parser") {
             };
             // basic rel expressions for ANY rel of the rel symbols
             tokens = Lexer("x == y").getTokens();
-            ast = CondExprParser::parse(tokens);
+            ast = cond_expr_parser::parse(tokens);
             expected = make<ast::RelExpr>(
                 ast::RelOp::EQ,
                 make<ast::Var>("x"),
@@ -206,7 +206,7 @@ TEST_CASE("Testing Parser") {
             REQUIRE(*ast == *expected);
 
             tokens = Lexer("x > y").getTokens();
-            ast = CondExprParser::parse(tokens);
+            ast = cond_expr_parser::parse(tokens);
             expected = make<ast::RelExpr>(
                 ast::RelOp::GT,
                 make<ast::Var>("x"),
@@ -215,7 +215,7 @@ TEST_CASE("Testing Parser") {
             REQUIRE(*ast == *expected);
 
             tokens = Lexer("x >= y").getTokens();
-            ast = CondExprParser::parse(tokens);
+            ast = cond_expr_parser::parse(tokens);
             expected = make<ast::RelExpr>(
                 ast::RelOp::GTE,
                 make<ast::Var>("x"),
@@ -224,7 +224,7 @@ TEST_CASE("Testing Parser") {
             REQUIRE(*ast == *expected);
 
             tokens = Lexer("x < y").getTokens();
-            ast = CondExprParser::parse(tokens);
+            ast = cond_expr_parser::parse(tokens);
             expected = make<ast::RelExpr>(
                 ast::RelOp::LT,
                 make<ast::Var>("x"),
@@ -233,7 +233,7 @@ TEST_CASE("Testing Parser") {
             REQUIRE(*ast == *expected);
 
             tokens = Lexer("x <= y").getTokens();
-            ast = CondExprParser::parse(tokens);
+            ast = cond_expr_parser::parse(tokens);
             expected = make<ast::RelExpr>(
                 ast::RelOp::LTE,
                 make<ast::Var>("x"),
@@ -242,7 +242,7 @@ TEST_CASE("Testing Parser") {
             REQUIRE(*ast == *expected);
 
             tokens = Lexer("x != y").getTokens();
-            ast = CondExprParser::parse(tokens);
+            ast = cond_expr_parser::parse(tokens);
             expected = make<ast::RelExpr>(
                 ast::RelOp::NE,
                 make<ast::Var>("x"),
@@ -252,7 +252,7 @@ TEST_CASE("Testing Parser") {
 
             // nested cond expression with &&
             tokens = Lexer("((x+1)>(y+2))&&((z+1)>(t+2))").getTokens();
-            std::unique_ptr<ast::CondExpr> ast = CondExprParser::parse(tokens);
+            std::unique_ptr<ast::CondExpr> ast = cond_expr_parser::parse(tokens);
             std::unique_ptr<ast::CondExpr> expected = make<ast::CondBinExpr>(
                 ast::CondOp::AND,
                 relExpr1(),
@@ -262,7 +262,7 @@ TEST_CASE("Testing Parser") {
 
             // nested cond expression with ||
             tokens = Lexer("((x+1)>(y+2))||((z+1)>(t+2))").getTokens();
-            ast = CondExprParser::parse(tokens);
+            ast = cond_expr_parser::parse(tokens);
             expected = make<ast::CondBinExpr>(
                 ast::CondOp::OR,
                 relExpr1(),
@@ -272,7 +272,7 @@ TEST_CASE("Testing Parser") {
 
             // nested cond expression with !
             tokens = Lexer("!((x+1)>(y+2))").getTokens();
-            ast = CondExprParser::parse(tokens);
+            ast = cond_expr_parser::parse(tokens);
             expected = std::make_unique<ast::NotCondExpr>(
                 relExpr1()
             );
@@ -280,7 +280,7 @@ TEST_CASE("Testing Parser") {
 
             // heavily nested cond expression
             tokens = Lexer("((!((x+1)>(y+2)))&&((z+1)>(t+2)))||((x+1)>(y+2))").getTokens();
-            ast = CondExprParser::parse(tokens);
+            ast = cond_expr_parser::parse(tokens);
             expected = make<ast::CondBinExpr>(
                 ast::CondOp::OR,
                 make<ast::CondBinExpr>(
@@ -350,7 +350,7 @@ TEST_CASE("Testing Parser") {
                     }
                 }
             )").getTokens();
-            auto stmtlst = StmtLstParser::parse(tokens);
+            auto stmtlst = statement_list_parser::parse(tokens);
             auto expectedStmtlst = ast::makeStmts(
                 make<ast::Read>(1, make<ast::Var>("v1")),
                 make<ast::Print>(2, make<ast::Var>("v1")),

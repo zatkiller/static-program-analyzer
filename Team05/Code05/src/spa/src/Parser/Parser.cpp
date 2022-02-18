@@ -198,7 +198,7 @@ ast::BinOp charToBinOp(char c) {
 }  // namespace AtomicParser
 
 /** ================================= EXPR PARSER ================================= */
-namespace ExprParser {
+namespace expr_parser {
 unique_ptr<ast::Expr> shuntingYardParser(deque<Token>& tokens) {
     // converting from infix to postfix expr
     std::map<char, string> binOpPrecedence;
@@ -316,13 +316,13 @@ unique_ptr<ast::Expr> parse(deque<Token>& tokens) {
 }  // namespace ExprParser
 
 /** =============================== CONDEXPR PARSER =============================== */
-namespace CondExprParser {
+namespace cond_expr_parser {
 
 unique_ptr<ast::CondExpr> parseRelExpr(deque<Token>& tokens) {
-    auto lhsExpr = ExprParser::parse(tokens);
+    auto lhsExpr = expr_parser::parse(tokens);
     // the symbols '>', '>=', '<', '<=', '==', '!='
     auto relOp = AtomicParser::parseRelOp(tokens);
-    auto rhsExpr = ExprParser::parse(tokens);
+    auto rhsExpr = expr_parser::parse(tokens);
     return make_unique<ast::RelExpr>(relOp, move(lhsExpr), move(rhsExpr));
 }
 
@@ -405,7 +405,7 @@ unique_ptr<ast::CondExpr> parse(deque<Token>& tokens) {
 }  // namespace CondExprParser
 
 /** ================================= STMT PARSER ================================= */
-namespace StmtLstParser {
+namespace statement_list_parser {
 
 unique_ptr<ast::Statement> parseReadStmt(deque<Token>& tokens) {
     int lineNo = lineCount++;
@@ -429,7 +429,7 @@ unique_ptr<ast::Statement> parseAssignStmt(deque<Token>& tokens) {
     auto var = AtomicParser::parseVariable(tokens);
     checkAndConsume('=', tokens);
     // parse the expr on the right hand side
-    auto rhsExpr = ExprParser::parse(tokens);
+    auto rhsExpr = expr_parser::parse(tokens);
     checkAndConsume(';', tokens);
     return make_unique<ast::Assign>(lineNo, move(var), move(rhsExpr));
 }
@@ -439,7 +439,7 @@ unique_ptr<ast::Statement> parseWhileStmt(deque<Token>& tokens) {
     // check for "while"
     checkAndConsume("while", tokens);
     checkAndConsume('(', tokens);
-    auto condExprResult = CondExprParser::parse(tokens);
+    auto condExprResult = cond_expr_parser::parse(tokens);
     checkAndConsume(')', tokens);
     checkAndConsume('{', tokens);
     auto stmtLstResult = parse(tokens);
@@ -456,7 +456,7 @@ unique_ptr<ast::Statement> parseIfStmt(deque<Token>& tokens) {
     // check for "if"
     checkAndConsume("if", tokens);
     checkAndConsume('(', tokens);
-    auto condExprResult = CondExprParser::parse(tokens);
+    auto condExprResult = cond_expr_parser::parse(tokens);
     checkAndConsume(')', tokens);
     
     // check for "then"
@@ -521,7 +521,7 @@ unique_ptr<ast::Procedure> parseProcedure(deque<Token>& tokens) {
     string procName = get<string>(currToken.value);
     // parse stmtLst in the container
     checkAndConsume('{', tokens);
-    auto stmtLst = StmtLstParser::parse(tokens);
+    auto stmtLst = statement_list_parser::parse(tokens);
     checkAndConsume('}', tokens);
     return make_unique<ast::Procedure>(move(procName), move(stmtLst));
 }
