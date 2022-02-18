@@ -99,10 +99,11 @@ TEST_CASE("Test insert single synonym") {
     table.insertSynLocationToLast("v");
 
     REQUIRE(table.getSynLocation("v") == 0);
-    REQUIRE(table.getResult().size() == 3);
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field1}) != table.getResult().end());
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field2}) != table.getResult().end());
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field3}) != table.getResult().end());
+    auto result = table.getResult();
+    REQUIRE(result.size() == 3);
+    REQUIRE(result.find(std::vector<PKBField>{field1}) != result.end());
+    REQUIRE(result.find(std::vector<PKBField>{field2}) != result.end());
+    REQUIRE(result.find(std::vector<PKBField>{field3}) != result.end());
 }
 
 TEST_CASE("Test insert vector") {
@@ -121,10 +122,11 @@ TEST_CASE("Test insert vector") {
     table.insertSynLocationToLast("s");
 
     REQUIRE(table.getSynLocation("v") == 0);
-    REQUIRE(table.getResult().size() == 3);
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field1, field4}) != table.getResult().end());
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field2, field5}) != table.getResult().end());
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field3, field6}) != table.getResult().end());
+    auto result = table.getResult();
+    REQUIRE(result.size() == 3);
+    REQUIRE(result.find(std::vector<PKBField>{field1, field4}) != result.end());
+    REQUIRE(result.find(std::vector<PKBField>{field2, field5}) != result.end());
+    REQUIRE(result.find(std::vector<PKBField>{field3, field6}) != result.end());
 }
 
 TEST_CASE("Test Empty table cross join") {
@@ -137,10 +139,11 @@ TEST_CASE("Test Empty table cross join") {
     table.insertSynLocationToLast("v");
 
     REQUIRE(table.getSynLocation("v") == 0);
-    REQUIRE(table.getResult().size() == 3);
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field1}) != table.getResult().end());
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field2}) != table.getResult().end());
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field3}) != table.getResult().end());
+    auto result = table.getResult();
+    REQUIRE(result.size() == 3);
+    REQUIRE(result.find(std::vector<PKBField>{field1}) != result.end());
+    REQUIRE(result.find(std::vector<PKBField>{field2}) != result.end());
+    REQUIRE(result.find(std::vector<PKBField>{field3}) != result.end());
 
     qps::evaluator::ResultTable table1{};
 
@@ -156,10 +159,11 @@ TEST_CASE("Test Empty table cross join") {
 
     REQUIRE(table1.getSynLocation("v") == 0);
     REQUIRE(table1.getSynLocation("s") == 1);
-    REQUIRE(table1.getResult().size() == 3);
-    REQUIRE(table1.getResult().find(std::vector<PKBField>{field1, field4}) != table.getResult().end());
-    REQUIRE(table1.getResult().find(std::vector<PKBField>{field2, field5}) != table.getResult().end());
-    REQUIRE(table1.getResult().find(std::vector<PKBField>{field3, field6}) != table.getResult().end());
+    auto result1 = table1.getResult();
+    REQUIRE(result1.size() == 3);
+    REQUIRE(result1.find(std::vector<PKBField>{field1, field4}) != result1.end());
+    REQUIRE(result1.find(std::vector<PKBField>{field2, field5}) != result1.end());
+    REQUIRE(result1.find(std::vector<PKBField>{field3, field6}) != result1.end());
 }
 
 TEST_CASE("Test crossJoin with records inside") {
@@ -176,13 +180,14 @@ TEST_CASE("Test crossJoin with records inside") {
     PKBResponse response1{true, Response{r1}};
     table.crossJoin(response1);
 
-    REQUIRE(table.getResult().size() == 6);
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field1, field4, newField1}) != table.getResult().end());
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field1, field4, newField2}) != table.getResult().end());
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field2, field5, newField1}) != table.getResult().end());
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field2, field5, newField2}) != table.getResult().end());
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field3, field6, newField1}) != table.getResult().end());
-    REQUIRE(table.getResult().find(std::vector<PKBField>{field3, field6, newField2}) != table.getResult().end());
+    auto result = table.getResult();
+    REQUIRE(result.size() == 6);
+    REQUIRE(result.find(std::vector<PKBField>{field1, field4, newField1}) != result.end());
+    REQUIRE(result.find(std::vector<PKBField>{field1, field4, newField2}) != result.end());
+    REQUIRE(result.find(std::vector<PKBField>{field2, field5, newField1}) != result.end());
+    REQUIRE(result.find(std::vector<PKBField>{field2, field5, newField2}) != result.end());
+    REQUIRE(result.find(std::vector<PKBField>{field3, field6, newField1}) != result.end());
+    REQUIRE(result.find(std::vector<PKBField>{field3, field6, newField2}) != result.end());
     printTable(table);
     TEST_LOG << "Cross join a vector of response";
     PKBField newField3 = PKBField::createConcrete(Content{45});
@@ -197,24 +202,16 @@ TEST_CASE("Test crossJoin with records inside") {
     REQUIRE(table2.getSynLocation("a") == 2);
     REQUIRE(table2.getSynLocation("c") == 3);
     table2.crossJoin(response2);
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field1, field4, newField1, newField3}) !=
-            table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field1, field4, newField1, newField4}) !=
-            table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field1, field4, newField2, newField3}) !=
-            table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field2, field5, newField1, newField3}) !=
-            table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field2, field5, newField1, newField4}) !=
-            table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field2, field5, newField2, newField3}) !=
-            table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field3, field6, newField1, newField3}) !=
-            table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field3, field6, newField1, newField4}) !=
-            table.getResult().end());
-    REQUIRE(table2.getResult().find(std::vector<PKBField>{field3, field6, newField2, newField3}) !=
-            table.getResult().end());
+    auto result2 = table2.getResult();
+    REQUIRE(result2.find(std::vector<PKBField>{field1, field4, newField1, newField3}) != result2.end());
+    REQUIRE(result2.find(std::vector<PKBField>{field1, field4, newField1, newField4}) != result2.end());
+    REQUIRE(result2.find(std::vector<PKBField>{field1, field4, newField2, newField3}) != result2.end());
+    REQUIRE(result2.find(std::vector<PKBField>{field2, field5, newField1, newField3}) != result2.end());
+    REQUIRE(result2.find(std::vector<PKBField>{field2, field5, newField1, newField4}) != result2.end());
+    REQUIRE(result2.find(std::vector<PKBField>{field2, field5, newField2, newField3}) != result2.end());
+    REQUIRE(result2.find(std::vector<PKBField>{field3, field6, newField1, newField3}) != result2.end());
+    REQUIRE(result2.find(std::vector<PKBField>{field3, field6, newField1, newField4}) != result2.end());
+    REQUIRE(result2.find(std::vector<PKBField>{field3, field6, newField2, newField3}) != result2.end());
     printTable(table2);
 }
 
