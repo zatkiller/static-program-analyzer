@@ -367,13 +367,14 @@ TEST_CASE("Parser parseExpSpec") {
 }
 
 TEST_CASE("Parser parsePattern - wildcard expression") {
-    std::string testQuery = "assign a; \n Select a pattern a (v, _)";
+    std::string testQuery = "assign a; variable v;\n Select a pattern a (v, _)";
 
     Parser parser;
     parser.addPql(testQuery);
 
     Query queryObj;
 
+    parser.parseDeclarations(queryObj);
     parser.parseDeclarations(queryObj);
     parser.parseSelectFields(queryObj);
     parser.parsePattern(queryObj);
@@ -388,13 +389,14 @@ TEST_CASE("Parser parsePattern - wildcard expression") {
 }
 
 TEST_CASE("Parser parsePattern - string expression") {
-    std::string testQuery = "assign a; \n Select a pattern a (v, \"x\")";
+    std::string testQuery = "assign a; variable v;\n Select a pattern a (v, \"x\")";
 
     Parser parser;
     parser.addPql(testQuery);
 
     Query queryObj;
 
+    parser.parseDeclarations(queryObj);
     parser.parseDeclarations(queryObj);
     parser.parseSelectFields(queryObj);
     parser.parsePattern(queryObj);
@@ -409,24 +411,43 @@ TEST_CASE("Parser parsePattern - string expression") {
 }
 
 TEST_CASE("Parser parsePattern - string expression with wildcard") {
-    std::string testQuery = "assign a; \n Select a pattern a (v, _\"x\"_)";
 
-    Parser parser;
-    parser.addPql(testQuery);
+    SECTION("Valid Pattern semantics") {
+        std::string testQuery = "assign a; variable v;\n Select a pattern a (v, _\"x\"_)";
 
-    Query queryObj;
+        Parser parser;
+        parser.addPql(testQuery);
 
-    parser.parseDeclarations(queryObj);
-    parser.parseSelectFields(queryObj);
-    parser.parsePattern(queryObj);
+        Query queryObj;
 
-    std::vector<Pattern> patterns = queryObj.getPattern();
-    Pattern pattern = patterns[0];
+        parser.parseDeclarations(queryObj);
+        parser.parseDeclarations(queryObj);
+        parser.parseSelectFields(queryObj);
+        parser.parsePattern(queryObj);
 
-    REQUIRE(pattern.getSynonym() == "a");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
-    REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
+        std::vector<Pattern> patterns = queryObj.getPattern();
+        Pattern pattern = patterns[0];
+
+        REQUIRE(pattern.getSynonym() == "a");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+        REQUIRE(validDeclaration);
+        REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
+    }
+
+    SECTION("Invalid Pattern semantics") {
+        std::string testQuery = "assign a;\n Select a pattern a (a, _\"x\"_)";
+
+        Parser parser;
+        parser.addPql(testQuery);
+
+        Query queryObj;
+
+        parser.parseDeclarations(queryObj);
+        parser.parseSelectFields(queryObj);
+        REQUIRE_THROWS_MATCHES(parser.parsePattern(queryObj),
+                               exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::notVariableSynonymMessage));
+    }
 }
 
 TEST_CASE("Parser isEntRef") {
@@ -466,10 +487,10 @@ TEST_CASE("Parser parseEntRef") {
 }
 
 TEST_CASE("Parser parseRelRefVariables") {
-    Query queryObj;
-    Parser parser;
 
     SECTION("parseRelRefVariables - Follows") {
+        Query queryObj;
+        Parser parser;
         parser.lexer.text = "(3, 5)";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Follows>(queryObj, &Follows::follower,
                                                                            &Follows::followed);
@@ -483,6 +504,8 @@ TEST_CASE("Parser parseRelRefVariables") {
     }
 
     SECTION("parseRelRefVariables - FollowsT") {
+        Query queryObj;
+        Parser parser;
         parser.lexer.text = "(3, 10)";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<FollowsT>(queryObj, &FollowsT::follower,
                                                                             &FollowsT::transitiveFollowed);
@@ -496,6 +519,8 @@ TEST_CASE("Parser parseRelRefVariables") {
     }
 
     SECTION("parseRelRefVariables - Parent") {
+        Query queryObj;
+        Parser parser;
         parser.lexer.text = "(3, 5)";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Parent>(queryObj, &Parent::parent, &Parent::child);
         REQUIRE(ptr.get()->getType() == RelRefType::PARENT);
@@ -508,6 +533,8 @@ TEST_CASE("Parser parseRelRefVariables") {
     }
 
     SECTION("parseRelRefVariables - ParentT") {
+        Query queryObj;
+        Parser parser;
         parser.lexer.text = "(3, 10)";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<ParentT>(queryObj, &ParentT::parent,
                                                                            &ParentT::transitiveChild);
@@ -518,6 +545,16 @@ TEST_CASE("Parser parseRelRefVariables") {
         REQUIRE(pPtr->parent.getLineNo() == 3);
         REQUIRE(pPtr->transitiveChild.isLineNo());
         REQUIRE(pPtr->transitiveChild.getLineNo() == 10);
+    }
+
+    SECTION("parseRelRefVariables - Follows") {
+        Query queryObj;
+        Parser parser;
+        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+        parser.lexer.text = "(v, v)";
+        REQUIRE_THROWS_MATCHES(parser.parseRelRefVariables<Follows>(queryObj, &Follows::follower, &Follows::followed),
+                               exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::notStatementSynonymMessage));
     }
 }
 

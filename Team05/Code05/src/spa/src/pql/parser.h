@@ -179,13 +179,24 @@ struct Parser {
         if (!isStmtRef(peekNextToken(), query))
             throw exceptions::PqlSyntaxException(messages::qps::parser::invalidStmtRefMessage);
 
-        ptr.get()->*f1 = parseStmtRef(query);
+        StmtRef s1 = parseStmtRef(query);
+
+        if (s1.isDeclaration() && query.getDeclarationDesignEntity(s1.getDeclaration()) != DesignEntity::STMT)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notStatementSynonymMessage);
+
+        ptr.get()->*f1 = s1;
         getAndCheckNextToken(TokenType::COMMA);
 
         if (!isStmtRef(peekNextToken(), query))
             throw exceptions::PqlSyntaxException(messages::qps::parser::invalidStmtRefMessage);
 
-        ptr.get()->*f2 = parseStmtRef(query);
+
+        StmtRef s2 = parseStmtRef(query);
+
+        if (s2.isDeclaration() && query.getDeclarationDesignEntity(s2.getDeclaration()) != DesignEntity::STMT)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notStatementSynonymMessage);
+
+        ptr.get()->*f2 = s2;
         getAndCheckNextToken(TokenType::CLOSING_PARAN);
         return ptr;
     }

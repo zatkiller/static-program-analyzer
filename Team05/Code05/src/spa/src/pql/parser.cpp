@@ -95,9 +95,11 @@ namespace qps::parser {
     void Parser::parseSelectFields(Query &queryObj) {
         getAndCheckNextReservedToken(TokenType::SELECT);
 
+        Logger() << "HI";
         Token t = getAndCheckNextToken(TokenType::IDENTIFIER);
         std::string name = t.getText();
 
+        Logger() << "HI2";
         if (!queryObj.hasDeclaration(name))
             throw exceptions::PqlSyntaxException(messages::qps::parser::declarationDoesNotExistMessage);
 
@@ -269,7 +271,12 @@ namespace qps::parser {
 
         p.synonym = declarationName;
         getAndCheckNextToken(TokenType::OPENING_PARAN);
-        p.lhs = parseEntRef(queryObj);
+        EntRef e = parseEntRef(queryObj);
+
+        if (queryObj.getDeclarationDesignEntity(e.getDeclaration()) != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+
+        p.lhs = e;
         getAndCheckNextToken(TokenType::COMMA);
         p.expression = parseExpSpec();
         getAndCheckNextToken(TokenType::CLOSING_PARAN);
