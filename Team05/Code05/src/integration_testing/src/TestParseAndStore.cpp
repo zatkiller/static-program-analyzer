@@ -89,7 +89,7 @@ struct TestParseAndStorePackage1 {
         expectedRelationships.emplace(
             PKBRelationship::MODIFIES,
             std::set<std::pair<Content, Content>> {
-            p(STMT_LO{ 1, StatementType::Read }, VAR_NAME{ "number" }),
+                p(STMT_LO{ 1, StatementType::Read }, VAR_NAME{ "number" }),
                 p(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{ "sum" }),
                 p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "digit" }),
                 p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "sum" }),
@@ -123,7 +123,7 @@ struct TestParseAndStorePackage1 {
         expectedRelationships.emplace(
             PKBRelationship::FOLLOWS,
             std::set<std::pair<Content, Content>> {
-            p(STMT_LO{ 1, StatementType::Read }, STMT_LO{ 2, StatementType::Assignment }),
+                p(STMT_LO{ 1, StatementType::Read }, STMT_LO{ 2, StatementType::Assignment }),
                 p(STMT_LO{ 2, StatementType::Assignment }, STMT_LO{ 3, StatementType::While }),
                 p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 7, StatementType::Print }),
                 p(STMT_LO{ 4, StatementType::Assignment }, STMT_LO{ 5, StatementType::Assignment }),
@@ -134,7 +134,7 @@ struct TestParseAndStorePackage1 {
         expectedRelationships.emplace(
             PKBRelationship::PARENT,
             std::set<std::pair<Content, Content>> {
-            p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 4, StatementType::Assignment }),
+                p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 4, StatementType::Assignment }),
                 p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 5, StatementType::Assignment }),
                 p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 6, StatementType::Assignment }),
             }
@@ -156,7 +156,7 @@ TEST_CASE("Test parse and store") {
         return std::vector<PKBField>({
             PKBField::createConcrete(a),
             PKBField::createConcrete(b),
-            });
+        });
     };
 
     auto expectedResponse = [](auto rows) {
@@ -165,24 +165,19 @@ TEST_CASE("Test parse and store") {
 
     REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, "digit") ==
         expectedResponse(FieldRowResponse{
-            row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"})
-        })
-    );
+            row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"})}));
 
     REQUIRE(pkb.match(StatementType::Assignment, "sum", std::nullopt) ==
         expectedResponse(FieldRowResponse{
             row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
-            row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"})
-        })
-    );
+            row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"})}));
 
     REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, std::nullopt) ==
         expectedResponse(FieldRowResponse{
             row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
             row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"}),
             row(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{"digit"}),
-            row(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{"number"})})
-    );
+            row(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{"number"})}));
 
     using Rows = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
