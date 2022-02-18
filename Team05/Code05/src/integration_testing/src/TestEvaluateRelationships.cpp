@@ -88,6 +88,21 @@ TEST_CASE("Test get Modifies") {
     result.sort();
     REQUIRE(result == std::list<std::string>{"2", "4", "5"});
 
+    TEST_LOG << "stmt s; assign a; select s such that Modifies(a, 'variable')";
+    qps::query::Query query1;
+    std::shared_ptr<qps::query::Modifies> mPtr1 = std::make_shared<qps::query::Modifies>();
+    mPtr1->modifiesStmt = qps::query::StmtRef::ofDeclaration("a");
+    mPtr1->modified = qps::query::EntRef::ofVarName("variable");
+    query1.addVariable("s");
+    query1.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query1.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query1.addSuchthat(mPtr1);
+    qps::evaluator::Evaluator evaluator1 = qps::evaluator::Evaluator{pkbPtr};
+    std::list<std::string> result1 = evaluator1.evaluate(query1);
+    printResult(result1);
+    result1.sort();
+    REQUIRE(result1 == std::list<std::string>{"1", "2", "3", "4", "5", "6"});
+
     TEST_LOG << "select v such that Modifies(5, v)";
     qps::query::Query query2;
     query2.addVariable("v");
