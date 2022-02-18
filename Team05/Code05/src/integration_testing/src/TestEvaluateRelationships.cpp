@@ -178,9 +178,6 @@ TEST_CASE("Test get Uses") {
     result3.sort();
     printResult(result3);
     REQUIRE(result3 == std::list<std::string>{"current", "x", "y"});
-
-
-
 }
 
 TEST_CASE("Test get Follows FollowsT") {

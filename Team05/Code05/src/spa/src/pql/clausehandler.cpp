@@ -78,7 +78,7 @@ namespace qps::evaluator {
             bool isSecondSyn = fields[1].fieldType == PKBFieldType::DECLARATION;
             if (!isFirstSyn || !isSecondSyn) {
                 response = selectDeclaredValue(response, isFirstSyn);
-            } else if (isFirstSyn && isSecondSyn) {
+            } else {
                 response = filterPKBResponse(response, synonyms[0] == synonyms[1]);
             }
             tableRef.join(response, synonyms);
