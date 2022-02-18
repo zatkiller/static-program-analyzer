@@ -1,6 +1,9 @@
 #include <sstream>
 
 #include "pql/parser.h"
+#include "logging.h"
+
+#define LOGGER Logger()
 
 namespace qps::parser {
     using qps::query::designEntityMap;
@@ -11,7 +14,7 @@ namespace qps::parser {
     using qps::query::Parent;
     using qps::query::ParentT;
     using qps::query::Pattern;
-
+    using qps::query::ExpSpec;
 
     std::string Parser::getParsedText() {
         return lexer.text;
@@ -210,25 +213,41 @@ namespace qps::parser {
         throw exceptions::PqlSyntaxException(messages::qps::parser::invalidRelRefMessage);
     }
 
-    std::string Parser::parseExpSpec() {
-        std::string prefix = "", suffix = "", value = "";
+    ExpSpec Parser::parseExpSpec() {
+        bool isPartialMatch = false;
+        bool isWildcard = false;
+        std::string value = "";
 
         if (peekNextToken().getTokenType() == TokenType::UNDERSCORE) {
+            LOGGER << "FIRST";
+            isWildcard = true;
             getNextToken();
-            prefix = "_";
         }
 
         if (peekNextToken().getTokenType() == TokenType::STRING) {
-            Token t = getNextToken();
-            value = t.getText();
+            LOGGER << "SECOND";
+            if (isWildcard) {
+                isPartialMatch = true;
+                isWildcard = false;
+            }
+            Token token = getAndCheckNextToken(TokenType::STRING);
+            value = token.getText();
+            LOGGER << value;
         }
 
-        if ((prefix.size() != 0) && (value.size() != 0)) {
+        if (isPartialMatch) {
+            LOGGER << "THIRD";
+            Token t = peekNextToken();
+            LOGGER << t.getText();
             getAndCheckNextToken(TokenType::UNDERSCORE);
-            suffix = "_";
+            LOGGER << "FOURTH";
+            return ExpSpec::ofPartialMatch(value);
         }
 
-        return prefix + value + suffix;
+        if (isWildcard)
+            return ExpSpec::ofWildcard();
+
+        return ExpSpec::ofFullMatch(value);
     }
 
     void Parser::parseSuchThat(Query &queryObj) {

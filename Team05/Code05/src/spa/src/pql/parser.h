@@ -13,6 +13,7 @@ using qps::query::DesignEntity;
 using qps::query::RelRef;
 using qps::query::EntRef;
 using qps::query::StmtRef;
+using qps::query::ExpSpec;
 
 /**
  * Struct used to represent the Parser
@@ -225,7 +226,7 @@ struct Parser {
      */
     void parsePattern(Query &query);
 
-    std::string parseExpSpec();
+    ExpSpec parseExpSpec();
 };
 
 }  // namespace qps::parser

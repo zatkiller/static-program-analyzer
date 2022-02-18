@@ -23,6 +23,7 @@ using qps::query::ParentT;
 using qps::query::Follows;
 using qps::query::FollowsT;
 using qps::query::Pattern;
+using qps::query::ExpSpec;
 
 TEST_CASE("Parser checkType") {
     Parser parser;
@@ -341,6 +342,30 @@ TEST_CASE("Parser parseSuchThat - Parent*") {
     }
 }
 
+TEST_CASE("Parser parseExpSpec") {
+    std::string testQuery = "_";
+
+    Parser parser;
+    parser.addPql(testQuery);
+
+    REQUIRE(parser.parseExpSpec() == ExpSpec::ofWildcard());
+
+    testQuery = "_\"x\"_";
+    parser.addPql(testQuery);
+
+    REQUIRE(parser.parseExpSpec() == ExpSpec::ofPartialMatch("x"));
+
+    testQuery = "\"x\"";
+    parser.addPql(testQuery);
+
+    REQUIRE(parser.parseExpSpec() == ExpSpec::ofFullMatch("x"));
+
+    testQuery = "_\"x\"";
+    parser.addPql(testQuery);
+    REQUIRE_THROWS_MATCHES(parser.parseExpSpec(), exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::notExpectingTokenMessage));
+}
+
 TEST_CASE("Parser parsePattern - wildcard expression") {
     std::string testQuery = "assign a; \n Select a pattern a (v, _)";
 
@@ -359,7 +384,7 @@ TEST_CASE("Parser parsePattern - wildcard expression") {
     REQUIRE(pattern.getSynonym() == "a");
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == "_");
+    REQUIRE(pattern.getExpression() == ExpSpec::ofWildcard());
 }
 
 TEST_CASE("Parser parsePattern - string expression") {
@@ -380,7 +405,7 @@ TEST_CASE("Parser parsePattern - string expression") {
     REQUIRE(pattern.getSynonym() == "a");
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == "x");
+    REQUIRE(pattern.getExpression() == ExpSpec::ofFullMatch("x"));
 }
 
 TEST_CASE("Parser parsePattern - string expression with wildcard") {
@@ -401,7 +426,7 @@ TEST_CASE("Parser parsePattern - string expression with wildcard") {
     REQUIRE(pattern.getSynonym() == "a");
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == "_x_");
+    REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 }
 
 TEST_CASE("Parser isEntRef") {
@@ -564,23 +589,6 @@ TEST_CASE("Parser parseRelRef") {
     REQUIRE(uPtr->used.isWildcard());
 }
 
-TEST_CASE("Parser parseExpSpec") {
-    Query queryObj;
-    Parser parser;
-    parser.lexer.text = "_\"x\"_";
-    REQUIRE(parser.parseExpSpec() == "_x_");
-
-    parser.lexer.text = "\"x\"";
-    REQUIRE(parser.parseExpSpec() == "x");
-
-    parser.lexer.text = "_";
-    REQUIRE(parser.parseExpSpec() == "_");
-
-    parser.lexer.text = "_\"x\"";
-    REQUIRE_THROWS_MATCHES(parser.parseExpSpec(), exceptions::PqlSyntaxException,
-                           Catch::Message(messages::qps::parser::notExpectingTokenMessage));
-}
-
 TEST_CASE("Parser parseQuery") {
     Parser parser;
     parser.lexer.text = "Select c";
@@ -617,7 +625,7 @@ TEST_CASE("Parser parseQuery") {
     REQUIRE(pattern.getSynonym() == "a1");
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == "_x_");
+    REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 }
 
 TEST_CASE("Parser parsePql") {
@@ -655,7 +663,7 @@ TEST_CASE("Parser parsePql") {
     REQUIRE(pattern.getSynonym() == "a");
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == "_x_");
+    REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 }
 
 
