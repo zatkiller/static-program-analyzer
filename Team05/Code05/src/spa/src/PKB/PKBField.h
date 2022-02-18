@@ -24,6 +24,7 @@ struct PKBField {
     std::optional<StatementType> statementType;
     Content content;
 
+    PKBField(){};
     /**
     * Creates a concrete field. The type of data must be a PKBEntityType.
     */
@@ -78,6 +79,9 @@ struct PKBField {
         return nullptr;
     }
 
+    /**
+    * Checks whether a PKBField is valid given an entity type.
+    */
     bool isValidConcrete(PKBEntityType type);
 
     bool operator == (const PKBField&) const;

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <unordered_set>
 
+#include "logging.h"
 #include "RelationshipRow.h"
 #include "PKBRelationship.h"
 
@@ -17,32 +18,32 @@ public:
 
     /**
     * Checks whether the RelationshipTable contains a RelationshipRow representing
-    * Relationship(entity1, entity2).
+    * Relationship(field1, field2).
     *
-    * @param entity1 the first program design entity in the relationship
-    * @param entity2 the second program design entity in the relationship
+    * @param field1 the first program design entity in the relationship
+    * @param field2 the second program design entity in the relationship
     *
-    * @returns whether the relationship is present in the RelationshipTable
+    * @return whether the relationship is present in the RelationshipTable
     */
-    virtual bool contains(PKBField entity1, PKBField entity2) = 0;
+    bool contains(PKBField field1, PKBField field2);
 
     /**
-    * Inserts a RelationshipRow representing Relationship(entity1, entity2) into the RelationshipTable.
+    * Inserts a RelationshipRow representing Relationship(field1, field2) into the RelationshipTable.
     *
-    * @param entity1 the first program design entity in the relationship
-    * @param entity2 the second program design entity in the relationship
+    * @param field1 the first program design entity in the relationship
+    * @param field2 the second program design entity in the relationship
     */
-    virtual void insert(PKBField entity1, PKBField entity2) = 0;
+    void insert(PKBField field1, PKBField field2);
 
-    virtual FieldRowResponse retrieve(PKBField entity1, PKBField entity2) = 0;
+    FieldRowResponse retrieve(PKBField field1, PKBField field2);
 
-    virtual bool isInsertOrContainsValid(PKBField field1, PKBField field2) = 0;
-    virtual bool isRetrieveValid(PKBField field1, PKBField field2) = 0;
+    bool isInsertOrContainsValid(PKBField field1, PKBField field2);
+    bool isRetrieveValid(PKBField field1, PKBField field2);
 
-    /** 
+    /**
     * Retrieves the type of relationships the RelationshipTable stores.
-    * 
-    * @returns type of relationship
+    *
+    * @return type of relationship
     */
     PKBRelationship getType();
 
@@ -50,12 +51,5 @@ public:
 
 protected:
     std::unordered_set<RelationshipRow, RelationshipRowHash> rows;
-    PKBRelationship type; 
-};
-
-class TransitiveRelationshipTable : public RelationshipTable {
-public:
-    using RelationshipTable::RelationshipTable;
-
-    virtual FieldRowResponse retrieveT(PKBField entity1, PKBField entity2) = 0;
+    PKBRelationship type;
 };
