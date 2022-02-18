@@ -216,18 +216,20 @@ PKBResponse PKB::match(StatementType type, PatternParam lhs, PatternParam rhs) {
         auto varname = node.get().getLHS()->getVarName();
         stmtRes.emplace_back(PKBField::createConcrete(VAR_NAME{ varname }));
 
-        //auto usesPKBResponse = getRelationship(stmt, PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::USES);
+        /*
+        auto usesPKBResponse = getRelationship(stmt, PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::USES);
 
-        //if (usesPKBResponse.hasResult) {
-        //    FieldRowResponse usesRes = *usesPKBResponse.getResponse<FieldRowResponse>();
+        if (usesPKBResponse.hasResult) {
+            FieldRowResponse usesRes = *usesPKBResponse.getResponse<FieldRowResponse>();
 
-        //    for (auto row : usesRes) {
-        //        stmtRes.emplace_back(row[1]);
-        //    }
-        //}
-       
+            for (auto row : usesRes) {
+                stmtRes.emplace_back(row[1]);
+            }
+        }
+        */
+
         res.insert(stmtRes);
-    };
+    }
 
     return PKBResponse{ true, Response{res} };
 }
