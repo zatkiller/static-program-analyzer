@@ -46,7 +46,10 @@ public:
      */
     void processStmtField(std::vector<PKBField> &fields, std::vector<std::string> synonyms);
 
-    PKBResponse selectPKBResponse(PKBResponse &response, bool isFirstDec);
+    PKBResponse selectDeclarationValue(PKBResponse &response, bool isFirstDec);
+
+    PKBResponse filterPKBResponse(PKBResponse& response, bool isSame);
+
     /**
      * Handles all the clauses with synonyms.
      *
