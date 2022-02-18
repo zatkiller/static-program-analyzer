@@ -46,8 +46,23 @@ public:
      */
     void processStmtField(std::vector<PKBField> &fields, std::vector<std::string> synonyms);
 
-    PKBResponse selectDeclarationValue(PKBResponse &response, bool isFirstDec);
+    /**
+     * Selects the corresponding values of synonyms in the PKBResponse.
+     *
+     * @param response PKBResponse
+     * @param isFirstDec bool checks whether the first field is a synonym
+     * @return new selected PKBResponse
+     */
+    PKBResponse selectDeclarationValue(PKBResponse &response, bool isFirstSyn);
 
+    /**
+     * Filters the correct response from PKB. If two fields in relationship clause have the same synonym name,
+     * only return the record when two PKBFields are the same.
+     *
+     * @param response PKBResponse
+     * @param isSame bool checks whether two synonyms are the same
+     * @return filtered PKBResponse
+     */
     PKBResponse filterPKBResponse(PKBResponse& response, bool isSame);
 
     /**

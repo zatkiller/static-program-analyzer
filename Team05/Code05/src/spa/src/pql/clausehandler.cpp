@@ -36,8 +36,8 @@ namespace qps::evaluator {
         }
     }
 
-    PKBResponse ClauseHandler::selectDeclarationValue(PKBResponse& response, bool isFirstDec) {
-        int erasePos = isFirstDec ? 1 : 0;
+    PKBResponse ClauseHandler::selectDeclarationValue(PKBResponse& response, bool isFirstSyn) {
+        int erasePos = isFirstSyn ? 1 : 0;
         if (!response.hasResult) return response;
         PKBResponse newResponse;
         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> res;
@@ -74,11 +74,11 @@ namespace qps::evaluator {
             processStmtField(fields, synonyms);
             PKBResponse response = pkb->getRelationship(fields[0], fields[1],
                                                         getPKBRelationship(relRefPtr->getType()));
-            bool isFirstDec = fields[0].fieldType == PKBFieldType::DECLARATION;
-            bool isSecondDec = fields[1].fieldType == PKBFieldType::DECLARATION;
-            if (!isFirstDec || !isSecondDec) {
-                response = selectDeclarationValue(response, isFirstDec);
-            } else if (isFirstDec && isSecondDec) {
+            bool isFirstSyn = fields[0].fieldType == PKBFieldType::DECLARATION;
+            bool isSecondSyn = fields[1].fieldType == PKBFieldType::DECLARATION;
+            if (!isFirstSyn || !isSecondSyn) {
+                response = selectDeclarationValue(response, isFirstSyn);
+            } else if (isFirstSyn && isSecondSyn) {
                 response = filterPKBResponse(response, synonyms[0] == synonyms[1]);
             }
             tableRef.join(response, synonyms);
