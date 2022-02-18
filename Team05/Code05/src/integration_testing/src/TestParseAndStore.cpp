@@ -70,7 +70,7 @@ struct TestParseAndStorePackage1 {
                 VAR_NAME{"number"},
                 VAR_NAME{"sum"},
                 VAR_NAME{"digit"}
-                })
+            })
         );
         expectedEntities.emplace(
             PKBEntityType::STATEMENT,
@@ -82,7 +82,7 @@ struct TestParseAndStorePackage1 {
                 STMT_LO{5, StatementType::Assignment},
                 STMT_LO{6, StatementType::Assignment},
                 STMT_LO{7, StatementType::Print}
-                })
+            })
         );
     }
     void initRelationships() {
@@ -100,7 +100,7 @@ struct TestParseAndStorePackage1 {
                 p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "number" }),
                 p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "digit" }),
                 p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "sum" })
-        }
+            }
         );
 
         expectedRelationships.emplace(
@@ -117,7 +117,7 @@ struct TestParseAndStorePackage1 {
                 p(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{ "digit" }),
                 p(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{ "number" }),
                 p(STMT_LO{ 7, StatementType::Print }, VAR_NAME{ "sum" }),
-        }
+            }   
         );
 
         expectedRelationships.emplace(
@@ -128,7 +128,7 @@ struct TestParseAndStorePackage1 {
                 p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 7, StatementType::Print }),
                 p(STMT_LO{ 4, StatementType::Assignment }, STMT_LO{ 5, StatementType::Assignment }),
                 p(STMT_LO{ 5, StatementType::Assignment }, STMT_LO{ 6, StatementType::Assignment }),
-        }
+            }
         );
 
         expectedRelationships.emplace(
@@ -137,7 +137,7 @@ struct TestParseAndStorePackage1 {
             p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 4, StatementType::Assignment }),
                 p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 5, StatementType::Assignment }),
                 p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 6, StatementType::Assignment }),
-        }
+            }
         );
     }
     TestParseAndStorePackage1() {
@@ -152,45 +152,37 @@ TEST_CASE("Test parse and store") {
     TestParseAndStorePackage1 test1;
     sp.processSimple(test1.sourceCode, &pkb);
 
-    REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, "digit") == PKBResponse{ true,
-            FieldRowResponse{
-                {
-                    PKBField::createConcrete(STMT_LO{ 5, StatementType::Assignment }),
-                    PKBField::createConcrete(VAR_NAME{"sum"})
-                }
-            } });
+    auto row = [](auto a, auto b) {
+        return std::vector<PKBField>({
+            PKBField::createConcrete(a),
+            PKBField::createConcrete(b),
+            });
+    };
 
-    REQUIRE(pkb.match(StatementType::Assignment, "sum", std::nullopt) == PKBResponse{ true,
-            FieldRowResponse{
-                {
-                    PKBField::createConcrete(STMT_LO{ 5, StatementType::Assignment }),
-                    PKBField::createConcrete(VAR_NAME{"sum"})
-                },
-                {
-                    PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment }),
-                    PKBField::createConcrete(VAR_NAME{"sum"})
-                }
-            } });
+    auto expectedResponse = [](auto rows) {
+        return PKBResponse{ true, rows };
+    };
 
-    REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, std::nullopt) == PKBResponse{ true,
-        FieldRowResponse{
-            {
-                PKBField::createConcrete(STMT_LO{ 4, StatementType::Assignment }),
-                PKBField::createConcrete(VAR_NAME{"digit"}),
-            },
-            {
-                PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment }),
-                PKBField::createConcrete(VAR_NAME{"sum"})
-            },
-            {
-                PKBField::createConcrete(STMT_LO{ 5, StatementType::Assignment }),
-                PKBField::createConcrete(VAR_NAME{"sum"})
-            },
-            {
-                PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment }),
-                PKBField::createConcrete(VAR_NAME{"number"})
-            },
-        } });
+    REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, "digit") ==
+        expectedResponse(FieldRowResponse{
+            row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"})
+        })
+    );
+
+    REQUIRE(pkb.match(StatementType::Assignment, "sum", std::nullopt) ==
+        expectedResponse(FieldRowResponse{
+            row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
+            row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"})
+        })
+    );
+
+    REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, std::nullopt) ==
+        expectedResponse(FieldRowResponse{
+            row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
+            row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"}),
+            row(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{"digit"}),
+            row(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{"number"})})
+    );
 
     using Rows = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
