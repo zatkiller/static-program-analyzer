@@ -53,7 +53,7 @@ public:
      * @param isFirstDec bool checks whether the first field is a synonym
      * @return new selected PKBResponse
      */
-    PKBResponse selectDeclarationValue(PKBResponse &response, bool isFirstSyn);
+    PKBResponse selectDeclaredValue(PKBResponse &response, bool isFirstSyn);
 
     /**
      * Filters the correct response from PKB. If two fields in relationship clause have the same synonym name,

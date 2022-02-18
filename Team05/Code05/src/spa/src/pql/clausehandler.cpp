@@ -36,7 +36,7 @@ namespace qps::evaluator {
         }
     }
 
-    PKBResponse ClauseHandler::selectDeclarationValue(PKBResponse& response, bool isFirstSyn) {
+    PKBResponse ClauseHandler::selectDeclaredValue(PKBResponse& response, bool isFirstSyn) {
         int erasePos = isFirstSyn ? 1 : 0;
         if (!response.hasResult) return response;
         PKBResponse newResponse;
@@ -77,7 +77,7 @@ namespace qps::evaluator {
             bool isFirstSyn = fields[0].fieldType == PKBFieldType::DECLARATION;
             bool isSecondSyn = fields[1].fieldType == PKBFieldType::DECLARATION;
             if (!isFirstSyn || !isSecondSyn) {
-                response = selectDeclarationValue(response, isFirstSyn);
+                response = selectDeclaredValue(response, isFirstSyn);
             } else if (isFirstSyn && isSecondSyn) {
                 response = filterPKBResponse(response, synonyms[0] == synonyms[1]);
             }
