@@ -53,6 +53,7 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
         break;
     case PKBRelationship::USES:
         usesTable->insert(field1, field2);
+        break;
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
     }
@@ -78,6 +79,8 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
         return usesTable->contains(field1, field2);
     case PKBRelationship::FOLLOWST:
         return followsTable->containsT(field1, field2);
+    case PKBRelationship::PARENTT:
+        return parentTable->containsT(field1, field2);
     default:
         Logger(Level::INFO) << "Checking for an invalid relationship table\n";
         return false;
@@ -129,6 +132,8 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
     case PKBRelationship::FOLLOWST:
         extracted = followsTable->retrieveT(field1, field2);
         break;
+    case PKBRelationship::PARENTT:
+        extracted = parentTable->retrieveT(field1, field2);
     default:
         throw "Invalid relationship type used!";
     }
