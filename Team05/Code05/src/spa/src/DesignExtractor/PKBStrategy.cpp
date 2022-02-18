@@ -1,6 +1,8 @@
 #include "DesignExtractor/PKBStrategy.h"
 
 namespace sp {
+namespace design_extractor {
+
 void ActualPKBStrategy::insertStatement(STMT_LO stmt) {
     pkb->insertStatement(stmt.type.value_or(StatementType::All), stmt.statementNum);
 }
@@ -16,4 +18,5 @@ void ActualPKBStrategy::insertRelationship(PKBRelationship type, Content arg1, C
         PKBField::createConcrete(arg2)
     );
 }
+}  // namespace design_extractor
 }  // namespace sp

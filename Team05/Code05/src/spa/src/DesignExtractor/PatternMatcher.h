@@ -11,8 +11,9 @@
 #include "PKB/PKBDataTypes.h"
 
 namespace sp {
+namespace design_extractor {
 using PatternParam = std::optional<std::string>;
-using AssignPatternReturn = std::list<std::reference_wrapper<const sp::ast::Assign>>;
+using AssignPatternReturn = std::list<std::reference_wrapper<const ast::Assign>>;
 
 /**
  * @brief Extracts all assignment statements in AST with given root that satisfy the constraint given.
@@ -25,5 +26,6 @@ using AssignPatternReturn = std::list<std::reference_wrapper<const sp::ast::Assi
  * @param rhs The optional string constraint of RHS expression being used. Use std::nullopt if RHS  is wildcard.
  * @return AssignPatternReturn return a list of references to the assign nodes.
  */
-AssignPatternReturn extractAssign(sp::ast::ASTNode *root, PatternParam lhs, PatternParam rhs);
+AssignPatternReturn extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs);
+}  // namespace design_extractor
 }  // namespace sp

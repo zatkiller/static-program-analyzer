@@ -3,6 +3,7 @@
 #include "StatementBucketTemplate.h"
 
 namespace sp {
+namespace design_extractor {
 class ParentExtractor : public StatementBucketTemplate {
 public:
     using StatementBucketTemplate::StatementBucketTemplate;
@@ -15,4 +16,5 @@ private:
         }
     };
 };
+}  // namespace design_extractor
 }  // namespace sp

@@ -13,6 +13,7 @@
 #include "DesignExtractor/RelationshipExtractor/ParentExtractor.h"
 
 namespace sp {
+namespace design_extractor {
 class DesignExtractor {
 private:
     std::list<std::shared_ptr<Extractor>> extractors;
@@ -27,10 +28,11 @@ public:
         extractors.push_back(std::make_shared<ParentExtractor>(pkbStrategy));
     }
 
-    void extract(sp::ast::ASTNode* ast) {
+    void extract(ast::ASTNode* ast) {
         for (auto extractor : extractors) {
             ast->accept(extractor);
         }
     }
 };
-}
+}  // namespace design_extractor
+}  // namespace sp

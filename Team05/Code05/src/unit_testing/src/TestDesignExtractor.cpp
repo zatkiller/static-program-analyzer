@@ -20,7 +20,16 @@
 #define TEST_LOG Logger() << "TestDesignExtractor.cpp "
 
 namespace sp {
-class TestPKBStrategy : public PKBStrategy {
+namespace de = design_extractor;
+
+using de::VariableExtractor;
+using de::StatementExtractor;
+using de::UsesExtractor;
+using de::ModifiesExtractor;
+using de::ParentExtractor;
+using de::FollowsExtractor;
+
+class TestPKBStrategy : public de::PKBStrategy {
 public:
     std::set<STMT_LO> statements;
     std::set<std::string> variables;
@@ -269,7 +278,7 @@ namespace ast {
         auto extractAssignHelper = [](sp::ast::ASTNode *ast, std::string s1, std::string s2){
             auto field1 = s1 == "_" ? std::nullopt : std::make_optional<>(s1);
             auto field2 = s2 == "_" ? std::nullopt : std::make_optional<>(s2);
-            return extractAssign(ast, field1, field2);
+            return de::extractAssign(ast, field1, field2);
         };
 
         // assignment: z = 1 + x - 2 + y

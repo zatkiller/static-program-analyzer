@@ -6,14 +6,17 @@
 #include "DesignExtractor/DesignExtractor.h"
 
 bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb) {
+    using sp::design_extractor::ActualPKBStrategy;
+    using sp::design_extractor::DesignExtractor;
+
     auto ast = sp::parser::parse(sourceCode);
     // parsing failed
     if (!ast) {
         return false;
     }
 
-    sp::ActualPKBStrategy actualPKBStrategy(pkb);
-    sp::DesignExtractor(&actualPKBStrategy).extract(ast.get());
+    ActualPKBStrategy actualPKBStrategy(pkb);
+    DesignExtractor(&actualPKBStrategy).extract(ast.get());
     
     return true;
 }
