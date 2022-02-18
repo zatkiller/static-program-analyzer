@@ -1,0 +1,159 @@
+#include "pql/evaluator.h"
+#include "SourceProcessor.h"
+#include "PKB.h"
+#include "catch.hpp"
+#include "logging.h"
+
+#define TEST_LOG Logger() << "TestPattern.cpp"
+
+struct TestCode {
+    std::string sourceCode = R"(
+        procedure sumDigits {
+            read number;
+            sum = 0;
+
+            while (number > 0) {
+                digit = number % 10;
+                sum = sum + digit;
+                number = number / 10;
+            }
+
+            print sum;
+        }
+    )";
+};
+
+void printEvaluatorResult(std::list<std::string> result) {
+    std::string s = " ";
+    for (auto r : result) {
+        s = s + r + " ";
+    }
+    TEST_LOG << s;
+}
+
+TEST_CASE("test evaluate pattern") {
+    PKB pkb;
+    SourceProcessor sp;
+    TestCode testcase{};
+    sp.processSimple(testcase.sourceCode, &pkb);
+
+    TEST_LOG << "assign a; stmt s; Select s pattern a('sum', _)";
+    qps::evaluator::Evaluator evaluator1 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query1{};
+    query1.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query1.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query1.addVariable("s");
+    query1.addPattern(qps::query::Pattern{"a",
+                                          qps::query::EntRef::ofVarName("sum"),
+                                          qps::query::ExpSpec::ofWildcard()});
+    std::list<std::string> result1 = evaluator1.evaluate(query1);
+    result1.sort();
+    printEvaluatorResult(result1);
+    REQUIRE(result1 == std::list<std::string>{"1", "2", "3", "4", "5", "6", "7"});
+
+    TEST_LOG << "assign a; stmt s; variable v; Select s pattern a(v, _)";
+    qps::evaluator::Evaluator evaluator2 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query2{};
+    query2.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query2.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query2.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    query2.addVariable("s");
+    query2.addPattern(qps::query::Pattern{"a",
+                                          qps::query::EntRef::ofDeclaration("v"),
+                                          qps::query::ExpSpec::ofWildcard()});
+    std::list<std::string> result2 = evaluator2.evaluate(query2);
+    result2.sort();
+    printEvaluatorResult(result2);
+    REQUIRE(result2 == std::list<std::string>{"1", "2", "3", "4", "5", "6", "7"});
+
+    TEST_LOG << "assign a; Select a pattern a(_, _)";
+    qps::evaluator::Evaluator evaluator3 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query3{};
+    query3.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query3.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query3.addVariable("a");
+    query3.addPattern(qps::query::Pattern{"a",
+                                          qps::query::EntRef::ofWildcard(),
+                                          qps::query::ExpSpec::ofWildcard()});
+    std::list<std::string> result3 = evaluator3.evaluate(query3);
+    result3.sort();
+    printEvaluatorResult(result3);
+    REQUIRE(result3 == std::list<std::string>{ "2", "4", "5", "6"});
+
+    TEST_LOG << "assign a; Select a pattern a(_, _'number'_)";
+    qps::evaluator::Evaluator evaluator4 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query4{};
+    query4.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query4.addVariable("a");
+    query4.addPattern(qps::query::Pattern{"a",
+                                          qps::query::EntRef::ofWildcard(),
+                                          qps::query::ExpSpec::ofPartialMatch("number")});
+    std::list<std::string> result4 = evaluator4.evaluate(query4);
+    result4.sort();
+    printEvaluatorResult(result4);
+    REQUIRE(result4 == std::list<std::string>{ "4", "6"});
+
+    TEST_LOG << "assign a; Select a pattern a('x', _'number'_)  -- no result";
+    qps::evaluator::Evaluator evaluator5 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query5{};
+    query5.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query5.addVariable("a");
+    query5.addPattern(qps::query::Pattern{"a",
+                                          qps::query::EntRef::ofVarName("x"),
+                                          qps::query::ExpSpec::ofPartialMatch("number")});
+    std::list<std::string> result5 = evaluator5.evaluate(query5);
+    result5.sort();
+    printEvaluatorResult(result5);
+    REQUIRE(result5.empty());
+
+    TEST_LOG << "assign a; variable v; Select a pattern a('digit', _'number'_)  -- return all variable";
+    qps::evaluator::Evaluator evaluator6 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query6{};
+    query6.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query6.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    query6.addVariable("v");
+    query6.addPattern(qps::query::Pattern{"a",
+                                          qps::query::EntRef::ofVarName("digit"),
+                                          qps::query::ExpSpec::ofPartialMatch("number")});
+    std::list<std::string> result6 = evaluator6.evaluate(query6);
+    result6.sort();
+    printEvaluatorResult(result6);
+    REQUIRE(result6 == std::list<std::string>{"digit", "number", "sum"});
+
+    TEST_LOG << "assign a; stmt s; Select s such that Follows*(1, s) pattern a('sum', _) -- no shared synonyms";
+    qps::evaluator::Evaluator evaluator7 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query7{};
+    query7.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query7.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query7.addVariable("s");
+    std::shared_ptr<qps::query::FollowsT> ptr7 = std::make_shared<qps::query::FollowsT>();
+    ptr7->follower = qps::query::StmtRef::ofLineNo(1);
+    ptr7->transitiveFollowed = qps::query::StmtRef::ofDeclaration("s");
+    query7.addSuchthat(ptr7);
+    query7.addPattern(qps::query::Pattern{"a",
+                                          qps::query::EntRef::ofVarName("sum"),
+                                          qps::query::ExpSpec::ofWildcard()});
+    std::list<std::string> result7 = evaluator7.evaluate(query7);
+    result7.sort();
+    printEvaluatorResult(result7);
+    REQUIRE(result7 == std::list<std::string>{"2", "3", "7"});
+
+
+    TEST_LOG << "assign a; stmt s; Select s such that Parent(s, a) pattern a('digit', _)  --shared synonyms";
+    qps::evaluator::Evaluator evaluator8 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query8{};
+    query8.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query8.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query8.addVariable("s");
+    std::shared_ptr<qps::query::Parent> ptr8 = std::make_shared<qps::query::Parent>();
+    ptr8->parent = qps::query::StmtRef::ofDeclaration("s");
+    ptr8->child = qps::query::StmtRef::ofDeclaration("a");
+    query8.addSuchthat(ptr8);
+    query8.addPattern(qps::query::Pattern{"a",
+                                          qps::query::EntRef::ofVarName("digit"),
+                                          qps::query::ExpSpec::ofWildcard()});
+    std::list<std::string> result8 = evaluator8.evaluate(query8);
+    result8.sort();
+    printEvaluatorResult(result8);
+    REQUIRE(result8 == std::list<std::string>{"3"});
+}

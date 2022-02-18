@@ -82,16 +82,15 @@ namespace qps::evaluator {
             if (lhs.isDeclaration()) synonyms.push_back(lhs.getDeclaration());
             query::ExpSpec exp = pattern.getExpression();
 
-            std::optional<std::string> lhsParam = std::nullopt;
+            std::optional<std::string> lhsParam = {};
             if (lhs.isVarName()) lhsParam = lhs.getVariableName();
 
-            std::optional<std::string> rhsParam = std::nullopt;
-            if(!exp.isWildcard()) rhsParam = exp.getPattern();
+            std::optional<std::string> rhsParam = {};
+            if (exp.isPartialMatch()) rhsParam = exp.getPattern();
 
-            PKBResponse response;
-            // API call pkb->match(statementType, lhsParam, rhsParam);
+            PKBResponse response = pkb->match(statementType, lhsParam, rhsParam);
             if (!lhs.isDeclaration()) {
-                selectDeclaredValue(response, true);
+                response = selectDeclaredValue(response, true);
             }
             tableRef.join(response, synonyms);
         }
