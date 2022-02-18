@@ -1,23 +1,24 @@
 #include "PatternMatcher.h"
 
+namespace sp {
 struct ExprFlattener : public TreeWalker {
-    std::list<std::reference_wrapper<const AST::ASTNode>> nodes;
-    void visit(const AST::Var& node) override {
+    std::list<std::reference_wrapper<const sp::ast::ASTNode>> nodes;
+    void visit(const sp::ast::Var& node) override {
         nodes.emplace_back(node);
     };
-    void visit(const AST::Const& node) override {
+    void visit(const sp::ast::Const& node) override {
         nodes.emplace_back(node);
     };
-    void visit(const AST::BinExpr& node) override {
+    void visit(const sp::ast::BinExpr& node) override {
         nodes.emplace_back(node);
     };
-    void visit(const AST::RelExpr& node) override {
+    void visit(const sp::ast::RelExpr& node) override {
         nodes.emplace_back(node);
     };
-    void visit(const AST::CondBinExpr& node) override {
+    void visit(const sp::ast::CondBinExpr& node) override {
         nodes.emplace_back(node);
     };
-    void visit(const AST::NotCondExpr& node) override {
+    void visit(const sp::ast::NotCondExpr& node) override {
         nodes.emplace_back(node);
     };
 
@@ -25,7 +26,7 @@ struct ExprFlattener : public TreeWalker {
 
 
 // Helper method to flatten any expression tree to a list representation.
-std::list<std::reference_wrapper<const AST::ASTNode>> flatten(AST::Expr *root) {
+std::list<std::reference_wrapper<const sp::ast::ASTNode>> flatten(sp::ast::Expr *root) {
     auto flattener = std::make_shared<ExprFlattener>();
     root->accept(flattener);
     return flattener->nodes;
@@ -33,7 +34,7 @@ std::list<std::reference_wrapper<const AST::ASTNode>> flatten(AST::Expr *root) {
 
 
 // Checks and returns true if the needle list is a sublist of the haystack list.
-bool isSublist(std::list<std::reference_wrapper<const AST::ASTNode>> haystack, std::list<std::reference_wrapper<const AST::ASTNode>> needle) {
+bool isSublist(std::list<std::reference_wrapper<const sp::ast::ASTNode>> haystack, std::list<std::reference_wrapper<const sp::ast::ASTNode>> needle) {
     auto haystackIter = haystack.begin();
     auto needleIter = needle.begin();
 
@@ -58,8 +59,8 @@ private:
     PatternParam lhs, rhs;
     bool isStrict;  // Not in use yet.
 public:
-    std::list<std::reference_wrapper<const AST::Assign>> nodes;
-    bool isMatch(const AST::Assign& node) {
+    std::list<std::reference_wrapper<const sp::ast::Assign>> nodes;
+    bool isMatch(const sp::ast::Assign& node) {
         // === Check lHS constraint ===
         if (lhs != std::nullopt && node.getLHS()->getVarName() != lhs.value()) {
             return false;
@@ -75,8 +76,8 @@ public:
         // case 2: RHS is constrained
 
         // Parse RHS to AST expression.
-        auto tokens = SimpleParser::Lexer(rhs.value()).getTokens();
-        auto expr = SimpleParser::ExprParser::parse(tokens);
+        auto tokens = sp::parser::Lexer(rhs.value()).getTokens();
+        auto expr = sp::parser::ExprParser::parse(tokens);
 
         // Flatten the trees to lists by walking it in preorder.
         auto assignList = flatten(node.getRHS());
@@ -95,15 +96,16 @@ public:
      */
     AssignmentPatternExtractor(PatternParam lhs, PatternParam rhs, bool isStrict=false) : lhs(lhs), rhs(rhs), isStrict(isStrict) {};
 
-    void visit(const AST::Assign& node) override {
+    void visit(const sp::ast::Assign& node) override {
         if (isMatch(node)) {
             nodes.emplace_back(node);
         }
     };
 };
 
-AssignPatternReturn extractAssign(AST::ASTNode *root, PatternParam lhs, PatternParam rhs) {
+AssignPatternReturn extractAssign(sp::ast::ASTNode *root, PatternParam lhs, PatternParam rhs) {
     auto ape = std::make_shared<AssignmentPatternExtractor>(lhs, rhs);
     root->accept(ape);
     return ape->nodes;
 }
+}  // namespace sp

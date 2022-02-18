@@ -266,7 +266,7 @@ namespace ast {
         TEST_LOG << "Testing Assign Pattern matcher";
 
         // only support _ or string, treat synonyms as _.
-        auto extractAssignHelper = [](AST::ASTNode *ast, std::string s1, std::string s2){
+        auto extractAssignHelper = [](sp::ast::ASTNode *ast, std::string s1, std::string s2){
             auto field1 = s1 == "_" ? std::nullopt : std::make_optional<>(s1);
             auto field2 = s2 == "_" ? std::nullopt : std::make_optional<>(s2);
             return extractAssign(ast, field1, field2);
