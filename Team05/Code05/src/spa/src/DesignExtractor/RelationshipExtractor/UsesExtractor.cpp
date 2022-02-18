@@ -3,19 +3,20 @@
 
 #define DEBUG_LOG Logger(Level::DEBUG) << "UsesExtractor.cpp Extracted "
 
-void UsesExtractor::visit(const AST::Print& node) {
+namespace sp {
+void UsesExtractor::visit(const sp::ast::Print& node) {
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::Print}, &node);
 }
 
-void UsesExtractor::visit(const AST::Assign& node) {
+void UsesExtractor::visit(const sp::ast::Assign& node) {
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::Assignment}, node.getRHS());
 }
 
-void UsesExtractor::visit(const AST::While& node) {
+void UsesExtractor::visit(const sp::ast::While& node) {
     stmtNumToType[node.getStmtNo()] = StatementType::While;
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::While}, node.getCondExpr());
 }
-void UsesExtractor::visit(const AST::If& node) {
+void UsesExtractor::visit(const sp::ast::If& node) {
     stmtNumToType[node.getStmtNo()] = StatementType::If;
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::If}, node.getCondExpr());
 }
@@ -23,4 +24,4 @@ void UsesExtractor::visit(const AST::If& node) {
 void UsesExtractor::insert(Content a1, Content a2) {
     pkb->insertRelationship(PKBRelationship::USES, a1, a2);
 }
-
+}

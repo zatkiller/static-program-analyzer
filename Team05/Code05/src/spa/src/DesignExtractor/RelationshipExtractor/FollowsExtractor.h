@@ -2,6 +2,7 @@
 
 #include "StatementBucketTemplate.h"
 
+namespace sp {
 class FollowsExtractor : public StatementBucketTemplate {
 public:
     using StatementBucketTemplate::StatementBucketTemplate;
@@ -14,3 +15,4 @@ private:
         }
     };
 };
+}  // namespace sp

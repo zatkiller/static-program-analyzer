@@ -10,5 +10,5 @@ class SourceProcessor {
 public:
     SourceProcessor() {}
     bool processSimple(const std::string&, PKB*);
-    std::unique_ptr<AST::Program> parse(const std::string&);
+    std::unique_ptr<sp::ast::Program> parse(const std::string&);
 };

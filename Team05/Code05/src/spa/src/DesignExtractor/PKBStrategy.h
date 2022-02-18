@@ -3,6 +3,7 @@
 
 #include "PKB.h"
 
+namespace sp {
 /**
  * Interface for handling PKB insertions. There could be different strategy like NullPKBStrategy, TestPKBStrategy, ActualPKBStrategy
  */
@@ -55,3 +56,4 @@ public:
     void insertVariable(std::string) override;
     void insertRelationship(PKBRelationship, Content, Content) override;
 };
+}

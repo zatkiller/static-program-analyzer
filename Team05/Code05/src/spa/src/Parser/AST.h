@@ -7,10 +7,15 @@
 #include <variant>
 
 /**
+ * @namespace SP
+ * @brief Namespace to encapsulate the SP.
+ */
+namespace sp {
+/**
  * @namespace AST
  * @brief Namespace to encapsulate the AST.
  */
-namespace AST {
+namespace ast {
 
 struct ASTNodeVisitor;
 
@@ -627,4 +632,5 @@ StmtLst makeStmts(Ts &&... ts) {
     return StmtLst(lst);
 }
 
-}  // namespace AST
+}  // namespace ast
+}  // namespace sp

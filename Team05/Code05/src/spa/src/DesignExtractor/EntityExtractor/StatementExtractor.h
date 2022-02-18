@@ -1,11 +1,13 @@
 #include "DesignExtractor/Extractor.h"
 
+namespace sp {
 class StatementExtractor : public Extractor {
 public:
     using Extractor::Extractor;
-    void visit(const AST::Read&) override;
-    void visit(const AST::Print&) override;
-    void visit(const AST::While&) override;
-    void visit(const AST::If&) override;
-    void visit(const AST::Assign&) override;
+    void visit(const sp::ast::Read&) override;
+    void visit(const sp::ast::Print&) override;
+    void visit(const sp::ast::While&) override;
+    void visit(const sp::ast::If&) override;
+    void visit(const sp::ast::Assign&) override;
 };
+}

@@ -18,7 +18,7 @@
 
 #define TEST_LOG Logger() << "TestDesignExtractor.cpp "
 
-
+namespace sp {
 class TestPKBStrategy : public PKBStrategy {
 public:
     std::set<STMT_LO> statements;
@@ -86,7 +86,7 @@ TEST_CASE("TestPKBStrategy Test") {
     REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == relationships);
 }
 
-namespace AST {
+namespace ast {
     TEST_CASE("Design extractor Test") {
         TEST_LOG << "Testing Design Extractor";
         // Construct a simple AST;
@@ -260,5 +260,5 @@ namespace AST {
         }
     }
 
-}  // namespace AST
-
+}  // namespace ast
+}  // namespace sp

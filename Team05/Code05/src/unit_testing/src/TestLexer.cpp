@@ -6,7 +6,8 @@
 
 #define TEST_LOG Logger() << "TestLexer.cpp "
 
-namespace SimpleParser {
+namespace sp {
+namespace parser {
 
     /**
      * Ensures token structs and token type are correct.
@@ -94,4 +95,5 @@ namespace SimpleParser {
         }
     }
 
-}  // namespace SimpleParser
+}  // namespace parser
+}  // namespace sp

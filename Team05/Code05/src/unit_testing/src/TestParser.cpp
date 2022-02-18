@@ -6,62 +6,51 @@
 #include "Parser/Lexer.h"
 #include "Parser/Parser.h"
 
-namespace SimpleParser {
+namespace sp {
+namespace parser {
 
 TEST_CASE("Testing Parser") {
     SECTION("Unit testing") {
         std::deque<Token> tokens;
-        using AST::make;
-        std::unique_ptr<AST::ASTNode> ast, expected;
+        using ast::make;
+        std::unique_ptr<ast::ASTNode> ast, expected;
         lineCount = 1;  // resetting line count
 
         SECTION("ExprParser::parse") {
-            // single const
-            tokens = Lexer("5").getTokens();
-            ast = ExprParser::parse(tokens);
-            expected = make<AST::Const>(5);
-            REQUIRE(*ast == *expected);
-
-            // single var
-            tokens = Lexer("ooga").getTokens();
-            ast = ExprParser::parse(tokens);
-            expected = make<AST::Var>("ooga");
-            REQUIRE(*ast == *expected);
-
             // var only basic expression
             tokens = Lexer("ooga / booga").getTokens();
             ast = ExprParser::parse(tokens);
-            expected = make<AST::BinExpr>(
-                AST::BinOp::DIVIDE,
-                make<AST::Var>("ooga"),
-                make<AST::Var>("booga")
+            expected = make<ast::BinExpr>(
+                ast::BinOp::DIVIDE,
+                make<ast::Var>("ooga"),
+                make<ast::Var>("booga")
             );
             REQUIRE(*ast == *expected);
 
             // const only basic expression
             tokens = Lexer("17 * 42 / 5").getTokens();
             ast = ExprParser::parse(tokens);
-            expected = make<AST::BinExpr>(
-                AST::BinOp::DIVIDE,
-                make<AST::BinExpr>(
-                    AST::BinOp::MULT,
-                    make<AST::Const>(17),
-                    make<AST::Const>(42)
+            expected = make<ast::BinExpr>(
+                ast::BinOp::DIVIDE,
+                make<ast::BinExpr>(
+                    ast::BinOp::MULT,
+                    make<ast::Const>(17),
+                    make<ast::Const>(42)
                 ),
-                make<AST::Const>(5)
+                make<ast::Const>(5)
             );
             REQUIRE(*ast == *expected);
             
             // basic expression with var and const
             tokens = Lexer("ooga + 1 * booga").getTokens();
             ast = ExprParser::parse(tokens);
-            expected = make<AST::BinExpr>(
-                AST::BinOp::PLUS,
-                make<AST::Var>("ooga"),
-                make<AST::BinExpr>(
-                    AST::BinOp::MULT,
-                    make<AST::Const>(1),
-                    make<AST::Var>("booga")
+            expected = make<ast::BinExpr>(
+                ast::BinOp::PLUS,
+                make<ast::Var>("ooga"),
+                make<ast::BinExpr>(
+                    ast::BinOp::MULT,
+                    make<ast::Const>(1),
+                    make<ast::Var>("booga")
                 )
             );
             REQUIRE(*ast == *expected);
@@ -69,82 +58,82 @@ TEST_CASE("Testing Parser") {
             // basic expression nested in parenthesis
             tokens = Lexer("(((((ooga + 1)))))").getTokens();
             ast = ExprParser::parse(tokens);
-            expected = make<AST::BinExpr>(
-                AST::BinOp::PLUS,
-                make<AST::Var>("ooga"),
-                make<AST::Const>(1)
+            expected = make<ast::BinExpr>(
+                ast::BinOp::PLUS,
+                make<ast::Var>("ooga"),
+                make<ast::Const>(1)
             );
             REQUIRE(*ast == *expected);
 
             // Should be able to parse subexpressions without brackets
             tokens = Lexer("x + y * z - 12 % 7 - x + z * ooga / booga").getTokens();
-            expected = make<AST::BinExpr>(
-                AST::BinOp::PLUS,
-                make<AST::BinExpr>(
-                    AST::BinOp::MINUS,
-                    make<AST::BinExpr>(
-                        AST::BinOp::MINUS,
-                        make<AST::BinExpr>(
-                            AST::BinOp::PLUS,
-                            make<AST::Var>("x"),
-                            make<AST::BinExpr>(
-                                AST::BinOp::MULT,
-                                make<AST::Var>("y"),
-                                make<AST::Var>("z")
+            expected = make<ast::BinExpr>(
+                ast::BinOp::PLUS,
+                make<ast::BinExpr>(
+                    ast::BinOp::MINUS,
+                    make<ast::BinExpr>(
+                        ast::BinOp::MINUS,
+                        make<ast::BinExpr>(
+                            ast::BinOp::PLUS,
+                            make<ast::Var>("x"),
+                            make<ast::BinExpr>(
+                                ast::BinOp::MULT,
+                                make<ast::Var>("y"),
+                                make<ast::Var>("z")
                             )
                         ),
-                        make<AST::BinExpr>(
-                            AST::BinOp::MOD,
-                            make<AST::Const>(12),
-                            make<AST::Const>(7)
+                        make<ast::BinExpr>(
+                            ast::BinOp::MOD,
+                            make<ast::Const>(12),
+                            make<ast::Const>(7)
                         )
                     ),
-                    make<AST::Var>("x")
+                    make<ast::Var>("x")
                 ),
-                make<AST::BinExpr>(
-                    AST::BinOp::DIVIDE,
-                    make<AST::BinExpr>(
-                        AST::BinOp::MULT,
-                        make<AST::Var>("z"),
-                        make<AST::Var>("ooga")
+                make<ast::BinExpr>(
+                    ast::BinOp::DIVIDE,
+                    make<ast::BinExpr>(
+                        ast::BinOp::MULT,
+                        make<ast::Var>("z"),
+                        make<ast::Var>("ooga")
                     ),
-                    make<AST::Var>("booga")
+                    make<ast::Var>("booga")
                 )
             );
             // Should be able to parse many subexpressions with brackets
             tokens = Lexer("(x + y * z) - (12 % 7 - x) + (z * ooga / booga)").getTokens();
             ast = ExprParser::parse(tokens);
-            expected = make<AST::BinExpr>(
-                AST::BinOp::PLUS,
-                make<AST::BinExpr>(
-                    AST::BinOp::MINUS,
-                    make<AST::BinExpr>(
-                        AST::BinOp::PLUS,
-                        make<AST::Var>("x"),
-                        make<AST::BinExpr>(
-                            AST::BinOp::MULT,
-                            make<AST::Var>("y"),
-                            make<AST::Var>("z")
+            expected = make<ast::BinExpr>(
+                ast::BinOp::PLUS,
+                make<ast::BinExpr>(
+                    ast::BinOp::MINUS,
+                    make<ast::BinExpr>(
+                        ast::BinOp::PLUS,
+                        make<ast::Var>("x"),
+                        make<ast::BinExpr>(
+                            ast::BinOp::MULT,
+                            make<ast::Var>("y"),
+                            make<ast::Var>("z")
                         )
                     ),
-                    make<AST::BinExpr>(
-                        AST::BinOp::MINUS,
-                        make<AST::BinExpr>(
-                            AST::BinOp::MOD,
-                            make<AST::Const>(12),
-                            make<AST::Const>(7)
+                    make<ast::BinExpr>(
+                        ast::BinOp::MINUS,
+                        make<ast::BinExpr>(
+                            ast::BinOp::MOD,
+                            make<ast::Const>(12),
+                            make<ast::Const>(7)
                         ),
-                        make<AST::Var>("x")
+                        make<ast::Var>("x")
                     )
                 ),
-                make<AST::BinExpr>(
-                    AST::BinOp::DIVIDE,
-                    make<AST::BinExpr>(
-                        AST::BinOp::MULT,
-                        make<AST::Var>("z"),
-                        make<AST::Var>("ooga")
+                make<ast::BinExpr>(
+                    ast::BinOp::DIVIDE,
+                    make<ast::BinExpr>(
+                        ast::BinOp::MULT,
+                        make<ast::Var>("z"),
+                        make<ast::Var>("ooga")
                     ),
-                    make<AST::Var>("booga")
+                    make<ast::Var>("booga")
                 )
             );
 
@@ -152,29 +141,29 @@ TEST_CASE("Testing Parser") {
             REQUIRE(*ast == *expected);
             tokens = Lexer("4+x*2/(1-y)-6%8").getTokens();
             ast = ExprParser::parse(tokens);
-            expected = make<AST::BinExpr>(
-                AST::BinOp::MINUS,
-                make<AST::BinExpr>(
-                    AST::BinOp::PLUS,
-                    make<AST::Const>(4),
-                    make<AST::BinExpr>(
-                        AST::BinOp::DIVIDE,
-                        make<AST::BinExpr>(
-                            AST::BinOp::MULT,
-                            make<AST::Var>("x"),
-                            make<AST::Const>(2)
+            expected = make<ast::BinExpr>(
+                ast::BinOp::MINUS,
+                make<ast::BinExpr>(
+                    ast::BinOp::PLUS,
+                    make<ast::Const>(4),
+                    make<ast::BinExpr>(
+                        ast::BinOp::DIVIDE,
+                        make<ast::BinExpr>(
+                            ast::BinOp::MULT,
+                            make<ast::Var>("x"),
+                            make<ast::Const>(2)
                         ),
-                        make<AST::BinExpr>(
-                            AST::BinOp::MINUS,
-                            make<AST::Const>(1),
-                            make<AST::Var>("y")
+                        make<ast::BinExpr>(
+                            ast::BinOp::MINUS,
+                            make<ast::Const>(1),
+                            make<ast::Var>("y")
                         )
                     )
                 ),
-                make<AST::BinExpr>(
-                    AST::BinOp::MOD,
-                    make<AST::Const>(6),
-                    make<AST::Const>(8)
+                make<ast::BinExpr>(
+                    ast::BinOp::MOD,
+                    make<ast::Const>(6),
+                    make<ast::Const>(8)
                 )
             );
             REQUIRE(*ast == *expected);            
@@ -193,44 +182,59 @@ TEST_CASE("Testing Parser") {
         
         SECTION("CondExprParser::parse") {
             auto relExpr1 = []() {
-                return make<AST::RelExpr>(
-                    AST::RelOp::GT,
-                    make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("x"), make<AST::Const>(1)),
-                    make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("y"), make<AST::Const>(2))
+                return make<ast::RelExpr>(
+                    ast::RelOp::GT,
+                    make<ast::BinExpr>(ast::BinOp::PLUS, make<ast::Var>("x"), make<ast::Const>(1)),
+                    make<ast::BinExpr>(ast::BinOp::PLUS, make<ast::Var>("y"), make<ast::Const>(2))
                 );
             };
             auto relExpr2 = []() {
-                return make<AST::RelExpr>(
-                    AST::RelOp::GT,
-                    make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("z"), make<AST::Const>(1)),
-                    make<AST::BinExpr>(AST::BinOp::PLUS, make<AST::Var>("t"), make<AST::Const>(2))
+                return make<ast::RelExpr>(
+                    ast::RelOp::GT,
+                    make<ast::BinExpr>(ast::BinOp::PLUS, make<ast::Var>("z"), make<ast::Const>(1)),
+                    make<ast::BinExpr>(ast::BinOp::PLUS, make<ast::Var>("t"), make<ast::Const>(2))
                 );
             };
+            // parse basic rel expression
+            tokens = Lexer("x > y").getTokens();
+            ast = CondExprParser::parse(tokens);
+            expected = make<ast::RelExpr>(
+                ast::RelOp::GT,
+                make<ast::Var>("x"),
+                make<ast::Var>("y")
+            );
+            REQUIRE(*ast == *expected);
 
+
+            // nested cond expression with &&
             tokens = Lexer("((x+1)>(y+2))&&((z+1)>(t+2))").getTokens();
-            std::unique_ptr<AST::CondExpr> ast = CondExprParser::parse(tokens);
-            std::unique_ptr<AST::CondExpr> expected = make<AST::CondBinExpr>(
-                AST::CondOp::AND,
+            std::unique_ptr<ast::CondExpr> ast = CondExprParser::parse(tokens);
+            std::unique_ptr<ast::CondExpr> expected = make<ast::CondBinExpr>(
+                ast::CondOp::AND,
                 relExpr1(),
                 relExpr2()
             );
             REQUIRE(*ast == *expected);
 
+            // nested cond expression with ||
             tokens = Lexer("((x+1)>(y+2))||((z+1)>(t+2))").getTokens();
             ast = CondExprParser::parse(tokens);
-            expected = make<AST::CondBinExpr>(
-                AST::CondOp::OR,
+            expected = make<ast::CondBinExpr>(
+                ast::CondOp::OR,
                 relExpr1(),
                 relExpr2()
             );
             REQUIRE(*ast == *expected);
 
+            // nested cond expression with !
             tokens = Lexer("!((x+1)>(y+2))").getTokens();
             ast = CondExprParser::parse(tokens);
-            expected = std::make_unique<AST::NotCondExpr>(
+            expected = std::make_unique<ast::NotCondExpr>(
                 relExpr1()
             );
             REQUIRE(*ast == *expected);
+
+            // 
         }
 
         SECTION("StmtLstParser::parse") {
@@ -241,10 +245,10 @@ TEST_CASE("Testing Parser") {
             )").getTokens();
 
             auto stmtlst = StmtLstParser::parse(tokens);
-            auto expectedStmtlst = AST::makeStmts(
-                make<AST::Read>(1, make<AST::Var>("v1")),
-                make<AST::Print>(2, make<AST::Var>("v1")),
-                make<AST::Assign>(3, make<AST::Var>("v2"), make<AST::Var>("v1"))
+            auto expectedStmtlst = ast::makeStmts(
+                make<ast::Read>(1, make<ast::Var>("v1")),
+                make<ast::Print>(2, make<ast::Var>("v1")),
+                make<ast::Assign>(3, make<ast::Var>("v2"), make<ast::Var>("v1"))
             );
             REQUIRE(stmtlst == expectedStmtlst);
         }
@@ -260,13 +264,13 @@ TEST_CASE("Testing Parser") {
 
             ast = parseProcedure(tokens);
             auto genStmtlst = []() {
-                return AST::makeStmts(
-                    make<AST::Read>(1, make<AST::Var>("v1")),
-                    make<AST::Print>(2, make<AST::Var>("v1")),
-                    make<AST::Assign>(3, make<AST::Var>("v2"), make<AST::Var>("v1"))
+                return ast::makeStmts(
+                    make<ast::Read>(1, make<ast::Var>("v1")),
+                    make<ast::Print>(2, make<ast::Var>("v1")),
+                    make<ast::Assign>(3, make<ast::Var>("v2"), make<ast::Var>("v1"))
                 );
             };
-            expected = make<AST::Procedure>(
+            expected = make<ast::Procedure>(
                 "main",
                 genStmtlst()
             );
@@ -286,13 +290,13 @@ TEST_CASE("Testing Parser") {
             ast = parseProgram(tokens);
 
             auto genStmtlst = []() {
-                return AST::makeStmts(
-                    make<AST::Read>(1, make<AST::Var>("v1")),
-                    make<AST::Print>(2, make<AST::Var>("v1")),
-                    make<AST::Assign>(3, make<AST::Var>("v2"), make<AST::Var>("v1"))
+                return ast::makeStmts(
+                    make<ast::Read>(1, make<ast::Var>("v1")),
+                    make<ast::Print>(2, make<ast::Var>("v1")),
+                    make<ast::Assign>(3, make<ast::Var>("v2"), make<ast::Var>("v1"))
                 );
             };
-            expected = std::make_unique<AST::Program>(make<AST::Procedure>(
+            expected = std::make_unique<ast::Program>(make<ast::Procedure>(
                 "main",
                 genStmtlst()
             ));
@@ -368,5 +372,5 @@ TEST_CASE("Testing Parser") {
     }    
 }
 
-}  // namespace SimpleParser
-
+}  // namespace parser
+}  // namespace sp
