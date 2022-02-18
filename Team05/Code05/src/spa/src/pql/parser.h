@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_set>
 
 #include "exceptions.h"
 #include "pql/query.h"
@@ -161,6 +162,8 @@ struct Parser {
     std::shared_ptr<RelRef> parseRelRef(Query &query);
 
 
+    bool isValidStatementType(Query &query, StmtRef s);
+
     /*
      * Returns a shared pointer containg a pointer of type T, representing the relationship being parsed
      *
@@ -181,7 +184,7 @@ struct Parser {
 
         StmtRef s1 = parseStmtRef(query);
 
-        if (s1.isDeclaration() && query.getDeclarationDesignEntity(s1.getDeclaration()) != DesignEntity::STMT)
+        if (!isValidStatementType(query,s1))
             throw exceptions::PqlSemanticException(messages::qps::parser::notStatementSynonymMessage);
 
         ptr.get()->*f1 = s1;
@@ -193,7 +196,7 @@ struct Parser {
 
         StmtRef s2 = parseStmtRef(query);
 
-        if (s2.isDeclaration() && query.getDeclarationDesignEntity(s2.getDeclaration()) != DesignEntity::STMT)
+        if (!isValidStatementType(query, s2))
             throw exceptions::PqlSemanticException(messages::qps::parser::notStatementSynonymMessage);
 
         ptr.get()->*f2 = s2;
