@@ -22,7 +22,6 @@ struct ExprFlattener : public TreeWalker {
     void visit(const ast::NotCondExpr& node) override {
         nodes.emplace_back(node);
     };
-
 };
 
 
@@ -31,11 +30,14 @@ std::list<std::reference_wrapper<const ast::ASTNode>> flatten(ast::Expr *root) {
     auto flattener = std::make_shared<ExprFlattener>();
     root->accept(flattener);
     return flattener->nodes;
-};
+}
 
 
 // Checks and returns true if the needle list is a sublist of the haystack list.
-bool isSublist(std::list<std::reference_wrapper<const ast::ASTNode>> haystack, std::list<std::reference_wrapper<const ast::ASTNode>> needle) {
+bool isSublist(
+    std::list<std::reference_wrapper<const ast::ASTNode>> haystack,
+    std::list<std::reference_wrapper<const ast::ASTNode>> needle
+    ) {
     auto haystackIter = haystack.begin();
     auto needleIter = needle.begin();
 
@@ -59,6 +61,7 @@ class AssignmentPatternExtractor : public TreeWalker {
 private:
     PatternParam lhs, rhs;
     bool isStrict;  // Not in use yet.
+
 public:
     std::list<std::reference_wrapper<const ast::Assign>> nodes;
     bool isMatch(const ast::Assign& node) {
@@ -95,7 +98,10 @@ public:
      * @param rhs Optional constraint for the right hand side of assignment. Give nullopt if wildcard or declaration.
      * @param isStrict Deteremines if the matching is strict. If it's strict, exact match is expected. Defaults to false.
      */
-    AssignmentPatternExtractor(PatternParam lhs, PatternParam rhs, bool isStrict=false) : lhs(lhs), rhs(rhs), isStrict(isStrict) {};
+    AssignmentPatternExtractor(PatternParam lhs, PatternParam rhs, bool isStrict = false) : 
+        lhs(lhs),
+        rhs(rhs), 
+        isStrict(isStrict) {}
 
     void visit(const ast::Assign& node) override {
         if (isMatch(node)) {

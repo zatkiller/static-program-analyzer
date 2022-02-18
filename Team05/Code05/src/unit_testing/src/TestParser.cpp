@@ -177,7 +177,6 @@ TEST_CASE("Testing Parser") {
             auto ast3 = expr_parser::parse(tokens);
             REQUIRE(*ast1 == *ast2);
             REQUIRE(!(*ast1 == *ast3));
-
         }
         
         SECTION("CondExprParser::parse") {
@@ -508,7 +507,7 @@ TEST_CASE("Testing Parser") {
         REQUIRE(parse(fail) == nullptr);
 
         // Corrected program
-        lineCount = 1; // reset lineCount
+        lineCount = 1;  // reset lineCount
         std::string correct = R"(
             procedure a {
                 while (c != b) {
@@ -536,7 +535,7 @@ TEST_CASE("Testing Parser") {
         REQUIRE(*parse(correct) == *parsedCorrect);
 
         // Program with incorrect parenthesis
-        lineCount = 1; // reset lineCount
+        lineCount = 1;  // reset lineCount
         std::string fail2 = R"(procedure a {
             while (!(c == 1))) {
                 read c;
@@ -545,7 +544,7 @@ TEST_CASE("Testing Parser") {
         REQUIRE(parse(fail2) == nullptr);
         
         // corrected program
-        lineCount = 1; // reset lineCount
+        lineCount = 1;  // reset lineCount
         std::string correct2 = R"(procedure a {
             while (!(c == 1)) {
                 read c;
@@ -571,13 +570,13 @@ TEST_CASE("Testing Parser") {
         REQUIRE(*parse(correct2) == *parsedCorrect2);
 
         // program with invalid variable names
-        lineCount = 1; // reset lineCount
+        lineCount = 1;  // reset lineCount
         std::string fail3 = R"(procedure 1a {
             1x = 1y + 1z;
         })";
         REQUIRE(parse(fail3) == nullptr);
 
-        lineCount = 1; // reset lineCount
+        lineCount = 1;  // reset lineCount
         std::string testCode = R"(procedure computeAverage {
             read num1;
             read num2;
@@ -619,7 +618,7 @@ TEST_CASE("Testing Parser") {
         );
         REQUIRE(*parse(testCode) == *parsedTestCode);
 
-        lineCount = 1; // reset lineCount
+        lineCount = 1;  // reset lineCount
         std::string testCode2 = R"(procedure printAscending {
             read num1;
             read num2;

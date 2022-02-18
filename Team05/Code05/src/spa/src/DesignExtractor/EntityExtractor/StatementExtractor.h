@@ -11,5 +11,5 @@ public:
     void visit(const ast::If&) override;
     void visit(const ast::Assign&) override;
 };
-}  // namepsace design_extractor
-}  // namepsace sp
+}  // namespace design_extractor
+}  // namespace sp

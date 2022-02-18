@@ -267,8 +267,7 @@ namespace ast {
                 };
                 REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENT] == expected);
             }
-        }
-    
+        }    
     }
 
     TEST_CASE("Pattern matcher test") {
