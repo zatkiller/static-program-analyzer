@@ -301,6 +301,7 @@ namespace qps::parser {
     Query Parser::parsePql(std::string query) {
         addPql(query);
         Query queryObj;
+        queryObj.setValid(true);
 
         try {
             for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::END_OF_FILE;
