@@ -1,6 +1,7 @@
 #include "pql/query.h"
 #include "catch.hpp"
 
+#include "exceptions.h"
 
 using qps::query::Query;
 using qps::query::StmtRef;
@@ -129,4 +130,14 @@ TEST_CASE("Query") {
     REQUIRE(query.getPattern()[0] == p);
 
     REQUIRE(query.getDeclarationDesignEntity("a") == DesignEntity::STMT);
+}
+
+TEST_CASE("Query getDeclarationDesignEntity") {
+    Query query {};
+    query.addDeclaration("a", DesignEntity::ASSIGN);
+
+    REQUIRE(query.getDeclarationDesignEntity("a") == DesignEntity::ASSIGN);
+    REQUIRE_THROWS_MATCHES(query.getDeclarationDesignEntity("b") ,
+                           exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
 }

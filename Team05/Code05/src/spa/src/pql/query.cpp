@@ -34,6 +34,9 @@ namespace qps::query {
     }
 
     DesignEntity Query::getDeclarationDesignEntity(std::string name) {
+        if (declarations.count(name) == 0)
+            throw exceptions::PqlSyntaxException(messages::qps::parser::declarationDoesNotExistMessage);
+
         return declarations.find(name)->second;
     }
 
