@@ -16,7 +16,8 @@ bool ParentRelationshipTable::isInsertOrContainsValid(PKBField field1, PKBField 
 
 bool ParentRelationshipTable::contains(PKBField field1, PKBField field2) {
     if (!isInsertOrContainsValid(field1, field2)) {
-        throw "Only concrete statements are allowed!";
+        Logger(Level::ERROR) << "Only concrete statements can be inserted into the Parent table!";
+        return false;
     } 
     
     return this->parentGraph->getContains(field1, field2);
@@ -24,7 +25,8 @@ bool ParentRelationshipTable::contains(PKBField field1, PKBField field2) {
 
 void ParentRelationshipTable::insert(PKBField field1, PKBField field2) {
     if (!isInsertOrContainsValid(field1, field2)) {
-        throw "Only concrete statements can be inserted into the Parent table!";
+        Logger(Level::ERROR) << "Only concrete statements can be inserted into the Parent table!";
+        return;
     }
 
     STMT_LO first = *(field1.getContent<STMT_LO>());

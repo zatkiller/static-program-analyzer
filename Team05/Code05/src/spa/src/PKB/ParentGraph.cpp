@@ -10,13 +10,13 @@ void ParentGraph::addEdge(STMT_LO u, STMT_LO v) {
     }
 
     // First stmt has to be a container statement
-    if (u.type.value() != StatementType::If || u.type.value() != StatementType::While) {
+    if (u.type.value() != StatementType::If && u.type.value() != StatementType::While) {
         return;
     }
 
     // Filter nodes whose statement numbers are the same as inputs
     std::map<STMT_LO, ParentNode*> filtered;
-    std::copy_if(nodes.begin(), nodes.end(), std::back_inserter(filtered),
+    std::copy_if(nodes.begin(), nodes.end(), std::inserter(filtered, filtered.end()),
         [u, v](decltype(nodes)::value_type const& pair) {
             return pair.first.statementNum == u.statementNum ||
                 pair.first.statementNum == v.statementNum;
@@ -80,7 +80,7 @@ bool ParentGraph::getContains(PKBField field1, PKBField field2) {
         ParentNode::NodeSet nextNodes = curr->next;
         ParentNode::NodeSet filtered;
         std::copy_if(nextNodes.begin(), nextNodes.end(),
-            std::back_inserter(filtered), [child](ParentNode* node) {
+            std::back_inserter(filtered), [child](ParentNode* const& node) {
                 return node->stmt == child;
             });
         return (filtered.size() == 1);
@@ -114,17 +114,23 @@ bool ParentGraph::getContainsT(PKBField field1, PKBField field2) {
 }
 
 Result ParentGraph::getParent(PKBField field1, PKBField field2) {
-    bool isConcreteFirst = field1.isValidConcrete(PKBEntityType::STATEMENT);
-    bool isConcreteSec = field2.isValidConcrete(PKBEntityType::STATEMENT);
+    bool isConcreteFirst = field1.fieldType == PKBFieldType::CONCRETE;
+    bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
 
     if (isConcreteFirst && isConcreteSec) {
         return this->getContains(field1, field2) 
             ? Result{ {{field1, field2}} } 
             : Result{};
+
     } else if (isConcreteFirst && !isConcreteSec) {
-        STMT_LO target = *field2.getContent<STMT_LO>();
-        StatementType targetType = target.type.value_or(StatementType::All);
+        STMT_LO target = *(field1.getContent<STMT_LO>());
         Result res{};
+
+        if (!target.type.has_value() && !field1.statementType.has_value()) {
+            return res;
+        }
+
+        StatementType targetType = field2.statementType.value();
 
         if (nodes.count(target) != 0) {
             ParentNode* curr = nodes.at(target);
@@ -133,7 +139,7 @@ Result ParentGraph::getParent(PKBField field1, PKBField field2) {
                 ParentNode::NodeSet nextNodes = curr->next;
                 ParentNode::NodeSet filtered;
                 std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
-                    [targetType](ParentNode *node) {
+                    [targetType](ParentNode* const& node) {
                         return (node->stmt.type.value() == targetType || targetType == StatementType::All);
                     });
                 for (ParentNode *node : filtered) {
@@ -146,30 +152,30 @@ Result ParentGraph::getParent(PKBField field1, PKBField field2) {
             }
         }
         return res;
+
     } else if (!isConcreteFirst && isConcreteSec) {
-        STMT_LO target = *field1.getContent<STMT_LO>();
-        StatementType targetType = target.type.value_or(StatementType::All);
+        STMT_LO target = *(field2.getContent<STMT_LO>());
         Result res{};
+
+        if (!target.type.has_value() && !field2.statementType.has_value()) {
+            return res;
+        }
+
+        StatementType targetType = field1.statementType.value();
 
         if (nodes.count(target) != 0) {
             ParentNode* curr = nodes.at(target);
 
-            if (!curr->next.empty()) {
-                ParentNode::NodeSet nextNodes = curr->next;
-                ParentNode::NodeSet filtered;
-                std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
-                    [targetType](ParentNode* node) {
-                        return (node->stmt.type.value() == targetType || targetType == StatementType::All);
-                    });
-                for (ParentNode* node : filtered) {
-                    std::vector<PKBField> temp;
-                    PKBField first = PKBField::createConcrete(Content{ node->stmt });
-                    temp.push_back(first);
-                    temp.push_back(field2);
-                    res.insert(temp);
+            if (curr->prev != nullptr) {
+                STMT_LO prevStmt = curr->prev->stmt;
+                if (prevStmt.type.value() == targetType || targetType == StatementType::All) {
+                    PKBField first = PKBField::createConcrete(Content{ prevStmt });
+                    res.insert(std::vector<PKBField>{first, field2});
                 }
             }
         }
+        return res;
+
     } else {
         return this->traverseAll(field1.statementType.value(), field2.statementType.value());
     }
@@ -203,8 +209,8 @@ Result ParentGraph::traverseStartT(PKBField field1, PKBField field2) {
     }
 
     if (!found.empty()) {
-        std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, std::next(res.begin())),
-            [field1](STMT_LO stmt) {
+        std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, res.end()),
+            [field1](STMT_LO const& stmt) {
                 PKBField second = PKBField::createConcrete(Content{ stmt });
                 return std::vector<PKBField>{field1, second};
             });
@@ -239,8 +245,8 @@ Result ParentGraph::traverseEndT(PKBField field1, PKBField field2) {
     }
 
     if (!found.empty()) {
-        std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, std::next(res.begin())),
-            [field2](STMT_LO stmt) {
+        std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, res.end()),
+            [field2](STMT_LO const& stmt) {
                 PKBField first = PKBField::createConcrete(Content{ stmt });
                 return std::vector<PKBField>{first, field2};
             });
@@ -249,7 +255,7 @@ Result ParentGraph::traverseEndT(PKBField field1, PKBField field2) {
     return res;
 }
 
-Result ParentGraph::traverseEndT(std::set<STMT_LO>* found, ParentNode* node, StatementType targetType) {
+void ParentGraph::traverseEndT(std::set<STMT_LO>* found, ParentNode* node, StatementType targetType) {
     while (node->prev) {
         bool typeMatch = node->prev->stmt.type.value() == targetType || targetType == StatementType::All;
         if (typeMatch) {
@@ -272,8 +278,8 @@ Result ParentGraph::traverseAllT(StatementType type1, StatementType type2) {
             traverseStartT(&found, node, type2);
         }
 
-        std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, std::next(res.begin())), 
-            [curr](STMT_LO stmt) {
+        std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, res.end()), 
+            [curr](STMT_LO const& stmt) {
                 PKBField first = PKBField::createConcrete(Content{ curr->stmt });
                 PKBField second = PKBField::createConcrete(Content{ stmt });
                 return std::vector<PKBField>{first, second};
@@ -295,13 +301,13 @@ Result ParentGraph::traverseAll(StatementType type1, StatementType type2) {
             // Filter nodes that match second statement type
             ParentNode::NodeSet filtered;
             std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
-                [type2](ParentNode* node) {
+                [type2](ParentNode* const& node) {
                     return node->stmt.type.value() == type2 || type2 == StatementType::All;
                 });
 
             // Populate result
-            std::transform(filtered.begin(), filtered.end(), std::insert_iterator<Result>(res, std::next(res.begin())),
-                [curr](ParentNode* node) {
+            std::transform(filtered.begin(), filtered.end(), std::insert_iterator<Result>(res, res.end()),
+                [curr](ParentNode* const& node) {
                     PKBField first = PKBField::createConcrete(Content{ curr->stmt });
                     PKBField second = PKBField::createConcrete(Content{ node->stmt });
                     return std::vector<PKBField>{first, second};

@@ -33,7 +33,7 @@ private:
     Result traverseStartT(PKBField field1, PKBField field2);
     void traverseStartT(std::set<STMT_LO>* found, ParentNode* node, StatementType targetType);
     Result traverseEndT(PKBField field1, PKBField field2);
-    Result traverseEndT(std::set<STMT_LO>* found, ParentNode* node, StatementType targetType);
+    void traverseEndT(std::set<STMT_LO>* found, ParentNode* node, StatementType targetType);
     Result traverseAllT(StatementType field1, StatementType field2);
     Result traverseAll(StatementType type1, StatementType type2);
 };
