@@ -383,6 +383,16 @@ TEST_CASE("PKB sample source program test") {
             PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ true,
             FieldRowResponse{ {stmt4, monke} } });
 
+        // Modifies(_, p) invalid parameter
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createDeclaration(PKBEntityType::PROCEDURE), PKBRelationship::MODIFIES) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
+        // Modifies(v, _) invalid parameter
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::VARIABLE),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::MODIFIES) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
         // Uses(_, _) 
         REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
             PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::USES) == PKBResponse{ false,
@@ -451,6 +461,16 @@ TEST_CASE("PKB sample source program test") {
             FieldRowResponse{ {stmt6, x}, {stmt8, x}, {stmt9, z}, {stmt9, x}, {stmt10, z}, {stmt10, x},
             {stmt10, i}, {stmt11, i} } });
 
+        // Uses(_, p) invalid parameter
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createDeclaration(PKBEntityType::PROCEDURE), PKBRelationship::USES) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
+        // Uses(v, _) invalid parameter
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::VARIABLE),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::USES) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
         // Parent(_, _)
         REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
             PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::PARENT) == PKBResponse{ true,
@@ -503,23 +523,54 @@ TEST_CASE("PKB sample source program test") {
             PKBField::createConcrete(STMT_LO{ 6 }), PKBRelationship::PARENT) == PKBResponse{ true,
             FieldRowResponse{ {stmt5, stmt6} } });
 
-        // ParentT(_, _)
+        // Parent*(_, _)
         REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
             PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::PARENTT) == PKBResponse{ true,
             FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt5, stmt8}, {stmt5, stmt9}, {stmt7, stmt8},
             {stmt7, stmt9}, {stmt5, stmt10}, {stmt5, stmt11}} });
 
-        // ParentT(5, _)
+        // Parent*(5, _)
         REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
             PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::PARENTT) == PKBResponse{ true,
             FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt5, stmt8}, {stmt5, stmt9},
             {stmt5, stmt10}, {stmt5, stmt11}} });
 
-        // ParentT(5, a)
+        // Parent*(5, a)
         REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
             PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::PARENTT) == PKBResponse{ true,
             FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt8}, {stmt5, stmt9},
             {stmt5, stmt10}, {stmt5, stmt11}} });
+
+        // Parent*(5, a)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5, StatementType::All }),
+            PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::PARENTT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt8}, {stmt5, stmt9},
+            {stmt5, stmt10}, {stmt5, stmt11}} });
+
+        // Parent*(5, i)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5, StatementType::All }),
+            PKBField::createDeclaration(StatementType::If), PKBRelationship::PARENTT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt7} } });
+
+        // Parent*(5, 5)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5, StatementType::All }),
+            PKBField::createConcrete(STMT_LO{ 5, StatementType::All }), PKBRelationship::PARENTT) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
+        // Parent*(5, 8)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5, StatementType::All }),
+            PKBField::createConcrete(STMT_LO{ 8, StatementType::All }), PKBRelationship::PARENTT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt8} } });
+
+        // Parents*(p, _) invalid parameter
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(PKBEntityType::PROCEDURE),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::PARENTT) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
+        // Parents*(_, v) invalid parameter
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createDeclaration(PKBEntityType::VARIABLE), PKBRelationship::PARENTT) == PKBResponse{ false,
+            FieldRowResponse{ } });
     }
 }
 

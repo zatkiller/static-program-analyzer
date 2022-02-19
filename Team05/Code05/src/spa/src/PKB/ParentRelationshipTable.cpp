@@ -39,7 +39,7 @@ FieldRowResponse ParentRelationshipTable::retrieve(PKBField field1, PKBField fie
     // Check both fields are statement types
     if (!isRetrieveValid(field1, field2)) {
         Logger(Level::ERROR) <<
-            "Only concrete fields and STATEMENT entity types can be retrieved from ParentRelationshipTable";
+            "Only STATEMENT entity types can be retrieved from ParentRelationshipTable";
         
         return FieldRowResponse{};
     }
@@ -75,6 +75,14 @@ bool ParentRelationshipTable::containsT(PKBField field1, PKBField field2) {
 }
 
  FieldRowResponse ParentRelationshipTable::retrieveT(PKBField field1, PKBField field2) {
+     // Check both fields are statement types
+     if (!isRetrieveValid(field1, field2)) {
+         Logger(Level::ERROR) <<
+             "Only STATEMENT entity types can be retrieved from ParentRelationshipTable";
+
+         return FieldRowResponse{};
+     }
+
      // Treat all wildcards as declarations
      if (field1.fieldType == PKBFieldType::WILDCARD) {
          field1.fieldType = PKBFieldType::DECLARATION;
