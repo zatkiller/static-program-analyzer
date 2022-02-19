@@ -276,7 +276,7 @@ namespace qps::parser {
         getAndCheckNextToken(TokenType::OPENING_PARAN);
         EntRef e = parseEntRef(queryObj);
 
-        if (queryObj.getDeclarationDesignEntity(e.getDeclaration()) != DesignEntity::VARIABLE)
+        if (e.isDeclaration() && queryObj.getDeclarationDesignEntity(e.getDeclaration()) != DesignEntity::VARIABLE)
             throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
 
         p.lhs = e;
