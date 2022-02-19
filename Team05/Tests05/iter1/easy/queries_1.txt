@@ -1,0 +1,47 @@
+1 - select all statement
+stmt s;
+Select s
+1,2,3,4
+5000
+2 - select all read
+read r;
+Select r
+1
+5000
+3 - select all print
+print pn;
+Select pn;
+4
+5000
+4 - select all while
+while w;
+Select w
+none
+5000
+5 - select all if
+if ifs;
+Select ifs
+none
+5000
+6 - select all assign
+assign a;
+Select a
+2, 3
+5000
+7 - select all variable
+variable v;
+Select v
+x, y
+5000
+8 - select all constant
+constant c;
+Select c
+1, 2, 3
+5000
+9 - select all constant
+constant c;
+Select c
+1, 2, 3
+5000
+
+
