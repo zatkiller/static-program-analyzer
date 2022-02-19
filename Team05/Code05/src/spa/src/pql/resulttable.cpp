@@ -40,7 +40,7 @@ namespace qps::evaluator {
 
 
     void ResultTable::crossJoin(PKBResponse r) {
-        if (table.empty()) {
+        if (table.empty() && synSequenceMap.empty()) {
             insert(r);
             return;
         }

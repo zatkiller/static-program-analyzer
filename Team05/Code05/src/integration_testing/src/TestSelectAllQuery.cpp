@@ -116,6 +116,25 @@ TEST_CASE("Test evaluate select s") {
     REQUIRE(result == expected);
 }
 
+TEST_CASE("Test evaluate select c") {
+    qps::query::Query q = qps::query::Query();
+    q.addDeclaration("c", qps::query::DesignEntity::CONSTANT);
+
+    q.addVariable("c");
+
+    PKB pkb = PKB();
+    PKB* ptr = &pkb;
+    pkb.insertConstant(4);
+    pkb.insertConstant(56);
+    qps::evaluator::Evaluator evaluator = qps::evaluator::Evaluator(ptr);
+
+    std::list<std::string> result = evaluator.evaluate(q);
+    result.sort();
+    std::list<std::string> expected{"4", "56"};
+    expected.sort();
+    REQUIRE(result == expected);
+}
+
 TEST_CASE("Test evaluate select a") {
     qps::query::Query q = qps::query::Query();
     q.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
