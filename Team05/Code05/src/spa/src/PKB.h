@@ -50,7 +50,7 @@ public:
     /**
     * Inserts a constant into the PKB.
     *
-    * @param constnat
+    * @param constant
     */
     void insertConstant(int constant);
 
