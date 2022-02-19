@@ -27,7 +27,7 @@ namespace qps::evaluator {
             case query::DesignEntity::VARIABLE: return pkb->getVariables();
             case query::DesignEntity::STMT: return pkb->getStatements();
             default:
-                StatementType sType = ClauseHandler::getStatementType(type);
+                StatementType sType = PKBTypeMatcher::getStatementType(type);
                 return pkb->getStatements(sType);
         }
     }
@@ -45,7 +45,6 @@ namespace qps::evaluator {
         }
     }
 
-
     std::list<std::string> Evaluator::getListOfResult(ResultTable &table, std::string variable) {
         std::list<std::string> listResult{};
         if (table.getResult().empty()) {
@@ -53,8 +52,12 @@ namespace qps::evaluator {
         }
         int synPos = table.getSynLocation(variable);
         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> resultTable = table.getResult();
+        std::unordered_set<std::string> resultSet;
         for (auto field : resultTable) {
-            listResult.push_back(PKBFieldToString(field[synPos]));
+            if (resultSet.find(PKBFieldToString(field[synPos])) == resultSet.end()) {
+                listResult.push_back(PKBFieldToString(field[synPos]));
+                resultSet.insert(PKBFieldToString(field[synPos]));
+            }
         }
 
         return listResult;
@@ -66,25 +69,28 @@ namespace qps::evaluator {
         std::vector<std::shared_ptr<query::RelRef>> suchthat = query.getSuchthat();
         std::vector<std::shared_ptr<query::RelRef>> noSyn;
         std::vector<std::shared_ptr<query::RelRef>> hasSyn;
-        std::vector<query::Pattern> pattern = query.getPattern();
+        std::vector<query::Pattern> patterns = query.getPattern();
 
         query::DesignEntity returnType = query.getDeclarationDesignEntity(variable[0]);
-        ResultTable resultTable;
         ResultTable &tableRef = resultTable;
         query::Query &queryRef = query;
+        ClauseHandler handler = ClauseHandler(pkb, tableRef, queryRef);
 
         if (!suchthat.empty()) {
             processSuchthat(suchthat, noSyn, hasSyn);
-            ClauseHandler handler = ClauseHandler(pkb, tableRef, queryRef);
             if (!handler.handleNoSynClauses(noSyn)) return std::list<std::string>{};
             handler.handleSynClauses(hasSyn);
         }
 
+        if (!patterns.empty()) {
+            handler.handlePatterns(patterns);
+        }
+
         // After process suchthat and pattern if select variable not in result table, add all
-        if (suchthat.empty() && pattern.empty() || !tableRef.synExists(variable[0])) {
+        if ((suchthat.empty() && patterns.empty()) || !tableRef.synExists(variable[0])) {
             PKBResponse queryResult = getAll(returnType);
             std::vector<std::string> synonyms{variable[0]};
-            tableRef.join(queryResult, synonyms);
+            resultTable.join(queryResult, synonyms);
         }
 
         return getListOfResult(tableRef, variable[0]);

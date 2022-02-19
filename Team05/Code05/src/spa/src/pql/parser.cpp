@@ -215,34 +215,39 @@ namespace qps::parser {
         throw exceptions::PqlSyntaxException(messages::qps::parser::invalidRelRefMessage);
     }
 
+    bool Parser::isValidStatementType(Query &query, StmtRef s) {
+        std::unordered_set<DesignEntity> statementsType{
+            DesignEntity::STMT, DesignEntity::ASSIGN,
+            DesignEntity::WHILE, DesignEntity::IF,
+            DesignEntity::PRINT, DesignEntity::READ, DesignEntity::CALL};
+        if (s.isDeclaration()) {
+            DesignEntity d = query.getDeclarationDesignEntity(s.getDeclaration());
+            return statementsType.find(d) != statementsType.end();
+        }
+    }
+
     ExpSpec Parser::parseExpSpec() {
         bool isPartialMatch = false;
         bool isWildcard = false;
         std::string value = "";
 
         if (peekNextToken().getTokenType() == TokenType::UNDERSCORE) {
-            LOGGER << "FIRST";
             isWildcard = true;
             getNextToken();
         }
 
         if (peekNextToken().getTokenType() == TokenType::STRING) {
-            LOGGER << "SECOND";
             if (isWildcard) {
                 isPartialMatch = true;
                 isWildcard = false;
             }
             Token token = getAndCheckNextToken(TokenType::STRING);
             value = token.getText();
-            LOGGER << value;
         }
 
         if (isPartialMatch) {
-            LOGGER << "THIRD";
             Token t = peekNextToken();
-            LOGGER << t.getText();
             getAndCheckNextToken(TokenType::UNDERSCORE);
-            LOGGER << "FOURTH";
             return ExpSpec::ofPartialMatch(value);
         }
 

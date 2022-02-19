@@ -74,6 +74,16 @@ public:
                          std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable);
 
     /**
+     * Overload method to handle PKBResponse with std::unordered_set<PKBField, PKBFieldHash> type.
+     *
+     * @param synName synonym in clause
+     * @param queryRes query result from PKB
+     * @param newTable store the correct result filtered from the original result table
+     */
+    void oneSynInnerJoin(std::string synName,
+                                      std::unordered_set<PKBField, PKBFieldHash> queryRes,
+                                      std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable);
+    /**
      * If there are two synonyms in the clause and two of them already appears in evaluated clauses,
      * inner join the result to the table with two synonyms.
      *
