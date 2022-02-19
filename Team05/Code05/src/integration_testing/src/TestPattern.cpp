@@ -40,6 +40,15 @@ void printEvaluatorResult(std::list<std::string> result) {
     TEST_LOG << s;
 }
 
+void printTable1(qps::evaluator::ResultTable table) {
+    for (auto r : table.getResult()) {
+        std::string record;
+        for (auto f : r) {
+            record = record + qps::evaluator::Evaluator::PKBFieldToString(f) + " ";
+        }
+        TEST_LOG << record;
+    }
+}
 TEST_CASE("test simple source code") {
     PKB pkb;
     SourceProcessor sp;
@@ -64,6 +73,25 @@ TEST_CASE("test simple source code") {
     result1.sort();
     printEvaluatorResult(result1);
     REQUIRE(result1 == std::list<std::string>{});
+
+    TEST_LOG << "assign a; stmt s; variable v; Select s such that Uses(s,v) pattern a (v, _)";
+    qps::evaluator::Evaluator evaluator2 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query2{};
+    query2.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query2.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query2.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    query2.addVariable("s");
+    std::shared_ptr<qps::query::Uses> ptr2 = std::make_shared<qps::query::Uses>();
+    ptr2->useStmt = qps::query::StmtRef::ofDeclaration("s");
+    ptr2->used = qps::query::EntRef::ofDeclaration("v");
+    query2.addSuchthat(ptr2);
+    query2.addPattern(qps::query::Pattern{"a",
+                                          qps::query::EntRef::ofDeclaration("v"),
+                                          qps::query::ExpSpec::ofWildcard()});
+    std::list<std::string> result2 = evaluator2.evaluate(query2);
+    result2.sort();
+    printEvaluatorResult(result2);
+    REQUIRE(result2 == std::list<std::string>{"2", "3", "4"});
 }
 
 TEST_CASE("test evaluate pattern") {
