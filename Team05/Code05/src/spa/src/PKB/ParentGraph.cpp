@@ -24,7 +24,6 @@ void ParentGraph::addEdge(STMT_LO u, STMT_LO v) {
 
     bool hasExistingStatementNo = false;
     for (auto [stmt, node] : filtered) {
-        
         // Case where a node for u already exists
         if (stmt == u) {
             uNode = nodes.at(u);
@@ -45,7 +44,6 @@ void ParentGraph::addEdge(STMT_LO u, STMT_LO v) {
 
     hasExistingStatementNo = false;
     for (auto [stmt, node] : filtered) {
-        
         // Case where a node for v already exists
         if (stmt == v) {
             vNode = nodes.at(v);
