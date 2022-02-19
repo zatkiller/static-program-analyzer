@@ -203,12 +203,12 @@ TEST_CASE("PKB sample source program test") {
     pkb->insertRelationship(PKBRelationship::USES, stmt11, i);
     pkb->insertRelationship(PKBRelationship::USES, stmt12, monke);
 
-    //pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt6);
-    //pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt7);
-    //pkb->insertRelationship(PKBRelationship::PARENT, stmt7, stmt8);
-    //pkb->insertRelationship(PKBRelationship::PARENT, stmt7, stmt9);
-    //pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt10);
-    //pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt11);
+    pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt6);
+    pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt7);
+    pkb->insertRelationship(PKBRelationship::PARENT, stmt7, stmt8);
+    pkb->insertRelationship(PKBRelationship::PARENT, stmt7, stmt9);
+    pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt10);
+    pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt11);
 
     SECTION("PKB::getConstants, PKB::getProcedures, PKB::getVariables, PKB::getStatements") {
         REQUIRE(pkb->getConstants() == PKBResponse{ true, FieldResponse{ const1, const2, const3, const5 } });
@@ -246,6 +246,12 @@ TEST_CASE("PKB sample source program test") {
 
     SECTION("PKB::getRelationship") {
         using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
+
+        // Follows(_, _)
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::FOLLOWS) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, stmt2}, {stmt2, stmt3}, {stmt3, stmt4}, {stmt4, stmt5}, {stmt5, stmt12},
+            {stmt6, stmt7}, {stmt7, stmt10}, {stmt10, stmt11} } });
 
         // Follows*(_, _)
         REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
@@ -314,6 +320,11 @@ TEST_CASE("PKB sample source program test") {
             PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::FOLLOWS) == PKBResponse{ false,
             FieldRowResponse{ } });
 
+        // Follows(13, _) invalid statement
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{13}),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::FOLLOWS) == PKBResponse{ false,
+            FieldRowResponse{ } });
+
         // Modifies(_, _) 
         REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
             PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ false,
@@ -336,6 +347,11 @@ TEST_CASE("PKB sample source program test") {
 
         // Modifies(10, _) 
         REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 10 }),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ true,
+            FieldRowResponse{ {stmt10, z} } });
+
+        // Modifies(10, _) 
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 10, StatementType::All}),
             PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ true,
             FieldRowResponse{ {stmt10, z} } });
 
@@ -397,6 +413,16 @@ TEST_CASE("PKB sample source program test") {
             PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::USES) == PKBResponse{ true,
             FieldRowResponse{ {stmt10, z}, {stmt10, x}, {stmt10, i} } });
 
+        // Uses(10, _) 
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 10, StatementType::Assignment }),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::USES) == PKBResponse{ true,
+            FieldRowResponse{ {stmt10, z}, {stmt10, x}, {stmt10, i} } });
+
+        // Uses(10, _) 
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 10, StatementType::All }),
+            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::USES) == PKBResponse{ true,
+            FieldRowResponse{ {stmt10, z}, {stmt10, x}, {stmt10, i} } });
+
         // Uses(p, _) 
         REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::Print),
             PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::USES) == PKBResponse{ true,
@@ -425,75 +451,75 @@ TEST_CASE("PKB sample source program test") {
             FieldRowResponse{ {stmt6, x}, {stmt8, x}, {stmt9, z}, {stmt9, x}, {stmt10, z}, {stmt10, x},
             {stmt10, i}, {stmt11, i} } });
 
-        //// Parent(_, _)
-        //REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
-        //    PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::PARENT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt7, stmt8}, {stmt7, stmt9}, {stmt5, stmt10},
-        //    {stmt5, stmt11}} });
+        // Parent(_, _)
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::PARENT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt7, stmt8}, {stmt7, stmt9}, {stmt5, stmt10},
+            {stmt5, stmt11}} });
 
-        //// Parent(s, s1)
-        //REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
-        //    PKBField::createDeclaration(StatementType::All), PKBRelationship::PARENT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt7, stmt8}, {stmt7, stmt9}, {stmt5, stmt10},
-        //    {stmt5, stmt11}} });
+        // Parent(s, s1)
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(StatementType::All), PKBRelationship::PARENT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt7, stmt8}, {stmt7, stmt9}, {stmt5, stmt10},
+            {stmt5, stmt11}} });
 
-        //// Parent(5, s)
-        //REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5, StatementType::All }),
-        //    PKBField::createDeclaration(StatementType::All), PKBRelationship::PARENT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}} });
+        // Parent(5, s)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5, StatementType::All }),
+            PKBField::createDeclaration(StatementType::All), PKBRelationship::PARENT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt5, stmt10}, {stmt5, stmt11}} });
 
-        //// Parent(5, s)
-        //REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5, StatementType::While }),
-        //    PKBField::createDeclaration(StatementType::All), PKBRelationship::PARENT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}} });
+        // Parent(5, s)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5, StatementType::While }),
+            PKBField::createDeclaration(StatementType::All), PKBRelationship::PARENT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt5, stmt10}, {stmt5, stmt11}} });
 
-        //// Parent(5, s)
-        //REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
-        //    PKBField::createDeclaration(StatementType::All), PKBRelationship::PARENT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}} });
+        // Parent(5, s)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
+            PKBField::createDeclaration(StatementType::All), PKBRelationship::PARENT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt5, stmt10}, {stmt5, stmt11}} });
 
-        //// Parent(5, r)
-        //REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
-        //    PKBField::createDeclaration(StatementType::Read), PKBRelationship::PARENT) == PKBResponse{ true,
-        //    FieldRowResponse{ } });
+        // Parent(5, r)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
+            PKBField::createDeclaration(StatementType::Read), PKBRelationship::PARENT) == PKBResponse{ false,
+            FieldRowResponse{ } });
 
-        //// Parent(s, 6)
-        //REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
-        //    PKBField::createConcrete(STMT_LO{ 6 }), PKBRelationship::PARENT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6} } });
+        // Parent(s, 6)
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
+            PKBField::createConcrete(STMT_LO{ 6 }), PKBRelationship::PARENT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6} } });
 
-        //// Parent(s, 6)
-        //REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
-        //    PKBField::createConcrete(STMT_LO{ 6, StatementType::All }), PKBRelationship::PARENT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6} } });
+        // Parent(s, 6)
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
+            PKBField::createConcrete(STMT_LO{ 6, StatementType::All }), PKBRelationship::PARENT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6} } });
 
-        //// Parent(s, 6)
-        //REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
-        //    PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment }), PKBRelationship::PARENT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6} } });
+        // Parent(s, 6)
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
+            PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment }), PKBRelationship::PARENT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6} } });
 
-        //// Parent(5, 6)
-        //REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
-        //    PKBField::createConcrete(STMT_LO{ 6 }), PKBRelationship::PARENT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6} } });
+        // Parent(5, 6)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
+            PKBField::createConcrete(STMT_LO{ 6 }), PKBRelationship::PARENT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6} } });
 
-        //// ParentT(_, _)
-        //REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
-        //    PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::PARENTT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt5, stmt8}, {stmt5, stmt9}, {stmt7, stmt8},
-        //    {stmt7, stmt9}, {stmt5, stmt10}, {stmt5, stmt11}} });
+        // ParentT(_, _)
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::PARENTT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt5, stmt8}, {stmt5, stmt9}, {stmt7, stmt8},
+            {stmt7, stmt9}, {stmt5, stmt10}, {stmt5, stmt11}} });
 
-        //// ParentT(5, _)
-        //REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
-        //    PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::PARENTT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt5, stmt8}, {stmt5, stmt9},
-        //    {stmt5, stmt10}, {stmt5, stmt11}} });
+        // ParentT(5, _)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::PARENTT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt7}, {stmt5, stmt8}, {stmt5, stmt9},
+            {stmt5, stmt10}, {stmt5, stmt11}} });
 
-        //// ParentT(5, a)
-        //REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
-        //    PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::PARENTT) == PKBResponse{ true,
-        //    FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt8}, {stmt5, stmt9},
-        //    {stmt5, stmt10}, {stmt5, stmt11}} });
+        // ParentT(5, a)
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),
+            PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::PARENTT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt8}, {stmt5, stmt9},
+            {stmt5, stmt10}, {stmt5, stmt11}} });
     }
 }
 
