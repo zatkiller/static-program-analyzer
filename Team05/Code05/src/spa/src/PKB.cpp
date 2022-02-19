@@ -109,7 +109,7 @@ bool PKB::getStatementTypeOfConcreteField(PKBField* field) {
     if (field->fieldType == PKBFieldType::CONCRETE && field->entityType == PKBEntityType::STATEMENT) {
         auto content = field->getContent<STMT_LO>();
 
-        if (!content->hasStatementType()) {
+        if (!content->hasStatementType() || content->type.value() == StatementType::All) {
             auto type = statementTable->getStmtTypeOfLine(content->statementNum);
 
             if (type.has_value()) {
@@ -149,8 +149,10 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
         break;
     case PKBRelationship::PARENTT:
         extracted = parentTable->retrieveT(field1, field2);
+        break;
     default:
         throw "Invalid relationship type used!";
+        break;
     }
 
     return extracted.size() != 0
