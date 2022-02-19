@@ -43,6 +43,25 @@ FieldRowResponse ParentRelationshipTable::retrieve(PKBField field1, PKBField fie
         
         return FieldRowResponse{};
     }
+
+    // for any fields that are wildcards, convert them into declarations of all types
+    if (field1.fieldType == PKBFieldType::WILDCARD) {
+        field1.fieldType = PKBFieldType::DECLARATION;
+        field1.statementType = StatementType::All;
+    }
+
+    if (field2.fieldType == PKBFieldType::WILDCARD) {
+        field2.fieldType = PKBFieldType::DECLARATION;
+        field2.statementType = StatementType::All;
+    }
+
+    if (field1.fieldType == PKBFieldType::CONCRETE &&
+        field2.fieldType == PKBFieldType::CONCRETE) {
+        return this->contains(field1, field2)
+            ? FieldRowResponse{ {{field1, field2}} }
+        : FieldRowResponse{};
+    }
+
     return this->parentGraph->getParent(field1, field2);
 }
 
