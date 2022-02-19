@@ -9,6 +9,8 @@
 #include "DesignExtractor/PKBStrategy.h"
 #include "DesignExtractor/DesignExtractor.h"
 #include "DesignExtractor/EntityExtractor/VariableExtractor.h"
+#include "DesignExtractor/EntityExtractor/ConstExtractor.h"
+#include "DesignExtractor/EntityExtractor/ProcedureExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/FollowsExtractor.h"
@@ -20,10 +22,15 @@
 #define TEST_LOG Logger() << "TestDesignExtractor.cpp "
 
 
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+// explicit deduction guide (not needed as of C++20)
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
 class TestPKBStrategy : public PKBStrategy {
 public:
     std::set<STMT_LO> statements;
     std::set<std::string> variables;
+    std::map<PKBEntityType, std::set<Content>> entities;
     std::map<PKBRelationship, std::set<std::pair<Content, Content>>> relationships;
 
     void insertStatement(STMT_LO stmt) override {
@@ -32,6 +39,17 @@ public:
     void insertVariable(std::string name) override {
         variables.insert(name);
     };
+
+    void insertEntity(Content entity) override {
+        std::visit(overloaded {
+            [&](VAR_NAME &item) { entities[PKBEntityType::VARIABLE].emplace(item); },
+            [&](STMT_LO &item) { entities[PKBEntityType::STATEMENT].emplace(item); },
+            [&](PROC_NAME &item) { entities[PKBEntityType::PROCEDURE].emplace(item); },
+            [&](CONST &item) { entities[PKBEntityType::CONST].emplace(item); },
+            [](auto &item) {}
+        }, entity);
+    };
+
     void insertRelationship(PKBRelationship type, Content arg1, Content arg2) override {
         relationships[type].insert(std::make_pair<>(arg1, arg2));
     };
@@ -169,6 +187,22 @@ namespace AST {
 
                 std::set<std::string> expectedVars = { "x", "remainder", "digit", "sum" };
                 REQUIRE(pkbStrategy.variables == expectedVars);
+            }
+
+            SECTION("Const extractor test") {
+                auto ve = std::make_shared<ConstExtractor>(&pkbStrategy);
+                program->accept(ve);
+
+                std::set<Content> expectedVars = { CONST{0}, CONST{2}, CONST{10} };
+                REQUIRE(pkbStrategy.entities[PKBEntityType::CONST] == expectedVars);
+            }
+
+            SECTION("Procedure extractor test") {
+                auto ve = std::make_shared<ProcedureExtractor>(&pkbStrategy);
+                program->accept(ve);
+
+                std::set<Content> expectedVars = { PROC_NAME{"main"} };
+                REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedVars);
             }
 
             SECTION("Modifies extractor test") {
