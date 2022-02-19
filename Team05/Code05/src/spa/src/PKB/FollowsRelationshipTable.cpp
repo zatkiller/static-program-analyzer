@@ -38,14 +38,39 @@ FieldRowResponse FollowsRelationshipTable::retrieve(PKBField field1, PKBField fi
     // Both fields have to be a statement type
     if (!isRetrieveValid(field1, field2)) {
         Logger(Level::ERROR) <<
-            "Only concrete fields and STATEMENT entity types can be retrieved from FollowsRelationshipTable.";
+            "Only STATEMENT entity types can be retrieved from FollowsRelationshipTable.";
         return FieldRowResponse{ };
+    }
+
+    // for any fields that are wildcards, convert them into declarations of all types
+    if (field1.fieldType == PKBFieldType::WILDCARD) {
+        field1.fieldType = PKBFieldType::DECLARATION;
+        field1.statementType = StatementType::All;
+    }
+
+    if (field2.fieldType == PKBFieldType::WILDCARD) {
+        field2.fieldType = PKBFieldType::DECLARATION;
+        field2.statementType = StatementType::All;
+    }
+
+    if (field1.fieldType == PKBFieldType::CONCRETE &&
+        field2.fieldType == PKBFieldType::CONCRETE) {
+        return this->contains(field1, field2)
+            ? FieldRowResponse{ {{field1, field2}} }
+        : FieldRowResponse{};
     }
 
     return followsGraph->getFollows(field1, field2);
 }
 
 FieldRowResponse FollowsRelationshipTable::retrieveT(PKBField field1, PKBField field2) {
+    // Both fields have to be a statement type
+    if (!isRetrieveValid(field1, field2)) {
+        Logger(Level::ERROR) <<
+            "Only STATEMENT entity types can be retrieved from FollowsRelationshipTable.";
+        return FieldRowResponse{ };
+    }
+    
     // for any fields that are wildcards, convert them into declarations of all types
     if (field1.fieldType == PKBFieldType::WILDCARD) {
         field1.fieldType = PKBFieldType::DECLARATION;

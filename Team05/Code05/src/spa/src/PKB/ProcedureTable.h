@@ -12,19 +12,19 @@
 class ProcedureTable {
 public:
     /**
-    * Checks whether the ProcedureTable contains the procedure name wrapped in a PKBField.
+    * Checks whether the ProcedureTable contains the procedure name.
     *
-    * @param field the PKBField containing the procedure name to be checked
+    * @param name  
     * @returns whether the procedure name is present in the ProcedureTable
     */    
-    bool contains(PKBField field);
+    bool contains(std::string name);
 
     /**
-    * Inserts a procedure name wrapped in a PKBField into the ProcedureTable.
+    * Inserts a procedure name into the ProcedureTable.
     *
-    * @param field the PKBField containing the procedure name to be inserted
+    * @param name  
     */
-    void insert(PKBField field);
+    void insert(std::string name);
 
     /**
     * Returns the number of ProcedureRows.

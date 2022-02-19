@@ -48,6 +48,20 @@ public:
     void insertVariable(std::string name);
 
     /**
+    * Inserts a constant into the PKB.
+    *
+    * @param constant
+    */
+    void insertConstant(int constant);
+
+    /**
+    * Inserts a procedure into the PKB.
+    *
+    * @param name procedure name
+    */
+    void insertProcedure(std::string name);
+
+    /**
     * Inserts a relationship into the PKB.
     *
     * @param type relationship type
@@ -64,8 +78,8 @@ public:
     void insertAST(std::unique_ptr<AST::Program> root);
 
     /**
-    * Checks whether there exist. If any fields are invalid, return false.
-    *
+    * Checks whether there exist. If any fields are invalid, return false. Both fields must be concrete.
+    * 
     * @param field1 the first program design entity in the relationship
     * @param field2 the second program design entity in the relationship
     * @param rs the relationship type

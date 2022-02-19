@@ -4,20 +4,12 @@
 #include "PKBField.h"
 #include "ProcedureTable.h"
 
-bool ProcedureTable::contains(PKBField field) {
-    if (field.entityType != PKBEntityType::PROCEDURE) {
-        throw "Only procedures are accepted!";
-    }
-    PROC_NAME proc = std::get<PROC_NAME>(field.content);
-    return rows.count(ProcedureRow(proc)) == 1;
+bool ProcedureTable::contains(std::string name) {
+    return rows.count(ProcedureRow(PROC_NAME{ name })) == 1;
 }
 
-void ProcedureTable::insert(PKBField field) {
-    if (field.entityType != PKBEntityType::PROCEDURE) {
-        throw "Only procedures are accepted!";
-    }
-    PROC_NAME proc = std::get<PROC_NAME>(field.content);
-    rows.insert(ProcedureRow(proc));
+void ProcedureTable::insert(std::string name) {
+    rows.insert(ProcedureRow(PROC_NAME{ name }));
 }
 
 int ProcedureTable::getSize() {
