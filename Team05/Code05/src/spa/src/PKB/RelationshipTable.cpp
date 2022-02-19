@@ -4,10 +4,11 @@
 
 RelationshipTable::RelationshipTable(PKBRelationship rsType) : type(rsType) {}
 
-// to ensure that both parameters are valid for ModifiesS or ModifiesP for retrieve or contain
 bool RelationshipTable::isRetrieveValid(PKBField field1, PKBField field2) {
-    return (field1.entityType == PKBEntityType::PROCEDURE ||
-        field1.entityType == PKBEntityType::STATEMENT) &&
+    // both Modifies and Uses cannot accept a wildcard as its first parameter
+    return field1.fieldType != PKBFieldType::WILDCARD &&
+        (field1.entityType == PKBEntityType::PROCEDURE ||
+            field1.entityType == PKBEntityType::STATEMENT) &&
         (field2.entityType == PKBEntityType::VARIABLE);
 }
 
@@ -41,6 +42,7 @@ FieldRowResponse RelationshipTable::retrieve(PKBField field1, PKBField field2) {
     PKBFieldType fieldType2 = field2.fieldType;
 
     FieldRowResponse res;
+
     if (!isRetrieveValid(field1, field2)) {
         Logger(Level::ERROR) <<
             "Only fields of STATEMENT or PROCEDURE entity types can be retrieved from RelationshipTable.";

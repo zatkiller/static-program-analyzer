@@ -5,10 +5,12 @@
 
 #include "logging.h"
 #include "PKB.h"
+#include <DesignExtractor/EntityExtractor/VariableExtractor.h>
 
 PKB::PKB() {
     statementTable = std::make_unique<StatementTable>();
     variableTable = std::make_unique<VariableTable>();
+    constantTable = std::make_unique<ConstantTable>();
     procedureTable = std::make_unique<ProcedureTable>();
     modifiesTable = std::make_unique<ModifiesRelationshipTable>();
     followsTable = std::make_unique<FollowsRelationshipTable>();
@@ -34,10 +36,22 @@ void PKB::insertVariable(std::string name) {
     variableTable->insert(name);
 }
 
+void PKB::insertProcedure(std::string name) {
+    procedureTable->insert(name);
+}
+
+void PKB::insertConstant(int constant) {
+    constantTable->insert(constant);
+}
+
+void PKB::insertAST(std::unique_ptr<AST::Program> root) {
+    this->root = std::move(root);
+}
 
 void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField field2) {
     // if both fields are not concrete, no insert can be done
     if (field1.fieldType != PKBFieldType::CONCRETE || field2.fieldType != PKBFieldType::CONCRETE) {
+        Logger(Level::INFO) << "Both fields have to be concrete.\n";
         return;
     }
 
@@ -53,8 +67,10 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
         break;
     case PKBRelationship::USES:
         usesTable->insert(field1, field2);
+        break;
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
+        break;
     }
 }
 
@@ -78,6 +94,8 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
         return usesTable->contains(field1, field2);
     case PKBRelationship::FOLLOWST:
         return followsTable->containsT(field1, field2);
+    case PKBRelationship::PARENTT:
+        return parentTable->containsT(field1, field2);
     default:
         Logger(Level::INFO) << "Checking for an invalid relationship table\n";
         return false;
@@ -91,7 +109,7 @@ bool PKB::getStatementTypeOfConcreteField(PKBField* field) {
     if (field->fieldType == PKBFieldType::CONCRETE && field->entityType == PKBEntityType::STATEMENT) {
         auto content = field->getContent<STMT_LO>();
 
-        if (!content->hasStatementType()) {
+        if (!content->hasStatementType() || content->type.value() == StatementType::All) {
             auto type = statementTable->getStmtTypeOfLine(content->statementNum);
 
             if (type.has_value()) {
@@ -108,7 +126,7 @@ bool PKB::getStatementTypeOfConcreteField(PKBField* field) {
 
 PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationship rs) {
     if (!getStatementTypeOfConcreteField(&field1) || !getStatementTypeOfConcreteField(&field2)) {
-        return PKBResponse{ false, Response{} };
+        return PKBResponse{ false, FieldRowResponse{} };
     }
 
     FieldRowResponse extracted;
@@ -129,8 +147,12 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
     case PKBRelationship::FOLLOWST:
         extracted = followsTable->retrieveT(field1, field2);
         break;
+    case PKBRelationship::PARENTT:
+        extracted = parentTable->retrieveT(field1, field2);
+        break;
     default:
         throw "Invalid relationship type used!";
+        break;
     }
 
     return extracted.size() != 0
@@ -191,4 +213,29 @@ PKBResponse PKB::getConstants() {
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
+}
+
+PKBResponse PKB::match(StatementType type, PatternParam lhs, PatternParam rhs) {
+    auto matchedStmts = extractAssign(root.get(), lhs, rhs);
+    FieldRowResponse res;
+
+    if (matchedStmts.size() == 0) {
+        return PKBResponse{ false, Response{res} };
+    }
+
+    for (auto& node : matchedStmts) {
+        std::vector<PKBField> stmtRes;
+
+        int statementNumber = node.get().getStmtNo();
+        auto stmt = PKBField::createConcrete(
+            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() });
+        stmtRes.emplace_back(stmt);
+
+        auto varname = node.get().getLHS()->getVarName();
+        stmtRes.emplace_back(PKBField::createConcrete(VAR_NAME{ varname }));
+
+        res.insert(stmtRes);
+    }
+
+    return PKBResponse{ true, Response{res} };
 }

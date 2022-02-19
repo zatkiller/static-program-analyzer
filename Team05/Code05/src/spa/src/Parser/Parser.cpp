@@ -537,6 +537,8 @@ unique_ptr<ast::Program> parseProgram(deque<Token>& tokens) {
 }
 
 unique_ptr<ast::Program> parse(const string& source) {
+    // new program, reset statement line count.
+    lineCount = 1;
     // we first tokenise the source code
     deque<Token> lexedTokens = Lexer(source).getTokens();
     try {

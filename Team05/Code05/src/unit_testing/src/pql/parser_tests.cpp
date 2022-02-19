@@ -703,5 +703,42 @@ TEST_CASE("Parser parsePql") {
     REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 }
 
+TEST_CASE("Parser isValidStatement") {
+    Query query;
+    Parser p;
+
+    query.addDeclaration("s", DesignEntity::STMT);
+    query.addDeclaration("a", DesignEntity::ASSIGN);
+    query.addDeclaration("pn", DesignEntity::PRINT);
+    query.addDeclaration("r", DesignEntity::READ);
+    query.addDeclaration("ifs", DesignEntity::IF);
+    query.addDeclaration("w", DesignEntity::WHILE);
+    query.addDeclaration("cl", DesignEntity::CALL);
+
+    query.addDeclaration("v", DesignEntity::VARIABLE);
+    query.addDeclaration("p", DesignEntity::PROCEDURE);
+    query.addDeclaration("c", DesignEntity::CONSTANT);
+
+    // Valid declarations
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("s")));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("a")));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("pn")));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("r")));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("ifs")));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("w")));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("cl")));
+
+    // Invalid statement types
+    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("v"))));
+    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("p"))));
+    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("c"))));
+
+    // Declarations which do not exist
+    REQUIRE_THROWS_MATCHES(p.isValidStatementType(query, StmtRef::ofDeclaration("x")),
+                           exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
+}
+
+
 
 

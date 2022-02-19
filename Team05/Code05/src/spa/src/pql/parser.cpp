@@ -3,8 +3,6 @@
 #include "pql/parser.h"
 #include "logging.h"
 
-#define LOGGER Logger()
-
 namespace qps::parser {
     using qps::query::designEntityMap;
     using qps::query::Uses;
@@ -95,11 +93,9 @@ namespace qps::parser {
     void Parser::parseSelectFields(Query &queryObj) {
         getAndCheckNextReservedToken(TokenType::SELECT);
 
-        Logger() << "HI";
         Token t = getAndCheckNextToken(TokenType::IDENTIFIER);
         std::string name = t.getText();
 
-        Logger() << "HI2";
         if (!queryObj.hasDeclaration(name))
             throw exceptions::PqlSyntaxException(messages::qps::parser::declarationDoesNotExistMessage);
 
@@ -215,34 +211,41 @@ namespace qps::parser {
         throw exceptions::PqlSyntaxException(messages::qps::parser::invalidRelRefMessage);
     }
 
+    bool Parser::isValidStatementType(Query &query, StmtRef s) {
+        std::unordered_set<DesignEntity> statementsType {
+            DesignEntity::STMT, DesignEntity::ASSIGN,
+            DesignEntity::WHILE, DesignEntity::IF,
+            DesignEntity::PRINT, DesignEntity::READ, DesignEntity::CALL
+        };
+        if (s.isDeclaration()) {
+            DesignEntity d = query.getDeclarationDesignEntity(s.getDeclaration());
+            return statementsType.find(d) != statementsType.end();
+        }
+        return true;
+    }
+
     ExpSpec Parser::parseExpSpec() {
         bool isPartialMatch = false;
         bool isWildcard = false;
         std::string value = "";
 
         if (peekNextToken().getTokenType() == TokenType::UNDERSCORE) {
-            LOGGER << "FIRST";
             isWildcard = true;
             getNextToken();
         }
 
         if (peekNextToken().getTokenType() == TokenType::STRING) {
-            LOGGER << "SECOND";
             if (isWildcard) {
                 isPartialMatch = true;
                 isWildcard = false;
             }
             Token token = getAndCheckNextToken(TokenType::STRING);
             value = token.getText();
-            LOGGER << value;
         }
 
         if (isPartialMatch) {
-            LOGGER << "THIRD";
             Token t = peekNextToken();
-            LOGGER << t.getText();
             getAndCheckNextToken(TokenType::UNDERSCORE);
-            LOGGER << "FOURTH";
             return ExpSpec::ofPartialMatch(value);
         }
 

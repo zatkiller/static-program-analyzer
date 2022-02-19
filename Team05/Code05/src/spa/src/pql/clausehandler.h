@@ -2,6 +2,7 @@
 #include <type_traits>
 #include "query.h"
 #include "resulttable.h"
+#include "pkbtypematcher.h"
 #include "PKB/StatementType.h"
 #include "PKB/PKBField.h"
 #include "PKB/PKBRelationship.h"
@@ -20,23 +21,6 @@ public:
 
     /** Constructor of the ClauseHandler */
     ClauseHandler(PKB *pkb, ResultTable &tableRef, query::Query &query) : pkb(pkb), tableRef(tableRef), query(query) {}
-
-
-    /**
-     * Maps PKBRelationships based on RelRef type.
-     *
-     * @param r relRefType
-     * @return PKBRelationship
-     */
-    PKBRelationship getPKBRelationship(query::RelRefType r);
-
-    /**
-     * Maps DesignEntity to corresponding PKB StatementType.
-     *
-     * @param d DesignEntity
-     * @return StatementType
-     */
-    static StatementType getStatementType(query::DesignEntity d);
 
     /**
      * Processes statement declarations, create PKBField with StatementType.
@@ -78,5 +62,12 @@ public:
      * @param noSynClauses a group of relationship clauses without synonyms
      */
     bool handleNoSynClauses(std::vector<std::shared_ptr<query::RelRef>> noSynClauses);
+
+    /**
+     * Handles pattern clauses
+     *
+     * @param patterns a group of pattern clauses
+     */
+    void handlePatterns(std::vector<query::Pattern> patterns);
 };
 }  // namespace qps::evaluator

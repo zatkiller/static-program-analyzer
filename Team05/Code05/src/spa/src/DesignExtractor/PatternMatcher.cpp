@@ -1,4 +1,8 @@
 #include "PatternMatcher.h"
+#include "Parser/Lexer.h"
+#include "Parser/Parser.h"
+#include "PKB/PKBDataTypes.h"
+#include "DesignExtractor.h"
 
 namespace sp {
 namespace design_extractor {

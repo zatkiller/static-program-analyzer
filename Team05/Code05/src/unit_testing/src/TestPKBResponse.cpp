@@ -46,4 +46,8 @@ TEST_CASE("PKBResponse ==") {
     PKBResponse response3{ true, Response{ FieldResponse{stmt2, var1} } };
     REQUIRE(response1 == response2);
     REQUIRE_FALSE(response1 == response3);
+
+    PKBResponse response4{ true, Response{ FieldRowResponse{{stmt2, var1}, {stmt1, var1}  }} };
+    PKBResponse response5{ true, Response{ FieldRowResponse{{stmt1, var1}, {stmt2, var1} }} };
+
 }

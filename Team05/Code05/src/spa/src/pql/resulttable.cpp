@@ -45,9 +45,18 @@ namespace qps::evaluator {
             return;
         }
         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> newTable;
-        if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr =
+        if (auto *ptr = std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&r.res)) {
+            auto queryRes = *ptr;
+            for (auto field : queryRes) {
+                for (auto record : table) {
+                    std::vector<PKBField> newRecord = record;
+                    newRecord.push_back(field);
+                    newTable.insert(newRecord);
+                }
+            }
+        } else if (auto *ptr =
                 std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&r.res)) {
-            std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes = *ptr;
+            auto queryRes = *ptr;
             for (auto r : queryRes) {
                 for (auto record : table) {
                     std::vector<PKBField> newRecord = record;
@@ -68,6 +77,20 @@ namespace qps::evaluator {
         for (auto r : queryRes) {
             for (auto record : table) {
                 if (r[0] == record[pos]) {
+                    std::vector<PKBField> newRecord = record;
+                    newTable.insert(newRecord);
+                }
+            }
+        }
+    }
+
+    void ResultTable::oneSynInnerJoin(std::string synName,
+                                      std::unordered_set<PKBField, PKBFieldHash> queryRes,
+                                      std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
+        int pos = getSynLocation(synName);
+        for (auto r : queryRes) {
+            for (auto record : table) {
+                if (r == record[pos]) {
                     std::vector<PKBField> newRecord = record;
                     newTable.insert(newRecord);
                 }
@@ -114,10 +137,12 @@ namespace qps::evaluator {
             return;
         }
         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> newTable;
-        if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr =
+        if (auto *ptr = std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&r.res)) {
+            auto queryRes = *ptr;
+            oneSynInnerJoin(allSyn[0], queryRes, newTable);
+        } else if (auto *ptr =
                 std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&r.res)) {
-            std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes = *ptr;
-
+            auto queryRes = *ptr;
             if (allSyn.size() == 1) {  // Only one synonym in the clause
                 oneSynInnerJoin(allSyn[0], queryRes, newTable);
             } else if (isFirst && isSecond) {  // Two synonyms all in table already
