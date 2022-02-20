@@ -2,20 +2,21 @@
 #include "pkbtypematcher.h"
 
 namespace qps::evaluator {
-
+    using query::RelRefType;
     PKBRelationship PKBTypeMatcher::getPKBRelationship(query::RelRefType r) {
         switch (r) {
-        case query::RelRefType::MODIFIESS: return
-        PKBRelationship::MODIFIES;
-        case query::RelRefType::USESS: return
-        PKBRelationship::USES;
-        case query::RelRefType::FOLLOWS: return
-        PKBRelationship::FOLLOWS;
-        case query::RelRefType::FOLLOWST: return
-        PKBRelationship::FOLLOWST;
-        case query::RelRefType::PARENT: return
-        PKBRelationship::PARENT;
-    //            case query::RelRefType::PARENTT: return PKBRelationship::PARENTT;
+            case RelRefType::MODIFIESS:
+                return PKBRelationship::MODIFIES;
+            case RelRefType::USESS:
+                return PKBRelationship::USES;
+            case RelRefType::FOLLOWS:
+                return PKBRelationship::FOLLOWS;
+            case RelRefType::FOLLOWST:
+                return PKBRelationship::FOLLOWST;
+            case RelRefType::PARENT:
+                return PKBRelationship::PARENT;
+            case RelRefType::PARENTT:
+                return PKBRelationship::PARENTT;
         }
     }
 
