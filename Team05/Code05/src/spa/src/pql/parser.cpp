@@ -266,7 +266,6 @@ namespace qps::parser {
 
         Token t = getAndCheckNextToken(TokenType::IDENTIFIER);
         std::string declarationName = t.getText();
-
         if (queryObj.getDeclarationDesignEntity(declarationName) != DesignEntity::ASSIGN)
             throw exceptions::PqlSyntaxException(messages::qps::parser::notAnAssignmentMessage);
 
@@ -276,7 +275,7 @@ namespace qps::parser {
         getAndCheckNextToken(TokenType::OPENING_PARAN);
         EntRef e = parseEntRef(queryObj);
 
-        if (queryObj.getDeclarationDesignEntity(e.getDeclaration()) != DesignEntity::VARIABLE)
+        if (e.isDeclaration() && queryObj.getDeclarationDesignEntity(e.getDeclaration()) != DesignEntity::VARIABLE)
             throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
 
         p.lhs = e;
@@ -301,6 +300,7 @@ namespace qps::parser {
     Query Parser::parsePql(std::string query) {
         addPql(query);
         Query queryObj;
+        queryObj.setValid(true);
 
         try {
             for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::END_OF_FILE;
