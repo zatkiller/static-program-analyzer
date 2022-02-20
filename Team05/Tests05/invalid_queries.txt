@@ -1,27 +1,27 @@
 1 - Invalid syntax query - ; at end of query
 stmt s;
 Select s;
-Invalid Query
+none
 5000
 2 - Invalid syntax query - No such declaration
 stmt s;
 Select v
-Invalid Query
+none
 5000
 3 - Invalid syntax query - No such relationship
 stmt s;
 Select s such that Hello(s, 1)
-Invalid Query
+none
 5000
 4 - Invalid syntax query - No such assignment declaration for Pattern
 stmt s;
 Select s pattern a("x", "x")
-Invalid Query
+none
 5000
 5 - Invalid syntax query - No such design entity
 hello s;
 Select s;
-Invalid Query
+none
 5000
 6 - Invalid semantic query - Follows/Parent cannot take in variable
 stmt s; variable v, v1;

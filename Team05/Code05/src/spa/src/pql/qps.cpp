@@ -7,14 +7,9 @@
 namespace qps {
     void QPS::evaluate(std::string query_str, std::list<std::string> &results, PKB *pkbPtr) {
         qps::query::Query query = parser.parsePql(query_str);
-        if (!query.isSemanticValid())
+        if (!query.isValid())
             return;
 
-        if (!query.isSyntaxValid()) {
-            results.push_back("Invalid Query");
-            return;
-
-        }
         qps::evaluator::Evaluator evaluator(pkbPtr);
         results = evaluator.evaluate(query);
     }

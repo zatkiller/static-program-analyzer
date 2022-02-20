@@ -10,10 +10,9 @@ TEST_CASE("QPS") {
         std::list<std::string> results;
         qps::QPS qps;
         PKB pkb;
-        qps.evaluate("Nani", results, &pkb);
+        qps.evaluate("stmt s; Select v", results, &pkb);
 
-        REQUIRE(results.size() == 1);
-        REQUIRE(results.front() == "Invalid Query");
+        REQUIRE(results.size() == 0);
     }
 
     SECTION("QPS- evaluate invalid semantics query") {
