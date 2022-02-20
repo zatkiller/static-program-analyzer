@@ -129,21 +129,19 @@ TEST_CASE("Test insert vector") {
     REQUIRE(result.find(std::vector<PKBField>{field3, field6}) != result.end());
 }
 
-TEST_CASE("Test Empty table cross join") {
+TEST_CASE("Test Empty table cross join and empty table insert") {
     qps::evaluator::ResultTable table{};
     TEST_LOG << "create result table";
     std::unordered_set<PKBField, PKBFieldHash> r{field1, field2, field3};
     PKBResponse response{true, Response{r}};
 
     table.crossJoin(response);
+    table.insertSynLocationToLast("s");
     table.insertSynLocationToLast("v");
 
     REQUIRE(table.getSynLocation("v") == 0);
     auto result = table.getResult();
-    REQUIRE(result.size() == 3);
-    REQUIRE(result.find(std::vector<PKBField>{field1}) != result.end());
-    REQUIRE(result.find(std::vector<PKBField>{field2}) != result.end());
-    REQUIRE(result.find(std::vector<PKBField>{field3}) != result.end());
+    REQUIRE(result.size() == 0);
 
     qps::evaluator::ResultTable table1{};
 
@@ -153,7 +151,7 @@ TEST_CASE("Test Empty table cross join") {
             std::vector<PKBField>{field3, field6}};
     PKBResponse response1{true, Response{r1}};
 
-    table1.crossJoin(response1);
+    table1.insert(response1);
     table1.insertSynLocationToLast("v");
     table1.insertSynLocationToLast("s");
 
