@@ -21,12 +21,23 @@
 
 #define TEST_LOG Logger() << "TestDesignExtractor.cpp "
 
-
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 // explicit deduction guide (not needed as of C++20)
 template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-class TestPKBStrategy : public PKBStrategy {
+namespace sp {
+namespace de = design_extractor;
+
+using de::VariableExtractor;
+using de::StatementExtractor;
+using de::ConstExtractor;
+using de::ProcedureExtractor;
+using de::UsesExtractor;
+using de::ModifiesExtractor;
+using de::ParentExtractor;
+using de::FollowsExtractor;
+
+class TestPKBStrategy : public de::PKBStrategy {
 public:
     std::set<STMT_LO> statements;
     std::set<std::string> variables;
@@ -105,7 +116,7 @@ TEST_CASE("TestPKBStrategy Test") {
     REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == relationships);
 }
 
-namespace AST {
+namespace ast {
     TEST_CASE("Design extractor Test") {
         TEST_LOG << "Testing Design Extractor";
         // Construct a simple AST;
@@ -292,18 +303,17 @@ namespace AST {
                 };
                 REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENT] == expected);
             }
-        }
-    
+        }    
     }
 
     TEST_CASE("Pattern matcher test") {
         TEST_LOG << "Testing Assign Pattern matcher";
 
         // only support _ or string, treat synonyms as _.
-        auto extractAssignHelper = [](AST::ASTNode *ast, std::string s1, std::string s2){
+        auto extractAssignHelper = [](sp::ast::ASTNode *ast, std::string s1, std::string s2){
             auto field1 = s1 == "_" ? std::nullopt : std::make_optional<>(s1);
             auto field2 = s2 == "_" ? std::nullopt : std::make_optional<>(s2);
-            return extractAssign(ast, field1, field2);
+            return de::extractAssign(ast, field1, field2);
         };
 
         // assignment: z = 1 + x - 2 + y
@@ -366,5 +376,5 @@ namespace AST {
         }
     }
 
-}  // namespace AST
-
+}  // namespace ast
+}  // namespace sp

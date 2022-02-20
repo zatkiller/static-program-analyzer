@@ -6,24 +6,26 @@
 #include "AST.h"
 #include "Lexer.h"
 
-namespace SimpleParser {
+namespace sp {
+namespace parser {
 extern int lineCount;
 
-namespace ExprParser {
-    std::unique_ptr<AST::Expr> parse(std::deque<Token>& tokens);
-}
+namespace expr_parser {
+    std::unique_ptr<ast::Expr> parse(std::deque<Token>& tokens);
+}  // namespace expr_parser
 
-namespace StmtLstParser {
-    AST::StmtLst parse(std::deque<Token>& tokens);
-}
+namespace statement_list_parser {
+    ast::StmtLst parse(std::deque<Token>& tokens);
+}  // namespace statement_list_parser
 
-namespace CondExprParser {
-    std::unique_ptr<AST::CondExpr> parse(std::deque<Token>& tokens);
-}
+namespace cond_expr_parser {
+    std::unique_ptr<ast::CondExpr> parse(std::deque<Token>& tokens);
+}  // namespace cond_expr_parser
 
 // can expose this under the namespace
-std::unique_ptr<AST::Program> parse(const std::string& source);  // main method that parses the source code
-std::unique_ptr<AST::Procedure> parseProcedure(std::deque<Token>& tokens);
-std::unique_ptr<AST::Program> parseProgram(std::deque<Token>& tokens);
+std::unique_ptr<ast::Program> parse(const std::string& source);  // main method that parses the source code
+std::unique_ptr<ast::Procedure> parseProcedure(std::deque<Token>& tokens);
+std::unique_ptr<ast::Program> parseProgram(std::deque<Token>& tokens);
 
-}  // namespace SimpleParser
+}  // namespace parser
+}  // namespace sp

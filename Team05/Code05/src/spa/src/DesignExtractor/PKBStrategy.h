@@ -3,6 +3,8 @@
 
 #include "PKB.h"
 
+namespace sp {
+namespace design_extractor {
 /**
  * Interface for handling PKB insertions. There could be different strategy like NullPKBStrategy, TestPKBStrategy, ActualPKBStrategy
  */
@@ -59,3 +61,5 @@ public:
     void insertEntity(Content) override;
     void insertRelationship(PKBRelationship, Content, Content) override;
 };
+}  // namespace design_extractor
+}  // namespace sp

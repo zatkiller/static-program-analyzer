@@ -1,6 +1,7 @@
 #include "AST.h"
 
-namespace AST {
+namespace sp {
+namespace ast {
 
 // Victims
 void Var::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
@@ -192,4 +193,5 @@ bool NotCondExpr::operator==(ASTNode const& o) const {
         (*this->condExpr == *that->condExpr);
 }
 
-}  // namespace AST
+}  // namespace ast
+}  // namespace sp

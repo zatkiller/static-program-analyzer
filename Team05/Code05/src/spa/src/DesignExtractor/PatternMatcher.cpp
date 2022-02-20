@@ -4,40 +4,44 @@
 #include "PKB/PKBDataTypes.h"
 #include "DesignExtractor.h"
 
+namespace sp {
+namespace design_extractor {
 struct ExprFlattener : public TreeWalker {
-    std::list<std::reference_wrapper<const AST::ASTNode>> nodes;
-    void visit(const AST::Var& node) override {
+    std::list<std::reference_wrapper<const ast::ASTNode>> nodes;
+    void visit(const ast::Var& node) override {
         nodes.emplace_back(node);
     };
-    void visit(const AST::Const& node) override {
+    void visit(const ast::Const& node) override {
         nodes.emplace_back(node);
     };
-    void visit(const AST::BinExpr& node) override {
+    void visit(const ast::BinExpr& node) override {
         nodes.emplace_back(node);
     };
-    void visit(const AST::RelExpr& node) override {
+    void visit(const ast::RelExpr& node) override {
         nodes.emplace_back(node);
     };
-    void visit(const AST::CondBinExpr& node) override {
+    void visit(const ast::CondBinExpr& node) override {
         nodes.emplace_back(node);
     };
-    void visit(const AST::NotCondExpr& node) override {
+    void visit(const ast::NotCondExpr& node) override {
         nodes.emplace_back(node);
     };
-
 };
 
 
 // Helper method to flatten any expression tree to a list representation.
-std::list<std::reference_wrapper<const AST::ASTNode>> flatten(AST::Expr *root) {
+std::list<std::reference_wrapper<const ast::ASTNode>> flatten(ast::Expr *root) {
     auto flattener = std::make_shared<ExprFlattener>();
     root->accept(flattener);
     return flattener->nodes;
-};
+}
 
 
 // Checks and returns true if the needle list is a sublist of the haystack list.
-bool isSublist(std::list<std::reference_wrapper<const AST::ASTNode>> haystack, std::list<std::reference_wrapper<const AST::ASTNode>> needle) {
+bool isSublist(
+    std::list<std::reference_wrapper<const ast::ASTNode>> haystack,
+    std::list<std::reference_wrapper<const ast::ASTNode>> needle
+    ) {
     auto haystackIter = haystack.begin();
     auto needleIter = needle.begin();
 
@@ -61,9 +65,10 @@ class AssignmentPatternExtractor : public TreeWalker {
 private:
     PatternParam lhs, rhs;
     bool isStrict;  // Not in use yet.
+
 public:
-    std::list<std::reference_wrapper<const AST::Assign>> nodes;
-    bool isMatch(const AST::Assign& node) {
+    std::list<std::reference_wrapper<const ast::Assign>> nodes;
+    bool isMatch(const ast::Assign& node) {
         // === Check lHS constraint ===
         if (lhs != std::nullopt && node.getLHS()->getVarName() != lhs.value()) {
             return false;
@@ -79,8 +84,8 @@ public:
         // case 2: RHS is constrained
 
         // Parse RHS to AST expression.
-        auto tokens = SimpleParser::Lexer(rhs.value()).getTokens();
-        auto expr = SimpleParser::ExprParser::parse(tokens);
+        auto tokens = sp::parser::Lexer(rhs.value()).getTokens();
+        auto expr = sp::parser::expr_parser::parse(tokens);
 
         // Flatten the trees to lists by walking it in preorder.
         auto assignList = flatten(node.getRHS());
@@ -97,17 +102,22 @@ public:
      * @param rhs Optional constraint for the right hand side of assignment. Give nullopt if wildcard or declaration.
      * @param isStrict Deteremines if the matching is strict. If it's strict, exact match is expected. Defaults to false.
      */
-    AssignmentPatternExtractor(PatternParam lhs, PatternParam rhs, bool isStrict=false) : lhs(lhs), rhs(rhs), isStrict(isStrict) {};
+    AssignmentPatternExtractor(PatternParam lhs, PatternParam rhs, bool isStrict = false) : 
+        lhs(lhs),
+        rhs(rhs), 
+        isStrict(isStrict) {}
 
-    void visit(const AST::Assign& node) override {
+    void visit(const ast::Assign& node) override {
         if (isMatch(node)) {
             nodes.emplace_back(node);
         }
     };
 };
 
-AssignPatternReturn extractAssign(AST::ASTNode *root, PatternParam lhs, PatternParam rhs) {
+AssignPatternReturn extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs) {
     auto ape = std::make_shared<AssignmentPatternExtractor>(lhs, rhs);
     root->accept(ape);
     return ape->nodes;
 }
+}  // namespace design_extractor
+}  // namespace sp

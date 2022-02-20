@@ -7,10 +7,15 @@
 #include <variant>
 
 /**
+ * @namespace SP
+ * @brief Namespace to encapsulate the SP.
+ */
+namespace sp {
+/**
  * @namespace AST
  * @brief Namespace to encapsulate the AST.
  */
-namespace AST {
+namespace ast {
 
 struct ASTNodeVisitor;
 
@@ -190,7 +195,7 @@ public:
         procName(procName), stmtLst(std::move(stmtLst)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
-    std::string getName() const { return procName; };
+    std::string getName() const { return procName; }
     virtual bool operator==(ASTNode const& o) const;
 };
 
@@ -627,4 +632,5 @@ StmtLst makeStmts(Ts &&... ts) {
     return StmtLst(lst);
 }
 
-}  // namespace AST
+}  // namespace ast
+}  // namespace sp
