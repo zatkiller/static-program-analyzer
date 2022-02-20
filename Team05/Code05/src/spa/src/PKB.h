@@ -75,7 +75,7 @@ public:
     * 
     * @param root the pointer to the root of the AST of the SIMPLE source program
     */
-    void insertAST(std::unique_ptr<AST::Program> root);
+    void insertAST(std::unique_ptr<sp::ast::Program> root);
 
     /**
     * Checks whether there exist. If any fields are invalid, return false. Both fields must be concrete.
@@ -148,7 +148,7 @@ public:
     * @param rhs The optional string constraint of RHS expression. Use std::nullopt if RHS  is wildcard.
     * @return PKBResponse 
     */
-    PKBResponse match(StatementType type, PatternParam lhs, PatternParam rhs);
+    PKBResponse match(StatementType type, sp::design_extractor::PatternParam lhs, sp::design_extractor::PatternParam rhs);
 
 private:
     std::unique_ptr<StatementTable> statementTable;
@@ -159,7 +159,7 @@ private:
     std::unique_ptr<ConstantTable> constantTable;
     std::unique_ptr<ParentRelationshipTable> parentTable;
     std::unique_ptr<UsesRelationshipTable> usesTable;
-    std::unique_ptr<AST::ASTNode> root;
+    std::unique_ptr<sp::ast::ASTNode> root;
 
     /**
     * Check whether field is a concrete statement. Returns false if it is a

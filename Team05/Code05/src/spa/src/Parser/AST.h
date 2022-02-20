@@ -195,7 +195,7 @@ public:
         procName(procName), stmtLst(std::move(stmtLst)) {}
 
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
-
+    std::string getName() const { return procName; };
     virtual bool operator==(ASTNode const& o) const;
 };
 

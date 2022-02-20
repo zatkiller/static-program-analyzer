@@ -16,12 +16,20 @@ namespace qps::query {
             {"procedure", DesignEntity::PROCEDURE}
     };
 
-    bool Query::isValid() {
-        return valid;
+    bool Query::isSyntaxValid() {
+        return syntaxValid;
     }
 
-    void Query::setValid(bool valid) {
-        this->valid = valid;
+    void Query::setSyntaxValid(bool valid) {
+        this->syntaxValid = valid;
+    }
+
+    bool Query::isSemanticValid() {
+        return semanticValid;
+    }
+
+    void Query::setSemanticValid(bool valid) {
+        this->semanticValid = valid;
     }
 
 

@@ -21,6 +21,15 @@ struct TestCode {
             print sum;
         }
     )";
+
+    std::string sourceCode2 = R"(
+        procedure a {
+            read x;
+            x = x + 1;
+            y = x * 2 - 3 % 1;
+            print y;
+        }
+    )";
 };
 
 void printEvaluatorResult(std::list<std::string> result) {
@@ -29,6 +38,60 @@ void printEvaluatorResult(std::list<std::string> result) {
         s = s + r + " ";
     }
     TEST_LOG << s;
+}
+
+void printTable1(qps::evaluator::ResultTable table) {
+    for (auto r : table.getResult()) {
+        std::string record;
+        for (auto f : r) {
+            record = record + qps::evaluator::Evaluator::PKBFieldToString(f) + " ";
+        }
+        TEST_LOG << record;
+    }
+}
+TEST_CASE("test simple source code") {
+    PKB pkb;
+    SourceProcessor sp;
+    TestCode testcase{};
+    sp.processSimple(testcase.sourceCode2, &pkb);
+
+    TEST_LOG << "assign a; stmt s; Select s such that Parent(s, 10) pattern a('x', _)";
+    qps::evaluator::Evaluator evaluator1 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query1{};
+    query1.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query1.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query1.addVariable("s");
+    std::shared_ptr<qps::query::Parent> ptr1 = std::make_shared<qps::query::Parent>();
+    ptr1->parent = qps::query::StmtRef::ofDeclaration("s");
+    ptr1->child = qps::query::StmtRef::ofLineNo(10);
+    query1.addSuchthat(ptr1);
+    query1.addPattern(qps::query::Pattern{"a",
+                                          qps::query::EntRef::ofVarName("x"),
+                                          qps::query::ExpSpec::ofWildcard()});
+
+    std::list<std::string> result1 = evaluator1.evaluate(query1);
+    result1.sort();
+    printEvaluatorResult(result1);
+    REQUIRE(result1 == std::list<std::string>{});
+
+    TEST_LOG << "assign a; stmt s; variable v; Select s such that Uses(s,v) pattern a (v, _)";
+    qps::evaluator::Evaluator evaluator2 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query2{};
+    query2.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query2.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query2.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    query2.addVariable("s");
+    std::shared_ptr<qps::query::Uses> ptr2 = std::make_shared<qps::query::Uses>();
+    ptr2->useStmt = qps::query::StmtRef::ofDeclaration("s");
+    ptr2->used = qps::query::EntRef::ofDeclaration("v");
+    query2.addSuchthat(ptr2);
+    query2.addPattern(qps::query::Pattern{"a",
+                                          qps::query::EntRef::ofDeclaration("v"),
+                                          qps::query::ExpSpec::ofWildcard()});
+    std::list<std::string> result2 = evaluator2.evaluate(query2);
+    result2.sort();
+    printEvaluatorResult(result2);
+    REQUIRE(result2 == std::list<std::string>{"2", "3", "4"});
 }
 
 TEST_CASE("test evaluate pattern") {

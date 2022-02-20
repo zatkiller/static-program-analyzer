@@ -24,6 +24,8 @@ struct PKBStrategy {
     */
     virtual void insertVariable(std::string) = 0;
 
+    virtual void insertEntity(Content) = 0;
+
     /**
     * Inserts a relationship into the PKB.
     *
@@ -42,6 +44,7 @@ class NullPKBStrategy : public PKBStrategy {
 public:
     void insertStatement(STMT_LO) override {};
     void insertVariable(std::string) override {};
+    void insertEntity(Content) override {};
     void insertRelationship(PKBRelationship, Content, Content) override {};
 };
 
@@ -55,6 +58,7 @@ public:
     explicit ActualPKBStrategy(PKB *pkb) : pkb(pkb) {}
     void insertStatement(STMT_LO) override;
     void insertVariable(std::string) override;
+    void insertEntity(Content) override;
     void insertRelationship(PKBRelationship, Content, Content) override;
 };
 }  // namespace design_extractor

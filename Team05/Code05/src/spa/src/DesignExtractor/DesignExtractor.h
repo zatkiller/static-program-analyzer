@@ -7,6 +7,8 @@
 #include "DesignExtractor/Extractor.h"
 #include "DesignExtractor/EntityExtractor/StatementExtractor.h"
 #include "DesignExtractor/EntityExtractor/VariableExtractor.h"
+#include "DesignExtractor/EntityExtractor/ConstExtractor.h"
+#include "DesignExtractor/EntityExtractor/ProcedureExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/FollowsExtractor.h"
@@ -22,6 +24,8 @@ public:
     explicit DesignExtractor(PKBStrategy* pkbStrategy) : pkbStrategy(pkbStrategy) {
         extractors.push_back(std::make_shared<StatementExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<VariableExtractor>(pkbStrategy));
+        extractors.push_back(std::make_shared<ConstExtractor>(pkbStrategy));
+        extractors.push_back(std::make_shared<ProcedureExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<ModifiesExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<UsesExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<FollowsExtractor>(pkbStrategy));

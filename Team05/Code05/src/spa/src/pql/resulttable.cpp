@@ -41,7 +41,6 @@ namespace qps::evaluator {
 
     void ResultTable::crossJoin(PKBResponse r) {
         if (table.empty()) {
-            insert(r);
             return;
         }
         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> newTable;
@@ -161,6 +160,12 @@ namespace qps::evaluator {
             if (synExists(first) && synExists(second)) {
                 innerJoin(response, true, true, synonyms);
             } else if (!synExists(first) && !synExists(second)) {
+                if (table.empty() && synSequenceMap.empty()) {
+                    insertSynLocationToLast(first);
+                    insertSynLocationToLast(second);
+                    insert(response);
+                    return;
+                }
                 insertSynLocationToLast(first);
                 insertSynLocationToLast(second);
                 crossJoin(response);
@@ -176,6 +181,11 @@ namespace qps::evaluator {
             if (synExists(syn)) {
                 innerJoin(response, true, false, synonyms);
             } else {
+                if (table.empty() && synSequenceMap.empty()) {
+                    insertSynLocationToLast(syn);
+                    insert(response);
+                    return;
+                }
                 insertSynLocationToLast(syn);
                 crossJoin(response);
             }

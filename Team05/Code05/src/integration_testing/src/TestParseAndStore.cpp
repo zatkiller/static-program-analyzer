@@ -84,6 +84,19 @@ struct TestParseAndStorePackage1 {
                 STMT_LO{7, StatementType::Print}
             })
         );
+        expectedEntities.emplace(
+            PKBEntityType::CONST,
+            std::set<Content>({
+                CONST{0},
+                CONST{10},
+            })
+        );
+        expectedEntities.emplace(
+            PKBEntityType::PROCEDURE,
+            std::set<Content>({
+                PROC_NAME{"sumDigits"},
+            })
+        );
     }
     void initRelationships() {
         expectedRelationships.emplace(
@@ -195,6 +208,38 @@ TEST_CASE("Test parse and store") {
 
         REQUIRE(test1.isCorrect(vars, PKBEntityType::VARIABLE));
     }
+
+
+    TEST_LOG << "Const extraction from PKB";
+    {
+        auto response = pkb.getConstants();
+        REQUIRE(response.hasResult);
+
+        auto resultSet = std::get<std::unordered_set<PKBField, PKBFieldHash>>(response.res);
+
+        std::set<CONST> consts;
+        for (auto v : resultSet) {
+            consts.insert(std::get<CONST>(v.content));
+        }
+
+        REQUIRE(test1.isCorrect(consts, PKBEntityType::CONST));
+    }
+
+    TEST_LOG << "Procedure extraction from PKB";
+    {
+        auto response = pkb.getProcedures();
+        REQUIRE(response.hasResult);
+
+        auto resultSet = std::get<std::unordered_set<PKBField, PKBFieldHash>>(response.res);
+
+        std::set<PROC_NAME> procedures;
+        for (auto v : resultSet) {
+            procedures.insert(std::get<PROC_NAME>(v.content));
+        }
+
+        REQUIRE(test1.isCorrect(procedures, PKBEntityType::PROCEDURE));
+    }
+
 
     TEST_LOG << "Statement extraction from PKB";
     {

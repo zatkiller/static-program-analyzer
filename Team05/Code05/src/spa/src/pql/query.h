@@ -366,7 +366,8 @@ namespace qps::query {
         std::vector<std::string> variable;
         std::vector<std::shared_ptr<RelRef>> suchthat;
         std::vector<Pattern> pattern;
-        bool valid;
+        bool syntaxValid;
+        bool semanticValid;
 
     public:
         std::unordered_map<std::string, DesignEntity> getDeclarations();
@@ -377,9 +378,11 @@ namespace qps::query {
 
         std::vector<Pattern> getPattern();
 
-        bool isValid();
+        bool isSyntaxValid();
+        bool isSemanticValid();
 
-        void setValid(bool);
+        void setSyntaxValid(bool);
+        void setSemanticValid(bool);
 
         bool hasDeclaration(std::string);
 
