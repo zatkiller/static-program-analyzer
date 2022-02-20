@@ -578,3 +578,48 @@ assign a; stmt s; variable v;
 Select s such that Uses(s,v) pattern a (v, _)
 1,2,3,4,5,7,9,10,11,12,13,14,15,19,20,22
 5000
+117 - Invalid syntax query - ; at end of query
+stmt s;
+Select s;
+Invalid Query
+5000
+118 - Invalid syntax query - No such declaration
+stmt s;
+Select v
+Invalid Query
+5000
+119 - Invalid syntax query - No such relationship
+stmt s;
+Select s such that Hello(s, 1)
+Invalid Query
+5000
+120 - Invalid syntax query - No such assignment declaration for Pattern
+stmt s;
+Select s pattern a("x", "x")
+Invalid Query
+5000
+121 - Invalid syntax query - No such design entity
+hello s;
+Select s;
+Invalid Query
+5000
+122 - Invalid semantic query - Follows/Parent cannot take in variable
+stmt s; variable v, v1;
+Select s such that Parent(v, v1)
+none
+5000
+123 - Invalid semantic query - Uses/Modifies first argument cannot be wildcard
+stmt s; variable v;
+Select s such that Modifies(_, v)
+none
+5000
+124 - Invalid semantic query - Uses/Modifies second argument if synonym has to be variable
+stmt s;
+Select s such that Modifies(_, s)
+none
+5000
+125 - Invalid semantic query - Pattern LHS if synonym has to be variable
+stmt s; assign a;
+Select s pattern a(s, "x")
+none
+5000

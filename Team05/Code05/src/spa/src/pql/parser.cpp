@@ -300,7 +300,8 @@ namespace qps::parser {
     Query Parser::parsePql(std::string query) {
         addPql(query);
         Query queryObj;
-        queryObj.setValid(true);
+        queryObj.setSyntaxValid(true);
+        queryObj.setSemanticValid(true);
 
         try {
             for (Token token = peekNextReservedToken(); token.getTokenType() != TokenType::END_OF_FILE;
@@ -313,8 +314,10 @@ namespace qps::parser {
                     parseQuery(queryObj);
                 }
             }
-        } catch (exceptions::PqlException) {
-            queryObj.setValid(false);
+        } catch (exceptions::PqlSyntaxException) {
+            queryObj.setSyntaxValid(false);
+        } catch (exceptions::PqlSemanticException) {
+            queryObj.setSemanticValid(false);
         }
 
         return queryObj;
