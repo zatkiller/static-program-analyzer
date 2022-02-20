@@ -139,7 +139,8 @@ TEST_CASE("Test Empty table cross join and empty table insert") {
     table.insertSynLocationToLast("s");
     table.insertSynLocationToLast("v");
 
-    REQUIRE(table.getSynLocation("v") == 0);
+    REQUIRE(table.getSynLocation("s") == 0);
+    REQUIRE(table.getSynLocation("v") == 1);
     auto result = table.getResult();
     REQUIRE(result.size() == 0);
 
