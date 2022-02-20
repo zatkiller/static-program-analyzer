@@ -313,7 +313,7 @@ unique_ptr<ast::Expr> parse(deque<Token>& tokens) {
     return shuntingYardParser(tokens);
 }
 
-}  // namespace ExprParser
+}  // namespace expr_parser
 
 /** =============================== CONDEXPR PARSER =============================== */
 namespace cond_expr_parser {
@@ -402,7 +402,7 @@ unique_ptr<ast::CondExpr> parse(deque<Token>& tokens) {
     auto rhsCondExprResult = move(parse(tokens));
     return make_unique<ast::CondBinExpr>(condOp, move(condExprResult), move(rhsCondExprResult));
 }
-}  // namespace CondExprParser
+}  // namespace cond_expr_parser
 
 /** ================================= STMT PARSER ================================= */
 namespace statement_list_parser {
@@ -506,7 +506,7 @@ ast::StmtLst parse(deque<Token>& tokens) {
     return ast::StmtLst(list);
 }    
 
-}  // namespace StmtLstParser
+}  // namespace statement_list_parser
 
 /** ================================ PARSER CLASS ================================= */
 

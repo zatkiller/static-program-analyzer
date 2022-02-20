@@ -12,7 +12,7 @@ class ProcedureExtractor : public Extractor {
 public:
     using Extractor::Extractor;
     void visit(const ast::Procedure& node) override;
-};
+}
 
 }  // namespace design_extractor
 }  // namespace sp
