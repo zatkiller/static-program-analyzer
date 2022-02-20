@@ -4,8 +4,8 @@ Select s pattern a("x", _)
 none
 5000
 2 - Select statement with pattern with LHS being synonym and RHS being a wildcard
-assign a; stmt s;
-Select s pattern a(s, _)
+assign a; variable v
+Select v pattern a(v, _)
 none
 5000
 3 - Select statement with pattern with LHS being wildcard and RHS being a wildcard
@@ -13,7 +13,7 @@ assign a; stmt s;
 Select s pattern a(_, _)
 none
 5000
-4 - Select statement with pattern with LHS being variable name and RHS being a string wrapped with wildcard
+4 - Select assign with pattern with LHS being variable name and RHS being a string wrapped with wildcard
 assign a; stmt s;
 Select s pattern a("x", _"x"_)
 none

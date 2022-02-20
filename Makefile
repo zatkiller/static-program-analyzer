@@ -1,5 +1,5 @@
 
-TEST_FOLDER=/Team05/Code05/tests
+TEST_FOLDER=/Team05/Tests05
 
 
 build:
@@ -15,5 +15,4 @@ autotester:
 	docker run --rm -it \
 		-v $(shell pwd)${TEST_FOLDER}:${TEST_FOLDER} \
 		cs3203t05 \
-		autotester ${TEST_FOLDER}/Sample_source.txt ${TEST_FOLDER}/Sample_queries.txt ${TEST_FOLDER}/out.xml
-
+		autotester /$(source) /$(query) /$(out) 

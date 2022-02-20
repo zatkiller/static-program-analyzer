@@ -266,7 +266,6 @@ namespace qps::parser {
 
         Token t = getAndCheckNextToken(TokenType::IDENTIFIER);
         std::string declarationName = t.getText();
-
         if (queryObj.getDeclarationDesignEntity(declarationName) != DesignEntity::ASSIGN)
             throw exceptions::PqlSyntaxException(messages::qps::parser::notAnAssignmentMessage);
 
