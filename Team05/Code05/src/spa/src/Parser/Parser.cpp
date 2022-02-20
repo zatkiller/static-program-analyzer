@@ -528,7 +528,7 @@ unique_ptr<ast::Procedure> parseProcedure(deque<Token>& tokens) {
 
 unique_ptr<ast::Program> parseProgram(deque<Token>& tokens) {
     Token currToken = tokens.front();
-    if (get<string>(currToken.value) != "procedure") {
+    if (currToken.type != TokenType::name || get<string>(currToken.value) != "procedure") {
         throwUnexpectedToken("procedure");
     }
     auto resultProc = parseProcedure(tokens);

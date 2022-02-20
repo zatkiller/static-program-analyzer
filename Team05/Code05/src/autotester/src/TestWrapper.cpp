@@ -26,7 +26,10 @@ void TestWrapper::parse(std::string filename) {
 	file.open(filename);
 	buffer << file.rdbuf();
 
-	sp.processSimple(buffer.str(), &pkb);
+	if (!sp.processSimple(buffer.str(), &pkb)) {
+    std::cout << "Failed to parse SIMPLE source file." << std::endl;
+    std::exit(1);
+  };
 }
 
 // method to evaluating a query

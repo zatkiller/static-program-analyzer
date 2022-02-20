@@ -496,6 +496,9 @@ TEST_CASE("Testing Parser") {
     SECTION("Complete program test") {
         using ast::make;
         
+        std::string emptyProg = "";
+        REQUIRE(parse(emptyProg) == nullptr);
+
         // Program with a bad operator
         std::string fail = R"(
             procedure a {
