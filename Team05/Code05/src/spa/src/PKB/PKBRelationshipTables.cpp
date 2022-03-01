@@ -147,19 +147,39 @@ int NonTransitiveRelationshipTable::getSize() {
     return rows.size();
 }
 
-/** =============================== PARENTGRAPH METHODS ================================ */
+/** ================================== GRAPH METHODS =================================== */
 Graph::Graph(PKBRelationship type) : type(type) {}
 
-void Graph::addEdge(STMT_LO u, STMT_LO v) {
-    Node* uNode;
-    Node* vNode;
+Node* Graph::addNode(std::map<STMT_LO, Node*>& filtered, STMT_LO stmt) {
+    bool hasExistingStatementNo = false;
+    for (auto [s, node] : filtered) {
+        // Case where a node for u already exists
+        if (stmt == s) {
+            return nodes.at(stmt);
+        }
 
-    // Statement's parent cannot come after the statement
+        // Invalid insert
+        if (s.statementNum == stmt.statementNum && s.type.value() != stmt.type.value()) {
+            return nullptr;
+        }
+    }
+
+    if (!hasExistingStatementNo) {
+        Node* node = new Node(stmt, nullptr, Node::NodeSet{});
+        nodes.emplace(stmt, node);
+        return node;
+    }
+
+    return nullptr;
+}
+
+void Graph::addEdge(STMT_LO u, STMT_LO v) {
+    // Second statement in the relationship cannot come before the first
     if (u.statementNum >= v.statementNum) {
         return;
     }
 
-    // First stmt has to be a container statement
+    // First statement in a Parent relationship has to be a container statement 
     if (type == PKBRelationship::PARENT && u.type.value() != StatementType::If
         && u.type.value() != StatementType::While) {
         return;
@@ -173,44 +193,11 @@ void Graph::addEdge(STMT_LO u, STMT_LO v) {
                 pair.first.statementNum == v.statementNum;
         });
 
-    bool hasExistingStatementNo = false;
-    for (auto [stmt, node] : filtered) {
-        // Case where a node for u already exists
-        if (stmt == u) {
-            uNode = nodes.at(u);
-            hasExistingStatementNo = true;
-            break;
-        }
+    Node* uNode = addNode(filtered, u);
+    Node* vNode = addNode(filtered, v);
 
-        // Invalid insert
-        if (stmt.statementNum == u.statementNum && stmt.type.value() != u.type.value()) {
-            return;
-        }
-    }
-
-    if (!hasExistingStatementNo) {
-        uNode = new Node(u, nullptr, Node::NodeSet{});
-        nodes.emplace(u, uNode);
-    }
-
-    hasExistingStatementNo = false;
-    for (auto [stmt, node] : filtered) {
-        // Case where a node for v already exists
-        if (stmt == v) {
-            vNode = nodes.at(v);
-            hasExistingStatementNo = true;
-            break;
-        }
-
-        // Invalid insert
-        if (stmt.statementNum == v.statementNum && stmt.type.value() != v.type.value()) {
-            return;
-        }
-    }
-
-    if (!hasExistingStatementNo) {
-        vNode = new Node(v, nullptr, Node::NodeSet{});
-        nodes.emplace(v, vNode);
+    if (!uNode || !vNode) {
+        return;
     }
 
     // Add the edge between uNode and vNode

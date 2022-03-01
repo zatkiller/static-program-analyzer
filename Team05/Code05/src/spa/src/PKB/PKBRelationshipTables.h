@@ -361,6 +361,8 @@ private:
     * @see PKBField
     */
     Result traverseAll(StatementType type1, StatementType type2);
+
+    Node* addNode(std::map<STMT_LO, Node*>&, STMT_LO);
 };
 
 class TransitiveRelationshipTable : public RelationshipTable {
