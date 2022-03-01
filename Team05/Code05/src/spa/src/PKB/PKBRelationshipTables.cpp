@@ -254,66 +254,13 @@ Result Graph::retrieve(PKBField field1, PKBField field2) {
     bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
 
     if (isConcreteFirst && isConcreteSec) {
-        return this->getContains(field1, field2)
-            ? Result{ {{field1, field2}} }
-        : Result{};
-
+        return getContains(field1, field2) ? Result{ {{field1, field2}} } : Result{};
     } else if (isConcreteFirst && !isConcreteSec) {
-        STMT_LO target = *(field1.getContent<STMT_LO>());
-        Result res{};
-
-        if (!target.type.has_value() && !field1.statementType.has_value()) {
-            return res;
-        }
-
-        StatementType targetType = field2.statementType.value();
-
-        if (nodes.count(target) != 0) {
-            Node* curr = nodes.at(target);
-
-            if (!curr->next.empty()) {
-                Node::NodeSet nextNodes = curr->next;
-                Node::NodeSet filtered;
-                std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
-                    [targetType](Node* const& node) {
-                        return (node->stmt.type.value() == targetType || targetType == StatementType::All);
-                    });
-                for (Node* node : filtered) {
-                    std::vector<PKBField> temp;
-                    PKBField second = PKBField::createConcrete(Content{ node->stmt });
-                    temp.push_back(field1);
-                    temp.push_back(second);
-                    res.insert(temp);
-                }
-            }
-        }
-        return res;
-
+        return traverseStart(field1, field2);
     } else if (!isConcreteFirst && isConcreteSec) {
-        STMT_LO target = *(field2.getContent<STMT_LO>());
-        Result res{};
-
-        if (!target.type.has_value() && !field2.statementType.has_value()) {
-            return res;
-        }
-
-        StatementType targetType = field1.statementType.value();
-
-        if (nodes.count(target) != 0) {
-            Node* curr = nodes.at(target);
-
-            if (curr->prev != nullptr) {
-                STMT_LO prevStmt = curr->prev->stmt;
-                if (prevStmt.type.value() == targetType || targetType == StatementType::All) {
-                    PKBField first = PKBField::createConcrete(Content{ prevStmt });
-                    res.insert(std::vector<PKBField>{first, field2});
-                }
-            }
-        }
-        return res;
-
+        return traverseEnd(field1, field2);
     } else {
-        return this->traverseAll(field1.statementType.value(), field2.statementType.value());
+        return traverseAll(field1.statementType.value(), field2.statementType.value());
     }
 }
 
@@ -332,6 +279,39 @@ Result Graph::retrieveT(PKBField field1, PKBField field2) {
     } else {
         return Result{};
     }
+}
+
+Result Graph::traverseStart(PKBField field1, PKBField field2) {
+    STMT_LO target = *(field1.getContent<STMT_LO>());
+    Result res{};
+
+    if (!target.type.has_value()) {
+        return res;
+    }
+
+    StatementType targetType = field2.statementType.value();
+
+    if (nodes.count(target) != 0) {
+        Node* curr = nodes.at(target);
+
+        if (!curr->next.empty()) {
+            Node::NodeSet nextNodes = curr->next;
+            Node::NodeSet filtered;
+            std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
+                [targetType](Node* const& node) {
+                    return (node->stmt.type.value() == targetType || targetType == StatementType::All);
+                });
+
+            for (Node* node : filtered) {
+                std::vector<PKBField> temp;
+                PKBField second = PKBField::createConcrete(Content{ node->stmt });
+                temp.push_back(field1);
+                temp.push_back(second);
+                res.insert(temp);
+            }
+        }
+    }
+    return res;
 }
 
 Result Graph::traverseStartT(PKBField field1, PKBField field2) {
@@ -368,6 +348,30 @@ void Graph::traverseStartT(std::set<STMT_LO>* found, Node* node, StatementType t
         }
     }
     return;
+}
+
+Result Graph::traverseEnd(PKBField field1, PKBField field2) {
+    STMT_LO target = *(field2.getContent<STMT_LO>());
+    Result res{};
+
+    if (!target.type.has_value()) {
+        return res;
+    }
+
+    StatementType targetType = field1.statementType.value();
+
+    if (nodes.count(target) != 0) {
+        Node* curr = nodes.at(target);
+
+        if (curr->prev != nullptr) {
+            STMT_LO prevStmt = curr->prev->stmt;
+            if (prevStmt.type.value() == targetType || targetType == StatementType::All) {
+                PKBField first = PKBField::createConcrete(Content{ prevStmt });
+                res.insert(std::vector<PKBField>{first, field2});
+            }
+        }
+    }
+    return res;
 }
 
 Result Graph::traverseEndT(PKBField field1, PKBField field2) {
@@ -491,6 +495,13 @@ bool TransitiveRelationshipTable::containsT(PKBField field1, PKBField field2) {
     return graph->getContainsT(field1, field2);
 }
 
+void convertWildcardToDeclaration(PKBField* field) {
+    if (field->fieldType == PKBFieldType::WILDCARD) {
+        field->fieldType = PKBFieldType::DECLARATION;
+        field->statementType = StatementType::All;
+    }
+}
+
 FieldRowResponse TransitiveRelationshipTable::retrieve(PKBField field1, PKBField field2) {
     // Both fields have to be a statement type
     if (!isRetrieveValid(field1, field2)) {
@@ -500,15 +511,8 @@ FieldRowResponse TransitiveRelationshipTable::retrieve(PKBField field1, PKBField
     }
 
     // for any fields that are wildcards, convert them into declarations of all types
-    if (field1.fieldType == PKBFieldType::WILDCARD) {
-        field1.fieldType = PKBFieldType::DECLARATION;
-        field1.statementType = StatementType::All;
-    }
-
-    if (field2.fieldType == PKBFieldType::WILDCARD) {
-        field2.fieldType = PKBFieldType::DECLARATION;
-        field2.statementType = StatementType::All;
-    }
+    convertWildcardToDeclaration(&field1);
+    convertWildcardToDeclaration(&field2);
 
     if (field1.fieldType == PKBFieldType::CONCRETE &&
         field2.fieldType == PKBFieldType::CONCRETE) {
@@ -529,15 +533,8 @@ FieldRowResponse TransitiveRelationshipTable::retrieveT(PKBField field1, PKBFiel
     }
 
     // for any fields that are wildcards, convert them into declarations of all types
-    if (field1.fieldType == PKBFieldType::WILDCARD) {
-        field1.fieldType = PKBFieldType::DECLARATION;
-        field1.statementType = StatementType::All;
-    }
-
-    if (field2.fieldType == PKBFieldType::WILDCARD) {
-        field2.fieldType = PKBFieldType::DECLARATION;
-        field2.statementType = StatementType::All;
-    }
+    convertWildcardToDeclaration(&field1);
+    convertWildcardToDeclaration(&field2);
 
     if (field1.fieldType == PKBFieldType::CONCRETE &&
         field2.fieldType == PKBFieldType::CONCRETE) {

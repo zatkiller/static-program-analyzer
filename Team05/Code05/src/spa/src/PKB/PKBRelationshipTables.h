@@ -274,6 +274,10 @@ public:
 private:
     PKBRelationship type;
     std::map<STMT_LO, Node*> nodes; /**< The list of nodes in this FollowsGraph */
+    
+    Node* addNode(std::map<STMT_LO, Node*>&, STMT_LO);
+    
+    Result traverseStart(PKBField field1, PKBField field2);
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided Parent* relationship, Parent*(field1, field2),
@@ -302,6 +306,8 @@ private:
     * @see PKBField
     */
     void traverseStartT(std::set<STMT_LO>* found, Node* node, StatementType targetType);
+
+    Result traverseEnd(PKBField field1, PKBField field2);
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided Parent* relationship, Parent*(field1, field2),
@@ -362,7 +368,6 @@ private:
     */
     Result traverseAll(StatementType type1, StatementType type2);
 
-    Node* addNode(std::map<STMT_LO, Node*>&, STMT_LO);
 };
 
 class TransitiveRelationshipTable : public RelationshipTable {
