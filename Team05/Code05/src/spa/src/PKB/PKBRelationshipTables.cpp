@@ -40,15 +40,31 @@ NonTransitiveRelationshipTable::NonTransitiveRelationshipTable(PKBRelationship r
 
 bool NonTransitiveRelationshipTable::isRetrieveValid(PKBField field1, PKBField field2) {
     // both Modifies and Uses cannot accept a wildcard as its first parameter
-    return field1.fieldType != PKBFieldType::WILDCARD &&
-        (field1.entityType == PKBEntityType::PROCEDURE ||
-            field1.entityType == PKBEntityType::STATEMENT) &&
-        (field2.entityType == PKBEntityType::VARIABLE);
+    if (field1.fieldType == PKBFieldType::WILDCARD) {
+        return false;
+    }
+
+    if (field1.entityType != PKBEntityType::PROCEDURE && field1.entityType != PKBEntityType::STATEMENT) {
+        return false;
+    }
+
+    if (field2.entityType != PKBEntityType::VARIABLE) {
+        return false;
+    }
+
+    return true;
 }
 
 bool NonTransitiveRelationshipTable::isInsertOrContainsValid(PKBField field1, PKBField field2) {
-    return (field1.isValidConcrete(PKBEntityType::STATEMENT) || field1.isValidConcrete(PKBEntityType::PROCEDURE))
-        && field2.isValidConcrete(PKBEntityType::VARIABLE);
+    if (!field1.isValidConcrete(PKBEntityType::STATEMENT) && !field1.isValidConcrete(PKBEntityType::PROCEDURE)) {
+        return false;
+    }
+
+    if (!field2.isValidConcrete(PKBEntityType::VARIABLE)) {
+        return false;
+    }
+
+    return true;
 }
 
 bool NonTransitiveRelationshipTable::contains(PKBField field1, PKBField field2) {
