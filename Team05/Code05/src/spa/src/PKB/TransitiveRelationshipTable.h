@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <unordered_set>
 
-#include "RelationshipRow.h"
 #include "PKBRelationship.h"
+#include "PKBField.h"
 
 using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 

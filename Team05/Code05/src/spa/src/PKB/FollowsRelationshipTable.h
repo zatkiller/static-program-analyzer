@@ -6,6 +6,7 @@
 #include "logging.h"
 #include "TransitiveRelationshipTable.h"
 #include "FollowsGraph.h"
+#include "PKBField.h"
 
 using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 

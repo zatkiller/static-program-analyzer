@@ -7,10 +7,8 @@
 #include <memory>
 
 #include "PKB/PKBTables.h"
-#include "PKB/ModifiesRelationshipTable.h"
 #include "PKB/FollowsRelationshipTable.h"
 #include "PKB/ParentRelationshipTable.h"
-#include "PKB/UsesRelationshipTable.h"
 #include "PKB/PKBResponse.h"
 #include "PKB/PKBReturnType.h"
 #include "PKB/PKBField.h"
