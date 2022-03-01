@@ -5,12 +5,10 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "logging.h"
 
 #include "PKB/PKBTables.h"
-#include "PKB/FollowsRelationshipTable.h"
-#include "PKB/ParentRelationshipTable.h"
 #include "PKB/PKBResponse.h"
-#include "PKB/PKBReturnType.h"
 #include "PKB/PKBField.h"
 #include "DesignExtractor/PatternMatcher.h"
 
