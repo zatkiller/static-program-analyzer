@@ -113,12 +113,7 @@ bool StatementTable::contains(StatementType type, int statementNumber) {
 }
 
 bool StatementTable::contains(int statementNumber) {
-    return contains(StatementType::Assignment, statementNumber) ||
-        contains(StatementType::Call, statementNumber) ||
-        contains(StatementType::If, statementNumber) ||
-        contains(StatementType::Read, statementNumber) ||
-        contains(StatementType::Print, statementNumber) ||
-        contains(StatementType::While, statementNumber);
+    return getStmtTypeOfLine(statementNumber).has_value();
 }
 
 void StatementTable::insert(StatementType type, int statementNumber) {
