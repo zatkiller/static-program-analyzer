@@ -90,7 +90,6 @@ void NonTransitiveRelationshipTable::insert(PKBField field1, PKBField field2) {
 FieldRowResponse NonTransitiveRelationshipTable::retrieve(PKBField field1, PKBField field2) {
     PKBFieldType fieldType1 = field1.fieldType;
     PKBFieldType fieldType2 = field2.fieldType;
-
     FieldRowResponse res;
 
     if (!isRetrieveValid(field1, field2)) {
@@ -102,55 +101,36 @@ FieldRowResponse NonTransitiveRelationshipTable::retrieve(PKBField field1, PKBFi
     if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 == PKBFieldType::CONCRETE) {
         if (this->contains(field1, field2)) res.insert({ field1, field2 });
 
-    } else if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 != PKBFieldType::CONCRETE) {
+    } else {
         for (auto row : rows) {
             RelationshipRow curr = row;
             PKBField first = curr.getFirst();
             PKBField second = curr.getSecond();
 
-            if (first == field1) {
-                res.insert({ first, second });
-            }
-        }
-        // either statement declaration or wildcard, or procedure wildcard/declaration
-    } else if (fieldType1 != PKBFieldType::CONCRETE && fieldType2 == PKBFieldType::CONCRETE) {
-        // field1 cannot be both statement and wildcard, invalid syntax
-        for (auto row : rows) {
-            RelationshipRow curr = row;
-            PKBField first = curr.getFirst();
-            PKBField second = curr.getSecond();
+            auto isValidStatement = [](auto field, auto first) {
+                return field.statementType.value() == StatementType::All ||
+                    field.statementType == first.getContent<STMT_LO>()->type.value();
+            };
 
-            // If first declaration looking for Procedures
-            if (field1.entityType == PKBEntityType::PROCEDURE && first.entityType == PKBEntityType::PROCEDURE) {
-                if (second == field2) {
+            if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 != PKBFieldType::CONCRETE) {
+                if (first == field1) res.insert({ first, second });
+            } else if (fieldType1 != PKBFieldType::CONCRETE && fieldType2 == PKBFieldType::CONCRETE) {
+                // If first declaration looking for Procedures
+                if (field1.entityType == PKBEntityType::PROCEDURE && first.entityType == PKBEntityType::PROCEDURE) {
+                    if (second == field2) res.insert({ first, second });
+                }
+
+                if (field1.entityType == PKBEntityType::STATEMENT && first.entityType == PKBEntityType::STATEMENT) {
+                    if (second == field2 && isValidStatement(field1, first)) res.insert({ first, second });
+                }
+            } else {
+                // If first declaration looking for Procedures
+                if (field1.entityType == PKBEntityType::PROCEDURE && first.entityType == PKBEntityType::PROCEDURE) {
                     res.insert({ first, second });
                 }
-            }
 
-            if (field1.entityType == PKBEntityType::STATEMENT && first.entityType == PKBEntityType::STATEMENT) {
-                if (second == field2) {
-                    if (field1.statementType.value() == StatementType::All ||
-                        field1.statementType == first.getContent<STMT_LO>()->type.value()) {
-                        res.insert({ first, second });
-                    }
-                }
-            }
-        }
-    } else {  // both declaration/wild
-        for (auto row : rows) {
-            RelationshipRow curr = row;
-            PKBField first = curr.getFirst();
-            PKBField second = curr.getSecond();
-
-            // If first declaration looking for Procedures
-            if (field1.entityType == PKBEntityType::PROCEDURE && first.entityType == PKBEntityType::PROCEDURE) {
-                res.insert({ first, second });
-            }
-
-            if (field1.entityType == PKBEntityType::STATEMENT && first.entityType == PKBEntityType::STATEMENT) {
-                if (field1.statementType.value() == StatementType::All ||
-                    field1.statementType == first.getContent<STMT_LO>()->type.value()) {
-                    res.insert({ first, second });
+                if (field1.entityType == PKBEntityType::STATEMENT && first.entityType == PKBEntityType::STATEMENT) {
+                    if (isValidStatement(field1, first)) res.insert({ first, second });
                 }
             }
         }
