@@ -115,22 +115,15 @@ FieldRowResponse NonTransitiveRelationshipTable::retrieve(PKBField field1, PKBFi
             if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 != PKBFieldType::CONCRETE) {
                 if (first == field1) res.insert({ first, second });
             } else if (fieldType1 != PKBFieldType::CONCRETE && fieldType2 == PKBFieldType::CONCRETE) {
-                // If first declaration looking for Procedures
-                if (field1.entityType == PKBEntityType::PROCEDURE && first.entityType == PKBEntityType::PROCEDURE) {
-                    if (second == field2) res.insert({ first, second });
-                }
-
-                if (field1.entityType == PKBEntityType::STATEMENT && first.entityType == PKBEntityType::STATEMENT) {
-                    if (second == field2 && isValidStatement(field1, first)) res.insert({ first, second });
-                }
-            } else {
-                // If first declaration looking for Procedures
-                if (field1.entityType == PKBEntityType::PROCEDURE && first.entityType == PKBEntityType::PROCEDURE) {
+                if (field1.entityType == first.entityType && second == field2) {
+                    if (field1.entityType == PKBEntityType::STATEMENT && !isValidStatement(field1, first)) continue;
                     res.insert({ first, second });
                 }
-
-                if (field1.entityType == PKBEntityType::STATEMENT && first.entityType == PKBEntityType::STATEMENT) {
-                    if (isValidStatement(field1, first)) res.insert({ first, second });
+            } else {
+                // both fields are not concrete
+                if (field1.entityType == first.entityType) {
+                    if (field1.entityType == PKBEntityType::STATEMENT && !isValidStatement(field1, first)) continue;
+                    res.insert({ first, second });
                 }
             }
         }
@@ -203,7 +196,7 @@ void Graph::addEdge(STMT_LO u, STMT_LO v) {
     }
 }
 
-bool Graph::getContains(PKBField field1, PKBField field2) {
+bool Graph::contains(PKBField field1, PKBField field2) {
     STMT_LO parent = *field1.getContent<STMT_LO>();
     STMT_LO child = *field2.getContent<STMT_LO>();
 
@@ -220,12 +213,12 @@ bool Graph::getContains(PKBField field1, PKBField field2) {
     return false;
 }
 
-bool Graph::getContainsT(PKBField field1, PKBField field2) {
+bool Graph::containsT(PKBField field1, PKBField field2) {
     STMT_LO parent = *field1.getContent<STMT_LO>();
     STMT_LO child = *field2.getContent<STMT_LO>();
 
     // Base Case where Parent(field1, field2) holds
-    if (this->getContains(field1, field2)) {
+    if (this->contains(field1, field2)) {
         return true;
     }
 
@@ -237,7 +230,7 @@ bool Graph::getContainsT(PKBField field1, PKBField field2) {
         for (auto node : nextNodes) {
             STMT_LO newStmt = node->stmt;
             PKBField newField1 = PKBField::createConcrete(Content{ newStmt });
-            if (this->getContainsT(newField1, field2)) {
+            if (this->containsT(newField1, field2)) {
                 return true;
             }
         }
@@ -250,7 +243,7 @@ Result Graph::retrieve(PKBField field1, PKBField field2) {
     bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
 
     if (isConcreteFirst && isConcreteSec) {
-        return getContains(field1, field2) ? Result{ {{field1, field2}} } : Result{};
+        return contains(field1, field2) ? Result{ {{field1, field2}} } : Result{};
     } else if (isConcreteFirst && !isConcreteSec) {
         return traverseStart(field1, field2);
     } else if (!isConcreteFirst && isConcreteSec) {
@@ -478,7 +471,7 @@ bool TransitiveRelationshipTable::contains(PKBField field1, PKBField field2) {
         return false;
     }
 
-    return graph->getContains(field1, field2);
+    return graph->contains(field1, field2);
 }
 
 bool TransitiveRelationshipTable::containsT(PKBField field1, PKBField field2) {
@@ -488,7 +481,7 @@ bool TransitiveRelationshipTable::containsT(PKBField field1, PKBField field2) {
         return false;
     }
 
-    return graph->getContainsT(field1, field2);
+    return graph->containsT(field1, field2);
 }
 
 void convertWildcardToDeclaration(PKBField* field) {

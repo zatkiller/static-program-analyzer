@@ -232,7 +232,7 @@ public:
     * @return bool true if Parent(field1, field2) is in the graph and false otherwise
     * @see PKBField
     */
-    bool getContains(PKBField field1, PKBField field2);
+    bool contains(PKBField field1, PKBField field2);
 
     /**
     * Checks if Parent*(field1, field2) is in the graph.
@@ -243,7 +243,7 @@ public:
     * @return bool true if Parent*(field1, field2) is in the graph and false otherwise
     * @see PKBField
     */
-    bool getContainsT(PKBField field1, PKBField field2);
+    bool containsT(PKBField field1, PKBField field2);
 
 
     /**
