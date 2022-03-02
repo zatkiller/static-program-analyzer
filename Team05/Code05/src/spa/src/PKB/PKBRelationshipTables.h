@@ -92,6 +92,11 @@ public:
     */
     PKBRelationship getType();
 
+    /**
+    * Retrieves the number of relationships in the table.
+    *
+    * @return int number of relationships
+    */
     virtual int getSize() = 0;
 
 protected:
@@ -99,7 +104,7 @@ protected:
 
     /**
     * Checks if the two PKBFields provided can be inserted into the table (whether it can exist in the table).
-    * Checks that the fields are concrete and have valid STMT_LOs.
+    * Checks that the fields are concrete and have valid STMT_LO if they are statementss.
     *
     * @param field1 the first PKBField
     * @param field2 the second PKBField
@@ -160,6 +165,11 @@ public:
     */
     FieldRowResponse retrieve(PKBField field1, PKBField field2);
 
+    /**
+    * Retrieves the number of relationships in the table.
+    *
+    * @return int number of relationships
+    */
     int getSize();
 
 private:
@@ -167,7 +177,7 @@ private:
 
     /**
     * Checks if the two PKBFields provided can be inserted into the table (whether it can exist in the table).
-    * Checks that the fields are concrete and have valid STMT_LOs.
+    * Checks that the fields are concrete and have valid STMT_LOs if they are statements.
     *
     * @param field1 the first PKBField
     * @param field2 the second PKBField
@@ -192,95 +202,124 @@ private:
 using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
 /**
-* A bi-directional node inside a ParentGraph
+* A bi-directional node inside a Graph.
 *
-* @see ParentGraph
+* The graph used by FollowsRelationshipTable will have at most 1 next in the NodeSet while
+* the one used by ParentRelationshipTable can have any number of next nodes.
+*
+* @see Graph
 */
 struct Node {
     using NodeSet = std::vector<Node*>;
     Node(STMT_LO stmt, Node* prev, NodeSet next) : stmt(stmt), next(next), prev(prev) {}
 
     STMT_LO stmt;
-    NodeSet next; /**< The descendants of this ParentNode. */
-    Node* prev; /**< The predecessor of this ParentNode. */
+    NodeSet next; /**< The descendant(s) of this Node. */
+    Node* prev; /**< The predecessor of this Node. */
 };
 
 /**
-* A data structure that consists of ParentNodes, where each edge represents a valid Parent relationship.
+* A data structure that consists of Node, where each edge represents a valid relationship. Represents
+* Parent or Follows relationships. For brevity, Parent(u, v) or Uses(u, v) will be denoted by rs(u, v),
+* where rs is the type of transitive relationship this graph holds.
 *
-* @see ParentNode
+* @see Node
 */
 class Graph {
 public:
     explicit Graph(PKBRelationship);
 
     /**
-    * Adds an edge between two STMT_LOs to represent a Parent relationship. Initialises ParentNodes for
+    * Adds an edge between two STMT_LOs to represent a relationship. Initialises Nodes for
     * the STMT_LOs if they are not present in the graph.
     *
-    * @param u the first STMT_LO in a Parent(u,v) relationship
-    * @param v the second STMT_LO in a Parent(u,v) relationship
+    * @param u the first STMT_LO in a rs(u,v) relationship
+    * @param v the second STMT_LO in a rs(u,v) relationship
     */
     void addEdge(STMT_LO u, STMT_LO v);
 
     /**
-    * Checks if Parent(field1, field2) is in the graph.
+    * Checks if rs(field1, field2) is in the graph.
     *
-    * @param field1 the first STMT_LO in a Parent(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a Parent(u,v) query wrapped in a PKBField
+    * @param field1 the first STMT_LO in a rs(u,v) query wrapped in a PKBField
+    * @param field2 the second STMT_LO in a rs(u,v) query wrapped in a PKBField
     *
-    * @return bool true if Parent(field1, field2) is in the graph and false otherwise
+    * @return bool true if rs(field1, field2) is in the graph and false otherwise
     * @see PKBField
     */
     bool contains(PKBField field1, PKBField field2);
 
     /**
-    * Checks if Parent*(field1, field2) is in the graph.
+    * Checks if rs*(field1, field2) is in the graph.
     *
-    * @param field1 the first STMT_LO in a Parent*(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a Parent*(u,v) query wrapped in a PKBField
+    * @param field1 the first STMT_LO in a rs*(u,v) query wrapped in a PKBField
+    * @param field2 the second STMT_LO in a rs*(u,v) query wrapped in a PKBField
     *
-    * @return bool true if Parent*(field1, field2) is in the graph and false otherwise
+    * @return bool true if rs*(field1, field2) is in the graph and false otherwise
     * @see PKBField
     */
     bool containsT(PKBField field1, PKBField field2);
 
 
     /**
-    * Gets all pairs of PKBFields that satisfy the provided Parent relationship, Parent(field1, field2).
+    * Gets all pairs of PKBFields that satisfy the provided rs relationship, rs(field1, field2).
     *
-    * @param field1 the first STMT_LO in a Parent(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a Parent(u,v) query wrapped in a PKBField
+    * @param field1 the first STMT_LO in a rs(u,v) query wrapped in a PKBField
+    * @param field2 the second STMT_LO in a rs(u,v) query wrapped in a PKBField
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields
-    *   that satisfy Parent(field1, field2)
+    * that satisfy rs(field1, field2)
     * @see PKBField
     */
     Result retrieve(PKBField field1, PKBField field2);
 
     /**
-    * Gets all pairs of PKBFields that satisfy the provided Parent* relationship, Parent*(field1, field2).
+    * Gets all pairs of PKBFields that satisfy the provided rs* relationship, rs*(field1, field2).
     *
-    * @param field1 the first STMT_LO in a Parent*(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a Parent*(u,v) query wrapped in a PKBField
+    * @param field1 the first STMT_LO in a rs*(u,v) query wrapped in a PKBField
+    * @param field2 the second STMT_LO in a rs*(u,v) query wrapped in a PKBField
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields
-    *   that satisfy Parent*(field1, field2)
+    *   that satisfy rs*(field1, field2)
     */
     Result retrieveT(PKBField field1, PKBField field2);
 
+    /**
+    * Retrieves the number of relationships in the table.
+    *
+    * @return int number of relationships
+    */
     int getSize();
 
 private:
-    PKBRelationship type;
-    std::map<STMT_LO, Node*> nodes; /**< The list of nodes in this FollowsGraph */
-    
-    Node* addNode(std::map<STMT_LO, Node*>&, STMT_LO);
-    
+    PKBRelationship type; /**< The type of relationships this Graph holds */
+    std::map<STMT_LO, Node*> nodes; /**< The list of nodes in this Graph */
+
+    /**
+    * Add a node represented by stmt to the list of nodes stored in the graph if it does not exist and is valid.
+    * Return a pointer to existing or newly created node. If stmt is invalid, return a nullptr.
+    *
+    * @param stmt a STMT_LO representing the statement
+    */
+    Node* createNode(STMT_LO stmt);
+
+    /**
+    * Gets all pairs of PKBFields that satisfy the provided non-transitive relationship, rs(field1, field2),
+    * where field1 is a concrete field and field2 is either a statement declaration or a statement wildcard.
+    * Statement wildcards are treated as a statement declaration for any statement type.
+    *
+    * @param field1 a concrete field to begin the traversal from
+    * @param field2 a statement declaration
+    *
+    * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
+    * second item in each pair satisfies the statement declaration.
+    *
+    * @see PKBField
+    */
     Result traverseStart(PKBField field1, PKBField field2);
 
     /**
-    * Gets all pairs of PKBFields that satisfy the provided Parent* relationship, Parent*(field1, field2),
+    * Gets all pairs of PKBFields that satisfy the provided transitive relationship, rs*(field1, field2),
     * where field1 is a concrete field and field2 is either a statement declaration or a statement wildcard.
     * Statement wildcards are treated as a statement declaration for any statement type.
     *
@@ -299,7 +338,7 @@ private:
     * until there are no next nodes left.
     *
     * @param found a pointer to a set of STMT_LO that stores the possible STMT_LO for the second field in a
-    *   Parent* relationship.
+    * transitive relationship.
     * @param node a pointer to the node to begin traversal from
     * @param targetType the desired statement type for STMT_LOs that are encountered during the traversal
     *
@@ -307,15 +346,28 @@ private:
     */
     void traverseStartT(std::set<STMT_LO>* found, Node* node, StatementType targetType);
 
-    Result traverseEnd(PKBField field1, PKBField field2);
-
     /**
-    * Gets all pairs of PKBFields that satisfy the provided Parent* relationship, Parent*(field1, field2),
+    * Gets all pairs of PKBFields that satisfy the provided non-transitive relationship, rs(field1, field2),
     * where field1 is either a statement declaration or a statement wildcard and field2 is a concrete field.
     * Statement wildcards are treated as a statement declaration for any statement type.
     *
-    * @param field1 a concrete field to begin the traversal from
-    * @param field2 a statement declaration
+    * @param field1 a statement declaration
+    * @param field2 a concrete field to begin the traversal from
+    *
+    * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
+    * second item in each pair satisfies the statement declaration.
+    *
+    * @see PKBField
+    */
+    Result traverseEnd(PKBField field1, PKBField field2);
+
+    /**
+    * Gets all pairs of PKBFields that satisfy the provided transitive relationship, rs*(field1, field2),
+    * where field1 is either a statement declaration or a statement wildcard and field2 is a concrete field.
+    * Statement wildcards are treated as a statement declaration for any statement type.
+    *
+    * @param field1 a statement declaration
+    * @param field2 a concrete field to begin the traversal from
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
     * second item in each pair satisfies the statement declaration.
@@ -329,29 +381,13 @@ private:
     * until there are no prev nodes left.
     *
     * @param found a pointer to a set of STMT_LO that stores the possible STMT_LO for the first field in a
-    *   Parent* relationship.
+    * transitive relationship.
     * @param node a pointer to the node to begin traversal from
     * @param targetType the desired statement type for STMT_LOs that are encountered during the traversal
     *
     * @see PKBField
     */
     void traverseEndT(std::set<STMT_LO>* found, Node* node, StatementType targetType);
-
-    /**
-    * Gets all pairs (field1, field2) of PKBFields that satisfy the provided Parent* relationship,
-    * Parent*(field1, field2), where field1 is a statement of type1 and field2 a statement of type2.
-    *
-    * Internally, iterates through the nodes in the graph and calls traverseStart on each node.
-    *
-    * @param type1 the first statement type
-    * @param type2 the second statement type
-    *
-    * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where each
-    *   item in each pair satisfies the corresponding statement type requirement.
-    *
-    * @see PKBField
-    */
-    Result traverseAllT(StatementType type1, StatementType type2);
 
     /**
     * Gets all pairs (field1, field2) of PKBFields that satisfy the provided Parent relationship,
@@ -368,6 +404,21 @@ private:
     */
     Result traverseAll(StatementType type1, StatementType type2);
 
+    /**
+    * Gets all pairs (field1, field2) of PKBFields that satisfy the provided transitive relationship,
+    * rs*(field1, field2), where field1 is a statement of type1 and field2 a statement of type2.
+    *
+    * Internally, iterates through the nodes in the graph and calls traverseStart on each node.
+    *
+    * @param type1 the first statement type
+    * @param type2 the second statement type
+    *
+    * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where each
+    *   item in each pair satisfies the corresponding statement type requirement.
+    *
+    * @see PKBField
+    */
+    Result traverseAllT(StatementType type1, StatementType type2);
 };
 
 class TransitiveRelationshipTable : public RelationshipTable {
@@ -375,7 +426,7 @@ public:
     explicit TransitiveRelationshipTable(PKBRelationship);
 
     /**
-    * Checks whether the FollowsRelationshipTable contains Parent(field1, field2).
+    * Checks whether the TransitiveRelationshipTable contains rs(field1, field2).
     *
     * @param field1 the first STMT_LO in a Parent(u,v) query wrapped in a PKBField
     * @param field2 the second STMT_LO in a Parent(u,v) query wrapped in a PKBField
@@ -387,7 +438,7 @@ public:
     bool contains(PKBField field1, PKBField field2);
 
     /**
-    * Inserts into ParentGraph an edge representing Parent(field1, field2).
+    * Inserts into Graph an edge representing rs(field1, field2).
     * If the two provided entities are not valid statements or are not concrete, no insert will be done
     * and an error will be thrown.
     *
@@ -399,40 +450,40 @@ public:
     void insert(PKBField field1, PKBField field2);
 
     /**
-    * Retrieves all pairs of statements that satisfies Parent(field1, field2).
+    * Retrieves all pairs of statements that satisfies rs(field1, field2).
     *
-    * @param field1 the first STMT_LO in a Parent(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a Parent(u,v) query wrapped in a PKBField
+    * @param field1 the first STMT_LO in a rs(u,v) query wrapped in a PKBField
+    * @param field2 the second STMT_LO in a rs(u,v) query wrapped in a PKBField
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> an unordered set of vectors of PKBFields,
-    *   where each vector represents the two program design entities in a Parent relationship,
-    *   i.e. Parent(field1, field2) -> [field1, field2].
+    *   where each vector represents the two program design entities in the relationship,
+    *   i.e. rs(field1, field2) -> [field1, field2].
     *
     * @see PKBField
     */
     FieldRowResponse retrieve(PKBField field1, PKBField field2);
 
     /**
-    * Checks whether the ParentRelationshipTable contains Parent*(field1, field2).
+    * Checks whether the TransitiveRelationshipTable contains rs*(field1, field2).
     *
-    * @param field1 the first STMT_LO in a Parent*(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a Parent*(u,v) query wrapped in a PKBField
+    * @param field1 the first STMT_LO in a rs*(u,v) query wrapped in a PKBField
+    * @param field2 the second STMT_LO in a rs*(u,v) query wrapped in a PKBField
     *
-    * @return bool whether Parent*(field1, field2) is in the graph
+    * @return bool whether rs*(field1, field2) is in the graph
     *
     * @see PKBField
     */
     bool containsT(PKBField field1, PKBField field2);
 
     /**
-    * Retrieves all pairs of statements that satisfies Parent*(field1, field2).
+    * Retrieves all pairs of statements that satisfies rs*(field1, field2).
     *
-    * @param field1 the first STMT_LO in a Parent*(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a Parent*(u,v) query wrapped in a PKBField
+    * @param field1 the first STMT_LO in a rs*(u,v) query wrapped in a PKBField
+    * @param field2 the second STMT_LO in a rs*(u,v) query wrapped in a PKBField
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> an unordered set of vectors of PKBFields,
-    *   where each vector represents the two program design entities in a Parent* relationship,
-    *   i.e. Parent*(field1, field2) -> [field1, field2].
+    *   where each vector represents the two program design entities in a rs* relationship,
+    *   i.e. rs*(field1, field2) -> [field1, field2].
     *
     * @see PKBField
     */
@@ -489,7 +540,7 @@ public:
  * A data structure to store Follows and FollowsT program design abstractions as FollowsNodes in a FollowsGraph.
  * Inherits from TransitiveRelationshipTable.
  *
- * @see FollowsNode, FollowsGraph, TransitiveRelationshipTable
+ * @see Node, Graph, TransitiveRelationshipTable
  */
 class FollowsRelationshipTable : public TransitiveRelationshipTable {
 public:
@@ -500,7 +551,7 @@ public:
 * A data structure to store Parent and Parent* program design abstractions as ParentNodes in a ParentGraph.
 * Inherits from TransitiveRelationshipTable
 *
-* @see ParentNode, ParentGraph, TransitiveRelationshipTable
+* @see Node, Graph, TransitiveRelationshipTable
 */
 class ParentRelationshipTable : public TransitiveRelationshipTable {
 public:

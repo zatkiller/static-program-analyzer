@@ -139,7 +139,14 @@ int NonTransitiveRelationshipTable::getSize() {
 /** ================================== GRAPH METHODS =================================== */
 Graph::Graph(PKBRelationship type) : type(type) {}
 
-Node* Graph::addNode(std::map<STMT_LO, Node*>& filtered, STMT_LO stmt) {
+Node* Graph::createNode(STMT_LO stmt) {
+    // Filter nodes whose statement numbers are the same as inputs
+    std::map<STMT_LO, Node*> filtered;
+    std::copy_if(nodes.begin(), nodes.end(), std::inserter(filtered, filtered.end()),
+        [stmt](decltype(nodes)::value_type const& pair) {
+            return pair.first.statementNum == stmt.statementNum;
+        });
+
     bool hasExistingStatementNo = false;
     for (auto [s, node] : filtered) {
         // Case where a node for u already exists
@@ -174,16 +181,8 @@ void Graph::addEdge(STMT_LO u, STMT_LO v) {
         return;
     }
 
-    // Filter nodes whose statement numbers are the same as inputs
-    std::map<STMT_LO, Node*> filtered;
-    std::copy_if(nodes.begin(), nodes.end(), std::inserter(filtered, filtered.end()),
-        [u, v](decltype(nodes)::value_type const& pair) {
-            return pair.first.statementNum == u.statementNum ||
-                pair.first.statementNum == v.statementNum;
-        });
-
-    Node* uNode = addNode(filtered, u);
-    Node* vNode = addNode(filtered, v);
+    Node* uNode = createNode(u);
+    Node* vNode = createNode(v);
 
     if (!uNode || !vNode) {
         return;
@@ -394,30 +393,6 @@ void Graph::traverseEndT(std::set<STMT_LO>* found, Node* node, StatementType tar
     }
 }
 
-Result Graph::traverseAllT(StatementType type1, StatementType type2) {
-    std::set<STMT_LO> found;
-    Result res;
-
-    for (auto const& [stmt_lo, node] : nodes) {
-        Node* curr = node;
-        found.clear();
-
-        bool typeMatch = type1 == StatementType::All || node->stmt.type.value() == type1;
-        if (typeMatch) {
-            traverseStartT(&found, node, type2);
-        }
-
-        std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, res.end()),
-            [curr](STMT_LO const& stmt) {
-                PKBField first = PKBField::createConcrete(Content{ curr->stmt });
-                PKBField second = PKBField::createConcrete(Content{ stmt });
-                return std::vector<PKBField>{first, second};
-            });
-    }
-
-    return res;
-}
-
 Result Graph::traverseAll(StatementType type1, StatementType type2) {
     Result res{};
     for (auto const& [stmt_lo, node] : nodes) {
@@ -446,6 +421,30 @@ Result Graph::traverseAll(StatementType type1, StatementType type2) {
     return res;
 }
 
+Result Graph::traverseAllT(StatementType type1, StatementType type2) {
+    std::set<STMT_LO> found;
+    Result res;
+
+    for (auto const& [stmt_lo, node] : nodes) {
+        Node* curr = node;
+        found.clear();
+
+        bool typeMatch = type1 == StatementType::All || node->stmt.type.value() == type1;
+        if (typeMatch) {
+            traverseStartT(&found, node, type2);
+        }
+
+        std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, res.end()),
+            [curr](STMT_LO const& stmt) {
+                PKBField first = PKBField::createConcrete(Content{ curr->stmt });
+                PKBField second = PKBField::createConcrete(Content{ stmt });
+                return std::vector<PKBField>{first, second};
+            });
+    }
+
+    return res;
+}
+
 int Graph::getSize() {
     return nodes.size();
 }
@@ -454,7 +453,7 @@ int Graph::getSize() {
 
 void TransitiveRelationshipTable::insert(PKBField field1, PKBField field2) {
     if (!isInsertOrContainsValid(field1, field2)) {
-        Logger(Level::ERROR) << "Only concrete statements can be inserted into the Follows table!";
+        Logger(Level::ERROR) << "Only concrete statements can be inserted into a Follows or Parent table!";
         return;
     }
 
@@ -467,7 +466,7 @@ graph(std::make_unique<Graph>(type)) {
 
 bool TransitiveRelationshipTable::contains(PKBField field1, PKBField field2) {
     if (!isInsertOrContainsValid(field1, field2)) {
-        Logger(Level::ERROR) << "Only concrete statements can be inserted into the Follows table!";
+        Logger(Level::ERROR) << "Only concrete statements can be inserted into a Follows or Parent table!";
         return false;
     }
 
@@ -477,7 +476,7 @@ bool TransitiveRelationshipTable::contains(PKBField field1, PKBField field2) {
 bool TransitiveRelationshipTable::containsT(PKBField field1, PKBField field2) {
     if (!isInsertOrContainsValid(field1, field2)) {
         Logger(Level::ERROR) <<
-            "FollowsRelationshipTable can only contain concrete fields and STATEMENT entity types.";
+            "a Follows or Parent table can only contain concrete fields and STATEMENT entity types.";
         return false;
     }
 
@@ -495,7 +494,7 @@ FieldRowResponse TransitiveRelationshipTable::retrieve(PKBField field1, PKBField
     // Both fields have to be a statement type
     if (!isRetrieveValid(field1, field2)) {
         Logger(Level::ERROR) <<
-            "Only STATEMENT entity types can be retrieved from FollowsRelationshipTable.";
+            "Only STATEMENT entity types can be retrieved from a Follows or Parent table.";
         return FieldRowResponse{ };
     }
 
@@ -517,7 +516,7 @@ FieldRowResponse TransitiveRelationshipTable::retrieveT(PKBField field1, PKBFiel
     // Both fields have to be a statement type
     if (!isRetrieveValid(field1, field2)) {
         Logger(Level::ERROR) <<
-            "Only STATEMENT entity types can be retrieved from FollowsRelationshipTable.";
+            "Only STATEMENT entity types can be retrieved from a Follows or Parent table.";
         return FieldRowResponse{ };
     }
 
