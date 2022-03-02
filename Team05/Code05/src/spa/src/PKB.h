@@ -12,18 +12,9 @@
 #include "PKB/PKBField.h"
 #include "DesignExtractor/PatternMatcher.h"
 
-typedef int PROC;
-
-class TNode;
-
-class VarTable;  // no need to #include "VarTable.h" as all I need is pointer
-
 class PKB {
 public:
     PKB();
-    // static VarTable* varTable; 
-    static int setProcToAST(PROC p, TNode* r);
-    static TNode* getRootAST(PROC p);
 
     /**
     * Inserts a statement information into the PKB.
