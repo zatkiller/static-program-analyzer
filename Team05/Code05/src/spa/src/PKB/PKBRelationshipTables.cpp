@@ -107,9 +107,9 @@ FieldRowResponse NonTransitiveRelationshipTable::retrieve(PKBField field1, PKBFi
             PKBField first = curr.getFirst();
             PKBField second = curr.getSecond();
 
-            auto isValidStatement = [](auto field, auto first) {
-                return field.statementType.value() == StatementType::All ||
-                    field.statementType == first.getContent<STMT_LO>()->type.value();
+            auto isValidStatement = [&](auto field, auto first) {
+                return field.statementType.value() == StatementType::All || 
+                    field.statementType == (first.template getContent<STMT_LO>())->type.value();
             };
 
             if (fieldType1 == PKBFieldType::CONCRETE && fieldType2 != PKBFieldType::CONCRETE) {
