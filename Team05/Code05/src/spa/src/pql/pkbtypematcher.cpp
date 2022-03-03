@@ -38,4 +38,4 @@ namespace qps::evaluator {
                 return StatementType::Call;
         }
     }
-}
+}  // namespace qps::evaluator
