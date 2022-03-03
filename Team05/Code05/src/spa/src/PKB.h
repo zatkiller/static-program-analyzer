@@ -5,32 +5,16 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "logging.h"
 
-#include "PKB/StatementTable.h"
-#include "PKB/VariableTable.h"
-#include "PKB/ProcedureTable.h"
-#include "PKB/ModifiesRelationshipTable.h"
-#include "PKB/FollowsRelationshipTable.h"
-#include "PKB/ParentRelationshipTable.h"
-#include "PKB/UsesRelationshipTable.h"
-#include "PKB/ConstantTable.h"
+#include "PKB/PKBTables.h"
 #include "PKB/PKBResponse.h"
-#include "PKB/PKBReturnType.h"
 #include "PKB/PKBField.h"
 #include "DesignExtractor/PatternMatcher.h"
-
-typedef int PROC;
-
-class TNode;
-
-class VarTable;  // no need to #include "VarTable.h" as all I need is pointer
 
 class PKB {
 public:
     PKB();
-    // static VarTable* varTable; 
-    static int setProcToAST(PROC p, TNode* r);
-    static TNode* getRootAST(PROC p);
 
     /**
     * Inserts a statement information into the PKB.

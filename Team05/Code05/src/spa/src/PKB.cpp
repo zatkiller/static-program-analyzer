@@ -18,14 +18,6 @@ PKB::PKB() {
     usesTable = std::make_unique<UsesRelationshipTable>();
 }
 
-int PKB::setProcToAST(PROC p, TNode* r) {
-    return 0;
-}
-
-TNode* PKB::getRootAST(PROC p) {
-    return nullptr;
-}
-
 // INSERT API
 
 void PKB::insertStatement(StatementType type, int statementNumber) {
