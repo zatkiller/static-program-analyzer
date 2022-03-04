@@ -153,11 +153,11 @@ Node<T>* Graph<T>::createNode(T val) {
     for (auto [v, node] : filtered) {
         // Case where a node for u already exists
         if (val == v) {
-            return nodes.at(stmt);
+            return nodes.at(v);
         }
 
         // Invalid insert
-        if (std::is_same_v<T, STMT_LO>::value &&
+        if (std::is_same_v<T, STMT_LO> &&
             v.statementNum == val.statementNum &&
             v.type.value() != val.type.value()) {
             return nullptr;
@@ -165,7 +165,7 @@ Node<T>* Graph<T>::createNode(T val) {
     }
 
     if (!hasExistingStatementNo) {
-        Node<T>* node = new Node<T>(val, nullptr, Node::NodeSet{});
+        Node<T>* node = new Node<T>(val, nullptr, Node<T>::NodeSet{});
         nodes.emplace(val, node);
         return node;
     }
@@ -175,7 +175,7 @@ Node<T>* Graph<T>::createNode(T val) {
 
 template <typename T>
 void Graph<T>::addEdge(T u, T v) {
-    if (std::is_same_v<T, STMT_LO>::value) {
+    if (std::is_same_v<T, STMT_LO>) {
         // Second statement in the relationship cannot come before the first
         if (u.statementNum >= v.statementNum) {
             return;
@@ -209,9 +209,9 @@ bool Graph<T>::contains(PKBField field1, PKBField field2) {
     T second = *field2.getContent<T>();
 
     if (nodes.count(first) != 0) {
-        Node* curr = nodes.at(first);
-        Node::NodeSet nextNodes = curr->next;
-        Node::NodeSet filtered;
+        Node<T>* curr = nodes.at(first);
+        Node<T>::NodeSet nextNodes = curr->next;
+        Node<T>::NodeSet filtered;
         std::copy_if(nextNodes.begin(), nextNodes.end(),
             std::back_inserter(filtered), [second](Node<T>* const& node) {
                 return node->val == second;
@@ -233,8 +233,8 @@ bool Graph<T>::containsT(PKBField field1, PKBField field2) {
     }
 
     if (nodes.count(first) != 0) {
-        Node* curr = nodes.at(first);
-        Node::NodeSet nextNodes = curr->next;
+        Node<T>* curr = nodes.at(first);
+        Node<T>::NodeSet nextNodes = curr->next;
 
         // Recursive lookup for each node in the NodeSet
         for (auto node : nextNodes) {
@@ -260,7 +260,7 @@ Result Graph<T>::retrieve(PKBField field1, PKBField field2) {
     } else if (!isConcreteFirst && isConcreteSec) {
         return traverseEnd(field1, field2);
     } else {
-        return traverseAll(field1.statementType.value(), field2.statementType.value());
+        return traverseAll(std::vector<StatementType>{field1.statementType.value(), field2.statementType.value()});
     }
 }
 
@@ -276,7 +276,7 @@ Result Graph<T>::retrieveT(PKBField field1, PKBField field2) {
     } else if (isDeclarationFirst && isConcreteSec) {
         return traverseEndT(field1, field2);
     } else if (isDeclarationFirst && isDeclarationSec) {
-        return traverseAllT(field1.statementType.value(), field2.statementType.value());
+        return traverseAllT(std::vector<StatementType>{field1.statementType.value(), field2.statementType.value()});
     } else {
         return Result{};
     }
@@ -296,12 +296,12 @@ Result Graph<T>::traverseStart(PKBField field1, PKBField field2) {
         Node<T>* curr = nodes.at(target);
 
         if (!curr->next.empty()) {
-            Node::NodeSet nextNodes = curr->next;
-            Node::NodeSet filtered;
+            Node<T>::NodeSet nextNodes = curr->next;
+            Node<T>::NodeSet filtered;
             std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
-                [targetType](Node* const& node) {
+                [&](Node<T>* const& node) {
                     // filter for statements. for all other type no filtering is required.
-                    if (std::is_same_v<T, STMT_LO>::value) {
+                    if (std::is_same_v<T, STMT_LO>) {
                         StatementType targetType = field2.statementType.value();
                         return (node->val.type.value() == targetType || targetType == StatementType::All);
                     }
@@ -327,8 +327,8 @@ Result Graph<T>::traverseStartT(PKBField field1, PKBField field2) {
     T start = *(field1.getContent<T>());
 
     if (nodes.count(start) != 0) {
-        if (std::is_same_v<T, STMT_LO>::value) { 
-            StatementType targetType = field2.statementType.value(); 
+        if (std::is_same_v<T, STMT_LO>) {
+            StatementType targetType = field2.statementType.value();
             traverseStartT(&found, nodes.at(start), targetType);
         } else {
             traverseStartT(&found, nodes.at(start));
@@ -348,7 +348,7 @@ Result Graph<T>::traverseStartT(PKBField field1, PKBField field2) {
 
 template <typename T>
 void Graph<T>::traverseStartT(std::set<T>* found, Node<T>* node, StatementType targetType) {
-    Node::NodeSet nextNodes = node->next;
+    Node<T>::NodeSet nextNodes = node->next;
 
     if (!nextNodes.empty()) {
         for (auto nextNode : nextNodes) {
@@ -373,19 +373,19 @@ Result Graph<T>::traverseEnd(PKBField field1, PKBField field2) {
     T target = *(field2.getContent<T>());
     Result res{};
 
-    if (std::is_same_v<T,STMT_LO>::value && !target.type.has_value()) {
+    if (std::is_same_v<T, STMT_LO> && !target.type.has_value()) {
         return res;
     }
 
     StatementType targetType = field1.statementType.value();
 
     if (nodes.count(target) != 0) {
-        Node* curr = nodes.at(target);
+        Node<T>* curr = nodes.at(target);
 
         if (curr->prev != nullptr) {
             T prev = curr->prev->val;
 
-            if (std::is_same_v<T, STMT_LO>::value) {
+            if (std::is_same_v<T, STMT_LO>) {
                 if (prev.type.value() != targetType && targetType != StatementType::All) {
                     return res;
                 }
@@ -405,7 +405,7 @@ Result Graph<T>::traverseEndT(PKBField field1, PKBField field2) {
     T start = *(field2.getContent<T>());
 
     if (nodes.count(start) != 0) {
-        if (std::is_same_v<T, STMT_LO>::value) {
+        if (std::is_same_v<T, STMT_LO>) {
             StatementType targetType = field1.statementType.value();
             traverseEndT(&found, nodes.at(start), targetType);
         } else {
@@ -427,7 +427,7 @@ Result Graph<T>::traverseEndT(PKBField field1, PKBField field2) {
 template <typename T>
 void Graph<T>::traverseEndT(std::set<T>* found, Node<T>* node, StatementType targetType) {
     while (node->prev) {
-        if (std::is_same_v<T, STMT_LO>::value) {
+        if (std::is_same_v<T, STMT_LO>) {
             bool typeMatch = node->prev->val.type.value() == targetType || targetType == StatementType::All;
             if (!typeMatch) {
                 return;
@@ -440,35 +440,34 @@ void Graph<T>::traverseEndT(std::set<T>* found, Node<T>* node, StatementType tar
 }
 
 template <typename T>
-Result Graph<T>::traverseAll(StatementType type1, StatementType type2) {
+Result Graph<T>::traverseAll(const std::vector<StatementType>& statementTypes) {
     Result res{};
 
-    if (type1 && !type2) {
+    if (statementTypes.size() != 2) {
         return res;
     }
 
-    if (!type1 && type2) {
-        return res;
-    }
+    StatementType type1 = statementTypes.at(0);
+    StatementType type2 = statementTypes.at(1);
 
     for (auto const& [key, node] : nodes) {
         Node<T>* curr = node;
 
         if (!curr->next.empty()) {
-            if (std::is_same_v<T, STMT_LO>::value) {
+            if (std::is_same_v<T, STMT_LO>) {
                 if (curr->val.type.value() == type1 || type1 == StatementType::All) {
                     return res;
                 }
             }
 
-            Node::NodeSet nextNodes = curr->next;
+            Node<T>::NodeSet nextNodes = curr->next;
 
             // Filter nodes that match second statement type
-            Node::NodeSet filtered;
+            Node<T>::NodeSet filtered;
             std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
                 [type2](Node<T>* const& node) {
-                    if (is_same_v<T, STMT_LO>::value) {
-                        return node->stmt.type.value() == type2 || type2 == StatementType::All;
+                    if (std::is_same_v<T, STMT_LO>) {
+                        return node->val.type.value() == type2 || type2 == StatementType::All;
                     }
                     return true;
                 });
@@ -486,24 +485,23 @@ Result Graph<T>::traverseAll(StatementType type1, StatementType type2) {
 }
 
 template <typename T>
-Result Graph<T>::traverseAllT(StatementType type1, StatementType type2) {
+Result Graph<T>::traverseAllT(const std::vector<StatementType>& statementTypes) {
     Result res;
-    
-    if (type1 && !type2) {
+
+    if (statementTypes.size() != 2) {
         return res;
     }
 
-    if (!type1 && type2) {
-        return res;
-    }
+    StatementType type1 = statementTypes.at(0);
+    StatementType type2 = statementTypes.at(1);
 
     std::set<T> found;
 
     for (auto const& [key, node] : nodes) {
-        Node* curr = node;
+        Node<T>* curr = node;
         found.clear();
 
-        if (std::is_same_v<T, STMT_LO>::value) {
+        if (std::is_same_v<T, STMT_LO>) {
             if (curr->val.type.value() == type1 || type1 == StatementType::All) {
                 return res;
             }
@@ -530,8 +528,8 @@ int Graph<T>::getSize() {
 }
 
 /** ======================= TRANSITIVERELATIONSHIPTABLE METHODS ======================== */
-
-void TransitiveRelationshipTable::insert(PKBField field1, PKBField field2) {
+template <typename T>
+void TransitiveRelationshipTable<T>::insert(PKBField field1, PKBField field2) {
     if (!isInsertOrContainsValid(field1, field2)) {
         Logger(Level::ERROR) << "Only concrete statements can be inserted into a Follows or Parent table!";
         return;
@@ -540,11 +538,13 @@ void TransitiveRelationshipTable::insert(PKBField field1, PKBField field2) {
     graph->addEdge(*field1.getContent<STMT_LO>(), *field2.getContent<STMT_LO>());
 }
 
-TransitiveRelationshipTable::TransitiveRelationshipTable(PKBRelationship type) : RelationshipTable(type),
-graph(std::make_unique<Graph>(type)) {
+template <typename T>
+TransitiveRelationshipTable<T>::TransitiveRelationshipTable(PKBRelationship type) : RelationshipTable(type),
+graph(std::make_unique<Graph<T>>(type)) {
 }
 
-bool TransitiveRelationshipTable::contains(PKBField field1, PKBField field2) {
+template <typename T>
+bool TransitiveRelationshipTable<T>::contains(PKBField field1, PKBField field2) {
     if (!isInsertOrContainsValid(field1, field2)) {
         Logger(Level::ERROR) << "Only concrete statements can be inserted into a Follows or Parent table!";
         return false;
@@ -553,7 +553,8 @@ bool TransitiveRelationshipTable::contains(PKBField field1, PKBField field2) {
     return graph->contains(field1, field2);
 }
 
-bool TransitiveRelationshipTable::containsT(PKBField field1, PKBField field2) {
+template <typename T>
+bool TransitiveRelationshipTable<T>::containsT(PKBField field1, PKBField field2) {
     if (!isInsertOrContainsValid(field1, field2)) {
         Logger(Level::ERROR) <<
             "a Follows or Parent table can only contain concrete fields and STATEMENT entity types.";
@@ -570,7 +571,8 @@ void convertWildcardToDeclaration(PKBField* field) {
     }
 }
 
-FieldRowResponse TransitiveRelationshipTable::retrieve(PKBField field1, PKBField field2) {
+template <typename T>
+FieldRowResponse TransitiveRelationshipTable<T>::retrieve(PKBField field1, PKBField field2) {
     // Both fields have to be a statement type
     if (!isRetrieveValid(field1, field2)) {
         Logger(Level::ERROR) <<
@@ -592,7 +594,8 @@ FieldRowResponse TransitiveRelationshipTable::retrieve(PKBField field1, PKBField
     return graph->retrieve(field1, field2);
 }
 
-FieldRowResponse TransitiveRelationshipTable::retrieveT(PKBField field1, PKBField field2) {
+template <typename T>
+FieldRowResponse TransitiveRelationshipTable<T>::retrieveT(PKBField field1, PKBField field2) {
     // Both fields have to be a statement type
     if (!isRetrieveValid(field1, field2)) {
         Logger(Level::ERROR) <<
@@ -614,16 +617,19 @@ FieldRowResponse TransitiveRelationshipTable::retrieveT(PKBField field1, PKBFiel
     return graph->retrieveT(field1, field2);
 }
 
-bool TransitiveRelationshipTable::isInsertOrContainsValid(PKBField field1, PKBField field2) {
+template <typename T>
+bool TransitiveRelationshipTable<T>::isInsertOrContainsValid(PKBField field1, PKBField field2) {
     return field1.isValidConcrete(PKBEntityType::STATEMENT) && field2.isValidConcrete(PKBEntityType::STATEMENT);
 }
 
-bool TransitiveRelationshipTable::isRetrieveValid(PKBField field1, PKBField field2) {
+template <typename T>
+bool TransitiveRelationshipTable<T>::isRetrieveValid(PKBField field1, PKBField field2) {
     return field1.entityType == PKBEntityType::STATEMENT &&
         field2.entityType == PKBEntityType::STATEMENT;
 }
 
-int TransitiveRelationshipTable::getSize() {
+template <typename T>
+int TransitiveRelationshipTable<T>::getSize() {
     return graph->getSize();
 }
 
@@ -637,8 +643,8 @@ UsesRelationshipTable::UsesRelationshipTable() : NonTransitiveRelationshipTable{
 
 /** ======================== FOLLOWSRELATIONSHIPTABLE METHODS ========================== */
 
-FollowsRelationshipTable::FollowsRelationshipTable() : TransitiveRelationshipTable(PKBRelationship::FOLLOWS) {}
+FollowsRelationshipTable::FollowsRelationshipTable() : TransitiveRelationshipTable<STMT_LO>(PKBRelationship::FOLLOWS) {}
 
 /** ======================== PARENTRELATIONSHIPTABLE METHODS ========================== */
 
-ParentRelationshipTable::ParentRelationshipTable() : TransitiveRelationshipTable(PKBRelationship::PARENT) {}
+ParentRelationshipTable::ParentRelationshipTable() : TransitiveRelationshipTable<STMT_LO>(PKBRelationship::PARENT) {}

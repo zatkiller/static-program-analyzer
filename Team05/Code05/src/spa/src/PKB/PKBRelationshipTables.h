@@ -213,12 +213,12 @@ using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 */
 template <typename T>
 struct Node {
-    using NodeSet = std::vector<Node*>;
+    using NodeSet = std::vector<Node<T>*>;
     Node(T val, Node* prev, NodeSet next) : val(val), next(next), prev(prev) {}
 
     T val;
     NodeSet next; /**< The descendant(s) of this Node. */
-    Node* prev; /**< The predecessor of this Node. */
+    Node<T>* prev; /**< The predecessor of this Node. */
 };
 
 /**
@@ -406,7 +406,7 @@ private:
     * each item in each pair satisfies the corresponding statement type requirement.
     * @see PKBField
     */
-    Result traverseAll(StatementType targetTypeFirst = NULL, StatementType targetTypeSecond = NULL);
+    Result traverseAll(const std::vector<StatementType>& statementTypes = std::vector<StatementType>());
 
     /**
     * Gets all pairs (field1, field2) of PKBFields that satisfy the provided transitive relationship,
@@ -422,9 +422,10 @@ private:
     *
     * @see PKBField
     */
-    Result traverseAllT(StatementType type1 = NULL, StatementType type2 = NULL);
+    Result traverseAllT(const std::vector<StatementType>& statementTypes);
 };
 
+template <typename T>
 class TransitiveRelationshipTable : public RelationshipTable {
 public:
     explicit TransitiveRelationshipTable(PKBRelationship);
@@ -496,7 +497,7 @@ public:
     int getSize();
 
 private:
-    std::unique_ptr<Graph> graph;
+    std::unique_ptr<Graph<T>> graph;
 
     /**
     * Checks if the two PKBFields provided can be inserted into the table (whether it can exist in the table).
@@ -546,7 +547,7 @@ public:
  *
  * @see Node, Graph, TransitiveRelationshipTable
  */
-class FollowsRelationshipTable : public TransitiveRelationshipTable {
+class FollowsRelationshipTable : public TransitiveRelationshipTable<STMT_LO> {
 public:
     FollowsRelationshipTable();
 };
@@ -557,7 +558,7 @@ public:
 *
 * @see Node, Graph, TransitiveRelationshipTable
 */
-class ParentRelationshipTable : public TransitiveRelationshipTable {
+class ParentRelationshipTable : public TransitiveRelationshipTable<STMT_LO> {
 public:
     ParentRelationshipTable();
 };
