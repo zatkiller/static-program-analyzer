@@ -8,6 +8,8 @@
 #include <iterator>
 #include <optional>
 #include <memory>
+#include <type_traits>
+#include <cstdarg>
 #include "logging.h"
 #include "PKBField.h"
 #include "PKBRelationship.h"
@@ -209,11 +211,12 @@ using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 *
 * @see Graph
 */
+template <typename T>
 struct Node {
     using NodeSet = std::vector<Node*>;
-    Node(STMT_LO stmt, Node* prev, NodeSet next) : stmt(stmt), next(next), prev(prev) {}
+    Node(T val, Node* prev, NodeSet next) : val(val), next(next), prev(prev) {}
 
-    STMT_LO stmt;
+    T val;
     NodeSet next; /**< The descendant(s) of this Node. */
     Node* prev; /**< The predecessor of this Node. */
 };
@@ -225,9 +228,10 @@ struct Node {
 *
 * @see Node
 */
+template <typename T>
 class Graph {
 public:
-    explicit Graph(PKBRelationship);
+    explicit Graph<T>(PKBRelationship);
 
     /**
     * Adds an edge between two STMT_LOs to represent a relationship. Initialises Nodes for
@@ -236,7 +240,7 @@ public:
     * @param u the first STMT_LO in a rs(u,v) relationship
     * @param v the second STMT_LO in a rs(u,v) relationship
     */
-    void addEdge(STMT_LO u, STMT_LO v);
+    void addEdge(T u, T v);
 
     /**
     * Checks if rs(field1, field2) is in the graph.
@@ -293,7 +297,7 @@ public:
 
 private:
     PKBRelationship type; /**< The type of relationships this Graph holds */
-    std::map<STMT_LO, Node*> nodes; /**< The list of nodes in this Graph */
+    std::map<STMT_LO, Node<T>*> nodes; /**< The list of nodes in this Graph */
 
     /**
     * Add a node represented by stmt to the list of nodes stored in the graph if it does not exist and is valid.
@@ -301,7 +305,7 @@ private:
     *
     * @param stmt a STMT_LO representing the statement
     */
-    Node* createNode(STMT_LO stmt);
+    Node<T>* createNode(T val);
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided non-transitive relationship, rs(field1, field2),
@@ -344,7 +348,7 @@ private:
     *
     * @see PKBField
     */
-    void traverseStartT(std::set<STMT_LO>* found, Node* node, StatementType targetType);
+    void traverseStartT(std::set<T>* found, Node<T>* node, StatementType targetType = NULL);
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided non-transitive relationship, rs(field1, field2),
@@ -387,7 +391,7 @@ private:
     *
     * @see PKBField
     */
-    void traverseEndT(std::set<STMT_LO>* found, Node* node, StatementType targetType);
+    void traverseEndT(std::set<T>* found, Node<T>* node, StatementType targetType = NULL);
 
     /**
     * Gets all pairs (field1, field2) of PKBFields that satisfy the provided Parent relationship,
@@ -402,7 +406,7 @@ private:
     * each item in each pair satisfies the corresponding statement type requirement.
     * @see PKBField
     */
-    Result traverseAll(StatementType type1, StatementType type2);
+    Result traverseAll(StatementType targetTypeFirst = NULL, StatementType targetTypeSecond = NULL);
 
     /**
     * Gets all pairs (field1, field2) of PKBFields that satisfy the provided transitive relationship,
@@ -418,7 +422,7 @@ private:
     *
     * @see PKBField
     */
-    Result traverseAllT(StatementType type1, StatementType type2);
+    Result traverseAllT(StatementType type1 = NULL, StatementType type2 = NULL);
 };
 
 class TransitiveRelationshipTable : public RelationshipTable {
