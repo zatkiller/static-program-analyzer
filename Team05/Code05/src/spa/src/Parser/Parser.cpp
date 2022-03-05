@@ -543,13 +543,23 @@ unique_ptr<ast::Procedure> parseProcedure(deque<Token>& tokens) {
 }
 
 unique_ptr<ast::Program> parseProgram(deque<Token>& tokens) {
-    Token currToken = tokens.front();
-    if (currToken.type != TokenType::name || get<string>(currToken.value) != "procedure") {
-        throwUnexpectedToken("procedure");
+    if (tokens.empty() || tokens.front().type == TokenType::eof) {
+        throwInvalidArgError("Empty program received!");
     }
-    auto resultProc = parseProcedure(tokens);
+    Token currToken = tokens.front();
+    std::vector<unique_ptr<ast::Procedure>> res;
+    while (!tokens.empty() || tokens.front().type != TokenType::eof) {
+        if (currToken.type != TokenType::name || get<string>(currToken.value) != "procedure") {
+            throwUnexpectedToken("procedure");
+        }
+        res.push_back(parseProcedure(tokens));
+    }
+    // if (currToken.type != TokenType::name || get<string>(currToken.value) != "procedure") {
+    //     throwUnexpectedToken("procedure");
+    // }
+    // auto resultProc = parseProcedure(tokens);
     currToken = getNextToken(tokens);  // consume eof
-    return make_unique<ast::Program>(move(resultProc));
+    return make_unique<ast::Program>(move(res));
 }
 
 unique_ptr<ast::Program> parse(const string& source) {

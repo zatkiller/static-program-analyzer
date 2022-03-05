@@ -211,10 +211,10 @@ public:
  */
 class Program : public ASTNode {
 private:
-    std::unique_ptr<Procedure> procedure;
+    std::vector<std::unique_ptr<Procedure>> procedures;
 public:
-    explicit Program(std::unique_ptr<Procedure> procedure) :
-        procedure(std::move(procedure)) {}
+    Program(std::vector<std::unique_ptr<Procedure>> procedures) :
+        procedures(std::move(procedures)) {}
     
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 

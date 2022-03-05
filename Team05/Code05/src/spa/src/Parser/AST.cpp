@@ -23,7 +23,9 @@ void Procedure::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
 
 void Program::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
     visitor->visit(*this);
-    procedure->accept(visitor);
+    for (auto& p : procedures) {
+        p->accept(visitor);  // TODO: Ensure this works
+    }
 }
 
 void If::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
@@ -125,7 +127,13 @@ bool Procedure::operator==(ASTNode const& o) const {
 bool Program::operator==(ASTNode const& o) const {
     if (typeid(*this) != typeid(o)) return false;
     auto that = static_cast<const Program*>(&o);
-    return *this->procedure == *that->procedure;
+    if (procedures.size() != that->procedures.size()) return false;
+    for (int i = 0; i < procedures.size(); i++) {
+        if (!(*procedures[i] == *that->procedures[i])) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool If::operator==(ASTNode const& o) const {
