@@ -86,7 +86,7 @@ namespace qps::parser {
         getAndCheckNextToken(TokenType::SEMICOLON);
     }
 
-    void Parser::addPql(std::string query) {
+    void Parser::addInput(std::string query) {
         lexer = Lexer(query);
     }
 
@@ -241,6 +241,7 @@ namespace qps::parser {
             }
             Token token = getAndCheckNextToken(TokenType::STRING);
             value = token.getText();
+            validateExpr(value);
         }
 
         if (isPartialMatch) {
@@ -254,6 +255,68 @@ namespace qps::parser {
 
         return ExpSpec::ofFullMatch(value);
     }
+
+    void Parser::validateExpr(std::string expr) {
+        Parser expParser;
+        expParser.addInput(expr);
+        expParser.parseExpr();
+    }
+
+    void Parser::parseExpr() {
+        parseCurrentExpr();
+        parseNextExpr(0);
+    }
+
+    void Parser::parseCurrentExpr() {
+        Token token = getNextToken();
+        TokenType tt = token.getTokenType();
+
+        if ((tt == TokenType::END_OF_FILE)) {
+            throw exceptions::PqlSyntaxException(messages::qps::parser::expressionUnexpectedEndMessage);
+        } else if ((tt == TokenType::NUMBER) || (tt == TokenType::IDENTIFIER)) {
+            return;
+        } else if (tt == TokenType::OPENING_PARAN) {
+            parseExpr();
+            getAndCheckNextToken(TokenType::CLOSING_PARAN);
+        } else {
+            throw exceptions::PqlSyntaxException(messages::qps::parser::expressionInvalidGrammarMessage);
+        }
+    }
+
+    int Parser::getOperatorPriority(Token token) {
+        TokenType type = token.getTokenType();
+        if ((type == TokenType::MULTIPLY) || (type == TokenType::DIVIDE) || (type == TokenType::MODULO)) {
+            return 20;
+        } else if ((type == TokenType::PLUS) || (type == TokenType::MINUS)) {
+            return 10;
+        } else {
+            return -10;
+        }
+    }
+
+    void Parser::parseNextExpr(int priority) {
+        if (priority == -10) {
+            return;
+        }
+
+        while (true) {
+            int currPriority = getOperatorPriority(peekNextToken());
+
+            if (currPriority < priority) {
+                break;
+            }
+
+            Token op = getNextToken();
+            parseCurrentExpr();
+
+            int nextPriority = getOperatorPriority(peekNextToken());
+            if (nextPriority > currPriority) {
+                parseNextExpr(priority + 10);
+            }
+        }
+    }
+
+
 
     void Parser::parseSuchThat(Query &queryObj) {
         getAndCheckNextReservedToken(TokenType::SUCH_THAT);
@@ -298,7 +361,7 @@ namespace qps::parser {
     }
 
     Query Parser::parsePql(std::string query) {
-        addPql(query);
+        addInput(query);
         Query queryObj;
         queryObj.setValid(true);
 

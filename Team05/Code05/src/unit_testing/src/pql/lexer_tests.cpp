@@ -32,7 +32,7 @@ TEST_CASE("Lexer hasPrefx") {
 }
 
 TEST_CASE("Lexer getNextToken") {
-    Lexer lexer("123 hi123 hi \"test\" ;()_,.");
+    Lexer lexer("123 hi123 hi \"test\" ;()_,$+-*/%");
 
     auto t1 = lexer.getNextToken();
     REQUIRE(t1.getTokenType() == TokenType::NUMBER);
@@ -73,6 +73,27 @@ TEST_CASE("Lexer getNextToken") {
     t1 = lexer.getNextToken();
     REQUIRE(t1.getTokenType() == TokenType::INVALID);
     REQUIRE(t1.getText() == "");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::PLUS);
+    REQUIRE(t1.getText() == "+");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::MINUS);
+    REQUIRE(t1.getText() == "-");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::MULTIPLY);
+    REQUIRE(t1.getText() == "*");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::DIVIDE);
+    REQUIRE(t1.getText() == "/");
+
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::MODULO);
+    REQUIRE(t1.getText() == "%");
 
     t1 = lexer.getNextToken();
     REQUIRE(t1.getTokenType() == TokenType::END_OF_FILE);

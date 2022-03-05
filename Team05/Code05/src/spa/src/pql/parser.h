@@ -104,7 +104,7 @@ struct Parser {
      *
      * @param query the query to add
      */
-    void addPql(std::string query);
+    void addInput(std::string query);
 
     /*
      * Returns a Query object representing the parsed query
@@ -246,8 +246,40 @@ struct Parser {
      * @param query the query object
      */
     void parsePattern(Query &query);
-
     ExpSpec parseExpSpec();
+
+    /*
+     * Validate the expression in Pattern using Pratt parsing, which is an enhancement of recursive descent algorithm
+     * but with precedence and associativity
+     *
+     * @param expr expression under pattern to be parsed
+     */
+    void validateExpr(std::string expr);
+
+    /*
+     * The base function to start the Pratt parsing
+     */
+    void parseExpr();
+
+    /*
+     * Parses the current expression
+     */
+    void parseCurrentExpr();
+
+    /*
+     * Parses the next expression. Expressions can be considered different if they have different operator precedence
+     *
+     * @param priority - priority the next expression holds
+     *
+     */
+    void parseNextExpr(int priority);
+
+    /*
+     * get priority of operator token
+     *
+     * @param token token to get priority
+     */
+    int getOperatorPriority(Token token);
 };
 
 }  // namespace qps::parser

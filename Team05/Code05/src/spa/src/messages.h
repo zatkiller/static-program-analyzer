@@ -22,6 +22,9 @@ namespace parser {
     inline constexpr char cannotBeWildcardMessage[] = "cannot be a wildcard!";
     inline constexpr char notVariableSynonymMessage[] = "synonym has to be of variable design entity";
     inline constexpr char notStatementSynonymMessage[] = "synonym has to be of statement design entity";
+
+    inline constexpr char expressionInvalidGrammarMessage[] = "Pattern expr has invalid grammar!";
+    inline constexpr char expressionUnexpectedEndMessage[] = "Pattern expr has unexpectedly reached end of expression!";
 }  //  namespace parser
 
 }  //  namespace qps
