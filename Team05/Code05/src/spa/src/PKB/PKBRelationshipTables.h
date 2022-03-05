@@ -31,7 +31,7 @@ public:
     */
     PKBField getSecond() const;
 
-    bool operator == (const RelationshipRow&) const;
+    bool operator==(const RelationshipRow&) const;
 
 private:
     PKBField field1;
@@ -43,7 +43,7 @@ private:
 */
 class RelationshipRowHash {
 public:
-    size_t operator() (const RelationshipRow&) const;
+    size_t operator()(const RelationshipRow&) const;
 };
 
 using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
@@ -211,9 +211,10 @@ using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 *
 * @see Graph
 */
-template <typename T>
+template<typename T>
 struct Node {
     using NodeSet = std::vector<Node<T>*>;
+
     Node(T val, Node* prev, NodeSet next) : val(val), next(next), prev(prev) {}
 
     T val;
@@ -228,10 +229,10 @@ struct Node {
 *
 * @see Node
 */
-template <typename T>
+template<typename T>
 class Graph {
 public:
-    explicit Graph<T>(PKBRelationship);
+    explicit Graph<T>(PKBRelationship type) : type(type) {}
 
     /**
     * Adds an edge between two STMT_LOs to represent a relationship. Initialises Nodes for
@@ -240,7 +241,34 @@ public:
     * @param u the first STMT_LO in a rs(u,v) relationship
     * @param v the second STMT_LO in a rs(u,v) relationship
     */
-    void addEdge(T u, T v);
+    void addEdge(T u, T v) {
+        if (std::is_same_v<T, STMT_LO>) {
+            // Second statement in the relationship cannot come before the first
+            if (u.statementNum >= v.statementNum) {
+                return;
+            }
+
+            // First statement in a Parent relationship has to be a container statement
+            if (type == PKBRelationship::PARENT && u.type.value() != StatementType::If
+                && u.type.value() != StatementType::While) {
+                return;
+            }
+
+        }
+
+        Node<T>* uNode = createNode(u);
+        Node<T>* vNode = createNode(v);
+
+        if (!uNode || !vNode) {
+            return;
+        }
+
+        // Add the edge between uNode and vNode
+        uNode->next.push_back(vNode);
+        if (!vNode->prev) {
+            vNode->prev = uNode;
+        }
+    }
 
     /**
     * Checks if rs(field1, field2) is in the graph.
@@ -251,7 +279,23 @@ public:
     * @return bool true if rs(field1, field2) is in the graph and false otherwise
     * @see PKBField
     */
-    bool contains(PKBField field1, PKBField field2);
+    bool contains(PKBField field1, PKBField field2) {
+        T first = *field1.getContent<T>();
+        T second = *field2.getContent<T>();
+
+        if (nodes.count(first) != 0) {
+            Node<T>* curr = nodes.at(first);
+            typename Node<T>::NodeSet nextNodes = curr->next;
+            typename Node<T>::NodeSet filtered;
+            std::copy_if(nextNodes.begin(), nextNodes.end(),
+                std::back_inserter(filtered), [second](Node<T>* const& node) {
+                    return node->val == second;
+                });
+            return (filtered.size() == 1);
+        }
+
+        return false;
+    }
 
     /**
     * Checks if rs*(field1, field2) is in the graph.
@@ -262,7 +306,30 @@ public:
     * @return bool true if rs*(field1, field2) is in the graph and false otherwise
     * @see PKBField
     */
-    bool containsT(PKBField field1, PKBField field2);
+    bool containsT(PKBField field1, PKBField field2) {
+        T first = *field1.getContent<T>();
+        T second = *field2.getContent<T>();
+
+        // Base Case where Parent(field1, field2) holds
+        if (this->contains(field1, field2)) {
+            return true;
+        }
+
+        if (nodes.count(first) != 0) {
+            Node<T>* curr = nodes.at(first);
+            typename Node<T>::NodeSet nextNodes = curr->next;
+
+            // Recursive lookup for each node in the NodeSet
+            for (auto node : nextNodes) {
+                T newVal = node->val;
+                PKBField newField1 = PKBField::createConcrete(Content{ newVal });
+                if (this->containsT(newField1, field2)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 
     /**
@@ -275,7 +342,20 @@ public:
     * that satisfy rs(field1, field2)
     * @see PKBField
     */
-    Result retrieve(PKBField field1, PKBField field2);
+    Result retrieve(PKBField field1, PKBField field2) {
+        bool isConcreteFirst = field1.fieldType == PKBFieldType::CONCRETE;
+        bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
+
+        if (isConcreteFirst && isConcreteSec) {
+            return contains(field1, field2) ? Result{ {{field1, field2}} } : Result{};
+        } else if (isConcreteFirst && !isConcreteSec) {
+            return traverseStart(field1, field2);
+        } else if (!isConcreteFirst && isConcreteSec) {
+            return traverseEnd(field1, field2);
+        } else {
+            return traverseAll(std::vector<StatementType>{field1.statementType.value(), field2.statementType.value()});
+        }
+    }
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided rs* relationship, rs*(field1, field2).
@@ -286,14 +366,31 @@ public:
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields
     *   that satisfy rs*(field1, field2)
     */
-    Result retrieveT(PKBField field1, PKBField field2);
+    Result retrieveT(PKBField field1, PKBField field2) {
+        bool isConcreteFirst = field1.fieldType == PKBFieldType::CONCRETE;
+        bool isDeclarationFirst = field1.fieldType == PKBFieldType::DECLARATION;
+        bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
+        bool isDeclarationSec = field2.fieldType == PKBFieldType::DECLARATION;
+
+        if (isConcreteFirst && isDeclarationSec) {
+            return traverseStartT(field1, field2);
+        } else if (isDeclarationFirst && isConcreteSec) {
+            return traverseEndT(field1, field2);
+        } else if (isDeclarationFirst && isDeclarationSec) {
+            return traverseAllT(std::vector<StatementType>{field1.statementType.value(), field2.statementType.value()});
+        } else {
+            return Result{};
+        }
+    }
 
     /**
     * Retrieves the number of relationships in the table.
     *
     * @return int number of relationships
     */
-    int getSize();
+    int getSize() {
+        return nodes.size();
+    }
 
 private:
     PKBRelationship type; /**< The type of relationships this Graph holds */
@@ -305,7 +402,41 @@ private:
     *
     * @param stmt a STMT_LO representing the statement
     */
-    Node<T>* createNode(T val);
+    Node<T>* createNode(T val) {
+        // Filter nodes whose statement numbers are the same as inputs
+        std::map<T, Node<T>*> filtered;
+        std::copy_if(nodes.begin(), nodes.end(), std::inserter(filtered, filtered.end()),
+            [val](auto const& pair) {
+                if (std::is_same_v<T, STMT_LO>) {
+                    return pair.first.statementNum == val.statementNum;
+                }
+
+                return pair.first == val; // TO CHECK
+            });
+
+        bool hasExistingStatementNo = false;
+        for (auto [v, node] : filtered) {
+            // Case where a node for u already exists
+            if (val == v) {
+                return nodes.at(v);
+            }
+
+            // Invalid insert
+            if (std::is_same_v<T, STMT_LO> &&
+                v.statementNum == val.statementNum &&
+                v.type.value() != val.type.value()) {
+                return nullptr;
+            }
+        }
+
+        if (!hasExistingStatementNo) {
+            Node<T>* node = new Node<T>(val, nullptr, typename Node<T>::NodeSet{});
+            nodes.emplace(val, node);
+            return node;
+        }
+
+        return nullptr;
+    }
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided non-transitive relationship, rs(field1, field2),
@@ -320,7 +451,43 @@ private:
     *
     * @see PKBField
     */
-    Result traverseStart(PKBField field1, PKBField field2);
+    Result traverseStart(PKBField field1, PKBField field2) {
+        T target = *(field1.getContent<T>());
+        Result res{};
+
+        if (!target.type.has_value()) {
+            return res;
+        }
+
+
+        if (nodes.count(target) != 0) {
+            Node<T>* curr = nodes.at(target);
+
+            if (!curr->next.empty()) {
+                typename Node<T>::NodeSet nextNodes = curr->next;
+                typename Node<T>::NodeSet filtered;
+                std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
+                    [&](Node<T>* const& node) {
+                        // filter for statements. for all other type no filtering is required.
+                        if (std::is_same_v<T, STMT_LO>) {
+                            StatementType targetType = field2.statementType.value();
+                            return (node->val.type.value() == targetType || targetType == StatementType::All);
+                        }
+                        return true;
+                    });
+
+                for (Node<T>* node : filtered) {
+                    std::vector<PKBField> temp;
+                    PKBField second = PKBField::createConcrete(Content{ node->val });
+                    temp.push_back(field1);
+                    temp.push_back(second);
+                    res.insert(temp);
+                }
+            }
+        }
+
+        return res;
+    }
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided transitive relationship, rs*(field1, field2),
@@ -335,7 +502,30 @@ private:
     *
     * @see PKBField
     */
-    Result traverseStartT(PKBField field1, PKBField field2);
+    Result traverseStartT(PKBField field1, PKBField field2) {
+        std::set<T> found;
+        Result res{};
+        T start = *(field1.getContent<T>());
+
+        if (nodes.count(start) != 0) {
+            if (std::is_same_v<T, STMT_LO>) {
+                StatementType targetType = field2.statementType.value();
+                traverseStartT(&found, nodes.at(start), targetType);
+            } else {
+                traverseStartT(&found, nodes.at(start));
+            }
+        }
+
+        if (!found.empty()) {
+            std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, res.end()),
+                [field1](T const& val) {
+                    PKBField second = PKBField::createConcrete(Content{ val });
+                    return std::vector<PKBField>{field1, second};
+                });
+        }
+
+        return res;
+    }
 
     /**
     * An overloaded helper function that traverses the graph forward starting at the provided node
@@ -348,7 +538,25 @@ private:
     *
     * @see PKBField
     */
-    void traverseStartT(std::set<T>* found, Node<T>* node, StatementType targetType = NULL);
+    void traverseStartT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) {
+        typename Node<T>::NodeSet nextNodes = node->next;
+
+        for (auto nextNode : nextNodes) {
+            // targetType is specified for statements
+            if (std::is_same_v<T, STMT_LO>) {
+                bool typeMatch = nextNode->val.type.value() == targetType || targetType == StatementType::All;
+                if (typeMatch) {
+                    found->insert(nextNode->val);
+                }
+
+                traverseStartT(found, nextNode, targetType);
+            } else {
+                found->insert(nextNode->val);
+                traverseStartT(found, nextNode);
+            }
+        }
+        return;
+    }
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided non-transitive relationship, rs(field1, field2),
@@ -363,7 +571,34 @@ private:
     *
     * @see PKBField
     */
-    Result traverseEnd(PKBField field1, PKBField field2);
+    Result traverseEnd(PKBField field1, PKBField field2) {
+        T target = *(field2.getContent<T>());
+        Result res{};
+
+        if (std::is_same_v<T, STMT_LO> && !target.type.has_value()) {
+            return res;
+        }
+
+        StatementType targetType = field1.statementType.value();
+
+        if (nodes.count(target) != 0) {
+            Node<T>* curr = nodes.at(target);
+
+            if (curr->prev != nullptr) {
+                T prev = curr->prev->val;
+
+                if (std::is_same_v<T, STMT_LO>) {
+                    if (prev.type.value() != targetType && targetType != StatementType::All) {
+                        return res;
+                    }
+                }
+
+                PKBField first = PKBField::createConcrete(Content{ prev });
+                res.insert(std::vector<PKBField>{first, field2});
+            }
+        }
+        return res;
+    }
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided transitive relationship, rs*(field1, field2),
@@ -378,7 +613,30 @@ private:
     *
     * @see PKBField
     */
-    Result traverseEndT(PKBField field1, PKBField field2);
+    Result traverseEndT(PKBField field1, PKBField field2) {
+        std::set<T> found;
+        Result res{};
+        T start = *(field2.getContent<T>());
+
+        if (nodes.count(start) != 0) {
+            if (std::is_same_v<T, STMT_LO>) {
+                StatementType targetType = field1.statementType.value();
+                traverseEndT(&found, nodes.at(start), targetType);
+            } else {
+                traverseEndT(&found, nodes.at(start));
+            }
+        }
+
+        if (!found.empty()) {
+            std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, res.end()),
+                [field2](T const& val) {
+                    PKBField first = PKBField::createConcrete(Content{ val });
+                    return std::vector<PKBField>{first, field2};
+                });
+        }
+
+        return res;
+    }
 
     /**
     * An overloaded helper function that traverses the graph backwards starting at the provided node
@@ -391,7 +649,20 @@ private:
     *
     * @see PKBField
     */
-    void traverseEndT(std::set<T>* found, Node<T>* node, StatementType targetType = NULL);
+    void traverseEndT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) {
+        while (node->prev) {
+            if (std::is_same_v<T, STMT_LO>) {
+                bool typeMatch = node->prev->val.type.value() == targetType || targetType == StatementType::All;
+                if (typeMatch) {
+                    found->insert(node->prev->val);
+                }
+            } else {
+                found->insert(node->prev->val);
+            }
+
+            node = node->prev;
+        }
+    }
 
     /**
     * Gets all pairs (field1, field2) of PKBFields that satisfy the provided Parent relationship,
@@ -406,7 +677,49 @@ private:
     * each item in each pair satisfies the corresponding statement type requirement.
     * @see PKBField
     */
-    Result traverseAll(const std::vector<StatementType>& statementTypes = std::vector<StatementType>());
+    Result traverseAll(const std::vector<StatementType>& statementTypes) {
+        Result res{};
+
+        if (statementTypes.size() != 2) {
+            return res;
+        }
+
+        StatementType type1 = statementTypes.at(0);
+        StatementType type2 = statementTypes.at(1);
+
+        for (auto const& [key, node] : nodes) {
+            Node<T>* curr = node;
+
+            if (!curr->next.empty()) {
+                if (std::is_same_v<T, STMT_LO>) {
+                    if (curr->val.type.value() != type1 && type1 != StatementType::All) {
+                        continue;
+                    }
+                }
+
+                typename Node<T>::NodeSet nextNodes = curr->next;
+
+                // Filter nodes that match second statement type
+                typename Node<T>::NodeSet filtered;
+                std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
+                    [type2](Node<T>* const& node) {
+                        if (std::is_same_v<T, STMT_LO>) {
+                            return node->val.type.value() == type2 || type2 == StatementType::All;
+                        }
+                        return true;
+                    });
+
+                // Populate result
+                std::transform(filtered.begin(), filtered.end(), std::insert_iterator<Result>(res, res.end()),
+                    [curr](Node<T>* const& node) {
+                        PKBField first = PKBField::createConcrete(Content{ curr->val });
+                        PKBField second = PKBField::createConcrete(Content{ node->val });
+                        return std::vector<PKBField>{first, second};
+                    });
+            }
+        }
+        return res;
+    }
 
     /**
     * Gets all pairs (field1, field2) of PKBFields that satisfy the provided transitive relationship,
@@ -422,13 +735,50 @@ private:
     *
     * @see PKBField
     */
-    Result traverseAllT(const std::vector<StatementType>& statementTypes);
+    Result traverseAllT(const std::vector<StatementType>& statementTypes) {
+        Result res;
+
+        if (statementTypes.size() != 2) {
+            return res;
+        }
+
+        StatementType type1 = statementTypes.at(0);
+        StatementType type2 = statementTypes.at(1);
+
+        std::set<T> found;
+
+        for (auto const& [key, node] : nodes) {
+            Node<T>* curr = node;
+            found.clear();
+
+            if (std::is_same_v<T, STMT_LO>) {
+                if (curr->val.type.value() != type1 && type1 != StatementType::All) {
+                    continue;
+                }
+
+                traverseStartT(&found, node, type2);
+            } else {
+                traverseStartT(&found, node);
+            }
+
+            std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, res.end()),
+                [curr](T const& val) {
+                    PKBField first = PKBField::createConcrete(Content{ curr->val });
+                    PKBField second = PKBField::createConcrete(Content{ val });
+                    return std::vector<PKBField>{first, second};
+                });
+        }
+
+        return res;
+    }
 };
 
-template <typename T>
+template<typename T>
 class TransitiveRelationshipTable : public RelationshipTable {
 public:
-    explicit TransitiveRelationshipTable(PKBRelationship);
+    TransitiveRelationshipTable(PKBRelationship type) : RelationshipTable(type) {
+        graph = std::make_unique<Graph<T>>(type);
+    }
 
     /**
     * Checks whether the TransitiveRelationshipTable contains rs(field1, field2).
@@ -440,7 +790,14 @@ public:
     *
     * @see PKBField
     */
-    bool contains(PKBField field1, PKBField field2);
+    bool contains(PKBField field1, PKBField field2) {
+        if (!isInsertOrContainsValid(field1, field2)) {
+            Logger(Level::ERROR) << "Only concrete statements can be inserted into a Follows or Parent table!";
+            return false;
+        }
+
+        return graph->contains(field1, field2);
+    }
 
     /**
     * Inserts into Graph an edge representing rs(field1, field2).
@@ -452,7 +809,24 @@ public:
     *
     * @see PKBField
     */
-    void insert(PKBField field1, PKBField field2);
+    void insert(PKBField field1, PKBField field2) {
+        if (!isInsertOrContainsValid(field1, field2)) {
+            Logger(Level::ERROR) << "Only concrete statements can be inserted into a Follows or Parent table!";
+            return;
+        }
+
+        graph->addEdge(*field1.getContent<STMT_LO>(), *field2.getContent<STMT_LO>());
+    }
+
+    void convertWildcardToDeclaration(PKBField* field) {
+        if (field->fieldType == PKBFieldType::WILDCARD) {
+            field->fieldType = PKBFieldType::DECLARATION;
+
+            if (field->entityType == PKBEntityType::STATEMENT) {
+                field->statementType = StatementType::All;
+            }
+        }
+    }
 
     /**
     * Retrieves all pairs of statements that satisfies rs(field1, field2).
@@ -466,7 +840,27 @@ public:
     *
     * @see PKBField
     */
-    FieldRowResponse retrieve(PKBField field1, PKBField field2);
+    FieldRowResponse retrieve(PKBField field1, PKBField field2) {
+        // Both fields have to be a statement type
+        if (!isRetrieveValid(field1, field2)) {
+            Logger(Level::ERROR) <<
+                "Only STATEMENT entity types can be retrieved from a Follows or Parent table.";
+            return FieldRowResponse{};
+        }
+
+        // for any fields that are wildcards, convert them into declarations of all types
+        convertWildcardToDeclaration(&field1);
+        convertWildcardToDeclaration(&field2);
+
+        if (field1.fieldType == PKBFieldType::CONCRETE &&
+            field2.fieldType == PKBFieldType::CONCRETE) {
+            return this->contains(field1, field2)
+                ? FieldRowResponse{ {{field1, field2}} }
+            : FieldRowResponse{};
+        }
+
+        return graph->retrieve(field1, field2);
+    }
 
     /**
     * Checks whether the TransitiveRelationshipTable contains rs*(field1, field2).
@@ -478,7 +872,15 @@ public:
     *
     * @see PKBField
     */
-    bool containsT(PKBField field1, PKBField field2);
+    bool containsT(PKBField field1, PKBField field2) {
+        if (!isInsertOrContainsValid(field1, field2)) {
+            Logger(Level::ERROR) <<
+                "a Follows or Parent table can only contain concrete fields and STATEMENT entity types.";
+            return false;
+        }
+
+        return graph->containsT(field1, field2);
+    }
 
     /**
     * Retrieves all pairs of statements that satisfies rs*(field1, field2).
@@ -492,9 +894,31 @@ public:
     *
     * @see PKBField
     */
-    FieldRowResponse retrieveT(PKBField field1, PKBField field2);
+    FieldRowResponse retrieveT(PKBField field1, PKBField field2) {
+        // Both fields have to be a statement type
+        if (!isRetrieveValid(field1, field2)) {
+            Logger(Level::ERROR) <<
+                "Only STATEMENT entity types can be retrieved from a Follows or Parent table.";
+            return FieldRowResponse{};
+        }
 
-    int getSize();
+        // for any fields that are wildcards, convert them into declarations of all types
+        convertWildcardToDeclaration(&field1);
+        convertWildcardToDeclaration(&field2);
+
+        if (field1.fieldType == PKBFieldType::CONCRETE &&
+            field2.fieldType == PKBFieldType::CONCRETE) {
+            return this->containsT(field1, field2)
+                ? FieldRowResponse{ {{field1, field2}} }
+            : FieldRowResponse{};
+        }
+
+        return graph->retrieveT(field1, field2);
+    }
+
+    int getSize() {
+        return graph->getSize();
+    }
 
 private:
     std::unique_ptr<Graph<T>> graph;
@@ -510,7 +934,17 @@ private:
     *
     * @see PKBField
     */
-    bool isInsertOrContainsValid(PKBField, PKBField);
+    bool isInsertOrContainsValid(PKBField field1, PKBField field2) {
+        if (!field1.isValidConcrete(PKBEntityType::STATEMENT)) {
+            return false;
+        }
+
+        if (!field2.isValidConcrete(PKBEntityType::STATEMENT)) {
+            return false;
+        }
+
+        return true;
+    }
 
     /**
     * Checks if the two PKBFields provided can be retrieved from the table.
@@ -522,7 +956,10 @@ private:
     *
     * @see PKBField
     */
-    bool isRetrieveValid(PKBField field1, PKBField field2);
+    bool isRetrieveValid(PKBField field1, PKBField field2) {
+        // for transitive tables, both fields have to be the same type
+        return field1.entityType == field2.entityType;
+    }
 };
 
 /**
