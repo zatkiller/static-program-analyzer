@@ -8,8 +8,8 @@ void require(bool b) {
     REQUIRE(b);
 }
 
-
-namespace AST {
+namespace sp {
+namespace ast {
 TEST_CASE("AST Test") {
     // Construction test
     INFO("Constructing the AST");
@@ -31,11 +31,11 @@ TEST_CASE("AST Test") {
 
     SECTION("Binary Expression construction") {
         // v1 + v2
-        auto binExpr1 = std::make_unique<AST::BinExpr>(AST::BinOp::PLUS, std::move(v1), std::move(v2));
+        auto binExpr1 = std::make_unique<ast::BinExpr>(ast::BinOp::PLUS, std::move(v1), std::move(v2));
         // 10 - 5
-        auto binExpr2 = std::make_unique<AST::BinExpr>(AST::BinOp::MINUS, std::move(constVal10), std::move(constVal5));
+        auto binExpr2 = std::make_unique<ast::BinExpr>(ast::BinOp::MINUS, std::move(constVal10), std::move(constVal5));
         // (v1 + v2) + (10 - 5)
-        auto binExpr3 = std::make_unique<AST::BinExpr>(AST::BinOp::PLUS, std::move(binExpr1), std::move(binExpr2));
+        auto binExpr3 = std::make_unique<ast::BinExpr>(ast::BinOp::PLUS, std::move(binExpr1), std::move(binExpr2));
     };
 
     SECTION("Condition Expression construction") {
@@ -313,5 +313,5 @@ TEST_CASE("AST Test") {
 
     SUCCEED("No errors thrown");
 }
-}  // namespace AST
-
+}  // namespace ast
+}  // namespace sp

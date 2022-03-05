@@ -24,7 +24,6 @@ namespace qps::query {
         this->valid = valid;
     }
 
-
     bool Query::hasDeclaration(std::string name) {
         return declarations.count(name) > 0;
     }

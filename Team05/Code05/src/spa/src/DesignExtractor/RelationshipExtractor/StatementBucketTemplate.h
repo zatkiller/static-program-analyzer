@@ -5,7 +5,8 @@
 #include "DesignExtractor/Extractor.h"
 #include "PKB/PKBDataTypes.h"
 
-
+namespace sp {
+namespace design_extractor {
 using Depth = int;
 using Bucket = std::unordered_map<Depth, STMT_LO>;
 
@@ -29,27 +30,27 @@ private:
 
 public:
     using Extractor::Extractor;
-    void visit(const AST::If& node) override {
+    void visit(const ast::If& node) override {
         auto stmt = STMT_LO{node.getStmtNo(), StatementType::If};
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
     }
-    void visit(const AST::While& node) override {
+    void visit(const ast::While& node) override {
         auto stmt = STMT_LO{node.getStmtNo(), StatementType::While};
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
     }
-    void visit(const AST::Read& node) override {
+    void visit(const ast::Read& node) override {
         auto stmt = STMT_LO{node.getStmtNo(), StatementType::Read};
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
     }
-    void visit(const AST::Print& node) override {
+    void visit(const ast::Print& node) override {
         auto stmt = STMT_LO{node.getStmtNo(), StatementType::Print};
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
     }
-    void visit(const AST::Assign& node) override {
+    void visit(const ast::Assign& node) override {
         auto stmt = STMT_LO{node.getStmtNo(), StatementType::Assignment};
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
@@ -72,3 +73,5 @@ public:
         currentDepth--;
     }
 };
+}  // namespace design_extractor
+}  // namespace sp

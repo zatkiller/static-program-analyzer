@@ -3,7 +3,8 @@
 #include "logging.h"
 #include "Lexer.h"
 
-namespace SimpleParser {
+namespace sp {
+namespace parser {
 
 #ifdef _DEBUG
 void logQueue(std::deque<Token> q) {
@@ -78,4 +79,5 @@ std::deque<Token>& Lexer::getTokens() {
     return tokens;
 }
 
-}  // namespace SimpleParser
+}  // namespace parser
+}  // namespace sp

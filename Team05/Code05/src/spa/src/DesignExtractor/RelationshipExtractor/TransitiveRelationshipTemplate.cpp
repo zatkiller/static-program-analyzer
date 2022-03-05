@@ -1,6 +1,8 @@
 #include "TransitiveRelationshipTemplate.h"
 #include "DesignExtractor/EntityExtractor/VariableExtractor.h"
 
+namespace sp {
+namespace design_extractor {
 /**
  * Private strategy to only retrieve a local copy of variables.
  */
@@ -25,7 +27,7 @@ void TransitiveRelationshipTemplate::cascadeToContainer(const std::set<VAR_NAME>
     }
 }
 
-std::set<VAR_NAME> RelExtractorTemplate::extract(const AST::ASTNode *part) {
+std::set<VAR_NAME> RelExtractorTemplate::extract(const ast::ASTNode *part) {
     VariablePKBStrategy vps;
     auto ve = std::make_shared<VariableExtractor>(&vps);
     part->accept(ve);
@@ -33,7 +35,7 @@ std::set<VAR_NAME> RelExtractorTemplate::extract(const AST::ASTNode *part) {
     return vps.variables;
 }
 
-void TransitiveRelationshipTemplate::extractAndInsert(Content a1, const AST::ASTNode *part) {
+void TransitiveRelationshipTemplate::extractAndInsert(Content a1, const ast::ASTNode *part) {
     auto vars = extract(part);
     for (auto var : vars) {
         insert(a1, var);
@@ -52,3 +54,5 @@ void TransitiveRelationshipTemplate::enterContainer(std::variant<int, std::strin
 void TransitiveRelationshipTemplate::exitContainer() {
     container.pop_front();
 }
+}  // namespace design_extractor
+}  // namespace sp

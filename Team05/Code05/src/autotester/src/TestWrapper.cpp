@@ -19,14 +19,17 @@ TestWrapper::TestWrapper() {
 
 // method for parsing the SIMPLE source
 void TestWrapper::parse(std::string filename) {
-	// call your parser to do the parsing
-  // ...rest of your code...
-	std::ifstream file;
-	std::stringstream buffer;
-	file.open(filename);
-	buffer << file.rdbuf();
+    // call your parser to do the parsing
+    // ...rest of your code...
+    std::ifstream file;
+    std::stringstream buffer;
+    file.open(filename);
+    buffer << file.rdbuf();
 
-	sp.processSimple(buffer.str(), &pkb);
+    if (!sp.processSimple(buffer.str(), &pkb)) {
+        std::cout << "Failed to parse SIMPLE source file." << std::endl;
+        std::exit(1);
+    };
 }
 
 // method to evaluating a query

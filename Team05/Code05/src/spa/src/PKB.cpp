@@ -18,14 +18,6 @@ PKB::PKB() {
     usesTable = std::make_unique<UsesRelationshipTable>();
 }
 
-int PKB::setProcToAST(PROC p, TNode* r) {
-    return 0;
-}
-
-TNode* PKB::getRootAST(PROC p) {
-    return nullptr;
-}
-
 // INSERT API
 
 void PKB::insertStatement(StatementType type, int statementNumber) {
@@ -44,7 +36,7 @@ void PKB::insertConstant(int constant) {
     constantTable->insert(constant);
 }
 
-void PKB::insertAST(std::unique_ptr<AST::Program> root) {
+void PKB::insertAST(std::unique_ptr<sp::ast::Program> root) {
     this->root = std::move(root);
 }
 
@@ -215,8 +207,8 @@ PKBResponse PKB::getConstants() {
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
 }
 
-PKBResponse PKB::match(StatementType type, PatternParam lhs, PatternParam rhs) {
-    auto matchedStmts = extractAssign(root.get(), lhs, rhs);
+PKBResponse PKB::match(StatementType type, sp::design_extractor::PatternParam lhs, sp::design_extractor::PatternParam rhs) {
+    auto matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs);
     FieldRowResponse res;
 
     if (matchedStmts.size() == 0) {

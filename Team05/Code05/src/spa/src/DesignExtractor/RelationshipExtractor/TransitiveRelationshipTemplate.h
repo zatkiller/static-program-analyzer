@@ -11,14 +11,15 @@
 #include "Parser/AST.h"
 
 
-
+namespace sp {
+namespace design_extractor {
 class RelExtractorTemplate : public Extractor {
 public:
     using Extractor::Extractor;
 protected:
-    virtual void extractAndInsert(Content, const AST::ASTNode*) = 0;
+    virtual void extractAndInsert(Content, const ast::ASTNode*) = 0;
     virtual void insert(Content, Content) = 0;
-    std::set<VAR_NAME> extract(const AST::ASTNode*);
+    std::set<VAR_NAME> extract(const ast::ASTNode*);
 };
 
 /**
@@ -35,7 +36,7 @@ public:
 protected:
     std::map<int, StatementType> stmtNumToType;
     void cascadeToContainer(const std::set<VAR_NAME>);
-    void extractAndInsert(Content, const AST::ASTNode*) override;
+    void extractAndInsert(Content, const ast::ASTNode*) override;
 private:
     std::deque<STMT_LO> container;
     PROC_NAME currentProcedure = PROC_NAME{ "" };
@@ -43,4 +44,5 @@ private:
     void enterContainer(std::variant<int, std::string>) override;
     void exitContainer() override;
 };
-
+}  // namespace design_extractor
+}  // namespace sp

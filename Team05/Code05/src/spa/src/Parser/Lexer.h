@@ -6,7 +6,8 @@
 #include <iostream>
 #include <variant>
 
-namespace SimpleParser {
+namespace sp {
+namespace parser {
 
 enum class TokenType {
     eof,
@@ -40,4 +41,5 @@ public:
     std::deque<Token>& getTokens();
 };
 
-}  // namespace SimpleParser
+}  // namespace parser
+}  // namespace sp

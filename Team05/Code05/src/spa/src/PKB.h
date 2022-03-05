@@ -5,32 +5,16 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "logging.h"
 
-#include "PKB/StatementTable.h"
-#include "PKB/VariableTable.h"
-#include "PKB/ProcedureTable.h"
-#include "PKB/ModifiesRelationshipTable.h"
-#include "PKB/FollowsRelationshipTable.h"
-#include "PKB/ParentRelationshipTable.h"
-#include "PKB/UsesRelationshipTable.h"
-#include "PKB/ConstantTable.h"
+#include "PKB/PKBTables.h"
 #include "PKB/PKBResponse.h"
-#include "PKB/PKBReturnType.h"
 #include "PKB/PKBField.h"
 #include "DesignExtractor/PatternMatcher.h"
-
-typedef int PROC;
-
-class TNode;
-
-class VarTable;  // no need to #include "VarTable.h" as all I need is pointer
 
 class PKB {
 public:
     PKB();
-    // static VarTable* varTable; 
-    static int setProcToAST(PROC p, TNode* r);
-    static TNode* getRootAST(PROC p);
 
     /**
     * Inserts a statement information into the PKB.
@@ -75,7 +59,7 @@ public:
     * 
     * @param root the pointer to the root of the AST of the SIMPLE source program
     */
-    void insertAST(std::unique_ptr<AST::Program> root);
+    void insertAST(std::unique_ptr<sp::ast::Program> root);
 
     /**
     * Checks whether there exist. If any fields are invalid, return false. Both fields must be concrete.
@@ -148,7 +132,7 @@ public:
     * @param rhs The optional string constraint of RHS expression. Use std::nullopt if RHS  is wildcard.
     * @return PKBResponse 
     */
-    PKBResponse match(StatementType type, PatternParam lhs, PatternParam rhs);
+    PKBResponse match(StatementType type, sp::design_extractor::PatternParam lhs, sp::design_extractor::PatternParam rhs);
 
 private:
     std::unique_ptr<StatementTable> statementTable;
@@ -159,7 +143,7 @@ private:
     std::unique_ptr<ConstantTable> constantTable;
     std::unique_ptr<ParentRelationshipTable> parentTable;
     std::unique_ptr<UsesRelationshipTable> usesTable;
-    std::unique_ptr<AST::ASTNode> root;
+    std::unique_ptr<sp::ast::ASTNode> root;
 
     /**
     * Check whether field is a concrete statement. Returns false if it is a
