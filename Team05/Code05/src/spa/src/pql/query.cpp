@@ -100,7 +100,7 @@ namespace qps::query {
         return type;
     }
 
-    std::string EntRef::getDeclaration() const{
+    std::string EntRef::getDeclaration() const {
         return declaration;
     }
 
@@ -232,7 +232,7 @@ namespace qps::query {
         return getFieldHelper(&Modifies::modifiesStmt, &Modifies::modified);
     }
 
-    std::vector<std::string> Modifies::getSyns(){
+    std::vector<std::string> Modifies::getSyns() {
         return getSynsHelper(&Modifies::modifiesStmt, &Modifies::modified);
     }
 

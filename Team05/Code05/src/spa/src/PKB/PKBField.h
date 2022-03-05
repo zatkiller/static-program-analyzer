@@ -24,7 +24,7 @@ struct PKBField {
     std::optional<StatementType> statementType;
     Content content;
 
-    PKBField() {};
+    PKBField() {}
     /**
     * Creates a concrete field. The type of data must be a PKBEntityType.
     */

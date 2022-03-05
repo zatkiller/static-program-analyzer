@@ -132,7 +132,11 @@ public:
     * @param rhs The optional string constraint of RHS expression. Use std::nullopt if RHS  is wildcard.
     * @return PKBResponse 
     */
-    PKBResponse match(StatementType type, sp::design_extractor::PatternParam lhs, sp::design_extractor::PatternParam rhs);
+    PKBResponse match(
+        StatementType type, 
+        sp::design_extractor::PatternParam lhs, 
+        sp::design_extractor::PatternParam rhs
+    );
 
 private:
     std::unique_ptr<StatementTable> statementTable;

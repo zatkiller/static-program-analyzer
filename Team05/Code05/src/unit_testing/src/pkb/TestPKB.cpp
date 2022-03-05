@@ -32,7 +32,7 @@ TEST_CASE("PKB testing") {
     TEST_LOG << "Test PKB#insertRelationship MODIFIES";
 
     pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field2);
-    //REQUIRE(pkb->modifiesTable->getSize() == 1);
+    // REQUIRE(pkb->modifiesTable->getSize() == 1);
 
 
     TEST_LOG << "Test PKB#getRelationship MODIFIES (All concrete fields)";
@@ -65,7 +65,7 @@ TEST_CASE("PKB testing") {
 
     std::string varName1 = "a";
     pkb->insertVariable(varName1);
-    //REQUIRE(pkb->variableTable->getSize() == 1);
+    // REQUIRE(pkb->variableTable->getSize() == 1);
 
     pkb->insertStatement(StatementType::Assignment, 1);
     pkb->insertStatement(StatementType::While, 2);
@@ -93,7 +93,7 @@ TEST_CASE("PKB STMT_LO empty type") {
 
     PKBResponse res2 = pkb->getRelationship(field3, field2, PKBRelationship::MODIFIES);
     auto content2 = res2.getResponse<FieldRowResponse>();
-    REQUIRE(*content == *content2); // checks that getStatementTypeOfConcreteField works
+    REQUIRE(*content == *content2);  // checks that getStatementTypeOfConcreteField works
 }
 
 TEST_CASE("PKB sample source program test") {
@@ -523,9 +523,13 @@ TEST_CASE("PKB sample source program test") {
             FieldRowResponse{ {stmt5, stmt6} } });
 
         // Parent(s, 6)
-        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
-            PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment }), PKBRelationship::PARENT) == PKBResponse{ true,
-            FieldRowResponse{ {stmt5, stmt6} } });
+        REQUIRE(
+            pkb->getRelationship(
+                PKBField::createDeclaration(StatementType::All),
+                PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment }),
+                PKBRelationship::PARENT
+            ) == PKBResponse{ true, FieldRowResponse{ {stmt5, stmt6} } }
+        );
 
         // Parent(5, 6)
         REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5 }),

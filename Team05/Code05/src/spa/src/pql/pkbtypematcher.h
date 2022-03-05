@@ -21,4 +21,4 @@ public:
      */
     static StatementType getStatementType(query::DesignEntity d);
 };
-}
+}  // namespace qps::evaluator

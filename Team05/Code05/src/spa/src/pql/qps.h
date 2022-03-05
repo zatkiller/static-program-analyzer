@@ -24,4 +24,4 @@ struct QPS {
     void evaluate(std::string query, std::list<std::string> &results, PKB *pkbPtr);
 };
 
-} // namespace qps
+}  // namespace qps

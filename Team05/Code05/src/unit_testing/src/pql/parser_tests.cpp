@@ -428,7 +428,6 @@ TEST_CASE("Parser parsePattern - string expression") {
 }
 
 TEST_CASE("Parser parsePattern - string expression with wildcard") {
-
     SECTION("Valid Pattern semantics") {
         std::string testQuery = "assign a; variable v;\n Select a pattern a (v, _\"x\"_)";
 
@@ -504,7 +503,6 @@ TEST_CASE("Parser parseEntRef") {
 }
 
 TEST_CASE("Parser parseRelRefVariables") {
-
     SECTION("parseRelRefVariables - Follows") {
         Query queryObj;
         Parser parser;

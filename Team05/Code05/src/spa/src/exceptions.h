@@ -31,5 +31,5 @@ struct PqlSemanticException : PqlException  {
     explicit PqlSemanticException(const char* message) : PqlException(message) {}
 };
 
-} //namespace exceptions
+}  // namespace exceptions
 
