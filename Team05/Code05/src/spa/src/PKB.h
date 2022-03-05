@@ -143,6 +143,7 @@ private:
     std::unique_ptr<ConstantTable> constantTable;
     std::unique_ptr<ParentRelationshipTable> parentTable;
     std::unique_ptr<UsesRelationshipTable> usesTable;
+    std::unique_ptr<CallsRelationshipTable> callsTable;
     std::unique_ptr<sp::ast::ASTNode> root;
 
     /**
