@@ -65,6 +65,10 @@ void Print::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
     this->getVar().accept(visitor);
 }
 
+void Call::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+    // visitor->visit(*this); // TODO: implement extractors to work with this.
+}
+
 void Const::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
     visitor->visit(*this);
 }
@@ -154,6 +158,13 @@ bool IO::operator==(ASTNode const& o) const {
     auto that = static_cast<IO const*>(&o);
     return *this->var == *that->var &&
         (this->getStmtNo() == that->getStmtNo());
+}
+
+bool Call::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<Call const&>(o);
+    return (this->procName == that.procName) &&
+        (this->getStmtNo() == that.getStmtNo());
 }
 
 bool Const::operator==(ASTNode const& o) const {

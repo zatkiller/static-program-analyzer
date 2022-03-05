@@ -44,6 +44,7 @@ class While;
 class Read;
 class Print;
 class Assign;
+class Call;
 
 // expressions
 class Var;
@@ -377,6 +378,22 @@ class Print : public IO {
 public:
     using IO::IO;
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+};
+
+/**
+ * @class Call
+ * @brief Class that represents a Call statement in the AST.
+ * @details Call is identified by: 'call' proc_name';'
+ */
+class Call : public Statement {
+private:
+    std::string procName;
+public:
+    Call(int stmtNo, const std::string& procName) :
+        Statement(stmtNo),
+        procName(procName) {}
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
