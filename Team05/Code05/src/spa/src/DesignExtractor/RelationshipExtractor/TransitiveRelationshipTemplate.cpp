@@ -9,8 +9,12 @@ namespace design_extractor {
 class VariablePKBStrategy : public NullPKBStrategy {
 public:
     std::set<VAR_NAME> variables;
-    void insertVariable(std::string name) override {
-        variables.insert(VAR_NAME{name});
+    void insertEntity(Content entity) override {
+        try {
+            variables.insert(std::get<VAR_NAME>(entity));
+        } catch (std::bad_variant_access &ex) {
+            Logger(Level::ERROR) << "Bad variant access in transitive relationship template extraction";
+        }
     };
 };
 
