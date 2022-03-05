@@ -71,9 +71,9 @@ namespace qps::evaluator {
         this->table = newTable;
     }
 
-    void ResultTable::oneSynInnerJoin(InnerJoinParam param, Table& newTable) {
-        int pos = getSynLocation(param.syns[0]);
-        for (auto r : param.vectorResponse) {
+    void ResultTable::oneSynInnerJoin(InnerJoinParam params, Table& newTable) {
+        int pos = getSynLocation(params.syns[0]);
+        for (auto r : params.vectorResponse) {
             for (auto record : table) {
                 if (r[0] == record[pos]) {
                     std::vector<PKBField> newRecord = record;
@@ -83,10 +83,10 @@ namespace qps::evaluator {
         }
     }
 
-    void ResultTable::twoSynInnerJoinTwo(InnerJoinParam param, Table& newTable) {
-        int firstMatch = getSynLocation(param.syns[0]);
-        int secondMatch = getSynLocation(param.syns[1]);
-        for (auto r : param.vectorResponse) {
+    void ResultTable::twoSynInnerJoinTwo(InnerJoinParam params, Table& newTable) {
+        int firstMatch = getSynLocation(params.syns[0]);
+        int secondMatch = getSynLocation(params.syns[1]);
+        for (auto r : params.vectorResponse) {
             for (auto record : table) {
                 if (r[0] == record[firstMatch] && r[1] == record[secondMatch]) {
                     std::vector<PKBField> newRecord = record;
@@ -96,13 +96,13 @@ namespace qps::evaluator {
         }
     }
 
-    void ResultTable::twoSynInnerJoinOne(InnerJoinParam param, Table& newTable) {
-        std::string matched = param.isFirst ? param.syns[0] : param.syns[1];
-        std::string another = param.isFirst ? param.syns[1]  : param.syns[0];
-        int mPos = param.isFirst ? 0 : 1;
-        int aPos = param.isFirst ? 1 : 0;
+    void ResultTable::twoSynInnerJoinOne(InnerJoinParam params, Table& newTable) {
+        std::string matched = params.isFirst ? params.syns[0] : params.syns[1];
+        std::string another = params.isFirst ? params.syns[1]  : params.syns[0];
+        int mPos = params.isFirst ? 0 : 1;
+        int aPos = params.isFirst ? 1 : 0;
         int matchedPos = getSynLocation(matched);
-        for (auto r : param.vectorResponse) {
+        for (auto r : params.vectorResponse) {
             for (auto record : table) {
                 if ((r[mPos] == record[matchedPos])) {
                     std::vector<PKBField> newRecord = record;
@@ -113,22 +113,22 @@ namespace qps::evaluator {
         }
     }
 
-    void ResultTable::innerJoin(InnerJoinParam param) {
+    void ResultTable::innerJoin(InnerJoinParam params) {
         if (table.empty()) {
             return;
         }
         Table newTable;
-        if (auto *ptr = std::get_if<SingleResonse>(&param.response.res)) {
-            param.vectorResponse = transToVectorResponse(*ptr);
-        } else if (auto *ptr = std::get_if<VectorResponse>(&param.response.res)) {
-            param.vectorResponse = *ptr;
+        if (auto *ptr = std::get_if<SingleResonse>(&params.response.res)) {
+            params.vectorResponse = transToVectorResponse(*ptr);
+        } else if (auto *ptr = std::get_if<VectorResponse>(&params.response.res)) {
+            params.vectorResponse = *ptr;
         }
-        if (param.syns.size() == 1) {  // Only one synonym in the clause
-            oneSynInnerJoin(param, newTable);
-        } else if (param.isFirst && param.isSecond) {  // Two synonyms all in table already
-            twoSynInnerJoinTwo(param, newTable);
+        if (params.syns.size() == 1) {  // Only one synonym in the clause
+            oneSynInnerJoin(params, newTable);
+        } else if (params.isFirst && params.isSecond) {  // Two synonyms all in table already
+            twoSynInnerJoinTwo(params, newTable);
         } else {  // Two synonyms in the clause, one is already in the table
-            twoSynInnerJoinOne(param, newTable);
+            twoSynInnerJoinOne(params, newTable);
         }
         this->table = newTable;
     }
