@@ -242,10 +242,12 @@ public:
     * @param v the second STMT_LO in a rs(u,v) relationship
     */
     void addEdge(T u, T v) {
-        if (std::is_same_v<T, STMT_LO>) {
+        if constexpr (std::is_same_v<T, STMT_LO>) {
             // Second statement in the relationship cannot come before the first
-            if (u.statementNum >= v.statementNum) {
-                return;
+            if (type == PKBRelationship::PARENT || type == PKBRelationship::FOLLOWS) {
+                if (u.statementNum >= v.statementNum) {
+                    return;
+                }
             }
 
             // First statement in a Parent relationship has to be a container statement
@@ -353,7 +355,7 @@ public:
         } else if (!isConcreteFirst && isConcreteSec) {
             return traverseEnd(field1, field2);
         } else {
-            return traverseAll(std::vector<StatementType>{field1.statementType.value(), field2.statementType.value()});
+            return traverseAll(field1, field2);
         }
     }
 
@@ -377,7 +379,7 @@ public:
         } else if (isDeclarationFirst && isConcreteSec) {
             return traverseEndT(field1, field2);
         } else if (isDeclarationFirst && isDeclarationSec) {
-            return traverseAllT(std::vector<StatementType>{field1.statementType.value(), field2.statementType.value()});
+            return traverseAllT(field1, field2);
         } else {
             return Result{};
         }
@@ -394,7 +396,7 @@ public:
 
 private:
     PKBRelationship type; /**< The type of relationships this Graph holds */
-    std::map<STMT_LO, Node<T>*> nodes; /**< The list of nodes in this Graph */
+    std::map<T, Node<T>*> nodes; /**< The list of nodes in this Graph */
 
     /**
     * Add a node represented by stmt to the list of nodes stored in the graph if it does not exist and is valid.
@@ -407,7 +409,7 @@ private:
         std::map<T, Node<T>*> filtered;
         std::copy_if(nodes.begin(), nodes.end(), std::inserter(filtered, filtered.end()),
             [val](auto const& pair) {
-                if (std::is_same_v<T, STMT_LO>) {
+                if constexpr (std::is_same_v<T, STMT_LO>) {
                     return pair.first.statementNum == val.statementNum;
                 }
 
@@ -422,10 +424,11 @@ private:
             }
 
             // Invalid insert
-            if (std::is_same_v<T, STMT_LO> &&
-                v.statementNum == val.statementNum &&
-                v.type.value() != val.type.value()) {
-                return nullptr;
+            if constexpr (std::is_same_v<T, STMT_LO>) {
+                if (v.statementNum == val.statementNum &&
+                    v.type.value() != val.type.value()) {
+                    return nullptr;
+                }
             }
         }
 
@@ -455,8 +458,10 @@ private:
         T target = *(field1.getContent<T>());
         Result res{};
 
-        if (!target.type.has_value()) {
-            return res;
+        if constexpr (std::is_same_v<T, STMT_LO>) {
+            if (!target.type.has_value()) {
+                return res;
+            }
         }
 
 
@@ -469,7 +474,7 @@ private:
                 std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
                     [&](Node<T>* const& node) {
                         // filter for statements. for all other type no filtering is required.
-                        if (std::is_same_v<T, STMT_LO>) {
+                        if constexpr (std::is_same_v<T, STMT_LO>) {
                             StatementType targetType = field2.statementType.value();
                             return (node->val.type.value() == targetType || targetType == StatementType::All);
                         }
@@ -508,7 +513,7 @@ private:
         T start = *(field1.getContent<T>());
 
         if (nodes.count(start) != 0) {
-            if (std::is_same_v<T, STMT_LO>) {
+            if constexpr (std::is_same_v<T, STMT_LO>) {
                 StatementType targetType = field2.statementType.value();
                 traverseStartT(&found, nodes.at(start), targetType);
             } else {
@@ -543,7 +548,7 @@ private:
 
         for (auto nextNode : nextNodes) {
             // targetType is specified for statements
-            if (std::is_same_v<T, STMT_LO>) {
+            if constexpr (std::is_same_v<T, STMT_LO>) {
                 bool typeMatch = nextNode->val.type.value() == targetType || targetType == StatementType::All;
                 if (typeMatch) {
                     found->insert(nextNode->val);
@@ -575,11 +580,11 @@ private:
         T target = *(field2.getContent<T>());
         Result res{};
 
-        if (std::is_same_v<T, STMT_LO> && !target.type.has_value()) {
-            return res;
+        if constexpr (std::is_same_v<T, STMT_LO>) {
+            if (!target.type.has_value()) {
+                return res;
+            }
         }
-
-        StatementType targetType = field1.statementType.value();
 
         if (nodes.count(target) != 0) {
             Node<T>* curr = nodes.at(target);
@@ -587,7 +592,8 @@ private:
             if (curr->prev != nullptr) {
                 T prev = curr->prev->val;
 
-                if (std::is_same_v<T, STMT_LO>) {
+                if constexpr (std::is_same_v<T, STMT_LO>) {
+                    StatementType targetType = field1.statementType.value();
                     if (prev.type.value() != targetType && targetType != StatementType::All) {
                         return res;
                     }
@@ -651,7 +657,7 @@ private:
     */
     void traverseEndT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) {
         while (node->prev) {
-            if (std::is_same_v<T, STMT_LO>) {
+            if constexpr (std::is_same_v<T, STMT_LO>) {
                 bool typeMatch = node->prev->val.type.value() == targetType || targetType == StatementType::All;
                 if (typeMatch) {
                     found->insert(node->prev->val);
@@ -677,22 +683,17 @@ private:
     * each item in each pair satisfies the corresponding statement type requirement.
     * @see PKBField
     */
-    Result traverseAll(const std::vector<StatementType>& statementTypes) {
+    Result traverseAll(PKBField field1, PKBField field2) {
         Result res{};
-
-        if (statementTypes.size() != 2) {
-            return res;
-        }
-
-        StatementType type1 = statementTypes.at(0);
-        StatementType type2 = statementTypes.at(1);
 
         for (auto const& [key, node] : nodes) {
             Node<T>* curr = node;
 
             if (!curr->next.empty()) {
-                if (std::is_same_v<T, STMT_LO>) {
-                    if (curr->val.type.value() != type1 && type1 != StatementType::All) {
+                if constexpr (std::is_same_v<T, STMT_LO>) {
+                    // for statement declarations or wildcards, its statement type will be initialized
+                    if (curr->val.type.value() != field1.statementType.value() &&
+                        field1.statementType.value() != StatementType::All) {
                         continue;
                     }
                 }
@@ -702,9 +703,10 @@ private:
                 // Filter nodes that match second statement type
                 typename Node<T>::NodeSet filtered;
                 std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
-                    [type2](Node<T>* const& node) {
-                        if (std::is_same_v<T, STMT_LO>) {
-                            return node->val.type.value() == type2 || type2 == StatementType::All;
+                    [&](Node<T>* const& node) {
+                        if constexpr (std::is_same_v<T, STMT_LO>) {
+                            return node->val.type.value() == field2.statementType.value() ||
+                                field2.statementType.value() == StatementType::All;
                         }
                         return true;
                     });
@@ -735,15 +737,8 @@ private:
     *
     * @see PKBField
     */
-    Result traverseAllT(const std::vector<StatementType>& statementTypes) {
+    Result traverseAllT(PKBField field1, PKBField field2) {
         Result res;
-
-        if (statementTypes.size() != 2) {
-            return res;
-        }
-
-        StatementType type1 = statementTypes.at(0);
-        StatementType type2 = statementTypes.at(1);
 
         std::set<T> found;
 
@@ -751,12 +746,14 @@ private:
             Node<T>* curr = node;
             found.clear();
 
-            if (std::is_same_v<T, STMT_LO>) {
-                if (curr->val.type.value() != type1 && type1 != StatementType::All) {
+            if constexpr (std::is_same_v<T, STMT_LO>) {
+                // for statement declarations or wildcards, its statement type will be initialized
+                if (curr->val.type.value() != field1.statementType.value() &&
+                    field1.statementType.value() != StatementType::All) {
                     continue;
                 }
 
-                traverseStartT(&found, node, type2);
+                traverseStartT(&found, node, field2.statementType.value());
             } else {
                 traverseStartT(&found, node);
             }
@@ -815,7 +812,7 @@ public:
             return;
         }
 
-        graph->addEdge(*field1.getContent<STMT_LO>(), *field2.getContent<STMT_LO>());
+        graph->addEdge(*field1.getContent<T>(), *field2.getContent<T>());
     }
 
     void convertWildcardToDeclaration(PKBField* field) {
@@ -935,11 +932,19 @@ private:
     * @see PKBField
     */
     bool isInsertOrContainsValid(PKBField field1, PKBField field2) {
-        if (!field1.isValidConcrete(PKBEntityType::STATEMENT)) {
+        if (field1.entityType != field2.entityType) {
             return false;
         }
 
-        if (!field2.isValidConcrete(PKBEntityType::STATEMENT)) {
+        if (!field1.isValidConcrete(field1.entityType)) {
+            return false;
+        }
+
+        if (!field2.isValidConcrete(field2.entityType)) {
+            return false;
+        }
+
+        if (!std::holds_alternative<T>(field1.content)) {
             return false;
         }
 
@@ -958,7 +963,19 @@ private:
     */
     bool isRetrieveValid(PKBField field1, PKBField field2) {
         // for transitive tables, both fields have to be the same type
-        return field1.entityType == field2.entityType;
+        if (field1.entityType != field2.entityType) {
+            return false;
+        }
+
+        if (std::is_same_v<T, STMT_LO>) {
+            return  field1.entityType == PKBEntityType::STATEMENT;
+        } else if (std::is_same_v<T, PROC_NAME>) {
+            return  field1.entityType == PKBEntityType::PROCEDURE;
+        } else if (std::is_same_v<T, VAR_NAME>) {
+            return  field1.entityType == PKBEntityType::VARIABLE;
+        } else {  // CONST
+            return  field1.entityType == PKBEntityType::CONST;
+        }
     }
 };
 
@@ -998,4 +1015,9 @@ public:
 class ParentRelationshipTable : public TransitiveRelationshipTable<STMT_LO> {
 public:
     ParentRelationshipTable();
+};
+
+class CallsRelationshipTable : public TransitiveRelationshipTable<PROC_NAME> {
+public:
+    CallsRelationshipTable();
 };

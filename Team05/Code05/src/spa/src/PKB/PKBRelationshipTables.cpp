@@ -155,3 +155,7 @@ FollowsRelationshipTable::FollowsRelationshipTable() : TransitiveRelationshipTab
 /** ======================== PARENTRELATIONSHIPTABLE METHODS ========================== */
 
 ParentRelationshipTable::ParentRelationshipTable() : TransitiveRelationshipTable<STMT_LO>{ PKBRelationship::PARENT } {}
+
+/** ========================= CALLSRELATIONSHIPTABLE METHODS =========================== */
+
+CallsRelationshipTable::CallsRelationshipTable() : TransitiveRelationshipTable<PROC_NAME>{ PKBRelationship::CALLS } {}
