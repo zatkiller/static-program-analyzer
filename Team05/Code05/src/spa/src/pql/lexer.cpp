@@ -1,11 +1,53 @@
 #include <stdio.h>
+#include <unordered_map>
+#include <vector>
 
 #include "logging.h"
+#include "exceptions.h"
 #include "pql/lexer.h"
 
 #define LOGGER Logger(Level::DEBUG) << "pql/lexer.cpp: \n"
 
 namespace qps::parser {
+    std::unordered_map<char, TokenType> specialCharToTokenTypeMap {
+            { ';', TokenType::SEMICOLON },
+            { '(', TokenType::OPENING_PARAN },
+            { ')', TokenType::CLOSING_PARAN },
+            { '_', TokenType::UNDERSCORE },
+            { ',', TokenType::COMMA },
+            { '+', TokenType::PLUS },
+            { '-', TokenType::MINUS },
+            { '*', TokenType::MULTIPLY },
+            { '/', TokenType::DIVIDE },
+            { '%', TokenType::MODULO}
+    };
+
+    std::vector<std::string> keywords = {
+            "Select", "Modifies", "Uses", "Parent*",
+            "Parent", "Follows*", "Follows", "pattern",
+            "such that"
+    };
+
+    std::unordered_map<std::string, TokenType> keywordsToTokenTypeMap {
+            { "Select", TokenType::SELECT },
+            { "Modifies", TokenType::MODIFIES },
+            { "Uses", TokenType::USES },
+            { "Parent*", TokenType::PARENT_T },
+            { "Parent", TokenType::PARENT },
+            { "Follows*", TokenType::FOLLOWS_T },
+            { "Follows", TokenType::FOLLOWS },
+            { "pattern", TokenType::PATTERN },
+            { "such that", TokenType::SUCH_THAT }
+    };
+
+    Token Lexer::getReservedToken(std::string keyword) {
+        auto pos = keywordsToTokenTypeMap.find(keyword);
+        if (pos == keywordsToTokenTypeMap.end()) {
+            throw exceptions::PqlException("Keyword does not exist in map");
+        }
+        return Token { keyword, pos->second };
+    }
+
     std::string Lexer::getText() {
         return text;
     }
@@ -19,87 +61,97 @@ namespace qps::parser {
         return text.find(prefix) == 0;
     }
 
+    TokenType Lexer::getSpecialCharTokenType(char ch) {
+
+        auto pos = specialCharToTokenTypeMap.find(ch);
+
+        if (pos == specialCharToTokenTypeMap.end()) {
+            return TokenType::INVALID;
+        }
+
+        return pos->second;
+    }
+
+    Token Lexer::getString() {
+        auto pos1 = text.find("\"");
+        auto pos2 = text.find("\"", pos1 + 1);
+        int num_chars = pos2 - pos1;
+        std::string strValue = text.substr(pos1 + 1, num_chars - 1);
+
+        text.erase(0, num_chars + 1);
+
+        return Token {strValue, TokenType::STRING };
+    }
+
+    Token Lexer::getIdentifier() {
+        int charCount = 0;
+
+        while (text.length() > 0 && (isalpha(text[charCount]) || isdigit(text[charCount])))
+            charCount++;
+
+        std::string identifier = text.substr(0, charCount);
+        text.erase(0, charCount);
+
+        return Token { identifier, TokenType::IDENTIFIER };
+    }
+
+    Token Lexer::getNumber() {
+        int charCount = 0;
+        while (text.length() > 0 && (isdigit(text[charCount])))
+            charCount++;
+
+        std::string number = text.substr(0, charCount);
+        text.erase(0, charCount);
+
+        return Token { number, TokenType::NUMBER };
+    }
+
+    Token Lexer::getSpecialChar() {
+        Token token;
+        std::string value = text.substr(0, 1);
+        TokenType type = getSpecialCharTokenType(text[0]);
+
+        if (type == TokenType::INVALID) {
+            token = { "", type };
+        } else {
+            token = { value, type };
+        }
+
+        text.erase(0, 1);
+        return token;
+    }
+
     Token Lexer::getNextToken() {
         eatWhitespace();
 
         if (text.length() == 0) {
             return Token{"EOF", TokenType::END_OF_FILE};
         } else if (text[0] == '"') {
-            auto pos1 = text.find("\"");
-            auto pos2 = text.find("\"", pos1 + 1);
-            int num_chars = pos2 - pos1;
-            std::string strValue = text.substr(pos1 + 1, num_chars - 1);
-
-            text.erase(0, num_chars + 1);
-
-            return Token{strValue, TokenType::STRING};
+            return getString();
         } else if (isalpha(text[0])) {
-            int charCount = 0;
-
-            while (text.length() > 0 && (isalpha(text[charCount]) || isdigit(text[charCount])))
-                charCount++;
-
-            std::string identifier = text.substr(0, charCount);
-            text.erase(0, charCount);
-
-            return Token{identifier, TokenType::IDENTIFIER};
+            return getIdentifier();
         } else if (isdigit(text[0])) {
-            int charCount = 0;
-            while (text.length() > 0 && (isdigit(text[charCount])))
-                charCount++;
-
-            std::string number = text.substr(0, charCount);
-            text.erase(0, charCount);
-
-            return Token{number, TokenType::NUMBER};
+            return getNumber();
         } else {
-            Token token;
-            std::string value = text.substr(0, 1);
-            if (text[0] == ';') {
-                token = {value, TokenType::SEMICOLON};
-            } else if (text[0] == '(') {
-                token = {value, TokenType::OPENING_PARAN};
-            } else if (text[0] == ')') {
-                token = {value, TokenType::CLOSING_PARAN};
-            } else if (text[0] == '_') {
-                token = {value, TokenType::UNDERSCORE};
-            } else if (text[0] == ',') {
-                token = {value, TokenType::COMMA};
-            } else {
-                token = {"", TokenType::INVALID};
-            }
-
-            text.erase(0, 1);
-            return token;
+            return getSpecialChar();
         }
     }
 
     Token Lexer::getNextReservedToken() {
         eatWhitespace();
 
-        Token token;
+        Token token = Token{ "", TokenType::INVALID };
+
         if (text.length() == 0) {
-            token = Token{"EOF", TokenType::END_OF_FILE};
-        } else if (hasPrefix("Select")) {
-            token = Token{"Select", TokenType::SELECT};
-        } else if (hasPrefix("Modifies")) {
-            token = Token{"Modifies", TokenType::MODIFIES};
-        } else if (hasPrefix("Uses")) {
-            token = Token{"Uses", TokenType::USES};
-        } else if (hasPrefix("Parent*")) {
-            token = Token{"Parent*", TokenType::PARENT_T};
-        } else if (hasPrefix("Parent")) {
-            token = Token{"Parent", TokenType::PARENT};
-        } else if (hasPrefix("Follows*")) {
-            token = Token{"Follows*", TokenType::FOLLOWS_T};
-        } else if (hasPrefix("Follows")) {
-            token = Token{"Follows", TokenType::FOLLOWS};
-        } else if (hasPrefix("pattern")) {
-            token = Token{"pattern", TokenType::PATTERN};
-        } else if (hasPrefix("such that")) {
-            token = Token{"such that", TokenType::SUCH_THAT};
-        } else {
-            token = Token{"", TokenType::INVALID};
+            token = Token {"EOF", TokenType::END_OF_FILE};
+            return token;
+        }
+
+        for (auto keyword: keywords) {
+            if (hasPrefix(keyword)) {
+                token = getReservedToken(keyword);
+                break;
+            }
         }
 
         text.erase(0, token.getText().length());

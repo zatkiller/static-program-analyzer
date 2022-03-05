@@ -66,17 +66,17 @@ TEST_CASE("Parser peekNextToken and getNextToken") {
     REQUIRE(parser.getAndCheckNextToken(TokenType::IDENTIFIER) == Token{"a", TokenType::IDENTIFIER});
 }
 
-TEST_CASE("Parser addPql") {
+TEST_CASE("Parser addInput") {
     std::string testQuery1 = "assign a; \n Select a such that Uses (a, v) pattern a (v, _)";
     std::string testQuery2 = "variable v; \n Select v such that Uses (a, v) pattern a (v, _)";
 
     Parser parser;
-    parser.addPql(testQuery1);
+    parser.addInput(testQuery1);
 
     Lexer lexer1 = parser.lexer;
     REQUIRE(parser.getParsedText() == testQuery1);
 
-    parser.addPql(testQuery2);
+    parser.addInput(testQuery2);
 
     REQUIRE(parser.getParsedText() == testQuery2);
     REQUIRE(!(lexer1 == parser.lexer));
@@ -130,7 +130,7 @@ TEST_CASE("Parser parseDeclarations") {
 
 TEST_CASE("Parser parseSelectFields") {
     Parser parser;
-    parser.addPql("assign a; \n Select a");
+    parser.addInput("assign a; \n Select a");
 
     Query queryObj;
 
@@ -140,7 +140,7 @@ TEST_CASE("Parser parseSelectFields") {
     REQUIRE(queryObj.hasVariable("a"));
 
     queryObj = Query{};
-    parser.addPql("assign a; \n Select v");
+    parser.addInput("assign a; \n Select v");
 
     parser.parseDeclarations(queryObj);
 
@@ -153,7 +153,7 @@ TEST_CASE("Parser parseSuchThat - Uses") {
         std::string testQuery = "assign a;\n Select a such that Uses (a, _)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -173,7 +173,7 @@ TEST_CASE("Parser parseSuchThat - Uses") {
     SECTION("Invalid first argument (wildcard) for Uses") {
         std::string testQuery = "assign a;\n Select a such that Uses (_, _)";
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -186,7 +186,7 @@ TEST_CASE("Parser parseSuchThat - Uses") {
     SECTION("Invalid second argument non-variable design entity for Uses") {
         std::string testQuery = "assign a;\n Select a such that Uses (1, a)";
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -202,7 +202,7 @@ TEST_CASE("Parser parseSuchThat - Modifies") {
         std::string testQuery = "assign a; \n Select a such that Modifies (a, _)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -222,7 +222,7 @@ TEST_CASE("Parser parseSuchThat - Modifies") {
     SECTION("Invalid first argument (wildcard) for Modifies") {
         std::string testQuery = "assign a;\n Select a such that Modifies (_, _)";
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -235,7 +235,7 @@ TEST_CASE("Parser parseSuchThat - Modifies") {
     SECTION("Invalid second argument non-variable design entity for Modifies") {
         std::string testQuery = "assign a;\n Select a such that Modifies (1, a)";
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -251,7 +251,7 @@ TEST_CASE("Parser parseSuchThat - Follows") {
         std::string testQuery = "stmt s1, s2; \n Select s1 such that Follows (s1, 20)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -275,7 +275,7 @@ TEST_CASE("Parser parseSuchThat - Follows*") {
         std::string testQuery = "stmt s1, s2; \n Select s1 such that Follows* (s2, 20)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -299,7 +299,7 @@ TEST_CASE("Parser parseSuchThat - Parent") {
         std::string testQuery = "stmt s1, s2; \n Select s1 such that Parent (20, s2)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -323,7 +323,7 @@ TEST_CASE("Parser parseSuchThat - Parent*") {
         std::string testQuery = "stmt s1, s2; \n Select s1 such that Parent* (20, s2)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -346,31 +346,48 @@ TEST_CASE("Parser parseExpSpec") {
     std::string testQuery = "_";
 
     Parser parser;
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
 
     REQUIRE(parser.parseExpSpec() == ExpSpec::ofWildcard());
 
     testQuery = "_\"x\"_";
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
 
     REQUIRE(parser.parseExpSpec() == ExpSpec::ofPartialMatch("x"));
 
     testQuery = "\"x\"";
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
 
     REQUIRE(parser.parseExpSpec() == ExpSpec::ofFullMatch("x"));
 
     testQuery = "_\"x\"";
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
     REQUIRE_THROWS_MATCHES(parser.parseExpSpec(), exceptions::PqlSyntaxException,
                            Catch::Message(messages::qps::parser::notExpectingTokenMessage));
+}
+
+TEST_CASE("Parser validateExpr") {
+    Parser parser;
+
+    REQUIRE_NOTHROW(parser.validateExpr("1"));
+    REQUIRE_NOTHROW(parser.validateExpr("x"));
+    REQUIRE_NOTHROW(parser.validateExpr("1+2-3"));
+    REQUIRE_NOTHROW(parser.validateExpr("1+3*x"));
+    REQUIRE_NOTHROW(parser.validateExpr("3/(1+x)"));
+    REQUIRE_NOTHROW(parser.validateExpr("(1+x)%3"));
+
+    REQUIRE_THROWS_MATCHES(parser.validateExpr("+temp"), exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::expressionInvalidGrammarMessage));
+
+    REQUIRE_THROWS_MATCHES(parser.validateExpr("temp-"), exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::expressionUnexpectedEndMessage));
 }
 
 TEST_CASE("Parser parsePattern - wildcard expression") {
     std::string testQuery = "assign a; variable v;\n Select a pattern a (v, _)";
 
     Parser parser;
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
 
     Query queryObj;
 
@@ -392,7 +409,7 @@ TEST_CASE("Parser parsePattern - string expression") {
     std::string testQuery = "assign a; variable v;\n Select a pattern a (v, \"x\")";
 
     Parser parser;
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
 
     Query queryObj;
 
@@ -416,7 +433,7 @@ TEST_CASE("Parser parsePattern - string expression with wildcard") {
         std::string testQuery = "assign a; variable v;\n Select a pattern a (v, _\"x\"_)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -438,7 +455,7 @@ TEST_CASE("Parser parsePattern - string expression with wildcard") {
         std::string testQuery = "assign a;\n Select a pattern a (a, _\"x\"_)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
@@ -470,7 +487,7 @@ TEST_CASE("Parser isSmtRef") {
 
 TEST_CASE("Parser parseStmtRef") {
     Parser parser;
-    parser.addPql("3");
+    parser.addInput("3");
     Query query;
     StmtRef sr = parser.parseStmtRef(query);
     REQUIRE(sr.isLineNo());
@@ -479,7 +496,7 @@ TEST_CASE("Parser parseStmtRef") {
 
 TEST_CASE("Parser parseEntRef") {
     Parser parser;
-    parser.addPql("\"x\"");
+    parser.addInput("\"x\"");
     Query query;
     EntRef er = parser.parseEntRef(query);
     REQUIRE(er.isVarName());
