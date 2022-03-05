@@ -204,11 +204,9 @@ private:
 using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
 /**
-* A bi-directional node inside a Graph.
+* A bi-directional node inside a Graph, where there can be any number of next nodes and one previous node.
 *
-* The graph used by FollowsRelationshipTable will have at most 1 next in the NodeSet while
-* the one used by ParentRelationshipTable can have any number of next nodes.
-*
+* @tparam T the type each node stores
 * @see Graph
 */
 template<typename T>
@@ -223,10 +221,11 @@ struct Node {
 };
 
 /**
-* A data structure that consists of Node, where each edge represents a valid relationship. Represents
-* Parent or Follows relationships. For brevity, Parent(u, v) or Uses(u, v) will be denoted by rs(u, v),
+* A data structure that consists of Node, where each edge represents a valid relationship. For brevity, 
+* program design abstractions (Follows, Parent, Calls) will be denoted by rs(u, v),
 * where rs is the type of transitive relationship this graph holds.
-*
+* 
+* @tparam T the type each node in the graph stores
 * @see Node
 */
 template<typename T>
@@ -235,11 +234,11 @@ public:
     explicit Graph<T>(PKBRelationship type) : type(type) {}
 
     /**
-    * Adds an edge between two STMT_LOs to represent a relationship. Initialises Nodes for
-    * the STMT_LOs if they are not present in the graph.
+    * Adds an edge between two nodes to represent a relationship. Initialises Nodes for
+    * if they are not present in the graph.
     *
-    * @param u the first STMT_LO in a rs(u,v) relationship
-    * @param v the second STMT_LO in a rs(u,v) relationship
+    * @param u the first program design entity in a rs(u,v) relationship
+    * @param v the second program design entity in a rs(u,v) relationship
     */
     void addEdge(T u, T v) {
         if constexpr (std::is_same_v<T, STMT_LO>) {
@@ -275,8 +274,8 @@ public:
     /**
     * Checks if rs(field1, field2) is in the graph.
     *
-    * @param field1 the first STMT_LO in a rs(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a rs(u,v) query wrapped in a PKBField
+    * @param field1 the first program design entity  in a rs(u,v) query wrapped in a PKBField
+    * @param field2 the second program design entity  in a rs(u,v) query wrapped in a PKBField
     *
     * @return bool true if rs(field1, field2) is in the graph and false otherwise
     * @see PKBField
@@ -302,8 +301,8 @@ public:
     /**
     * Checks if rs*(field1, field2) is in the graph.
     *
-    * @param field1 the first STMT_LO in a rs*(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a rs*(u,v) query wrapped in a PKBField
+    * @param field1 the first program design entity  in a rs*(u,v) query wrapped in a PKBField
+    * @param field2 the second program design entity  in a rs*(u,v) query wrapped in a PKBField
     *
     * @return bool true if rs*(field1, field2) is in the graph and false otherwise
     * @see PKBField
@@ -312,7 +311,7 @@ public:
         T first = *field1.getContent<T>();
         T second = *field2.getContent<T>();
 
-        // Base Case where Parent(field1, field2) holds
+        // Base Case where rs(field1, field2) holds
         if (this->contains(field1, field2)) {
             return true;
         }
@@ -337,8 +336,8 @@ public:
     /**
     * Gets all pairs of PKBFields that satisfy the provided rs relationship, rs(field1, field2).
     *
-    * @param field1 the first STMT_LO in a rs(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a rs(u,v) query wrapped in a PKBField
+    * @param field1 the first program design entity  in a rs(u,v) query wrapped in a PKBField
+    * @param field2 the second program design entity  in a rs(u,v) query wrapped in a PKBField
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields
     * that satisfy rs(field1, field2)
@@ -362,8 +361,8 @@ public:
     /**
     * Gets all pairs of PKBFields that satisfy the provided rs* relationship, rs*(field1, field2).
     *
-    * @param field1 the first STMT_LO in a rs*(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a rs*(u,v) query wrapped in a PKBField
+    * @param field1 the first program design entity  in a rs*(u,v) query wrapped in a PKBField
+    * @param field2 the second program design entity  in a rs*(u,v) query wrapped in a PKBField
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields
     *   that satisfy rs*(field1, field2)
@@ -399,13 +398,13 @@ private:
     std::map<T, Node<T>*> nodes; /**< The list of nodes in this Graph */
 
     /**
-    * Add a node represented by stmt to the list of nodes stored in the graph if it does not exist and is valid.
-    * Return a pointer to existing or newly created node. If stmt is invalid, return a nullptr.
+    * Add a node represented by program design entity to the list of nodes stored in the graph if it does not exist 
+    * and is valid. Return a pointer to existing or newly created node. If val is invalid, return a nullptr.
     *
-    * @param stmt a STMT_LO representing the statement
+    * @param val a program design entity  representing the statement
     */
     Node<T>* createNode(T val) {
-        // Filter nodes whose statement numbers are the same as inputs
+        // Filter nodes whose val are the same as the inputs
         std::map<T, Node<T>*> filtered;
         std::copy_if(nodes.begin(), nodes.end(), std::inserter(filtered, filtered.end()),
             [val](auto const& pair) {
@@ -416,7 +415,6 @@ private:
                 return pair.first == val; // TO CHECK
             });
 
-        bool hasExistingStatementNo = false;
         for (auto [v, node] : filtered) {
             // Case where a node for u already exists
             if (val == v) {
@@ -432,25 +430,21 @@ private:
             }
         }
 
-        if (!hasExistingStatementNo) {
-            Node<T>* node = new Node<T>(val, nullptr, typename Node<T>::NodeSet{});
-            nodes.emplace(val, node);
-            return node;
-        }
-
-        return nullptr;
+        Node<T>* node = new Node<T>(val, nullptr, typename Node<T>::NodeSet{});
+        nodes.emplace(val, node);
+        return node;
     }
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided non-transitive relationship, rs(field1, field2),
-    * where field1 is a concrete field and field2 is either a statement declaration or a statement wildcard.
-    * Statement wildcards are treated as a statement declaration for any statement type.
+    * where field1 is a concrete field and field2 is either a declaration or wildcard.
+    * Statement wildcards are treated as a statement declaration for any statement type (StatementType::ALL).
     *
     * @param field1 a concrete field to begin the traversal from
-    * @param field2 a statement declaration
+    * @param field2 a declaration
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
-    * second item in each pair satisfies the statement declaration.
+    * second item in each pair satisfies the declaration.
     *
     * @see PKBField
     */
@@ -496,14 +490,14 @@ private:
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided transitive relationship, rs*(field1, field2),
-    * where field1 is a concrete field and field2 is either a statement declaration or a statement wildcard.
+    * where field1 is a concrete field and field2 is either a declaration or wildcard.
     * Statement wildcards are treated as a statement declaration for any statement type.
     *
     * @param field1 a concrete field to begin the traversal from
-    * @param field2 a statement declaration
+    * @param field2 a declaration
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
-    *   second item in each pair satisfies the statement declaration.
+    *   second item in each pair satisfies the declaration.
     *
     * @see PKBField
     */
@@ -536,10 +530,10 @@ private:
     * An overloaded helper function that traverses the graph forward starting at the provided node
     * until there are no next nodes left.
     *
-    * @param found a pointer to a set of STMT_LO that stores the possible STMT_LO for the second field in a
-    * transitive relationship.
+    * @param found a pointer to a set of program design entity  that stores the possible program design 
+    * entity for the second field in a transitive relationship.
     * @param node a pointer to the node to begin traversal from
-    * @param targetType the desired statement type for STMT_LOs that are encountered during the traversal
+    * @param targetType an optional statement type if the graphs contains STMT_LOs
     *
     * @see PKBField
     */
@@ -565,10 +559,10 @@ private:
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided non-transitive relationship, rs(field1, field2),
-    * where field1 is either a statement declaration or a statement wildcard and field2 is a concrete field.
+    * where field1 is either a declaration or wildcard and field2 is a concrete field.
     * Statement wildcards are treated as a statement declaration for any statement type.
     *
-    * @param field1 a statement declaration
+    * @param field1 a declaration
     * @param field2 a concrete field to begin the traversal from
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
@@ -608,10 +602,10 @@ private:
 
     /**
     * Gets all pairs of PKBFields that satisfy the provided transitive relationship, rs*(field1, field2),
-    * where field1 is either a statement declaration or a statement wildcard and field2 is a concrete field.
+    * where field1 is either a declaration or wildcard and field2 is a concrete field.
     * Statement wildcards are treated as a statement declaration for any statement type.
     *
-    * @param field1 a statement declaration
+    * @param field1 a declaration
     * @param field2 a concrete field to begin the traversal from
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where the
@@ -648,10 +642,10 @@ private:
     * An overloaded helper function that traverses the graph backwards starting at the provided node
     * until there are no prev nodes left.
     *
-    * @param found a pointer to a set of STMT_LO that stores the possible STMT_LO for the first field in a
-    * transitive relationship.
+    * @param found a pointer to a set of program design entity that stores the possible program design 
+    * entity for the first field in a transitive relationship.
     * @param node a pointer to the node to begin traversal from
-    * @param targetType the desired statement type for STMT_LOs that are encountered during the traversal
+    * @param targetType an optional statement type if the graphs contains STMT_LOs
     *
     * @see PKBField
     */
@@ -671,16 +665,15 @@ private:
     }
 
     /**
-    * Gets all pairs (field1, field2) of PKBFields that satisfy the provided Parent relationship,
-    * Parent(field1, field2), where field1 is a statement of type1 and field2 is a statement of type2.
+    * Gets all pairs (field1, field2) of PKBFields that satisfy the provided relationship, rs(field1, field2).
     *
     * Internally, iterates through the nodes in the graph calls traverseStart with each node.
     *
-    * @param field1 the first statement type
-    * @param field2 the second statement type
+    * @param field1 the first field
+    * @param field2 the second field
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where
-    * each item in each pair satisfies the corresponding statement type requirement.
+    * each item in each pair satisfies the parameters.
     * @see PKBField
     */
     Result traverseAll(PKBField field1, PKBField field2) const {
@@ -724,16 +717,15 @@ private:
     }
 
     /**
-    * Gets all pairs (field1, field2) of PKBFields that satisfy the provided transitive relationship,
-    * rs*(field1, field2), where field1 is a statement of type1 and field2 a statement of type2.
+    * Gets all pairs (field1, field2) of PKBFields that satisfy the provided transitive relationship.
     *
     * Internally, iterates through the nodes in the graph and calls traverseStart on each node.
     *
-    * @param type1 the first statement type
-    * @param type2 the second statement type
+    * @param type1 the first field
+    * @param type2 the second field
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields where each
-    *   item in each pair satisfies the corresponding statement type requirement.
+    * item in each pair satisfies the corresponding the parameters.
     *
     * @see PKBField
     */
@@ -747,7 +739,7 @@ private:
             found.clear();
 
             if constexpr (std::is_same_v<T, STMT_LO>) {
-                // for statement declarations or wildcards, its statement type will be initialized
+                // for statement declarations or wildcards, its statement type would have been initialized
                 if (curr->val.type.value() != field1.statementType.value() &&
                     field1.statementType.value() != StatementType::All) {
                     continue;
@@ -770,6 +762,12 @@ private:
     }
 };
 
+/**
+* A data structure to store program design abstractions as Graphs. Inherits RelationshipTable.
+* 
+* @tparam T the type each node in the graph stores
+* @see Node
+*/
 template<typename T>
 class TransitiveRelationshipTable : public RelationshipTable {
 public:
@@ -780,16 +778,16 @@ public:
     /**
     * Checks whether the TransitiveRelationshipTable contains rs(field1, field2).
     *
-    * @param field1 the first STMT_LO in a Parent(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a Parent(u,v) query wrapped in a PKBField
+    * @param field1 the first program design entity in a rs(u,v) query wrapped in a PKBField
+    * @param field2 the second program design entity in a rs(u,v) query wrapped in a PKBField
     *
-    * @return bool whether Parent(field1, field2) is in the graph
+    * @return bool whether rs(field1, field2) is in the graph
     *
     * @see PKBField
     */
     bool contains(PKBField field1, PKBField field2) const override {
         if (!isInsertOrContainsValid(field1, field2)) {
-            Logger(Level::ERROR) << "Only concrete statements can be inserted into a Follows or Parent table!";
+            Logger(Level::ERROR) << "Invalid contains on a TransitiveRelationshipTable.";
             return false;
         }
 
@@ -801,14 +799,14 @@ public:
     * If the two provided entities are not valid statements or are not concrete, no insert will be done
     * and an error will be thrown.
     *
-    * @param field1 the first STMT_LO in a Parent(u,v) relationship wrapped in a PKBField
-    * @param field2 the second STMT_LO in a Parent(u,v) relationship wrapped in a PKBField
+    * @param field1 the first program design entity in a rs(u,v) relationship wrapped in a PKBField
+    * @param field2 the second program design entity in a rs(u,v) relationship wrapped in a PKBField
     *
     * @see PKBField
     */
     void insert(PKBField field1, PKBField field2) override {
         if (!isInsertOrContainsValid(field1, field2)) {
-            Logger(Level::ERROR) << "Only concrete statements can be inserted into a Follows or Parent table!";
+            Logger(Level::ERROR) << "Invalid insert on a TransitiveRelationshipTable.";
             return;
         }
 
@@ -826,14 +824,14 @@ public:
     }
 
     /**
-    * Retrieves all pairs of statements that satisfies rs(field1, field2).
+    * Retrieves all pairs of program design entities that satisfies rs(field1, field2).
     *
-    * @param field1 the first STMT_LO in a rs(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a rs(u,v) query wrapped in a PKBField
+    * @param field1 the first program design entity in a rs(u,v) query wrapped in a PKBField
+    * @param field2 the second program design entity in a rs(u,v) query wrapped in a PKBField
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> an unordered set of vectors of PKBFields,
-    *   where each vector represents the two program design entities in the relationship,
-    *   i.e. rs(field1, field2) -> [field1, field2].
+    * where each vector represents the two program design entities in the relationship,
+    * i.e. rs(field1, field2) -> [field1, field2].
     *
     * @see PKBField
     */
@@ -841,7 +839,7 @@ public:
         // Both fields have to be a statement type
         if (!isRetrieveValid(field1, field2)) {
             Logger(Level::ERROR) <<
-                "Only STATEMENT entity types can be retrieved from a Follows or Parent table.";
+                "Invalid retrieve from a TransitiveRelationshipTable.";
             return FieldRowResponse{};
         }
 
@@ -862,8 +860,8 @@ public:
     /**
     * Checks whether the TransitiveRelationshipTable contains rs*(field1, field2).
     *
-    * @param field1 the first STMT_LO in a rs*(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a rs*(u,v) query wrapped in a PKBField
+    * @param field1 the first program design entity in a rs*(u,v) query wrapped in a PKBField
+    * @param field2 the second program design entity in a rs*(u,v) query wrapped in a PKBField
     *
     * @return bool whether rs*(field1, field2) is in the graph
     *
@@ -872,7 +870,7 @@ public:
     bool containsT(PKBField field1, PKBField field2) const {
         if (!isInsertOrContainsValid(field1, field2)) {
             Logger(Level::ERROR) <<
-                "a Follows or Parent table can only contain concrete fields and STATEMENT entity types.";
+                "Invalid insert/contains on a TransitiveRelationshipTable.";
             return false;
         }
 
@@ -880,14 +878,14 @@ public:
     }
 
     /**
-    * Retrieves all pairs of statements that satisfies rs*(field1, field2).
+    * Retrieves all pairs of program design entities that satisfies rs*(field1, field2).
     *
-    * @param field1 the first STMT_LO in a rs*(u,v) query wrapped in a PKBField
-    * @param field2 the second STMT_LO in a rs*(u,v) query wrapped in a PKBField
+    * @param field1 the first program design entity in a rs*(u,v) query wrapped in a PKBField
+    * @param field2 the second program design entity in a rs*(u,v) query wrapped in a PKBField
     *
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> an unordered set of vectors of PKBFields,
-    *   where each vector represents the two program design entities in a rs* relationship,
-    *   i.e. rs*(field1, field2) -> [field1, field2].
+    *  each vector represents the two program design entities in a rs* relationship,
+    * i.e. rs*(field1, field2) -> [field1, field2].
     *
     * @see PKBField
     */
@@ -895,7 +893,7 @@ public:
         // Both fields have to be a statement type
         if (!isRetrieveValid(field1, field2)) {
             Logger(Level::ERROR) <<
-                "Only STATEMENT entity types can be retrieved from a Follows or Parent table.";
+                "Invalid retrieve from a TransitiveRelationshipTable.";
             return FieldRowResponse{};
         }
 
@@ -922,7 +920,10 @@ private:
 
     /**
     * Checks if the two PKBFields provided can be inserted into the table (whether it can exist in the table).
-    * Checks that the fields are concrete and have valid STMT_LOs.
+    * Checks that the fields are concrete and valid.
+    * 
+    * The two fields must be of the same program design entity type and must be concrete. Additionally, the value
+    * stored in the graph must match the one stored in the PKBFields.
     *
     * @param field1 the first PKBField
     * @param field2 the second PKBField
