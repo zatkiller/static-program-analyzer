@@ -1,5 +1,5 @@
 #pragma once
 
 enum class StatementType {
-    Assignment, While, If, Read, Print, Call, All
+    Assignment, While, If, Read, Print, Call, All, None
 };

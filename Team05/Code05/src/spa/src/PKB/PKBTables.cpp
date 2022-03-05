@@ -64,7 +64,7 @@ size_t ProcedureRowHash::operator() (const ProcedureRow& other) const {
 
 /** ============================ PROCEDURETABLE METHODS =============================== */
 
-bool ProcedureTable::contains(std::string name) {
+bool ProcedureTable::contains(std::string name) const {
     return rows.count(ProcedureRow(PROC_NAME{ name })) == 1;
 }
 
@@ -72,11 +72,11 @@ void ProcedureTable::insert(std::string name) {
     rows.insert(ProcedureRow(PROC_NAME{ name }));
 }
 
-int ProcedureTable::getSize() {
+int ProcedureTable::getSize() const {
     return rows.size();
 }
 
-std::vector<PROC_NAME> ProcedureTable::getAllProcs() {
+std::vector<PROC_NAME> ProcedureTable::getAllProcs() const {
     std::vector<PROC_NAME> res;
 
     for (const auto& row : rows) {
@@ -108,11 +108,11 @@ size_t StatementRowHash::operator() (const StatementRow& other) const {
 
 /** ============================= STATEMENTTABLE METHODS ============================== */
 
-bool StatementTable::contains(StatementType type, int statementNumber) {
+bool StatementTable::contains(StatementType type, int statementNumber) const {
     return rows.count(StatementRow(type, statementNumber)) == 1;
 }
 
-bool StatementTable::contains(int statementNumber) {
+bool StatementTable::contains(int statementNumber) const {
     return getStmtTypeOfLine(statementNumber).has_value();
 }
 
@@ -122,11 +122,11 @@ void StatementTable::insert(StatementType type, int statementNumber) {
     }
 }
 
-int StatementTable::getSize() {
+int StatementTable::getSize() const {
     return rows.size();
 }
 
-std::vector<STMT_LO> StatementTable::getAllStmt() {
+std::vector<STMT_LO> StatementTable::getAllStmt() const {
     std::vector<STMT_LO> res;
 
     for (const auto& row : rows) {
@@ -136,7 +136,7 @@ std::vector<STMT_LO> StatementTable::getAllStmt() {
     return res;
 }
 
-std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType type) {
+std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType type) const {
     std::vector<STMT_LO> res;
 
     for (const auto& row : rows) {
@@ -148,7 +148,7 @@ std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType type) {
     return res;
 }
 
-std::optional<StatementType> StatementTable::getStmtTypeOfLine(int statementNum) {
+std::optional<StatementType> StatementTable::getStmtTypeOfLine(int statementNum) const {
     std::vector<StatementRow> filtered;
     std::copy_if(begin(rows), end(rows), std::back_inserter(filtered),
         [statementNum](StatementRow row) { return row.getStmt().statementNum == statementNum; });
@@ -194,7 +194,7 @@ size_t VariableRowHash::operator()(const VariableRow& varRow) const {
 
 /** ============================== VARIABLETABLE METHODS =============================== */
 
-bool VariableTable::contains(std::string name) {
+bool VariableTable::contains(std::string name) const {
     return rows.count(VariableRow(VAR_NAME{ name })) == 1;
 }
 
@@ -202,11 +202,11 @@ void VariableTable::insert(std::string name) {
     rows.insert(VariableRow(VAR_NAME{ name }));
 }
 
-int VariableTable::getSize() {
+int VariableTable::getSize() const {
     return rows.size();
 }
 
-std::vector<VAR_NAME> VariableTable::getAllVars() {
+std::vector<VAR_NAME> VariableTable::getAllVars() const {
     std::vector<VAR_NAME> res;
 
     for (const auto& row : rows) {
