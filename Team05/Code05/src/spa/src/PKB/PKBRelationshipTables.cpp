@@ -30,7 +30,7 @@ size_t RelationshipRowHash::operator() (const RelationshipRow& other) const {
 
 RelationshipTable::RelationshipTable(PKBRelationship rsType) : type(rsType) {}
 
-PKBRelationship RelationshipTable::getType() {
+PKBRelationship RelationshipTable::getType() const {
     return type;
 }
 
@@ -38,7 +38,7 @@ PKBRelationship RelationshipTable::getType() {
 
 NonTransitiveRelationshipTable::NonTransitiveRelationshipTable(PKBRelationship rsType) : RelationshipTable(rsType) {}
 
-bool NonTransitiveRelationshipTable::isRetrieveValid(PKBField field1, PKBField field2) {
+bool NonTransitiveRelationshipTable::isRetrieveValid(PKBField field1, PKBField field2) const {
     // both Modifies and Uses cannot accept a wildcard as its first parameter
     if (field1.fieldType == PKBFieldType::WILDCARD) {
         return false;
@@ -55,7 +55,7 @@ bool NonTransitiveRelationshipTable::isRetrieveValid(PKBField field1, PKBField f
     return true;
 }
 
-bool NonTransitiveRelationshipTable::isInsertOrContainsValid(PKBField field1, PKBField field2) {
+bool NonTransitiveRelationshipTable::isInsertOrContainsValid(PKBField field1, PKBField field2) const {
     if (!field1.isValidConcrete(PKBEntityType::STATEMENT) && !field1.isValidConcrete(PKBEntityType::PROCEDURE)) {
         return false;
     }
@@ -67,7 +67,7 @@ bool NonTransitiveRelationshipTable::isInsertOrContainsValid(PKBField field1, PK
     return true;
 }
 
-bool NonTransitiveRelationshipTable::contains(PKBField field1, PKBField field2) {
+bool NonTransitiveRelationshipTable::contains(PKBField field1, PKBField field2) const {
     if (!isInsertOrContainsValid(field1, field2)) {
         Logger(Level::ERROR) <<
             "RelationshipTable can only contain concrete fields and STATEMENT or PROCEDURE entity types.";
@@ -87,7 +87,7 @@ void NonTransitiveRelationshipTable::insert(PKBField field1, PKBField field2) {
     rows.insert(RelationshipRow(field1, field2));
 }
 
-FieldRowResponse NonTransitiveRelationshipTable::retrieve(PKBField field1, PKBField field2) {
+FieldRowResponse NonTransitiveRelationshipTable::retrieve(PKBField field1, PKBField field2) const {
     PKBFieldType fieldType1 = field1.fieldType;
     PKBFieldType fieldType2 = field2.fieldType;
     FieldRowResponse res;
@@ -132,13 +132,9 @@ FieldRowResponse NonTransitiveRelationshipTable::retrieve(PKBField field1, PKBFi
     return res;
 }
 
-int NonTransitiveRelationshipTable::getSize() {
+int NonTransitiveRelationshipTable::getSize() const {
     return rows.size();
 }
-
-/** ================================== GRAPH METHODS =================================== */
-
-/** ======================= TRANSITIVERELATIONSHIPTABLE METHODS ======================== */
 
 /** ======================== MODIFIESRELATIONSHIPTABLE METHODS ========================= */
 

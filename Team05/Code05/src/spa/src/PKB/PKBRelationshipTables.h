@@ -65,7 +65,7 @@ public:
     *
     * @return whether the relationship is present in the RelationshipTable
     */
-    virtual bool contains(PKBField field1, PKBField field2) = 0;
+    virtual bool contains(PKBField field1, PKBField field2) const = 0;
 
     /**
     * Inserts a RelationshipRow representing Relationship(field1, field2) into the RelationshipTable.
@@ -85,21 +85,21 @@ public:
     *
     * @see PKBField
     */
-    virtual FieldRowResponse retrieve(PKBField field1, PKBField field2) = 0;
+    virtual FieldRowResponse retrieve(PKBField field1, PKBField field2) const = 0;
 
     /**
     * Retrieves the type of relationships the RelationshipTable stores.
     *
     * @return type of relationship
     */
-    PKBRelationship getType();
+    PKBRelationship getType() const;
 
     /**
     * Retrieves the number of relationships in the table.
     *
     * @return int number of relationships
     */
-    virtual int getSize() = 0;
+    virtual int getSize() const = 0;
 
 protected:
     PKBRelationship type;
@@ -114,7 +114,7 @@ protected:
     * @return bool
     * @see PKBField
     */
-    virtual bool isInsertOrContainsValid(PKBField field1, PKBField field2) = 0;
+    virtual bool isInsertOrContainsValid(PKBField field1, PKBField field2) const = 0;
 
     /**
     * Checks if the two PKBFields provided can be retrieved from the table.
@@ -125,7 +125,7 @@ protected:
     * @return bool
     * @see PKBField
     */
-    virtual bool isRetrieveValid(PKBField field1, PKBField field2) = 0;
+    virtual bool isRetrieveValid(PKBField field1, PKBField field2) const = 0;
 };
 
 /**
@@ -145,7 +145,7 @@ public:
     *
     * @return whether the relationship is present in the RelationshipTable
     */
-    bool contains(PKBField field1, PKBField field2);
+    bool contains(PKBField field1, PKBField field2) const override;
 
     /**
     * Inserts a RelationshipRow representing Relationship(field1, field2) into the RelationshipTable.
@@ -153,7 +153,7 @@ public:
     * @param field1 the first program design entity in the relationship
     * @param field2 the second program design entity in the relationship
     */
-    void insert(PKBField field1, PKBField field2);
+    void insert(PKBField field1, PKBField field2) override;
 
     /**
     * Retrieves all pairs of PKBFields in table that satisfies the parameters. If a statement field
@@ -165,14 +165,14 @@ public:
     *
     * @see PKBField
     */
-    FieldRowResponse retrieve(PKBField field1, PKBField field2);
+    FieldRowResponse retrieve(PKBField field1, PKBField field2) const override;
 
     /**
     * Retrieves the number of relationships in the table.
     *
     * @return int number of relationships
     */
-    int getSize();
+    int getSize() const override;
 
 private:
     std::unordered_set<RelationshipRow, RelationshipRowHash> rows;
@@ -187,7 +187,7 @@ private:
     * @return bool
     * @see PKBField
     */
-    bool isInsertOrContainsValid(PKBField field1, PKBField field2);
+    bool isInsertOrContainsValid(PKBField field1, PKBField field2) const override;
 
     /**
     * Checks if the two PKBFields provided can be retrieved from the table.
@@ -198,7 +198,7 @@ private:
     * @return bool
     * @see PKBField
     */
-    bool isRetrieveValid(PKBField field1, PKBField field2);
+    bool isRetrieveValid(PKBField field1, PKBField field2) const override;
 };
 
 using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
@@ -281,7 +281,7 @@ public:
     * @return bool true if rs(field1, field2) is in the graph and false otherwise
     * @see PKBField
     */
-    bool contains(PKBField field1, PKBField field2) {
+    bool contains(PKBField field1, PKBField field2) const {
         T first = *field1.getContent<T>();
         T second = *field2.getContent<T>();
 
@@ -308,7 +308,7 @@ public:
     * @return bool true if rs*(field1, field2) is in the graph and false otherwise
     * @see PKBField
     */
-    bool containsT(PKBField field1, PKBField field2) {
+    bool containsT(PKBField field1, PKBField field2) const {
         T first = *field1.getContent<T>();
         T second = *field2.getContent<T>();
 
@@ -344,7 +344,7 @@ public:
     * that satisfy rs(field1, field2)
     * @see PKBField
     */
-    Result retrieve(PKBField field1, PKBField field2) {
+    Result retrieve(PKBField field1, PKBField field2) const {
         bool isConcreteFirst = field1.fieldType == PKBFieldType::CONCRETE;
         bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
 
@@ -368,7 +368,7 @@ public:
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields
     *   that satisfy rs*(field1, field2)
     */
-    Result retrieveT(PKBField field1, PKBField field2) {
+    Result retrieveT(PKBField field1, PKBField field2) const {
         bool isConcreteFirst = field1.fieldType == PKBFieldType::CONCRETE;
         bool isDeclarationFirst = field1.fieldType == PKBFieldType::DECLARATION;
         bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
@@ -390,7 +390,7 @@ public:
     *
     * @return int number of relationships
     */
-    int getSize() {
+    int getSize() const {
         return nodes.size();
     }
 
@@ -454,7 +454,7 @@ private:
     *
     * @see PKBField
     */
-    Result traverseStart(PKBField field1, PKBField field2) {
+    Result traverseStart(PKBField field1, PKBField field2) const {
         T target = *(field1.getContent<T>());
         Result res{};
 
@@ -507,7 +507,7 @@ private:
     *
     * @see PKBField
     */
-    Result traverseStartT(PKBField field1, PKBField field2) {
+    Result traverseStartT(PKBField field1, PKBField field2) const {
         std::set<T> found;
         Result res{};
         T start = *(field1.getContent<T>());
@@ -543,7 +543,7 @@ private:
     *
     * @see PKBField
     */
-    void traverseStartT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) {
+    void traverseStartT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) const {
         typename Node<T>::NodeSet nextNodes = node->next;
 
         for (auto nextNode : nextNodes) {
@@ -576,7 +576,7 @@ private:
     *
     * @see PKBField
     */
-    Result traverseEnd(PKBField field1, PKBField field2) {
+    Result traverseEnd(PKBField field1, PKBField field2) const {
         T target = *(field2.getContent<T>());
         Result res{};
 
@@ -619,7 +619,7 @@ private:
     *
     * @see PKBField
     */
-    Result traverseEndT(PKBField field1, PKBField field2) {
+    Result traverseEndT(PKBField field1, PKBField field2) const {
         std::set<T> found;
         Result res{};
         T start = *(field2.getContent<T>());
@@ -655,7 +655,7 @@ private:
     *
     * @see PKBField
     */
-    void traverseEndT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) {
+    void traverseEndT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) const {
         while (node->prev) {
             if constexpr (std::is_same_v<T, STMT_LO>) {
                 bool typeMatch = node->prev->val.type.value() == targetType || targetType == StatementType::All;
@@ -683,7 +683,7 @@ private:
     * each item in each pair satisfies the corresponding statement type requirement.
     * @see PKBField
     */
-    Result traverseAll(PKBField field1, PKBField field2) {
+    Result traverseAll(PKBField field1, PKBField field2) const {
         Result res{};
 
         for (auto const& [key, node] : nodes) {
@@ -737,7 +737,7 @@ private:
     *
     * @see PKBField
     */
-    Result traverseAllT(PKBField field1, PKBField field2) {
+    Result traverseAllT(PKBField field1, PKBField field2) const {
         Result res;
 
         std::set<T> found;
@@ -787,7 +787,7 @@ public:
     *
     * @see PKBField
     */
-    bool contains(PKBField field1, PKBField field2) {
+    bool contains(PKBField field1, PKBField field2) const override {
         if (!isInsertOrContainsValid(field1, field2)) {
             Logger(Level::ERROR) << "Only concrete statements can be inserted into a Follows or Parent table!";
             return false;
@@ -806,7 +806,7 @@ public:
     *
     * @see PKBField
     */
-    void insert(PKBField field1, PKBField field2) {
+    void insert(PKBField field1, PKBField field2) override {
         if (!isInsertOrContainsValid(field1, field2)) {
             Logger(Level::ERROR) << "Only concrete statements can be inserted into a Follows or Parent table!";
             return;
@@ -815,7 +815,7 @@ public:
         graph->addEdge(*field1.getContent<T>(), *field2.getContent<T>());
     }
 
-    void convertWildcardToDeclaration(PKBField* field) {
+    void convertWildcardToDeclaration(PKBField* field) const {
         if (field->fieldType == PKBFieldType::WILDCARD) {
             field->fieldType = PKBFieldType::DECLARATION;
 
@@ -837,7 +837,7 @@ public:
     *
     * @see PKBField
     */
-    FieldRowResponse retrieve(PKBField field1, PKBField field2) {
+    FieldRowResponse retrieve(PKBField field1, PKBField field2) const override {
         // Both fields have to be a statement type
         if (!isRetrieveValid(field1, field2)) {
             Logger(Level::ERROR) <<
@@ -869,7 +869,7 @@ public:
     *
     * @see PKBField
     */
-    bool containsT(PKBField field1, PKBField field2) {
+    bool containsT(PKBField field1, PKBField field2) const {
         if (!isInsertOrContainsValid(field1, field2)) {
             Logger(Level::ERROR) <<
                 "a Follows or Parent table can only contain concrete fields and STATEMENT entity types.";
@@ -891,7 +891,7 @@ public:
     *
     * @see PKBField
     */
-    FieldRowResponse retrieveT(PKBField field1, PKBField field2) {
+    FieldRowResponse retrieveT(PKBField field1, PKBField field2) const {
         // Both fields have to be a statement type
         if (!isRetrieveValid(field1, field2)) {
             Logger(Level::ERROR) <<
@@ -913,7 +913,7 @@ public:
         return graph->retrieveT(field1, field2);
     }
 
-    int getSize() {
+    int getSize() const override {
         return graph->getSize();
     }
 
@@ -931,7 +931,7 @@ private:
     *
     * @see PKBField
     */
-    bool isInsertOrContainsValid(PKBField field1, PKBField field2) {
+    bool isInsertOrContainsValid(PKBField field1, PKBField field2) const override {
         if (field1.entityType != field2.entityType) {
             return false;
         }
@@ -961,7 +961,7 @@ private:
     *
     * @see PKBField
     */
-    bool isRetrieveValid(PKBField field1, PKBField field2) {
+    bool isRetrieveValid(PKBField field1, PKBField field2) const override {
         // for transitive tables, both fields have to be the same type
         if (field1.entityType != field2.entityType) {
             return false;

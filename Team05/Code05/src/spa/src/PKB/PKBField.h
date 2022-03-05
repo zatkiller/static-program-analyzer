@@ -15,16 +15,13 @@ using Content = std::variant<std::monostate, STMT_LO, VAR_NAME, PROC_NAME, CONST
 * A data structure to represent a program design entity.
 */
 struct PKBField {
-    /* Type of field */
-    PKBFieldType fieldType;
-
-    /* Type of program design entity */
-    PKBEntityType entityType;
-
+    PKBFieldType fieldType; /**< Type of field */
+    PKBEntityType entityType; /**< Type of program design entity */
     std::optional<StatementType> statementType;
     Content content;
 
-    PKBField() {};
+    PKBField() {}
+
     /**
     * Creates a concrete field. The type of data must be a PKBEntityType.
     */
@@ -45,7 +42,7 @@ struct PKBField {
             type = PKBEntityType::CONST;
             break;
         default:
-            throw std::invalid_argument("Content of a concrete field must be provided.");
+            throw std::invalid_argument("Invalid entity type provided.");
         }
 
         return PKBField{ PKBFieldType::CONCRETE, type, content };

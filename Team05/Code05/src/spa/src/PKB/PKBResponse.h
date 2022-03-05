@@ -16,7 +16,7 @@ using Response = std::variant<FieldResponse, FieldRowResponse>;
 /**
 * A data structure representing the results of a query (PKB GET APIs).
 */
-struct PKBResponse {   // TODO(teo-jun-xiong): should this have constructors?
+struct PKBResponse {  
     bool hasResult;
 
     /**
@@ -31,7 +31,6 @@ struct PKBResponse {   // TODO(teo-jun-xiong): should this have constructors?
     */
     template <typename T>
     T* getResponse() {
-        // TODO(teo-jun-xiong): check whether res is initialised as well, and check return
         if (!hasResult) {
             return nullptr;
         }
