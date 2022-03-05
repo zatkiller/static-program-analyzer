@@ -9,15 +9,27 @@
 #include "PKB/PKBResponse.h"
 
 namespace qps::evaluator {
+using VectorResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
+using SingleResonse = std::unordered_set<PKBField, PKBFieldHash>;
+using Table = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
+
 /**
  * A data structure to store the query result from PKB.
  */
 class ResultTable {
 private:
     std::unordered_map<std::string, int> synSequenceMap;
-    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> table;
+    Table table;
 
 public:
+    struct InnerJoinParam {
+        std::vector<std::string> syns;
+        bool isFirst;
+        bool isSecond;
+        PKBResponse response;
+        VectorResponse vectorResponse;
+    };
+
     /**
      * Checks whether a synonym exists in current result table.
      *
@@ -53,7 +65,11 @@ public:
      *
      * @return the result table
      */
-    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> getResult();
+    Table getResult();
+
+    bool isEmpty();
+
+    VectorResponse transToVectorResponse(SingleResonse response);
 
     /**
      * Inserts the PKBResponse to the result table when the table is empty.
@@ -70,19 +86,8 @@ public:
      * @param queryRes the query result from PKB
      * @param newTable store the correct result filtered from the original result table
      */
-    void oneSynInnerJoin(std::string synName, std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
-                         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable);
+    void oneSynInnerJoin(InnerJoinParam param, Table& newTable);
 
-    /**
-     * Overload method to handle PKBResponse with std::unordered_set<PKBField, PKBFieldHash> type.
-     *
-     * @param synName synonym in clause
-     * @param queryRes query result from PKB
-     * @param newTable store the correct result filtered from the original result table
-     */
-    void oneSynInnerJoin(std::string synName,
-                                      std::unordered_set<PKBField, PKBFieldHash> queryRes,
-                                      std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable);
     /**
      * If there are two synonyms in the clause and two of them already appears in evaluated clauses,
      * inner join the result to the table with two synonyms.
@@ -92,9 +97,7 @@ public:
      * @param queryRes the query result from PKB
      * @param newTable store the correct result filtered from the original result table
      */
-    void twoSynInnerJoinTwo(std::string syn1, std::string syn2,
-                         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
-                         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable);
+    void twoSynInnerJoinTwo(InnerJoinParam param, Table& newTable);
 
 
 
@@ -109,9 +112,7 @@ public:
      * @param queryRes the query result from PKB
      * @param newTable store the correct result filtered from the original result table
      */
-    void twoSynInnerJoinOne(std::string syn1, std::string syn2, bool isFirst,
-                            std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
-                            std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable);
+    void twoSynInnerJoinOne(InnerJoinParam param, Table& newTable);
 
     /**
      * CrossJoins the PKBResponse to the current response table when the synonyms of the result are different from
@@ -129,7 +130,7 @@ public:
      * @param isSecond the bool value indicates whether the second synonym is in the result table
      * @param allSyn the list of all synonyms in the query
      */
-    void innerJoin(PKBResponse r, bool isFirst, bool isSecond, std::vector<std::string> allSyn);
+    void innerJoin(InnerJoinParam params);
 
     /**
      * Joins the PKBResponse to the result table using either crossJoin or innerJoin.

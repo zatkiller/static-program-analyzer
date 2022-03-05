@@ -18,23 +18,32 @@ namespace qps::evaluator {
         synSequenceMap.insert({name, size});
     }
 
-    std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> ResultTable::getResult() {
+    Table ResultTable::getResult() {
         return this->table;
     }
 
+    bool ResultTable::isEmpty() {
+        return table.empty() && synSequenceMap.empty();
+
+    }
+
+    VectorResponse ResultTable::transToVectorResponse(SingleResonse response) {
+        VectorResponse newVectorRes;
+        for (auto r : response) {
+            newVectorRes.insert(std::vector<PKBField>{r});
+        }
+        return newVectorRes;
+    }
+
     void ResultTable::insert(PKBResponse r) {
-        if (std::unordered_set<PKBField, PKBFieldHash> *ptr = std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(
-                &r.res)) {
-            for (auto r : *ptr) {
-                std::vector<PKBField> newRecord;
-                newRecord.push_back(r);
-                table.insert(newRecord);
-            }
-        } else if (std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> *ptr =
-                std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&r.res)) {
-            for (auto r : *ptr) {
-                table.insert(r);
-            }
+        VectorResponse response;
+        if (auto *ptr = std::get_if<SingleResonse>(&r.res)) {
+            response = transToVectorResponse(*ptr);
+        } else if (auto *ptr = std::get_if<VectorResponse>(&r.res)) {
+            response = *ptr;
+        }
+        for (auto r : response) {
+            table.insert(r);
         }
     }
 
@@ -43,37 +52,28 @@ namespace qps::evaluator {
         if (table.empty()) {
             return;
         }
-        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> newTable;
-        if (auto *ptr = std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&r.res)) {
-            auto queryRes = *ptr;
-            for (auto field : queryRes) {
-                for (auto record : table) {
-                    std::vector<PKBField> newRecord = record;
-                    newRecord.push_back(field);
-                    newTable.insert(newRecord);
-                }
-            }
-        } else if (auto *ptr =
-                std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&r.res)) {
-            auto queryRes = *ptr;
-            for (auto r : queryRes) {
-                for (auto record : table) {
-                    std::vector<PKBField> newRecord = record;
-                    for (auto field : r) {
-                        newRecord.push_back(field);
-                    }
-                    newTable.insert(newRecord);
-                }
+        Table newTable;
+        VectorResponse response;
+        if (auto *ptr = std::get_if<SingleResonse>(&r.res)) {
+            response = transToVectorResponse(*ptr);
+        } else if (auto *ptr = std::get_if<VectorResponse>(&r.res)) {
+            response = *ptr;
+        }
+
+        for (auto r : response) {
+            for (auto record : table) {
+                std::vector<PKBField> newRecord = record;
+                auto rCopy = r;
+                std::move(rCopy.begin(), rCopy.end(), std::back_inserter(newRecord));
+                newTable.insert(newRecord);
             }
         }
         this->table = newTable;
     }
 
-    void ResultTable::oneSynInnerJoin(std::string synName,
-                                      std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
-                                      std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
-        int pos = getSynLocation(synName);
-        for (auto r : queryRes) {
+    void ResultTable::oneSynInnerJoin(InnerJoinParam param, Table& newTable) {
+        int pos = getSynLocation(param.syns[0]);
+        for (auto r : param.vectorResponse) {
             for (auto record : table) {
                 if (r[0] == record[pos]) {
                     std::vector<PKBField> newRecord = record;
@@ -83,26 +83,10 @@ namespace qps::evaluator {
         }
     }
 
-    void ResultTable::oneSynInnerJoin(std::string synName,
-                                      std::unordered_set<PKBField, PKBFieldHash> queryRes,
-                                      std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
-        int pos = getSynLocation(synName);
-        for (auto r : queryRes) {
-            for (auto record : table) {
-                if (r == record[pos]) {
-                    std::vector<PKBField> newRecord = record;
-                    newTable.insert(newRecord);
-                }
-            }
-        }
-    }
-
-    void ResultTable::twoSynInnerJoinTwo(std::string syn1, std::string syn2,
-                                         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
-                                         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
-        int firstMatch = getSynLocation(syn1);
-        int secondMatch = getSynLocation(syn2);
-        for (auto r : queryRes) {
+    void ResultTable::twoSynInnerJoinTwo(InnerJoinParam param, Table& newTable) {
+        int firstMatch = getSynLocation(param.syns[0]);
+        int secondMatch = getSynLocation(param.syns[1]);
+        for (auto r : param.vectorResponse) {
             for (auto record : table) {
                 if (r[0] == record[firstMatch] && r[1] == record[secondMatch]) {
                     std::vector<PKBField> newRecord = record;
@@ -112,15 +96,13 @@ namespace qps::evaluator {
         }
     }
 
-    void ResultTable::twoSynInnerJoinOne(std::string syn1, std::string syn2, bool isFirst,
-                                         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> queryRes,
-                                         std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>& newTable) {
-        std::string matched = isFirst ? syn1 : syn2;
-        std::string another = isFirst ? syn2 : syn1;
-        int mPos = isFirst ? 0 : 1;
-        int aPos = isFirst ? 1 : 0;
+    void ResultTable::twoSynInnerJoinOne(InnerJoinParam param, Table& newTable) {
+        std::string matched = param.isFirst ? param.syns[0] : param.syns[1];
+        std::string another = param.isFirst ? param.syns[1]  : param.syns[0];
+        int mPos = param.isFirst ? 0 : 1;
+        int aPos = param.isFirst ? 1 : 0;
         int matchedPos = getSynLocation(matched);
-        for (auto r : queryRes) {
+        for (auto r : param.vectorResponse) {
             for (auto record : table) {
                 if ((r[mPos] == record[matchedPos])) {
                     std::vector<PKBField> newRecord = record;
@@ -131,24 +113,22 @@ namespace qps::evaluator {
         }
     }
 
-    void ResultTable::innerJoin(PKBResponse r, bool isFirst, bool isSecond, std::vector<std::string> allSyn) {
+    void ResultTable::innerJoin(InnerJoinParam param) {
         if (table.empty()) {
             return;
         }
-        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> newTable;
-        if (auto *ptr = std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&r.res)) {
-            auto queryRes = *ptr;
-            oneSynInnerJoin(allSyn[0], queryRes, newTable);
-        } else if (auto *ptr =
-                std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&r.res)) {
-            auto queryRes = *ptr;
-            if (allSyn.size() == 1) {  // Only one synonym in the clause
-                oneSynInnerJoin(allSyn[0], queryRes, newTable);
-            } else if (isFirst && isSecond) {  // Two synonyms all in table already
-                twoSynInnerJoinTwo(allSyn[0], allSyn[1], queryRes, newTable);
-            } else {  // Two synonyms in the clause, one is already in the table
-                twoSynInnerJoinOne(allSyn[0], allSyn[1], isFirst, queryRes, newTable);
-            }
+        Table newTable;
+        if (auto *ptr = std::get_if<SingleResonse>(&param.response.res)) {
+            param.vectorResponse = transToVectorResponse(*ptr);
+        } else if (auto *ptr = std::get_if<VectorResponse>(&param.response.res)) {
+            param.vectorResponse = *ptr;
+        }
+        if (param.syns.size() == 1) {  // Only one synonym in the clause
+            oneSynInnerJoin(param, newTable);
+        } else if (param.isFirst && param.isSecond) {  // Two synonyms all in table already
+            twoSynInnerJoinTwo(param, newTable);
+        } else {  // Two synonyms in the clause, one is already in the table
+            twoSynInnerJoinOne(param, newTable);
         }
         this->table = newTable;
     }
@@ -158,9 +138,9 @@ namespace qps::evaluator {
             std::string first = synonyms[0];
             std::string second = synonyms[1];
             if (synExists(first) && synExists(second)) {
-                innerJoin(response, true, true, synonyms);
+                innerJoin(InnerJoinParam{synonyms, true, true, response});
             } else if (!synExists(first) && !synExists(second)) {
-                if (table.empty() && synSequenceMap.empty()) {
+                if (isEmpty()) {
                     insertSynLocationToLast(first);
                     insertSynLocationToLast(second);
                     insert(response);
@@ -171,17 +151,17 @@ namespace qps::evaluator {
                 crossJoin(response);
             } else if (synExists(first)) {
                 insertSynLocationToLast(second);
-                innerJoin(response, true, false, synonyms);
+                innerJoin(InnerJoinParam{synonyms, true, false, response});
             } else if (synExists(second)) {
                 insertSynLocationToLast(first);
-                innerJoin(response, false, true, synonyms);
+                innerJoin(InnerJoinParam{synonyms, false, true, response});
             }
         } else {
             std::string syn = synonyms[0];
             if (synExists(syn)) {
-                innerJoin(response, true, false, synonyms);
+                innerJoin(InnerJoinParam{synonyms, true, false, response});
             } else {
-                if (table.empty() && synSequenceMap.empty()) {
+                if (isEmpty()) {
                     insertSynLocationToLast(syn);
                     insert(response);
                     return;

@@ -221,7 +221,8 @@ TEST_CASE("Test innerJoin with empty table") {
     std::unordered_set<PKBField, PKBFieldHash> r{field1, field2, field3};
     PKBResponse response{true, Response{r}};
 
-    table.innerJoin(response, true, false, std::vector<std::string>{"v"});
+    table.innerJoin(qps::evaluator::ResultTable::InnerJoinParam{std::vector<std::string>{"v"},
+                                                                true, false, response});
 
     REQUIRE(table.getSynLocation("v") == 0);
     REQUIRE(table.getResult().size() == 0);
@@ -236,8 +237,8 @@ TEST_CASE("Test innerJoin with empty table") {
             std::vector<PKBField>{field3, field6}};
     PKBResponse response1{true, Response{r1}};
 
-    table1.innerJoin(response1, true, true, std::vector<std::string>{"v", "s"});
-
+    table.innerJoin(qps::evaluator::ResultTable::InnerJoinParam{std::vector<std::string>{"v", "s"},
+                                                                true, true, response1});
     REQUIRE(table1.getSynLocation("v") == 0);
     REQUIRE(table1.getSynLocation("s") == 1);
     REQUIRE(table1.getResult().size() == 0);
@@ -250,7 +251,8 @@ TEST_CASE("Test innerJoin with records in table") {
     PKBResponse response1{true, Response{testR1}};
     TEST_LOG << "========== one synonym join s";
     qps::evaluator::ResultTable table = createNonEmptyTable();
-    table.innerJoin(response1, true, false, std::vector<std::string>{"s"});
+    table.innerJoin(qps::evaluator::ResultTable::InnerJoinParam{std::vector<std::string>{"s"},
+                                                                true, false, response1});
     printTable(table);
     REQUIRE(table.getResult().size() == 2);
     //  table: main 1 / b 6
@@ -262,9 +264,11 @@ TEST_CASE("Test innerJoin with records in table") {
             std::vector<PKBField>{newField2, newField4},   // 5 b
             std::vector<PKBField>{newField3, newField6}};  // 6 main
     PKBResponse response3{true, Response{testR3}};
+
     TEST_LOG << "========== Join s and v";
     qps::evaluator::ResultTable table2 = createNonEmptyTable();
-    table2.innerJoin(response3, true, true, std::vector<std::string>{"s", "v"});
+    table2.innerJoin(qps::evaluator::ResultTable::InnerJoinParam{std::vector<std::string>{"s", "v"},
+                                                                true, true, response3});
     REQUIRE(table2.getResult().size() == 1);
     printTable(table2);
     // table: main 1
@@ -272,7 +276,8 @@ TEST_CASE("Test innerJoin with records in table") {
     TEST_LOG << "========== Join s only";
     qps::evaluator::ResultTable table3 = createNonEmptyTable();
     table3.insertSynLocationToLast("v1");
-    table3.innerJoin(response3, true, false, std::vector<std::string>{"s", "v1"});
+    table3.innerJoin(qps::evaluator::ResultTable::InnerJoinParam{std::vector<std::string>{"s", "v1"},
+                                                                true, false, response3});
     REQUIRE(table3.getResult().size() == 3);
     printTable(table3);
     // table: main 1 main / main 1 cur / b 6 main
@@ -281,7 +286,8 @@ TEST_CASE("Test innerJoin with records in table") {
     qps::evaluator::ResultTable table4 = createNonEmptyTable();
     table4.insertSynLocationToLast("s1");
     REQUIRE(table4.getSynLocation("s1") == 2);
-    table4.innerJoin(response3, false, true, std::vector<std::string>{"s1", "v"});
+    table4.innerJoin(qps::evaluator::ResultTable::InnerJoinParam{std::vector<std::string>{"s1", "v"},
+                                                                false, true, response3});
     REQUIRE(table4.getResult().size() == 3);
     printTable(table4);
     //  table: main 1 1 / main 1 6 / b 6 5
