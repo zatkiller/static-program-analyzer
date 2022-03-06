@@ -12,7 +12,7 @@
 #include <cstdarg>
 #include "logging.h"
 #include "PKBField.h"
-#include "PKBRelationship.h"
+#include "PKBCommons.h"
 
 /**
 * A data structure to store a program design abstraction (relationship) which has two fields.
