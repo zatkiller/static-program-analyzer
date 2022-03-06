@@ -142,7 +142,7 @@ TEST_CASE("AST Test") {
         auto callStmt = std::make_unique<Call>(1, "testProg");
         auto callStmt1 = std::make_unique<Call>(1, "diffTestProg");
         auto callStmt2 = std::make_unique<Call>(2, "testProg");
-        auto callStmt3 = std::make_unique<Call>(1,"testProg");
+        auto callStmt3 = std::make_unique<Call>(1, "testProg");
         REQUIRE(*callStmt == *callStmt);
         REQUIRE(*callStmt == *callStmt3);
         REQUIRE_FALSE(*callStmt == *callStmt1);

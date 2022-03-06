@@ -138,7 +138,11 @@ namespace ast {
             whileBlk->accept(ve);
             // variable extractions
             
-            REQUIRE(pkbStrategy.entities[PKBEntityType::VARIABLE] == std::set<Content>({VAR_NAME{"v1"}, VAR_NAME{"v3"}}));
+            REQUIRE(
+                pkbStrategy.entities[PKBEntityType::VARIABLE] == std::set<Content>(
+                    {VAR_NAME{"v1"}, VAR_NAME{"v3"}}
+                )
+            );
         }
 
 

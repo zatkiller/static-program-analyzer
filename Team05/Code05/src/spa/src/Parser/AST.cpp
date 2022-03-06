@@ -24,7 +24,7 @@ void Procedure::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
 void Program::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
     visitor->visit(*this);
     for (auto& p : procedures) {
-        p->accept(visitor);  // TODO: Ensure this works
+        p->accept(visitor);
     }
 }
 
