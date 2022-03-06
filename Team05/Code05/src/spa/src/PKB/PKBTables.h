@@ -117,7 +117,7 @@ public:
     * @param name
     * @returns whether the procedure name is present in the ProcedureTable
     */
-    bool contains(std::string name);
+    bool contains(std::string name) const;
 
     /**
     * Inserts a procedure name into the ProcedureTable.
@@ -131,14 +131,14 @@ public:
     *
     * @return number of ProcedureRows
     */
-    int getSize();
+    int getSize() const;
 
     /**
     * Retrieves all procedure names stored in the ProcedureTable.
     *
     * @return a vector of procedure names
     */
-    std::vector<PROC_NAME> getAllProcs();
+    std::vector<PROC_NAME> getAllProcs() const;
 
 private:
     std::set<ProcedureRow> rows;
@@ -184,9 +184,9 @@ public:
     * @param entry the PKBField containing the statement information to be checked
     * @returns whether the statement information is present in the ConstantTable
     */
-    bool contains(StatementType, int);
+    bool contains(StatementType, int) const;
 
-    bool contains(int);
+    bool contains(int) const;
 
     /**
     * Inserts statement information wrapped in a PKBField into the StatementTable.
@@ -200,14 +200,14 @@ public:
     *
     * @return number of StatementRows
     */
-    int getSize();
+    int getSize() const;
 
     /**
     * Retrieves all statement information stored in the StatementTable.
     *
     * @return a vector of statement information
     */
-    std::vector<STMT_LO> getAllStmt();
+    std::vector<STMT_LO> getAllStmt() const;
 
     /**
     * Retrieves all statement information of the given type stored in the StatementTable.
@@ -215,7 +215,7 @@ public:
     * @param type type of statement
     * @return a vector of statement information belong to the given type
     */
-    std::vector<STMT_LO> getStmtOfType(StatementType);
+    std::vector<STMT_LO> getStmtOfType(StatementType) const;
 
     /**
     * Retrieve the statement type of a statement row with statementNum. If there doesn't exist one,
@@ -224,7 +224,7 @@ public:
     * @param statementNum
     * @return std::optional<StatementType>
     */
-    std::optional<StatementType> getStmtTypeOfLine(int statementNum);
+    std::optional<StatementType> getStmtTypeOfLine(int statementNum) const;
 
 private:
     std::set<StatementRow> rows;
@@ -269,7 +269,7 @@ public:
     * @param name the PKBField containing the variable name to be checked
     * @returns whether the variable name is present in the VariableTable
     */
-    bool contains(std::string name);
+    bool contains(std::string name) const;
 
     /**
     * Inserts a variable name wrapped in a PKBField into the VariableTable.
@@ -283,14 +283,14 @@ public:
     *
     * @return number of VariableRows
     */
-    int getSize();
+    int getSize() const;
 
     /**
     * Retrieves all variable names stored in the VariableTable.
     *
     * @return a vector of variable names
     */
-    std::vector<VAR_NAME> getAllVars();
+    std::vector<VAR_NAME> getAllVars() const;
 
 private:
     std::set<VariableRow> rows;
