@@ -65,6 +65,7 @@ struct ASTNodeVisitor {
     virtual void visit(const Read& node) = 0;
     virtual void visit(const Print& node) = 0;
     virtual void visit(const Assign& node) = 0;
+    virtual void visit(const Call& node) = 0;
     virtual void visit(const Var& node) = 0;
     virtual void visit(const Const& node) = 0;
     virtual void visit(const BinExpr& node) = 0;

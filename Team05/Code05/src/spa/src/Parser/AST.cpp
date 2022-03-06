@@ -68,7 +68,7 @@ void Print::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
 }
 
 void Call::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
-    // visitor->visit(*this); // TODO: implement extractors to work with this.
+    visitor->visit(*this);
 }
 
 void Const::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
