@@ -146,7 +146,8 @@ UsesRelationshipTable::UsesRelationshipTable() : NonTransitiveRelationshipTable{
 
 /** ======================== FOLLOWSRELATIONSHIPTABLE METHODS ========================== */
 
-FollowsRelationshipTable::FollowsRelationshipTable() : TransitiveRelationshipTable<STMT_LO>{ PKBRelationship::FOLLOWS } {}
+FollowsRelationshipTable::FollowsRelationshipTable() : 
+    TransitiveRelationshipTable<STMT_LO>{ PKBRelationship::FOLLOWS } {}
 
 /** ======================== PARENTRELATIONSHIPTABLE METHODS ========================== */
 
