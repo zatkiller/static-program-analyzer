@@ -183,7 +183,7 @@ namespace ast {
                 make<Print>(11, make<Var>("sum"))
             ));
 
-            auto program = std::make_unique<Program>(std::move(procedure));
+            auto program = makeProgram(std::move(procedure));
 
             SECTION("Variable extractor test") {
                 auto ve = std::make_shared<VariableExtractor>(&pkbStrategy);

@@ -394,6 +394,7 @@ public:
         Statement(stmtNo),
         procName(procName) {}
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    std::string getName() const { return procName; }
     virtual bool operator==(ASTNode const& o) const;
 };
 
@@ -648,6 +649,15 @@ StmtLst makeStmts(Ts &&... ts) {
     };
 
     return StmtLst(lst);
+}
+
+template <typename ...Ts>
+std::unique_ptr<Program> makeProgram(Ts &&... ts) {
+    std::unique_ptr<Procedure> procArr[] = { std::move(ts)... };
+    auto lst = std::vector<std::unique_ptr<Procedure>> {
+        std::make_move_iterator(std::begin(procArr)), std::make_move_iterator(std::end(procArr))
+    };
+    return std::make_unique<Program>(std::move(lst));
 }
 
 }  // namespace ast

@@ -495,6 +495,22 @@ unique_ptr<ast::Statement> parseIfStmt(deque<Token>& tokens) {
     );
 }
 
+unique_ptr<ast::Statement> parseCallStmt(deque<Token>& tokens) {
+    int lineNo = lineCount++;
+    checkAndConsume("call", tokens);
+    // get procName
+    auto currToken = getNextToken(tokens);
+    if (currToken.type != TokenType::name) {
+        throwUnexpectedToken("procName");
+    }
+    string procName = get<string>(currToken.value);
+    checkAndConsume(';', tokens);
+    return make_unique<ast::Call>(
+        lineNo,
+        procName
+    );
+}
+
 ast::StmtLst parse(deque<Token>& tokens) {
     vector<unique_ptr<ast::Statement>> list;
     do {
@@ -512,6 +528,8 @@ ast::StmtLst parse(deque<Token>& tokens) {
             list.push_back(move(parseWhileStmt(tokens)));
         } else if (*keyword == "if") {
             list.push_back(move(parseIfStmt(tokens)));
+        } else if (*keyword == "call") {
+            list.push_back(move(parseCallStmt(tokens)));
         } else {
             list.push_back(move(parseAssignStmt(tokens)));
         }
@@ -546,10 +564,9 @@ unique_ptr<ast::Program> parseProgram(deque<Token>& tokens) {
     if (tokens.empty() || tokens.front().type == TokenType::eof) {
         throwInvalidArgError("Empty program received!");
     }
-    Token currToken = tokens.front();
     std::vector<unique_ptr<ast::Procedure>> res;
-    while (!tokens.empty() || tokens.front().type != TokenType::eof) {
-        if (currToken.type != TokenType::name || get<string>(currToken.value) != "procedure") {
+    while (!tokens.empty() && tokens.front().type != TokenType::eof) {
+        if (tokens.front().type != TokenType::name || get<string>(tokens.front().value) != "procedure") {
             throwUnexpectedToken("procedure");
         }
         res.push_back(parseProcedure(tokens));
@@ -558,7 +575,7 @@ unique_ptr<ast::Program> parseProgram(deque<Token>& tokens) {
     //     throwUnexpectedToken("procedure");
     // }
     // auto resultProc = parseProcedure(tokens);
-    currToken = getNextToken(tokens);  // consume eof
+    Token currToken = getNextToken(tokens);  // consume eof
     return make_unique<ast::Program>(move(res));
 }
 

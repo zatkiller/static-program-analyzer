@@ -317,12 +317,31 @@ TEST_CASE("AST Test") {
         REQUIRE_FALSE(*proc1 == *proc2);
 
         // Program
-        auto prog1 = std::make_unique<Program>(make<Procedure>("monkey", genStmtLst()));
-        auto prog2 = std::make_unique<Program>(make<Procedure>("ooga", genStmtLst()));
-        auto prog3 = std::make_unique<Program>(make<Procedure>("monkey", genStmtLst()));
+        auto prog1 = makeProgram(make<Procedure>("monkey", genStmtLst()));
+        auto prog2 = makeProgram(make<Procedure>("ooga", genStmtLst()));
+        auto prog3 = makeProgram(make<Procedure>("monkey", genStmtLst()));
         REQUIRE(prog1 == prog1);
+        REQUIRE(*prog1 == *prog1);
         REQUIRE(*prog1 == *prog3);
         REQUIRE_FALSE(prog1 == prog2);
+
+        // Multi-Procedure Program
+        auto mprog1 = makeProgram(
+            make<Procedure>("proc1", genStmtLst()), 
+            make<Procedure>("proc2", genStmtLst())
+        );
+        auto mprog2 = makeProgram(
+            make<Procedure>("proc2", genStmtLst()),
+            make<Procedure>("proc1", genStmtLst())
+        );
+        auto mprog3 = makeProgram(
+            make<Procedure>("proc1", genStmtLst()),
+            make<Procedure>("proc2", genStmtLst())
+        );
+        REQUIRE(mprog1 == mprog1);
+        REQUIRE(*mprog1 == *mprog1);
+        REQUIRE(*mprog1 == *mprog3);
+        REQUIRE_FALSE(mprog1 == mprog2);
     }
 
     SUCCEED("No errors thrown");

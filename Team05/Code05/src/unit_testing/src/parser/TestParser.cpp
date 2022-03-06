@@ -441,248 +441,282 @@ TEST_CASE("Testing Parser") {
             REQUIRE(stmtlst == expectedStmtlst);
         }
         
-        // SECTION("parseProcedure") {
-        //     tokens = Lexer(R"(
-        //     procedure main {
-        //         read v1;
-        //         print v1;
-        //         v2 = v1;
-        //     }
-        //     )").getTokens();
+        SECTION("parseProcedure") {
+            tokens = Lexer(R"(
+            procedure main {
+                read v1;
+                print v1;
+                v2 = v1;
+            }
+            )").getTokens();
 
-        //     ast = parseProcedure(tokens);
-        //     auto genStmtlst = []() {
-        //         return ast::makeStmts(
-        //             make<ast::Read>(1, make<ast::Var>("v1")),
-        //             make<ast::Print>(2, make<ast::Var>("v1")),
-        //             make<ast::Assign>(3, make<ast::Var>("v2"), make<ast::Var>("v1"))
-        //         );
-        //     };
-        //     expected = make<ast::Procedure>(
-        //         "main",
-        //         genStmtlst()
-        //     );
+            ast = parseProcedure(tokens);
+            auto genStmtlst = []() {
+                return ast::makeStmts(
+                    make<ast::Read>(1, make<ast::Var>("v1")),
+                    make<ast::Print>(2, make<ast::Var>("v1")),
+                    make<ast::Assign>(3, make<ast::Var>("v2"), make<ast::Var>("v1"))
+                );
+            };
+            expected = make<ast::Procedure>(
+                "main",
+                genStmtlst()
+            );
 
-        //     REQUIRE(*ast == *expected);
-        // }
+            REQUIRE(*ast == *expected);
+        }
         
-        // SECTION("parseProgram") {
-        //     tokens = Lexer(R"(
-        //     procedure main {
-        //         read v1;
-        //         print v1;
-        //         v2 = v1;
-        //     }
-        //     )").getTokens();
+        SECTION("parseProgram") {
+            tokens = Lexer(R"(
+            procedure main {
+                read v1;
+                print v1;
+                v2 = v1;
+            }
+            )").getTokens();
 
-        //     ast = parseProgram(tokens);
+            ast = parseProgram(tokens);
 
-        //     auto genStmtlst = []() {
-        //         return ast::makeStmts(
-        //             make<ast::Read>(1, make<ast::Var>("v1")),
-        //             make<ast::Print>(2, make<ast::Var>("v1")),
-        //             make<ast::Assign>(3, make<ast::Var>("v2"), make<ast::Var>("v1"))
-        //         );
-        //     };
-        //     expected = std::make_unique<ast::Program>(make<ast::Procedure>(
-        //         "main",
-        //         genStmtlst()
-        //     ));
+            auto genStmtlst = []() {
+                return ast::makeStmts(
+                    make<ast::Read>(1, make<ast::Var>("v1")),
+                    make<ast::Print>(2, make<ast::Var>("v1")),
+                    make<ast::Assign>(3, make<ast::Var>("v2"), make<ast::Var>("v1"))
+                );
+            };
+            expected = makeProgram(make<ast::Procedure>("main", std::move(genStmtlst())));
 
-        //     REQUIRE(*ast == *expected);
-        // }
+            REQUIRE(*ast == *expected);
+
+            lineCount = 1;  // reset lineCount
+            tokens = Lexer(R"(
+            procedure main {
+                read v1;
+                print v1;
+                v2 = v1;
+                call monke;
+            }
+            procedure monke {
+                read v3;
+                v2 = v3;
+            }
+            )").getTokens();
+
+            ast = parseProgram(tokens);
+
+            expected = makeProgram(
+                make<ast::Procedure>(
+                    "main", 
+                    ast::makeStmts(
+                        make<ast::Read>(1, make<ast::Var>("v1")),
+                        make<ast::Print>(2, make<ast::Var>("v1")),
+                        make<ast::Assign>(3, make<ast::Var>("v2"), make<ast::Var>("v1")),
+                        make<ast::Call>(4, "monke")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "monke", 
+                    ast::makeStmts(
+                        make<ast::Read>(5, make<ast::Var>("v3")),
+                        make<ast::Assign>(6, make<ast::Var>("v2"), make<ast::Var>("v3"))
+                    )
+                )
+            );
+
+            REQUIRE(*ast == *expected);
+        }
     }
 
-    // SECTION("Complete program test") {
-    //     using ast::make;
+    SECTION("Complete program test") {
+        using ast::make;
         
-    //     std::string emptyProg = "";
-    //     REQUIRE(parse(emptyProg) == nullptr);
+        std::string emptyProg = "";
+        REQUIRE(parse(emptyProg) == nullptr);
 
-    //     // Program with a bad operator
-    //     std::string fail = R"(
-    //         procedure a {
-    //             while (c !! b) {
-    //                 read c; 
-    //             }
-    //         }
-    //     )";
-    //     REQUIRE(parse(fail) == nullptr);
+        // Program with a bad operator
+        std::string fail = R"(
+            procedure a {
+                while (c !! b) {
+                    read c; 
+                }
+            }
+        )";
+        REQUIRE(parse(fail) == nullptr);
 
-    //     // Corrected program
-    //     lineCount = 1;  // reset lineCount
-    //     std::string correct = R"(
-    //         procedure a {
-    //             while (c != b) {
-    //                 read c; 
-    //             }
-    //         }
-    //     )";
-    //     auto parsedCorrect = std::make_unique<ast::Program>(
-    //         make<ast::Procedure>(
-    //             "a",
-    //             ast::makeStmts(
-    //                 make<ast::While>(1,
-    //                     make<ast::RelExpr>(
-    //                         ast::RelOp::NE,
-    //                         make<ast::Var>("c"),
-    //                         make<ast::Var>("b")
-    //                     ),
-    //                     ast::makeStmts(
-    //                         make<ast::Read>(2, make<ast::Var>("c"))
-    //                     )
-    //                 )
-    //             )
-    //         )
-    //     );
-    //     REQUIRE(*parse(correct) == *parsedCorrect);
+        // Corrected program
+        lineCount = 1;  // reset lineCount
+        std::string correct = R"(
+            procedure a {
+                while (c != b) {
+                    read c; 
+                }
+            }
+        )";
+        auto parsedCorrect = makeProgram(
+            make<ast::Procedure>(
+                "a",
+                ast::makeStmts(
+                    make<ast::While>(1,
+                        make<ast::RelExpr>(
+                            ast::RelOp::NE,
+                            make<ast::Var>("c"),
+                            make<ast::Var>("b")
+                        ),
+                        ast::makeStmts(
+                            make<ast::Read>(2, make<ast::Var>("c"))
+                        )
+                    )
+                )
+            )
+        );
+        REQUIRE(*parse(correct) == *parsedCorrect);
 
-    //     // Program with incorrect parenthesis
-    //     lineCount = 1;  // reset lineCount
-    //     std::string fail2 = R"(procedure a {
-    //         while (!(c == 1))) {
-    //             read c;
-    //         }
-    //     })";
-    //     REQUIRE(parse(fail2) == nullptr);
+        // Program with incorrect parenthesis
+        lineCount = 1;  // reset lineCount
+        std::string fail2 = R"(procedure a {
+            while (!(c == 1))) {
+                read c;
+            }
+        })";
+        REQUIRE(parse(fail2) == nullptr);
         
-    //     // corrected program
-    //     lineCount = 1;  // reset lineCount
-    //     std::string correct2 = R"(procedure a {
-    //         while (!(c == 1)) {
-    //             read c;
-    //         }
-    //     })";
-    //     auto parsedCorrect2 = std::make_unique<ast::Program>(
-    //         make<ast::Procedure>(
-    //             "a",
-    //             ast::makeStmts(
-    //                 make<ast::While>(1,
-    //                     std::make_unique<ast::NotCondExpr>(
-    //                         make<ast::RelExpr>(
-    //                             ast::RelOp::EQ,
-    //                             make<ast::Var>("c"),
-    //                             make<ast::Const>(1)
-    //                         )
-    //                     ),
-    //                     ast::makeStmts(make<ast::Read>(2, make<ast::Var>("c")))
-    //                 )
-    //             )
-    //         )
-    //     );
-    //     REQUIRE(*parse(correct2) == *parsedCorrect2);
+        // corrected program
+        lineCount = 1;  // reset lineCount
+        std::string correct2 = R"(procedure a {
+            while (!(c == 1)) {
+                read c;
+            }
+        })";
+        auto parsedCorrect2 = makeProgram(
+            make<ast::Procedure>(
+                "a",
+                ast::makeStmts(
+                    make<ast::While>(1,
+                        std::make_unique<ast::NotCondExpr>(
+                            make<ast::RelExpr>(
+                                ast::RelOp::EQ,
+                                make<ast::Var>("c"),
+                                make<ast::Const>(1)
+                            )
+                        ),
+                        ast::makeStmts(make<ast::Read>(2, make<ast::Var>("c")))
+                    )
+                )
+            )
+        );
+        REQUIRE(*parse(correct2) == *parsedCorrect2);
 
-    //     // program with invalid variable names
-    //     lineCount = 1;  // reset lineCount
-    //     std::string fail3 = R"(procedure 1a {
-    //         1x = 1y + 1z;
-    //     })";
-    //     REQUIRE(parse(fail3) == nullptr);
+        // program with invalid variable names
+        lineCount = 1;  // reset lineCount
+        std::string fail3 = R"(procedure 1a {
+            1x = 1y + 1z;
+        })";
+        REQUIRE(parse(fail3) == nullptr);
 
-    //     lineCount = 1;  // reset lineCount
-    //     std::string testCode = R"(procedure computeAverage {
-    //         read num1;
-    //         read num2;
-    //         read num3;
-    //         sum = num1 + num2 + num3;
-    //         ave = sum / 3;
-    //         print ave;
-    //     })";
-    //     auto parsedTestCode = std::make_unique<ast::Program>(
-    //         make<ast::Procedure>(
-    //             "computeAverage",
-    //             ast::makeStmts(
-    //                 make<ast::Read>(1, make<ast::Var>("num1")),
-    //                 make<ast::Read>(2, make<ast::Var>("num2")),
-    //                 make<ast::Read>(3, make<ast::Var>("num3")),
-    //                 make<ast::Assign>(4, 
-    //                     make<ast::Var>("sum"), 
-    //                     make<ast::BinExpr>(
-    //                         ast::BinOp::PLUS,
-    //                         make<ast::BinExpr>(
-    //                             ast::BinOp::PLUS,
-    //                             make<ast::Var>("num1"),
-    //                             make<ast::Var>("num2")
-    //                         ), 
-    //                         make<ast::Var>("num3")
-    //                     )
-    //                 ),
-    //                 make<ast::Assign>(5,
-    //                     make<ast::Var>("ave"),
-    //                     make<ast::BinExpr>(
-    //                         ast::BinOp::DIVIDE,
-    //                         make<ast::Var>("sum"),
-    //                         make<ast::Const>(3)
-    //                     )
-    //                 ),
-    //                 make<ast::Print>(6, make<ast::Var>("ave"))
-    //             )
-    //         )
-    //     );
-    //     REQUIRE(*parse(testCode) == *parsedTestCode);
+        lineCount = 1;  // reset lineCount
+        std::string testCode = R"(procedure computeAverage {
+            read num1;
+            read num2;
+            read num3;
+            sum = num1 + num2 + num3;
+            ave = sum / 3;
+            print ave;
+        })";
+        auto parsedTestCode = makeProgram(
+            make<ast::Procedure>(
+                "computeAverage",
+                ast::makeStmts(
+                    make<ast::Read>(1, make<ast::Var>("num1")),
+                    make<ast::Read>(2, make<ast::Var>("num2")),
+                    make<ast::Read>(3, make<ast::Var>("num3")),
+                    make<ast::Assign>(4, 
+                        make<ast::Var>("sum"), 
+                        make<ast::BinExpr>(
+                            ast::BinOp::PLUS,
+                            make<ast::BinExpr>(
+                                ast::BinOp::PLUS,
+                                make<ast::Var>("num1"),
+                                make<ast::Var>("num2")
+                            ), 
+                            make<ast::Var>("num3")
+                        )
+                    ),
+                    make<ast::Assign>(5,
+                        make<ast::Var>("ave"),
+                        make<ast::BinExpr>(
+                            ast::BinOp::DIVIDE,
+                            make<ast::Var>("sum"),
+                            make<ast::Const>(3)
+                        )
+                    ),
+                    make<ast::Print>(6, make<ast::Var>("ave"))
+                )
+            )
+        );
+        REQUIRE(*parse(testCode) == *parsedTestCode);
 
-    //     lineCount = 1;  // reset lineCount
-    //     std::string testCode2 = R"(procedure printAscending {
-    //         read num1;
-    //         read num2;
-    //         noSwap = 0;
-    //         if (num1 > num2) then{
-    //             temp = num1;
-    //             num1 = num2;
-    //             num2 = temp;
-    //         }
-    //         else {
-    //             noSwap = 1;
-    //         }
-    //         print num1;
-    //         print num2;
-    //         print noSwap;
-    //     })";
-    //     auto parsedTestCode2 = std::make_unique<ast::Program>(
-    //         make<ast::Procedure>(
-    //             "printAscending",
-    //             ast::makeStmts(
-    //                 make<ast::Read>(1, make<ast::Var>("num1")),
-    //                 make<ast::Read>(2, make<ast::Var>("num2")),
-    //                 make<ast::Assign>(3, 
-    //                     make<ast::Var>("noSwap"), 
-    //                     make<ast::Const>(0)
-    //                 ),
-    //                 make<ast::If>(4,
-    //                     make<ast::RelExpr>(
-    //                         ast::RelOp::GT,
-    //                         make<ast::Var>("num1"),
-    //                         make<ast::Var>("num2")
-    //                     ),
-    //                     ast::makeStmts(
-    //                         make<ast::Assign>(5, 
-    //                             make<ast::Var>("temp"), 
-    //                             make<ast::Var>("num1")
-    //                         ),
-    //                         make<ast::Assign>(6, 
-    //                             make<ast::Var>("num1"), 
-    //                             make<ast::Var>("num2")
-    //                         ),
-    //                         make<ast::Assign>(7, 
-    //                             make<ast::Var>("num2"), 
-    //                             make<ast::Var>("temp")
-    //                         )
-    //                     ),
-    //                     ast::makeStmts(
-    //                         make<ast::Assign>(8, 
-    //                             make<ast::Var>("noSwap"), 
-    //                             make<ast::Const>(1)
-    //                         )
-    //                     )
-    //                 ),
-    //                 make<ast::Print>(9, make<ast::Var>("num1")),
-    //                 make<ast::Print>(10, make<ast::Var>("num2")),
-    //                 make<ast::Print>(11, make<ast::Var>("noSwap"))
-    //             )
-    //         )
-    //     );
-    //     REQUIRE(*parse(testCode2) == *parsedTestCode2);
-    // }    
+        lineCount = 1;  // reset lineCount
+        std::string testCode2 = R"(procedure printAscending {
+            read num1;
+            read num2;
+            noSwap = 0;
+            if (num1 > num2) then{
+                temp = num1;
+                num1 = num2;
+                num2 = temp;
+            }
+            else {
+                noSwap = 1;
+            }
+            print num1;
+            print num2;
+            print noSwap;
+        })";
+        auto parsedTestCode2 = makeProgram(
+            make<ast::Procedure>(
+                "printAscending",
+                ast::makeStmts(
+                    make<ast::Read>(1, make<ast::Var>("num1")),
+                    make<ast::Read>(2, make<ast::Var>("num2")),
+                    make<ast::Assign>(3, 
+                        make<ast::Var>("noSwap"), 
+                        make<ast::Const>(0)
+                    ),
+                    make<ast::If>(4,
+                        make<ast::RelExpr>(
+                            ast::RelOp::GT,
+                            make<ast::Var>("num1"),
+                            make<ast::Var>("num2")
+                        ),
+                        ast::makeStmts(
+                            make<ast::Assign>(5, 
+                                make<ast::Var>("temp"), 
+                                make<ast::Var>("num1")
+                            ),
+                            make<ast::Assign>(6, 
+                                make<ast::Var>("num1"), 
+                                make<ast::Var>("num2")
+                            ),
+                            make<ast::Assign>(7, 
+                                make<ast::Var>("num2"), 
+                                make<ast::Var>("temp")
+                            )
+                        ),
+                        ast::makeStmts(
+                            make<ast::Assign>(8, 
+                                make<ast::Var>("noSwap"), 
+                                make<ast::Const>(1)
+                            )
+                        )
+                    ),
+                    make<ast::Print>(9, make<ast::Var>("num1")),
+                    make<ast::Print>(10, make<ast::Var>("num2")),
+                    make<ast::Print>(11, make<ast::Var>("noSwap"))
+                )
+            )
+        );
+        REQUIRE(*parse(testCode2) == *parsedTestCode2);
+    }    
 }
 
 }  // namespace parser

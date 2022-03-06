@@ -126,7 +126,7 @@ bool Procedure::operator==(ASTNode const& o) const {
 
 bool Program::operator==(ASTNode const& o) const {
     if (typeid(*this) != typeid(o)) return false;
-    auto that = static_cast<const Program*>(&o);
+    auto that = static_cast<Program const*>(&o);
     if (procedures.size() != that->procedures.size()) return false;
     for (int i = 0; i < procedures.size(); i++) {
         if (!(*procedures[i] == *that->procedures[i])) {
