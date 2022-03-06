@@ -9,7 +9,6 @@ namespace design_extractor {
  * Interface for handling PKB insertions. There could be different strategy like NullPKBStrategy, TestPKBStrategy, ActualPKBStrategy
  */
 struct PKBStrategy {
-
     /**
     * Inserts an entity into the PKB.
     *

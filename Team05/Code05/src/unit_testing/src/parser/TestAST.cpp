@@ -55,6 +55,10 @@ TEST_CASE("AST Test") {
         auto printStmt = std::make_unique<Print>(21, std::move(v3));
     }
 
+    SECTION("Call Statement Construction") {
+        auto callStmt = std::make_unique<Call>(42, "test");
+    }
+
     SECTION("Statement Construction") {
         auto readStmt = std::make_unique<Read>(20, std::move(v1));
         auto readStmt2 = std::make_unique<Read>(69, std::move(v2));
@@ -133,6 +137,16 @@ TEST_CASE("AST Test") {
         REQUIRE(*printStmt == *printStmt3);
         REQUIRE_FALSE(*printStmt == *printStmt1);
         REQUIRE_FALSE(*printStmt == *printStmt2);
+
+        // Call
+        auto callStmt = std::make_unique<Call>(1, "testProg");
+        auto callStmt1 = std::make_unique<Call>(1, "diffTestProg");
+        auto callStmt2 = std::make_unique<Call>(2, "testProg");
+        auto callStmt3 = std::make_unique<Call>(1, "testProg");
+        REQUIRE(*callStmt == *callStmt);
+        REQUIRE(*callStmt == *callStmt3);
+        REQUIRE_FALSE(*callStmt == *callStmt1);
+        REQUIRE_FALSE(*callStmt == *callStmt2);
 
         // BinExpr
         auto binExpr = make<BinExpr>(BinOp::MINUS, make<Var>("x"), make<Var>("y"));
@@ -303,12 +317,31 @@ TEST_CASE("AST Test") {
         REQUIRE_FALSE(*proc1 == *proc2);
 
         // Program
-        auto prog1 = std::make_unique<Program>(make<Procedure>("monkey", genStmtLst()));
-        auto prog2 = std::make_unique<Program>(make<Procedure>("ooga", genStmtLst()));
-        auto prog3 = std::make_unique<Program>(make<Procedure>("monkey", genStmtLst()));
+        auto prog1 = makeProgram(make<Procedure>("monkey", genStmtLst()));
+        auto prog2 = makeProgram(make<Procedure>("ooga", genStmtLst()));
+        auto prog3 = makeProgram(make<Procedure>("monkey", genStmtLst()));
         REQUIRE(prog1 == prog1);
+        REQUIRE(*prog1 == *prog1);
         REQUIRE(*prog1 == *prog3);
         REQUIRE_FALSE(prog1 == prog2);
+
+        // Multi-Procedure Program
+        auto mprog1 = makeProgram(
+            make<Procedure>("proc1", genStmtLst()), 
+            make<Procedure>("proc2", genStmtLst())
+        );
+        auto mprog2 = makeProgram(
+            make<Procedure>("proc2", genStmtLst()),
+            make<Procedure>("proc1", genStmtLst())
+        );
+        auto mprog3 = makeProgram(
+            make<Procedure>("proc1", genStmtLst()),
+            make<Procedure>("proc2", genStmtLst())
+        );
+        REQUIRE(mprog1 == mprog1);
+        REQUIRE(*mprog1 == *mprog1);
+        REQUIRE(*mprog1 == *mprog3);
+        REQUIRE_FALSE(mprog1 == mprog2);
     }
 
     SUCCEED("No errors thrown");

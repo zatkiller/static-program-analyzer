@@ -24,7 +24,6 @@ namespace qps::evaluator {
 
     bool ResultTable::isEmpty() {
         return table.empty() && synSequenceMap.empty();
-
     }
 
     VectorResponse ResultTable::transToVectorResponse(SingleResonse response) {

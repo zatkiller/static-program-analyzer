@@ -22,6 +22,7 @@ struct TreeWalker : public ast::ASTNodeVisitor {
     void visit(const ast::Read& node) override {};
     void visit(const ast::Print& node) override {};
     void visit(const ast::Assign& node) override {};
+    void visit(const ast::Call&) override {};
     void visit(const ast::Var& node) override {};
     void visit(const ast::Const& node) override {};
     void visit(const ast::BinExpr& node) override {};
