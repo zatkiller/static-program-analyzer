@@ -135,7 +135,7 @@ namespace ast {
             );
             auto whileBlk = make<While>(1, std::move(relExpr), std::move(stmtlst));
             auto ve = std::make_unique<VariableExtractor>(&pkbStrategy);
-            whileBlk->accept(ve.get());
+            ve->extract(whileBlk.get());
             // variable extractions
             
             REQUIRE(
@@ -191,7 +191,7 @@ namespace ast {
 
             SECTION("Variable extractor test") {
                 auto ve = std::make_unique<VariableExtractor>(&pkbStrategy);
-                program->accept(ve.get());
+                ve->extract(program.get());
 
                 std::set<Content> expectedVars = {
                     VAR_NAME{"x"},
@@ -204,24 +204,24 @@ namespace ast {
             }
 
             SECTION("Const extractor test") {
-                auto ve = std::make_unique<ConstExtractor>(&pkbStrategy);
-                program->accept(ve.get());
+                auto ce = std::make_unique<ConstExtractor>(&pkbStrategy);
+                ce->extract(program.get());
 
                 std::set<Content> expectedVars = { CONST{0}, CONST{2}, CONST{10} };
                 REQUIRE(pkbStrategy.entities[PKBEntityType::CONST] == expectedVars);
             }
 
             SECTION("Procedure extractor test") {
-                auto ve = std::make_unique<ProcedureExtractor>(&pkbStrategy);
-                program->accept(ve.get());
-
+                auto pe = std::make_unique<ProcedureExtractor>(&pkbStrategy);
+                pe->extract(program.get());
+                
                 std::set<Content> expectedVars = { PROC_NAME{"main"} };
                 REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedVars);
             }
 
             SECTION("Modifies extractor test") {
                 auto me = std::make_unique<ModifiesExtractor>(&pkbStrategy);
-                program->accept(me.get());
+                me->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(PROC_NAME{"main"}, VAR_NAME{"x"}),
@@ -246,7 +246,7 @@ namespace ast {
 
             SECTION("Uses extractor test") {
                 auto ue = std::make_unique<UsesExtractor>(&pkbStrategy);
-                program->accept(ue.get());
+                ue->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(PROC_NAME{"main"}, VAR_NAME{"x"}),
@@ -277,7 +277,7 @@ namespace ast {
         
             SECTION("Follows extractor test") {
                 auto fe = std::make_unique<FollowsExtractor>(&pkbStrategy);
-                program->accept(fe.get());
+                fe->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
@@ -293,7 +293,7 @@ namespace ast {
 
             SECTION("Parents extractor test") {
                 auto pe = std::make_unique<ParentExtractor>(&pkbStrategy);
-                program->accept(pe.get());
+                pe->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(STMT_LO{3, StatementType::While}, STMT_LO{4, StatementType::Print}),

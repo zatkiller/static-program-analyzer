@@ -19,7 +19,7 @@ public:
 protected:
     virtual void extractAndInsert(Content, const ast::ASTNode*) = 0;
     virtual void insert(Content, Content) = 0;
-    std::set<VAR_NAME> extract(const ast::ASTNode*);
+    std::set<VAR_NAME> extractVars(const ast::ASTNode*);
 };
 
 /**

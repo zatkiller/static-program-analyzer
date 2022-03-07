@@ -31,7 +31,7 @@ void TransitiveRelationshipTemplate::cascadeToContainer(const std::set<VAR_NAME>
     }
 }
 
-std::set<VAR_NAME> RelExtractorTemplate::extract(const ast::ASTNode *part) {
+std::set<VAR_NAME> RelExtractorTemplate::extractVars(const ast::ASTNode *part) {
     VariablePKBStrategy vps;
     auto ve = std::make_unique<VariableExtractor>(&vps);
     part->accept(ve.get());
@@ -40,7 +40,7 @@ std::set<VAR_NAME> RelExtractorTemplate::extract(const ast::ASTNode *part) {
 }
 
 void TransitiveRelationshipTemplate::extractAndInsert(Content a1, const ast::ASTNode *part) {
-    auto vars = extract(part);
+    auto vars = extractVars(part);
     for (auto var : vars) {
         insert(a1, var);
     }
