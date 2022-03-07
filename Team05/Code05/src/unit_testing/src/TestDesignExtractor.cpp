@@ -307,6 +307,93 @@ namespace ast {
                 REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENT] == expected);
             }
         }    
+        
+        /**
+         * procedure main {
+         *    call foo;
+         *    call bar;
+         * }
+         * procedure foo {
+         *    call gee;
+         * }
+         * procedure bar {
+         *    call gee;
+         *    call foo;
+         * }
+         * procedure gee {
+         *    read x;
+         *    print y;
+         * }
+         * 
+         */
+        SECTION("Multi procedure test") {
+            auto program = makeProgram(
+                make<ast::Procedure>(
+                    "main", 
+                    ast::makeStmts(
+                        make<ast::Call>(1, "foo"),
+                        make<ast::Call>(2, "bar")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "foo", 
+                    ast::makeStmts(
+                        make<ast::Call>(3, "gee")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "bar", 
+                    ast::makeStmts(
+                        make<ast::Call>(4, "gee"),
+                        make<ast::Call>(5, "foo")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "gee", 
+                    ast::makeStmts(
+                        make<ast::Read>(6, make<ast::Var>("x")),
+                        make<ast::Print>(7, make<ast::Var>("y"))
+                    )
+                )
+            );
+            TestPKBStrategy pkb;
+            std::set<std::pair<Content, Content>> expected;
+
+            ModifiesExtractor me(&pkb);
+            me.extract(program.get());
+
+            expected = {
+                p(STMT_LO{1, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{3, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{4, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{5, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{6, StatementType::Read}, VAR_NAME{"x"}),
+                p(PROC_NAME{"bar"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"foo"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"gee"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"x"})
+            };
+            REQUIRE(pkb.relationships[PKBRelationship::MODIFIES] == expected);
+            
+            UsesExtractor ue(&pkb);
+            ue.extract(program.get());
+
+            expected = {
+                p(STMT_LO{1, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{3, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{4, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{5, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{7, StatementType::Print}, VAR_NAME{"y"}),
+                p(PROC_NAME{"bar"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"foo"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"gee"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"y"})
+            };
+            REQUIRE(pkb.relationships[PKBRelationship::USES] == expected);
+
+        }
     }
 
     TEST_CASE("Pattern matcher test") {
@@ -379,62 +466,5 @@ namespace ast {
         }
     }
 
-
-    TEST_CASE("Multi procedure test 1") {
-        /**
-         * procedure main {
-         *    call foo;
-         *    call bar;
-         * }
-         * procedure foo {
-         *    call gee;
-         * }
-         * procedure bar {
-         *    call gee;
-         *    call foo;
-         * }
-         * procedure gee {
-         *    read x;
-         *    print y;
-         * }
-         * 
-         */
-        auto program = makeProgram(
-            make<ast::Procedure>(
-                "main", 
-                ast::makeStmts(
-                    make<ast::Call>(1, "foo"),
-                    make<ast::Call>(2, "bar")
-                )
-            ),
-            make<ast::Procedure>(
-                "foo", 
-                ast::makeStmts(
-                    make<ast::Call>(3, "gee")
-                )
-            ),
-            make<ast::Procedure>(
-                "bar", 
-                ast::makeStmts(
-                    make<ast::Call>(4, "gee"),
-                    make<ast::Call>(5, "foo")
-                )
-            ),
-            make<ast::Procedure>(
-                "gee", 
-                ast::makeStmts(
-                    make<ast::Read>(6, make<ast::Var>("x")),
-                    make<ast::Print>(7, make<ast::Var>("y"))
-                )
-            )
-        );
-        TestPKBStrategy pkb;
-        ModifiesExtractor me(&pkb);
-        me.extract(program.get());
-
-        UsesExtractor ue(&pkb);
-        ue.extract(program.get());
-        auto a = pkb.relationships[PKBRelationship::MODIFIES];
-    }
 }  // namespace ast
 }  // namespace sp
