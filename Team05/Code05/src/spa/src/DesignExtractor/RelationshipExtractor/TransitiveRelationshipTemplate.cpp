@@ -18,6 +18,32 @@ public:
     };
 };
 
+
+std::set<VAR_NAME> RelExtractorTemplate::extractVars(const ast::ASTNode *part) {
+    VariablePKBStrategy vps;
+    auto ve = std::make_unique<VariableExtractor>(&vps);
+    part->accept(ve.get());
+
+    return vps.variables;
+}
+
+void TransitiveRelationshipTemplate::visit(const ast::Call &node) {
+    auto proc = PROC_NAME{node.getName()};
+    try {
+        auto vars = procVarMap.at(proc);
+        for (auto var : vars) {
+            insert(STMT_LO{node.getStmtNo(), StatementType::Call}, var);
+        }
+        cascadeToContainer(vars);
+    } catch (std::out_of_range &ex) {
+        // if out of range exception thrown by at, that means something wrong with topo ordering.
+        Logger(Level::ERROR) << "TransitiveRelationshipTemplate.cpp " << 
+        "empty proc at target " << proc.name << " something wrong with topo order";
+    }
+
+}
+
+
 void TransitiveRelationshipTemplate::cascadeToContainer(const std::set<VAR_NAME> varNames) {
     for (auto stmt : container) {
         for (auto var : varNames) {
@@ -28,15 +54,8 @@ void TransitiveRelationshipTemplate::cascadeToContainer(const std::set<VAR_NAME>
         for (auto var : varNames) {
             insert(currentProcedure, var);
         }
+        procVarMap[currentProcedure].insert(varNames.begin(), varNames.end());
     }
-}
-
-std::set<VAR_NAME> RelExtractorTemplate::extractVars(const ast::ASTNode *part) {
-    VariablePKBStrategy vps;
-    auto ve = std::make_unique<VariableExtractor>(&vps);
-    part->accept(ve.get());
-
-    return vps.variables;
 }
 
 void TransitiveRelationshipTemplate::extractAndInsert(Content a1, const ast::ASTNode *part) {

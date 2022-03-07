@@ -379,5 +379,62 @@ namespace ast {
         }
     }
 
+
+    TEST_CASE("Multi procedure test 1") {
+        /**
+         * procedure main {
+         *    call foo;
+         *    call bar;
+         * }
+         * procedure foo {
+         *    call gee;
+         * }
+         * procedure bar {
+         *    call gee;
+         *    call foo;
+         * }
+         * procedure gee {
+         *    read x;
+         *    print y;
+         * }
+         * 
+         */
+        auto program = makeProgram(
+            make<ast::Procedure>(
+                "main", 
+                ast::makeStmts(
+                    make<ast::Call>(1, "foo"),
+                    make<ast::Call>(2, "bar")
+                )
+            ),
+            make<ast::Procedure>(
+                "foo", 
+                ast::makeStmts(
+                    make<ast::Call>(3, "gee")
+                )
+            ),
+            make<ast::Procedure>(
+                "bar", 
+                ast::makeStmts(
+                    make<ast::Call>(4, "gee"),
+                    make<ast::Call>(5, "foo")
+                )
+            ),
+            make<ast::Procedure>(
+                "gee", 
+                ast::makeStmts(
+                    make<ast::Read>(6, make<ast::Var>("x")),
+                    make<ast::Print>(7, make<ast::Var>("y"))
+                )
+            )
+        );
+        TestPKBStrategy pkb;
+        ModifiesExtractor me(&pkb);
+        me.extract(program.get());
+
+        UsesExtractor ue(&pkb);
+        ue.extract(program.get());
+        auto a = pkb.relationships[PKBRelationship::MODIFIES];
+    }
 }  // namespace ast
 }  // namespace sp
