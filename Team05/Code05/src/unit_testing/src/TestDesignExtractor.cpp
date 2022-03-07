@@ -326,7 +326,7 @@ namespace ast {
          * }
          * 
          */
-        SECTION("Multi procedure test") {
+        SECTION("Multi procedure test 1") {
             auto program = makeProgram(
                 make<ast::Procedure>(
                     "main", 
@@ -356,10 +356,9 @@ namespace ast {
                     )
                 )
             );
-            TestPKBStrategy pkb;
             std::set<std::pair<Content, Content>> expected;
 
-            ModifiesExtractor me(&pkb);
+            ModifiesExtractor me(&pkbStrategy);
             me.extract(program.get());
 
             expected = {
@@ -374,9 +373,9 @@ namespace ast {
                 p(PROC_NAME{"gee"}, VAR_NAME{"x"}),
                 p(PROC_NAME{"main"}, VAR_NAME{"x"})
             };
-            REQUIRE(pkb.relationships[PKBRelationship::MODIFIES] == expected);
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
             
-            UsesExtractor ue(&pkb);
+            UsesExtractor ue(&pkbStrategy);
             ue.extract(program.get());
 
             expected = {
@@ -391,9 +390,70 @@ namespace ast {
                 p(PROC_NAME{"gee"}, VAR_NAME{"y"}),
                 p(PROC_NAME{"main"}, VAR_NAME{"y"})
             };
-            REQUIRE(pkb.relationships[PKBRelationship::USES] == expected);
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
 
         }
+
+        /**
+         * procedure main {
+         *      while (m1 > 0) {
+         *          call foo;
+         *          m2 = m3;
+         *      }
+         * }
+         * procedure foo {
+         *      f1 = f2;
+         * }
+         */
+        SECTION("Multi procedure test 2") {
+            auto program = makeProgram(
+                make<Procedure>("main", makeStmts(
+                    make<While>(1,
+                        make<RelExpr>(RelOp::GT, make<Var>("m1"), make<Const>(0)),
+                        makeStmts(
+                            make<Call>(2, "foo"),
+                            make<Assign>(3, make<Var>("m2"), make<Var>("m3"))
+                        )
+                    )
+                )),
+                make<Procedure>("foo", makeStmts(
+                    make<Assign>(4, make<Var>("f1"), make<Var>("f2"))
+                ))
+            );
+
+            std::set<std::pair<Content, Content>> expected;
+            ModifiesExtractor me(&pkbStrategy);
+            me.extract(program.get());
+
+            expected = {
+                p(STMT_LO{1, StatementType::While}, VAR_NAME{"f1"}),
+                p(STMT_LO{1, StatementType::While}, VAR_NAME{"m2"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"f1"}),
+                p(STMT_LO{3, StatementType::Assignment}, VAR_NAME{"m2"}),
+                p(STMT_LO{4, StatementType::Assignment}, VAR_NAME{"f1"}),
+                p(PROC_NAME{"foo"}, VAR_NAME{"f1"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"f1"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"m2"})
+            };
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
+
+            UsesExtractor ue(&pkbStrategy);
+            ue.extract(program.get());
+            expected = {
+                p(STMT_LO{1, StatementType::While}, VAR_NAME{"m1"}),
+                p(STMT_LO{1, StatementType::While}, VAR_NAME{"m3"}),
+                p(STMT_LO{1, StatementType::While}, VAR_NAME{"f2"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"f2"}),
+                p(STMT_LO{3, StatementType::Assignment}, VAR_NAME{"m3"}),
+                p(STMT_LO{4, StatementType::Assignment}, VAR_NAME{"f2"}),
+                p(PROC_NAME{"foo"}, VAR_NAME{"f2"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"f2"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"m1"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"m3"})
+            };
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
+        }
+    
     }
 
     TEST_CASE("Pattern matcher test") {
