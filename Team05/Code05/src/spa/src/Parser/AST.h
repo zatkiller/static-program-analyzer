@@ -44,6 +44,7 @@ class While;
 class Read;
 class Print;
 class Assign;
+class Call;
 
 // expressions
 class Var;
@@ -64,6 +65,7 @@ struct ASTNodeVisitor {
     virtual void visit(const Read& node) = 0;
     virtual void visit(const Print& node) = 0;
     virtual void visit(const Assign& node) = 0;
+    virtual void visit(const Call& node) = 0;
     virtual void visit(const Var& node) = 0;
     virtual void visit(const Const& node) = 0;
     virtual void visit(const BinExpr& node) = 0;
@@ -210,10 +212,10 @@ public:
  */
 class Program : public ASTNode {
 private:
-    std::unique_ptr<Procedure> procedure;
+    std::vector<std::unique_ptr<Procedure>> procedures;
 public:
-    explicit Program(std::unique_ptr<Procedure> procedure) :
-        procedure(std::move(procedure)) {}
+    explicit Program(std::vector<std::unique_ptr<Procedure>> procedures) :
+        procedures(std::move(procedures)) {}
     
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
 
@@ -377,6 +379,23 @@ class Print : public IO {
 public:
     using IO::IO;
     void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+};
+
+/**
+ * @class Call
+ * @brief Class that represents a Call statement in the AST.
+ * @details Call is identified by: 'call' proc_name';'
+ */
+class Call : public Statement {
+private:
+    std::string procName;
+public:
+    Call(int stmtNo, const std::string& procName) :
+        Statement(stmtNo),
+        procName(procName) {}
+    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    std::string getName() const { return procName; }
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -630,6 +649,15 @@ StmtLst makeStmts(Ts &&... ts) {
     };
 
     return StmtLst(lst);
+}
+
+template <typename ...Ts>
+std::unique_ptr<Program> makeProgram(Ts &&... ts) {
+    std::unique_ptr<Procedure> procArr[] = { std::move(ts)... };
+    auto lst = std::vector<std::unique_ptr<Procedure>> {
+        std::make_move_iterator(std::begin(procArr)), std::make_move_iterator(std::end(procArr))
+    };
+    return std::make_unique<Program>(std::move(lst));
 }
 
 }  // namespace ast

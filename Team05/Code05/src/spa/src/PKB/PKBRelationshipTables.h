@@ -12,7 +12,7 @@
 #include <cstdarg>
 #include "logging.h"
 #include "PKBField.h"
-#include "PKBRelationship.h"
+#include "PKBCommons.h"
 
 /**
 * A data structure to store a program design abstraction (relationship) which has two fields.
@@ -254,7 +254,6 @@ public:
                 && u.type.value() != StatementType::While) {
                 return;
             }
-
         }
 
         Node<T>* uNode = createNode(u);
@@ -412,7 +411,7 @@ private:
                     return pair.first.statementNum == val.statementNum;
                 }
 
-                return pair.first == val; // TO CHECK
+                return pair.first == val;  // TO CHECK
             });
 
         for (auto [v, node] : filtered) {
@@ -771,7 +770,7 @@ private:
 template<typename T>
 class TransitiveRelationshipTable : public RelationshipTable {
 public:
-    TransitiveRelationshipTable(PKBRelationship type) : RelationshipTable(type) {
+    explicit TransitiveRelationshipTable(PKBRelationship type) : RelationshipTable(type) {
         graph = std::make_unique<Graph<T>>(type);
     }
 

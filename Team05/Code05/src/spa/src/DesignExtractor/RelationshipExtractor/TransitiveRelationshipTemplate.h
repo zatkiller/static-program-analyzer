@@ -6,8 +6,8 @@
 #include <map>
 
 #include "DesignExtractor/Extractor.h"
-#include "PKB/PKBDataTypes.h"
-#include "PKB/StatementType.h"
+#include "PKB/PKBField.h"
+#include "PKB/PKBCommons.h"
 #include "Parser/AST.h"
 
 

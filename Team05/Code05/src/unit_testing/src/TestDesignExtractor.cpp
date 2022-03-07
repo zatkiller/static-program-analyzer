@@ -138,7 +138,11 @@ namespace ast {
             whileBlk->accept(ve);
             // variable extractions
             
-            REQUIRE(pkbStrategy.entities[PKBEntityType::VARIABLE] == std::set<Content>({VAR_NAME{"v1"}, VAR_NAME{"v3"}}));
+            REQUIRE(
+                pkbStrategy.entities[PKBEntityType::VARIABLE] == std::set<Content>(
+                    {VAR_NAME{"v1"}, VAR_NAME{"v3"}}
+                )
+            );
         }
 
 
@@ -183,7 +187,7 @@ namespace ast {
                 make<Print>(11, make<Var>("sum"))
             ));
 
-            auto program = std::make_unique<Program>(std::move(procedure));
+            auto program = makeProgram(std::move(procedure));
 
             SECTION("Variable extractor test") {
                 auto ve = std::make_shared<VariableExtractor>(&pkbStrategy);

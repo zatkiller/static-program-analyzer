@@ -3,39 +3,31 @@
 
 namespace qps::evaluator {
     using query::RelRefType;
+
+    std::unordered_map<query::RelRefType, PKBRelationship> PKBRelationshipMap {
+            {RelRefType::MODIFIESS, PKBRelationship::MODIFIES},
+            {RelRefType::USESS, PKBRelationship::USES},
+            {RelRefType::FOLLOWS, PKBRelationship::FOLLOWS},
+            {RelRefType::FOLLOWST, PKBRelationship::FOLLOWST},
+            {RelRefType::PARENT, PKBRelationship::PARENT},
+            {RelRefType::PARENTT, PKBRelationship::PARENTT}
+    };
+
+    std::unordered_map<query::DesignEntity, StatementType> statementTypeMap {
+            {query::DesignEntity::STMT, StatementType::All},
+            {query::DesignEntity::ASSIGN, StatementType::Assignment},
+            {query::DesignEntity::WHILE, StatementType::While},
+            {query::DesignEntity::IF, StatementType::If},
+            {query::DesignEntity::READ, StatementType::Read},
+            {query::DesignEntity::PRINT, StatementType::Print},
+            {query::DesignEntity::CALL, StatementType::Call}
+    };
+
     PKBRelationship PKBTypeMatcher::getPKBRelationship(query::RelRefType r) {
-        switch (r) {
-            case RelRefType::MODIFIESS:
-                return PKBRelationship::MODIFIES;
-            case RelRefType::USESS:
-                return PKBRelationship::USES;
-            case RelRefType::FOLLOWS:
-                return PKBRelationship::FOLLOWS;
-            case RelRefType::FOLLOWST:
-                return PKBRelationship::FOLLOWST;
-            case RelRefType::PARENT:
-                return PKBRelationship::PARENT;
-            case RelRefType::PARENTT:
-                return PKBRelationship::PARENTT;
-        }
+        return PKBRelationshipMap.find(r)->second;
     }
 
     StatementType PKBTypeMatcher::getStatementType(query::DesignEntity d) {
-        switch (d) {
-            case query::DesignEntity::STMT:
-                return StatementType::All;
-            case query::DesignEntity::ASSIGN:
-                return StatementType::Assignment;
-            case query::DesignEntity::WHILE:
-                return StatementType::While;
-            case query::DesignEntity::IF:
-                return StatementType::If;
-            case query::DesignEntity::READ:
-                return StatementType::Read;
-            case query::DesignEntity::PRINT:
-                return StatementType::Print;
-            case query::DesignEntity::CALL:
-                return StatementType::Call;
-        }
+        return statementTypeMap.find(d)->second;
     }
 }  // namespace qps::evaluator

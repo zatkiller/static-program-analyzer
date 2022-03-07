@@ -62,7 +62,6 @@ namespace qps::parser {
     }
 
     TokenType Lexer::getSpecialCharTokenType(char ch) {
-
         auto pos = specialCharToTokenTypeMap.find(ch);
 
         if (pos == specialCharToTokenTypeMap.end()) {
@@ -147,7 +146,7 @@ namespace qps::parser {
             return token;
         }
 
-        for (auto keyword: keywords) {
+        for (auto keyword : keywords) {
             if (hasPrefix(keyword)) {
                 token = getReservedToken(keyword);
                 break;

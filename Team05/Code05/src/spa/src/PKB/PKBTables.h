@@ -2,7 +2,7 @@
 
 #include <set>
 #include <optional>
-#include "PKBDataTypes.h"
+#include "PKBField.h"
 #include "PKBRelationshipTables.h"
 
 /**
