@@ -1022,3 +1022,8 @@ class CallsRelationshipTable : public TransitiveRelationshipTable<PROC_NAME> {
 public:
     CallsRelationshipTable();
 };
+
+class NextRelationshipTable : public TransitiveRelationshipTable<STMT_LO> {
+public:
+    NextRelationshipTable();
+};
