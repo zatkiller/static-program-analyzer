@@ -996,7 +996,7 @@ public:
 };
 
 /**
- * A data structure to store Follows and FollowsT program design abstractions as FollowsNodes in a FollowsGraph.
+ * A data structure to store Follows and FollowsT program design abstractions as Nodes<STMT_LO> in a Graph<STMT_LO>.
  * Inherits from TransitiveRelationshipTable.
  *
  * @see Node, Graph, TransitiveRelationshipTable
@@ -1007,7 +1007,7 @@ public:
 };
 
 /**
-* A data structure to store Parent and Parent* program design abstractions as ParentNodes in a ParentGraph.
+* A data structure to store Parent and Parent* program design abstractions as Nodes<STMT_LO> in a Graph<STMT_LO>.
 * Inherits from TransitiveRelationshipTable
 *
 * @see Node, Graph, TransitiveRelationshipTable
@@ -1017,11 +1017,23 @@ public:
     ParentRelationshipTable();
 };
 
+/**
+* A data structure to store Calls and Calls* program design abstractions as Nodes<PROC_NAME> in a Graph<PROC_NAME>.
+* Inherits from TransitiveRelationshipTable
+* 
+* @see Node, Graph, TransitiveRelationshipTable
+*/
 class CallsRelationshipTable : public TransitiveRelationshipTable<PROC_NAME> {
 public:
     CallsRelationshipTable();
 };
 
+/**
+* A data structure to store Next and Next* program design abstractions as Nodes<STMT_LO> in a Graph<STMT_LO>.
+* Inherits from TransitiveRelationshipTable
+* 
+* @see Node, Graph, TransitiveRelationshipTable
+*/
 class NextRelationshipTable : public TransitiveRelationshipTable<STMT_LO> {
 public:
     NextRelationshipTable();

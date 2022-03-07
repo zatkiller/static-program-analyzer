@@ -184,6 +184,22 @@ TEST_CASE("PKB sample source program test") {
     PKBField w = PKBField::createConcrete(VAR_NAME{ "w" });
     PKBField monke = PKBField::createConcrete(VAR_NAME{ "monke" });
 
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt1, stmt2);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt2, stmt3);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt3, stmt4);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt4, stmt5);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt5, stmt6);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt5, stmt12);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt6, stmt7);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt7, stmt8);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt7, stmt9);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt8, stmt10);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt9, stmt10);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt10, stmt11);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt11, stmt5);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt11, stmt12);
+    pkb->insertRelationship(PKBRelationship::NEXT, stmt12, stmt13);
+
     pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt1, stmt2);
     pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt2, stmt3);
     pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt3, stmt4);
@@ -661,6 +677,51 @@ TEST_CASE("PKB sample source program test") {
         // Calls*(def, _)
         REQUIRE(pkb->getRelationship(def, PKBField::createDeclaration(PKBEntityType::PROCEDURE),
             PKBRelationship::CALLST) == PKBResponse{ false, FieldRowResponse{ } });
+
+        // Next(_,_) double wildcards
+        REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::NEXT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, stmt2}, {stmt2, stmt3}, {stmt3, stmt4}, {stmt4, stmt5}, {stmt5, stmt6},
+            {stmt6, stmt7}, {stmt7, stmt8}, {stmt7, stmt9}, {stmt8, stmt10}, {stmt9, stmt10}, {stmt10, stmt11},
+            {stmt11, stmt5}, {stmt11, stmt12}, {stmt12, stmt13}, {stmt5, stmt12} } });
+
+        // Next(s1, s2) double statement decl
+        REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(StatementType::All), PKBRelationship::NEXT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt1, stmt2}, {stmt2, stmt3}, {stmt3, stmt4}, {stmt4, stmt5}, {stmt5, stmt6}, 
+            {stmt5, stmt12}, {stmt6, stmt7}, {stmt7, stmt8}, {stmt7, stmt9}, {stmt8, stmt10}, {stmt9, stmt10}, 
+            {stmt10, stmt11}, {stmt11, stmt5}, {stmt11, stmt12}, {stmt12, stmt13} } });
+
+        // Next(11, 5) douuble concrete decl
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(Content{ STMT_LO{11, StatementType::Assignment} }),
+            PKBField::createConcrete(Content{ STMT_LO{ 5, StatementType::While } }), PKBRelationship::NEXT) == PKBResponse{ true,
+            FieldRowResponse{ {stmt11, stmt5} } });
+
+        // Next(7, a) first concrete, second assn decl
+        REQUIRE(pkb->getRelationship(PKBField::createConcrete(Content{ STMT_LO{7, StatementType::If } }),
+            PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::NEXT) == PKBResponse{ true, 
+            FieldRowResponse{ {stmt7, stmt8}, {stmt7, stmt9} } });
+
+        // Next(a, 5) first assn decl, second concrete -> Currently failing due to prev only accepting one node
+        //REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::Assignment),
+        //    PKBField::createConcrete(STMT_LO{5, StatementType::While}), PKBRelationship::NEXT) == PKBResponse{ true,
+        //    FieldRowResponse{ {stmt11, stmt5} } });
+
+        // Next*(ifs, a) first if decl, second assn decl -> Currently failing due to lack of termination (stack overflow)
+        //REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::If),
+        //    PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::NEXTT) == PKBResponse{ true,
+        //    FieldRowResponse{ {stmt7, stmt8}, {stmt7, stmt9}, {stmt7, stmt10}, {stmt7, stmt11}, {stmt7, stmt6} } });
+
+        // Next*(5, a) first concrete, second assn decl -> Currently failing due to lack of termination (stack overflow)
+        //REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 5, StatementType::While }),
+        //    PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::NEXTT) == PKBResponse{ true,
+        //    FieldRowResponse{ {stmt5, stmt6}, {stmt5, stmt8}, {stmt5, stmt9}, {stmt5, stmt10}, {stmt5, stmt11} } });
+
+        // Next*(a, 7) first assn decl, second concrete -> Currently failing due to prev only accepting one node
+        //REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::Assignment),
+        //    PKBField::createConcrete(STMT_LO{ 7, StatementType::If }), PKBRelationship::NEXTT) == PKBResponse{ true,
+        //    FieldRowResponse{ {stmt1, stmt7}, {stmt2, stmt7}, {stmt3, stmt7}, {stmt6, stmt7}, {stmt8, stmt7},
+        //    {stmt9, stmt7}, {stmt10, stmt7}, {stmt11, stmt7} } });
     }
 }
 
