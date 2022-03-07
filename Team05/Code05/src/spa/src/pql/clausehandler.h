@@ -3,9 +3,8 @@
 #include "query.h"
 #include "resulttable.h"
 #include "pkbtypematcher.h"
-#include "PKB/StatementType.h"
+#include "PKB/PKBCommons.h"
 #include "PKB/PKBField.h"
-#include "PKB/PKBRelationship.h"
 #include "PKB/PKBResponse.h"
 #include "PKB.h"
 
