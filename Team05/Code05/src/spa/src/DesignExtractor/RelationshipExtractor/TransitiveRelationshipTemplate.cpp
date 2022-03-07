@@ -33,8 +33,8 @@ void TransitiveRelationshipTemplate::cascadeToContainer(const std::set<VAR_NAME>
 
 std::set<VAR_NAME> RelExtractorTemplate::extract(const ast::ASTNode *part) {
     VariablePKBStrategy vps;
-    auto ve = std::make_shared<VariableExtractor>(&vps);
-    part->accept(ve);
+    auto ve = std::make_unique<VariableExtractor>(&vps);
+    part->accept(ve.get());
 
     return vps.variables;
 }
