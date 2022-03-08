@@ -250,6 +250,10 @@ struct Parser {
      * @param query the query object
      */
     void parsePattern(Query &query);
+
+    /*
+     * Returns a ExpSpec belonging to an assign pattern
+     */
     ExpSpec parseExpSpec();
 
     /*
@@ -284,6 +288,8 @@ struct Parser {
      * @param token token to get priority
      */
     int getOperatorPriority(Token token);
+
+
 };
 
 }  // namespace qps::parser

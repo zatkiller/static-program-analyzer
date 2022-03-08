@@ -456,6 +456,63 @@ struct Pattern {
     }
 };
 
+struct AttrRef {
+    DesignEntity declarationType {};
+    std::string declaration = "";
+};
+
+enum class AttrCompareRefType {
+    NOT_INITIALIZED,
+    DECLARATION,
+    NUMBER,
+    STRING,
+    ATTRREF
+};
+
+struct AttrCompareRef {
+private:
+    AttrCompareRefType type = AttrCompareRefType::NOT_INITIALIZED;
+
+    DesignEntity declarationType {};
+    std::string declaration = "";
+    int number = -1;
+    std::string str_value = ;
+    AttrRef ar;
+public:
+    static AttrCompareRef ofDeclaration(std::string declaration, DesignEntity de);
+    static AttrCompareRef ofString(std::string str);
+    static AttrCompareRef ofNumber(int num);
+    static AttrCompareRef isAttrRef(AttrRef ar);
+
+    std::string getDeclaration();
+    std::string getString();
+    int getNumber();
+    AttrRef getAttrRef();
+
+    bool isDeclaration();
+    bool isString();
+    bool isNumber();
+    bool isAttrRef();
+
+    bool operator==(const AttrCompareRef &o) const {
+        if (type == AttrCompareRefType::DECLARATION && o.type == AttrCompareRefType::DECLARATION)
+            return declaration == o.declaration && declarationType == o.declarationType;
+        else if (type == AttrCompareRefType::NUMBER && o.type == AttrCompareRefType::NUMBER)
+            return number == o.number;
+        else if (type == AttrCompareRefType::STRING && o.type == AttrCompareRefType::STRING)
+            return str_value == o.str_value;
+        else if (type == AttrCompareRefType::ATTRREF && o.type == AttrCompareRefType::ATTRREF)
+            return ar == o.ar;
+        return false;
+    }
+};
+
+struct AttrCompare {
+    AttrCompareRef lhs {};
+    AttrCompareRef rhs {};
+
+};
+
 /**
 * Struct used to represent a query that has been parsed
 */
@@ -465,6 +522,7 @@ private:
     std::vector<std::string> variable;
     std::vector<std::shared_ptr<RelRef>> suchthat;
     std::vector<Pattern> pattern;
+    std::vector<AttrCompare> with;
     bool valid;
 
 public:
@@ -491,6 +549,8 @@ public:
     void addSuchthat(std::shared_ptr<RelRef>);
 
     void addPattern(Pattern);
+
+    void addWith(AttrCompare);
 
     /*
         * Returns the DesignEntity of the specified declaration
