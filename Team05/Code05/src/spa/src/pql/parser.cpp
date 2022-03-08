@@ -5,6 +5,7 @@
 
 namespace qps::parser {
     using qps::query::designEntityMap;
+    using qps::query::attrNameToDesignEntityMap;
     using qps::query::UsesS;
     using qps::query::UsesP;
     using qps::query::ModifiesS;
@@ -31,12 +32,9 @@ namespace qps::parser {
             { TokenType::STMTNUM, AttrName::STMTNUM }
     };
 
-
-
     bool Parser::hasLeadingWhitespace() {
         return lexer.hasLeadingWhitespace();
     }
-
 
     std::string Parser::getParsedText() {
         return lexer.text;
@@ -61,6 +59,12 @@ namespace qps::parser {
     void Parser::checkType(Token token, TokenType tokenType) {
         if (token.getTokenType() != tokenType)
             throw exceptions::PqlSyntaxException(messages::qps::parser::notExpectingTokenMessage);
+    }
+
+    void Parser::checkDesignEntityAndAttrNameMatch(DesignEntity de, AttrName an) {
+        auto designEntitySet = attrNameToDesignEntityMap.find(an)->second;
+        if (designEntitySet.count(de) == 0)
+            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidAttrNameForDesignEntity);
     }
 
     Token Parser::getAndCheckNextToken(TokenType tt) {
@@ -397,6 +401,7 @@ namespace qps::parser {
         Token attrRefToken = getNextReservedToken();
         auto pos = tokenTypeToAttrName.find(attrRefToken.getTokenType());
         AttrName attrName = pos->second;
+        checkDesignEntityAndAttrNameMatch(de, attrName);
 
         return AttrRef { attrName, de, declaration };
     }

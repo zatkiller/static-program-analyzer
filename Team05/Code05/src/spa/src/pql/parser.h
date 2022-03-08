@@ -19,6 +19,7 @@ using qps::query::ModifiesP;
 using qps::query::ModifiesS;
 using qps::query::UsesP;
 using qps::query::UsesS;
+using qps::query::AttrName;
 using qps::query::AttrRef;
 using qps::query::AttrCompareRef;
 
@@ -46,6 +47,7 @@ struct Parser {
     }
 
     void checkType(Token, TokenType);
+    void checkDesignEntityAndAttrNameMatch(DesignEntity, AttrName);
 
     /*
      * Returns the next token from the lexified query

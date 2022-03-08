@@ -1,11 +1,11 @@
 #include <algorithm>
+#include <unordered_set>
 
 #include "exceptions.h"
 #include "pql/query.h"
 #include "pql/lexer.h"
 
 namespace qps::query {
-    using qps::parser::TokenType;
     std::unordered_map<std::string, DesignEntity> designEntityMap = {
             {"stmt",      DesignEntity::STMT},
             {"read",      DesignEntity::READ},
@@ -15,7 +15,16 @@ namespace qps::query {
             {"assign",    DesignEntity::ASSIGN},
             {"variable",  DesignEntity::VARIABLE},
             {"constant",  DesignEntity::CONSTANT},
-            {"procedure", DesignEntity::PROCEDURE}
+            {"procedure", DesignEntity::PROCEDURE},
+            {"call", DesignEntity::CALL}
+    };
+
+    std::unordered_map<AttrName, std::unordered_set<DesignEntity>> attrNameToDesignEntityMap = {
+            { AttrName::PROCNAME, { DesignEntity::PROCEDURE, DesignEntity::CALL} },
+            { AttrName::VARNAME, { DesignEntity::VARIABLE, DesignEntity::READ, DesignEntity::PRINT} },
+            { AttrName::VALUE, { DesignEntity::CONSTANT } },
+            { AttrName::STMTNUM, { DesignEntity::STMT, DesignEntity::CALL, DesignEntity::READ, DesignEntity::PRINT,
+                                   DesignEntity::WHILE, DesignEntity::IF, DesignEntity::ASSIGN} }
     };
 
     bool Query::isValid() {

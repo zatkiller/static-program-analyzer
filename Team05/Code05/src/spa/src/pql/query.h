@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <unordered_set>
 #include "PKB/PKBField.h"
 #include "logging.h"
 #include "exceptions.h"
@@ -23,7 +24,10 @@ enum class DesignEntity {
     PROCEDURE
 };
 
+enum class AttrName;
+
 extern std::unordered_map<std::string, DesignEntity> designEntityMap;
+extern std::unordered_map<AttrName, std::unordered_set<DesignEntity>> attrNameToDesignEntityMap;
 
 enum class StmtRefType {
     NOT_INITIALIZED,

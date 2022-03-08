@@ -45,12 +45,18 @@ TEST_CASE("Parser checkType") {
                            Catch::Message(messages::qps::parser::notExpectingTokenMessage));
 }
 
-TEST_CASE("Parser checkSurroundingWhitespacee") {
+TEST_CASE("Parser checkSurroundingWhitespace") {
     Parser parser;
     parser.lexer.text = " hi ";
     auto f = [](){};
     REQUIRE_THROWS_MATCHES(parser.checkSurroundingWhitespace(f), exceptions::PqlSyntaxException,
                            Catch::Message(messages::qps::parser::unexpectedWhitespaceMessage));
+}
+
+TEST_CASE("Parser checkDesignEntityAndAttrNameMatch") {
+    Parser parser;
+    REQUIRE_THROWS_MATCHES(parser.checkDesignEntityAndAttrNameMatch(DesignEntity::CONSTANT, AttrName::PROCNAME), exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::invalidAttrNameForDesignEntity));
 }
 
 TEST_CASE("Parser getAndCheckNextToken and peekAndCheckNextToken") {
@@ -132,7 +138,7 @@ TEST_CASE("Parser parseDeclarations") {
 
     // Multiple declarations of different Design Entities
     queryObj = Query{};
-    parser.lexer.text = "assign a, a1; variable v;";
+    parser.lexer.text = "assign a, a1; variable v; call cl";
     parser.parseDeclarations(queryObj);
 
     REQUIRE(queryObj.hasDeclaration("a"));
@@ -144,6 +150,10 @@ TEST_CASE("Parser parseDeclarations") {
     parser.parseDeclarations(queryObj);
     REQUIRE(queryObj.hasDeclaration("v"));
     REQUIRE(queryObj.getDeclarationDesignEntity("v") == DesignEntity::VARIABLE);
+
+    parser.parseDeclarations(queryObj);
+    REQUIRE(queryObj.hasDeclaration("c"));
+    REQUIRE(queryObj.getDeclarationDesignEntity("c") == DesignEntity::CALL);
 }
 
 TEST_CASE("Parser parseSelectFields") {
@@ -1036,6 +1046,13 @@ TEST_CASE("Parser parseAttrRef") {
         parser.lexer.text = "c. value";
         REQUIRE_THROWS_MATCHES(parser.parseAttrRef(query), exceptions::PqlSyntaxException,
                                Catch::Message(messages::qps::parser::unexpectedWhitespaceMessage));
+    }
+
+    SECTION ("Invalid - Design Entity does not have the specified AttrRef") {
+        parser.lexer.text = "v.stmt#";
+        REQUIRE_THROWS_MATCHES(parser.parseAttrRef(query), exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::invalidAttrNameForDesignEntity));
+
     }
 }
 

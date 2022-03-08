@@ -19,11 +19,13 @@ namespace parser {
     inline constexpr char invalidEntRefMessage[] = "Not a valid EntRef!";
     inline constexpr char invalidRelRefMessage[] = "Unrecognized RelRef";
     inline constexpr char invalidAttrCompRefMessage[] = "Invalid token appeared when parsing AttrCompareRef";
-    inline constexpr char notAnAssignmentMessage[] = "Not an assignment";
+    inline constexpr char invalidAttrNameForDesignEntity[] = "Design Entity does not contain this AttrName";
+
 
     inline constexpr char cannotBeWildcardMessage[] = "cannot be a wildcard!";
     inline constexpr char notVariableSynonymMessage[] = "synonym has to be of variable design entity";
     inline constexpr char notProcedureSynonymMessage[] = "synonym has to be of procedure design entity";
+    inline constexpr char notAnAssignmentMessage[] = "Not an assignment";
     inline constexpr char synonymNotStatementTypeMessage[] = "synonym not a valid statement";
     inline constexpr char synonymNotEntityTypeMessage[] = "synonym not a valid entity";
 
