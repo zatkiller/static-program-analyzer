@@ -15,12 +15,9 @@
 #include "pql/query.h"
 #include "pql/clausehandler.h"
 #include "PKB/PKBField.h"
-#include "PKB/PKBDataTypes.h"
-#include "PKB/PKBEntityType.h"
-#include "PKB/StatementType.h"
 #include "PKB/PKBResponse.h"
 #include "PKB.h"
-#include "PKB/PKBRelationship.h"
+#include "PKB/PKBCommons.h"
 
 namespace qps::evaluator {
 
