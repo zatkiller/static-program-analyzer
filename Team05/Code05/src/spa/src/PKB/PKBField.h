@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdexcept>
 #include <optional>
+#include <string>
 
 #include "PKBCommons.h"
 

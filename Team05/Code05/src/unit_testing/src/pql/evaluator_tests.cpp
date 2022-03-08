@@ -11,12 +11,12 @@ TEST_CASE("Process such that") {
     ptr1.get()->parent = qps::query::StmtRef::ofLineNo(3);
     ptr1.get()->child = qps::query::StmtRef::ofLineNo(6);
 
-    std::shared_ptr<qps::query::Modifies> ptr2 = std::make_shared<qps::query::Modifies>();
+    std::shared_ptr<qps::query::ModifiesS> ptr2 = std::make_shared<qps::query::ModifiesS>();
     ptr2.get()->modifiesStmt = qps::query::StmtRef::ofWildcard();
     ptr2.get()->modified = qps::query::EntRef::ofWildcard();
 
-    std::shared_ptr<qps::query::Uses> ptr3 = std::make_shared<qps::query::Uses>();
-    ptr3.get()->useStmt = qps::query::StmtRef::ofDeclaration("s1");
+    std::shared_ptr<qps::query::UsesS> ptr3 = std::make_shared<qps::query::UsesS>();
+    ptr3.get()->useStmt = qps::query::StmtRef::ofDeclaration("s1", qps::query::DesignEntity::STMT);
     ptr3.get()->used = qps::query::EntRef::ofWildcard();
 
     std::vector<std::shared_ptr<qps::query::RelRef>> suchThat1 = {ptr1};
