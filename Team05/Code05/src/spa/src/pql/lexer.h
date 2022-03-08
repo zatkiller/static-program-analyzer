@@ -44,6 +44,11 @@ enum class TokenType {
     MULTIPLY,
     DIVIDE,
     MODULO,
+
+    PROCNAME,
+    VARNAME,
+    VALUE,
+    STMTNUM
 };
 
 /**

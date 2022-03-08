@@ -6,8 +6,6 @@
 #include "exceptions.h"
 #include "pql/lexer.h"
 
-#define LOGGER Logger(Level::DEBUG) << "pql/lexer.cpp: \n"
-
 namespace qps::parser {
     std::unordered_map<char, TokenType> specialCharToTokenTypeMap {
             { ';', TokenType::SEMICOLON },
@@ -28,7 +26,7 @@ namespace qps::parser {
             "Select", "Modifies", "Uses", "Parent*",
             "Parent", "Follows*", "Follows", "Next*",
             "Next", "Calls*", "Calls", "pattern", "such that",
-            "with"
+            "with", "procName", "varName", "value", "stmt#"
     };
 
     std::unordered_map<std::string, TokenType> keywordsToTokenTypeMap {
@@ -45,7 +43,11 @@ namespace qps::parser {
             { "Calls", TokenType::CALLS },
             { "pattern", TokenType::PATTERN },
             { "such that", TokenType::SUCH_THAT },
-            { "with", TokenType::WITH }
+            { "with", TokenType::WITH },
+            { "procName", TokenType::PROCNAME },
+            { "varName", TokenType::VARNAME },
+            { "value", TokenType::VALUE },
+            { "stmt#", TokenType::STMTNUM }
     };
 
     Token Lexer::getReservedToken(std::string keyword) {

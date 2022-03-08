@@ -19,6 +19,8 @@ using qps::query::ModifiesP;
 using qps::query::ModifiesS;
 using qps::query::UsesP;
 using qps::query::UsesS;
+using qps::query::AttrRef;
+using qps::query::AttrCompareRef;
 
 /**
  * Struct used to represent the Parser
@@ -250,6 +252,20 @@ struct Parser {
      * @param query the query object
      */
     void parsePattern(Query &query);
+
+    /*
+     * Parses and returns a AttrRef
+     *
+     * @param query the query ADT
+     */
+    AttrRef parseAttrRef(Query &query);
+
+    /*
+     * Parses and returns a AttrCompareRef
+     *
+     * @param query the query ADT
+     */
+    AttrCompareRef parseAttrCompareRef(Query &query);
 
     /*
      * Parses a with clause and adds them to the query ADT

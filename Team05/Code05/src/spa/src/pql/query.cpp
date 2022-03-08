@@ -2,8 +2,10 @@
 
 #include "exceptions.h"
 #include "pql/query.h"
+#include "pql/lexer.h"
 
 namespace qps::query {
+    using qps::parser::TokenType;
     std::unordered_map<std::string, DesignEntity> designEntityMap = {
             {"stmt",      DesignEntity::STMT},
             {"read",      DesignEntity::READ},

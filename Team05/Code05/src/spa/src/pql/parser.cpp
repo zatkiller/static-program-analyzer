@@ -19,6 +19,17 @@ namespace qps::parser {
     using qps::query::CallsT;
     using qps::query::Pattern;
     using qps::query::ExpSpec;
+    using qps::query::AttrName;
+    using qps::query::AttrRef;
+    using qps::query::AttrCompareRef;
+    using qps::query::AttrCompare;
+
+    std::unordered_map<TokenType, AttrName> tokenTypeToAttrName = {
+            { TokenType::PROCNAME, AttrName::PROCNAME },
+            { TokenType::VARNAME, AttrName::VARNAME },
+            { TokenType::VALUE, AttrName::VALUE },
+            { TokenType::STMTNUM, AttrName::STMTNUM }
+    };
 
     std::string Parser::getParsedText() {
         return lexer.text;
@@ -365,9 +376,44 @@ namespace qps::parser {
         queryObj.addPattern(p);
     }
 
+
+    AttrRef Parser::parseAttrRef(Query &query) {
+        Token identifier = getAndCheckNextToken(TokenType::IDENTIFIER);
+        DesignEntity de = query.getDeclarationDesignEntity(identifier.getText());
+
+        getAndCheckNextToken(TokenType::PERIOD);
+
+        Token attrRefToken = getNextReservedToken();
+        auto pos = tokenTypeToAttrName.find(attrRefToken.getTokenType());
+        AttrName attrName = pos->second;
+
+        return AttrRef { attrName, de, identifier.getText() };
+    }
+
+    AttrCompareRef Parser::parseAttrCompareRef(Query &query) {
+        Token t = peekNextToken();
+        TokenType tt = t.getTokenType();
+
+        if (tt == TokenType::IDENTIFIER) {
+            return AttrCompareRef::ofAttrRef(parseAttrRef(query));
+        } else if (tt == TokenType::STRING) {
+            return AttrCompareRef::ofString(t.getText());
+        } else if (tt == TokenType::NUMBER) {
+            int lineNo;
+            std::stringstream ss(t.getText());
+            ss >> lineNo;
+            return AttrCompareRef::ofNumber(lineNo);
+        } else {
+            throw exceptions::PqlSemanticException("Invalid token appeared when parsing With clause");
+        }
+    }
+
     void Parser::parseWith(Query &query) {
         getAndCheckNextReservedToken(TokenType::WITH);
-        // query.addWith();
+        auto lhs = parseAttrCompareRef(query);
+        getAndCheckNextToken(TokenType::EQUAL);
+        auto rhs = parseAttrCompareRef(query);
+        query.addWith(AttrCompare(lhs, rhs));
     }
 
     void Parser::parseQuery(Query &queryObj) {
