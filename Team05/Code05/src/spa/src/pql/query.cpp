@@ -246,6 +246,16 @@ namespace qps::query {
         return getSynsHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
+    void ModifiesS::checkFirstArg() {
+        if (modifiesStmt.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void ModifiesS::checkSecondArg() {
+        if(modified.isDeclaration() && modified.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
+
     std::vector<PKBField> ModifiesP::getField() {
         return getFieldHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
     }
@@ -253,6 +263,17 @@ namespace qps::query {
     std::vector<std::string> ModifiesP::getSyns() {
         return getSynsHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
     }
+
+    void ModifiesP::checkFirstArg() {
+        if (modifiesProc.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void ModifiesP::checkSecondArg() {
+        if(modified.isDeclaration() && modified.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
+
 
     std::vector<PKBField> UsesP::getField() {
         return getFieldHelper(&UsesP::useProc, &UsesP::used);
@@ -262,12 +283,32 @@ namespace qps::query {
         return getSynsHelper(&UsesP::useProc, &UsesP::used);
     }
 
+    void UsesP::checkFirstArg() {
+        if (useProc.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void UsesP::checkSecondArg() {
+        if (used.isDeclaration() && used.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
+
     std::vector<PKBField> UsesS::getField() {
         return getFieldHelper(&UsesS::useStmt, &UsesS::used);
     }
 
     std::vector<std::string> UsesS::getSyns()  {
         return getSynsHelper(&UsesS::useStmt, &UsesS::used);
+    }
+
+    void UsesS::checkFirstArg() {
+        if (useStmt.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void UsesS::checkSecondArg() {
+        if (used.isDeclaration() && used.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
     }
 
     std::vector<PKBField> Follows::getField() {
@@ -310,12 +351,36 @@ namespace qps::query {
         return getSynsHelper(&Calls::caller, &Calls::callee);
     }
 
+    void Calls::checkFirstArg() {
+        if (caller.isDeclaration() && caller.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
+    }
+
+    void Calls::checkSecondArg() {
+        if (callee.isDeclaration() && callee.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
+    }
+
     std::vector<PKBField> CallsT::getField() {
         return getFieldHelper(&CallsT::caller, &CallsT::transitiveCallee);
     }
 
     std::vector<std::string> CallsT::getSyns() {
         return getSynsHelper(&CallsT::caller, &CallsT::transitiveCallee);
+    }
+
+    void CallsT::checkFirstArg() {
+        if (caller.isDeclaration() && caller.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
+    }
+
+    void CallsT::checkSecondArg() {
+        if (transitiveCallee.isDeclaration() && transitiveCallee.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
     }
 
     std::vector<std::string> Next::getSyns() {

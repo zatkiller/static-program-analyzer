@@ -416,6 +416,21 @@ TEST_CASE("Parser parseSuchThat - Calls") {
         REQUIRE(cPtr->callee.isDeclaration());
         REQUIRE(cPtr->callee.getDeclaration() == "p2");
     }
+
+    SECTION ("Invalid query with Calls relationship - synonym is not procedure") {
+        std::string testQuery = "such that Calls (p, v)";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
+        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
+        REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::notProcedureSynonymMessage));
+    }
 }
 
 TEST_CASE("Parser parseSuchThat - Calls*") {
@@ -440,6 +455,21 @@ TEST_CASE("Parser parseSuchThat - Calls*") {
         REQUIRE(cPtr->caller.getDeclaration() == "p1");
         REQUIRE(cPtr->transitiveCallee.isDeclaration());
         REQUIRE(cPtr->transitiveCallee.getDeclaration() == "p2");
+    }
+
+    SECTION ("Invalid query with Calls* relationship - synonym is not procedure") {
+        std::string testQuery = "such that Calls* (v, p)";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
+        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
+        REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::notProcedureSynonymMessage));
     }
 }
 

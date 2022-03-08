@@ -21,6 +21,7 @@ namespace parser {
 
     inline constexpr char cannotBeWildcardMessage[] = "cannot be a wildcard!";
     inline constexpr char notVariableSynonymMessage[] = "synonym has to be of variable design entity";
+    inline constexpr char notProcedureSynonymMessage[] = "synonym has to be of procedure design entity";
     inline constexpr char synonymNotStatementTypeMessage[] = "synonym not a valid statement";
     inline constexpr char synonymNotEntityTypeMessage[] = "synonym not a valid entity";
 

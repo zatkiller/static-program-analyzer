@@ -264,15 +264,8 @@ struct ModifiesS : RelRef {
     std::vector<PKBField> getField() override;
     std::vector<std::string> getSyns() override;
 
-    void checkFirstArg() override {
-        if (modifiesStmt.isWildcard())
-            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
-    }
-
-    void checkSecondArg() override {
-        if(modified.isDeclaration() && modified.getDeclarationType() != DesignEntity::VARIABLE)
-            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
-    }
+    void checkFirstArg() override;
+    void checkSecondArg() override;
 };
 
 /**
@@ -287,15 +280,8 @@ struct ModifiesP : RelRef {
     std::vector<PKBField> getField() override;
     std::vector<std::string> getSyns() override;
 
-    void checkFirstArg() override {
-        if (modifiesProc.isWildcard())
-            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
-    }
-    void checkSecondArg() override {
-        if(modified.isDeclaration() && modified.getDeclarationType() != DesignEntity::VARIABLE)
-            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
-    }
-
+    void checkFirstArg() override;
+    void checkSecondArg() override;
 };
 
 /**
@@ -311,15 +297,8 @@ struct UsesS : RelRef {
 
     std::vector<std::string> getSyns() override;
 
-    void checkFirstArg() override{
-        if (useStmt.isWildcard())
-            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
-    }
-
-    void checkSecondArg() override {
-        if (used.isDeclaration() && used.getDeclarationType() != DesignEntity::VARIABLE)
-            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
-    };
+    void checkFirstArg() override;
+    void checkSecondArg() override;
 };
 /**override
 * Struct used to represent a UsesP RelRef
@@ -333,15 +312,8 @@ struct UsesP : RelRef {
     std::vector<PKBField> getField() override;
     std::vector<std::string> getSyns() override;
 
-    void checkFirstArg() override {
-        if (useProc.isWildcard())
-            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
-    }
-
-    void checkSecondArg() override{
-        if (used.isDeclaration() && used.getDeclarationType() != DesignEntity::VARIABLE)
-            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
-    };
+    void checkFirstArg() override;
+    void checkSecondArg() override;
 };
 
 struct Follows : RelRef {
@@ -396,6 +368,10 @@ struct Calls : RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override;
+    void checkSecondArg() override;
+
 };
 
 struct CallsT: RelRef {
@@ -406,6 +382,9 @@ struct CallsT: RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override;
+    void checkSecondArg() override;
 };
 
 struct Next : RelRef {
