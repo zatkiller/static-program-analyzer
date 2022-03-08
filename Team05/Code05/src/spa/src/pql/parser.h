@@ -252,6 +252,13 @@ struct Parser {
     void parsePattern(Query &query);
 
     /*
+     * Parses a with clause and adds them to the query ADT
+     *
+     * @param query the query ADT
+     */
+    void parseWith(Query &query);
+
+    /*
      * Returns a ExpSpec belonging to an assign pattern
      */
     ExpSpec parseExpSpec();

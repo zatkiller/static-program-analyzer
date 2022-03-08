@@ -182,6 +182,17 @@ TEST_CASE("Query") {
     REQUIRE(query.getPattern()[0] == p);
 
     REQUIRE(query.getDeclarationDesignEntity("a") == DesignEntity::STMT);
+
+    query.addWith(AttrCompare { AttrCompareRef::ofNumber(1), AttrCompareRef::ofString("v") });
+    REQUIRE(!query.getWith().empty());
+    AttrCompare ac2 = query.getWith()[0];
+    AttrCompareRef lhs = ac2.getLhs();
+    AttrCompareRef rhs = ac2.getRhs();
+
+    REQUIRE(lhs.isNumber());
+    REQUIRE(lhs.getNumber() == 1);
+    REQUIRE(rhs.isString());
+    REQUIRE(rhs.getString() == "v");
 }
 
 TEST_CASE("Query getDeclarationDesignEntity") {

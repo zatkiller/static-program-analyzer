@@ -20,7 +20,8 @@ namespace qps::parser {
             { '-', TokenType::MINUS },
             { '*', TokenType::MULTIPLY },
             { '/', TokenType::DIVIDE },
-            { '%', TokenType::MODULO }
+            { '%', TokenType::MODULO },
+            { '=', TokenType::EQUAL }
     };
 
     std::vector<std::string> keywords = {

@@ -15,6 +15,7 @@ enum class TokenType {
     OPENING_PARAN,
     CLOSING_PARAN,
     PERIOD,
+    EQUAL,
 
     IDENTIFIER,
     NUMBER,

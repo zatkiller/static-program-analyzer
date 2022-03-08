@@ -518,35 +518,29 @@ private:
     std::vector<std::string> variable;
     std::vector<std::shared_ptr<RelRef>> suchthat;
     std::vector<Pattern> pattern;
-//    std::vector<AttrCompare> with;
+    std::vector<AttrCompare> with;
     bool valid;
 
 public:
     std::unordered_map<std::string, DesignEntity> getDeclarations();
 
     std::vector<std::string> getVariable();
-
     std::vector<std::shared_ptr<RelRef>> getSuchthat();
-
     std::vector<Pattern> getPattern();
+    std::vector<AttrCompare> getWith();
+
 
     bool isValid();
-
     void setValid(bool);
 
     bool hasDeclaration(std::string);
-
     bool hasVariable(std::string var);
 
     void addDeclaration(std::string, DesignEntity);
-
     void addVariable(std::string var);
-
     void addSuchthat(std::shared_ptr<RelRef>);
-
     void addPattern(Pattern);
-
-//    void addWith(AttrCompare);
+    void addWith(AttrCompare);
 
     /*
         * Returns the DesignEntity of the specified declaration

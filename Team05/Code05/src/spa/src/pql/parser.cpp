@@ -365,6 +365,10 @@ namespace qps::parser {
         queryObj.addPattern(p);
     }
 
+    void Parser::parseWith(Query &query) {
+        getAndCheckNextReservedToken(TokenType::WITH);
+        // query.addWith();
+    }
 
     void Parser::parseQuery(Query &queryObj) {
         parseSelectFields(queryObj);
@@ -374,6 +378,9 @@ namespace qps::parser {
 
         if (peekNextReservedToken().getTokenType() == TokenType::PATTERN)
             parsePattern(queryObj);
+
+        if (peekNextReservedToken().getTokenType() == TokenType::WITH)
+            parseWith(queryObj);
     }
 
     Query Parser::parsePql(std::string query) {

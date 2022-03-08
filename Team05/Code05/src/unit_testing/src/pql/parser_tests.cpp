@@ -974,6 +974,14 @@ TEST_CASE("Parser parseRelRef") {
     }
 }
 
+TEST_CASE("Parser parseWith") {
+    Parser parser;
+    parser.lexer.text = "with";
+    Query query;
+
+    parser.parseWith(query);
+}
+
 TEST_CASE("Parser parseQuery") {
     Parser parser;
     parser.lexer.text = "Select c";

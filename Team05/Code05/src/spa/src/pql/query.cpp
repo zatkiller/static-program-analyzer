@@ -55,6 +55,11 @@ namespace qps::query {
         return pattern;
     }
 
+    std::vector<AttrCompare> Query::getWith() {
+        return with;
+    }
+
+
     void Query::addDeclaration(std::string var, DesignEntity de) {
         if (declarations.find(var) != declarations.end())
             throw exceptions::PqlSyntaxException("Declaration already exists!");
@@ -73,6 +78,10 @@ namespace qps::query {
 
     void Query::addPattern(Pattern p) {
         pattern.push_back(p);
+    }
+
+    void Query::addWith(AttrCompare ac) {
+        with.push_back(ac);
     }
 
 
