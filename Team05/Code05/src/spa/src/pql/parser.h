@@ -15,6 +15,10 @@ using qps::query::RelRef;
 using qps::query::EntRef;
 using qps::query::StmtRef;
 using qps::query::ExpSpec;
+using qps::query::ModifiesP;
+using qps::query::ModifiesS;
+using qps::query::UsesP;
+using qps::query::UsesS;
 
 /**
  * Struct used to represent the Parser
@@ -171,6 +175,15 @@ struct Parser {
      */
     bool isValidStatementType(Query &query, StmtRef s);
 
+    /**
+     * Checks whether a synonym wrapped in EntRef has the correct Design Entity.
+     *
+     * @param query the query object
+     * @param e the EntRef
+     * @return a bool value indicates whether a synonym is declared as a entity reference.
+     */
+    bool isValidEntityType(Query &query, EntRef e);
+
     /*
      * Returns a shared pointer containg a pointer of type T, representing the relationship being parsed
      *
@@ -180,34 +193,29 @@ struct Parser {
      * @return shared pointer of type t
      */
     template<typename T, typename F1, typename F2>
-    std::shared_ptr<T> parseRelRefVariables(Query &query, F1 f1, F2 f2) {
+    std::shared_ptr<T> parseRelRefVariables(Query &query, F1 T::* const f1, F2 T::* const f2) {
         // Template functions to be defined in header file
         // https://stackoverflow.com/questions/3040480/c-template-function-compiles-in-header-but-not-implementation
         std::shared_ptr<T> ptr = std::make_shared<T>();
-        getAndCheckNextToken(TokenType::OPENING_PARAN);
 
-        if (!isStmtRef(peekNextToken(), query))
-            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidStmtRefMessage);
+        if constexpr (std::is_same_v<F1, StmtRef>) {
+            ptr.get()->*f1 = parseStmtRef(query);
+        } else {
+            ptr.get()->*f1 = parseEntRef(query);
+        }
 
-        StmtRef s1 = parseStmtRef(query);
+        ptr.get()->checkFirstArg();
 
-        if (!isValidStatementType(query, s1))
-            throw exceptions::PqlSemanticException(messages::qps::parser::notStatementSynonymMessage);
-
-        ptr.get()->*f1 = s1;
         getAndCheckNextToken(TokenType::COMMA);
 
-        if (!isStmtRef(peekNextToken(), query))
-            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidStmtRefMessage);
+        if constexpr(std::is_same_v<F2, StmtRef>) {
+            ptr.get()->*f2 = parseStmtRef(query);
+        } else {
+            ptr.get()->*f2 = parseEntRef(query);
+        }
 
+        ptr.get()->checkSecondArg();
 
-        StmtRef s2 = parseStmtRef(query);
-
-        if (!isValidStatementType(query, s2))
-            throw exceptions::PqlSemanticException(messages::qps::parser::notStatementSynonymMessage);
-
-        ptr.get()->*f2 = s2;
-        getAndCheckNextToken(TokenType::CLOSING_PARAN);
         return ptr;
     }
 
@@ -219,10 +227,6 @@ struct Parser {
      * @return shared pointer of type RelRef
      */
     std::shared_ptr<RelRef> parseModifiesOrUsesVariables(Query &query, TokenType type);
-
-    bool isStmtRef(Token, Query &);
-
-    bool isEntRef(Token, Query &);
 
     /*
      * Returns a StmtRef that has been parsed

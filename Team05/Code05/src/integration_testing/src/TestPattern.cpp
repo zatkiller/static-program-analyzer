@@ -62,7 +62,7 @@ TEST_CASE("test simple source code") {
     query1.addDeclaration("s", qps::query::DesignEntity::STMT);
     query1.addVariable("s");
     std::shared_ptr<qps::query::Parent> ptr1 = std::make_shared<qps::query::Parent>();
-    ptr1->parent = qps::query::StmtRef::ofDeclaration("s");
+    ptr1->parent = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
     ptr1->child = qps::query::StmtRef::ofLineNo(10);
     query1.addSuchthat(ptr1);
     query1.addPattern(qps::query::Pattern{"a",
@@ -81,12 +81,12 @@ TEST_CASE("test simple source code") {
     query2.addDeclaration("s", qps::query::DesignEntity::STMT);
     query2.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
     query2.addVariable("s");
-    std::shared_ptr<qps::query::Uses> ptr2 = std::make_shared<qps::query::Uses>();
-    ptr2->useStmt = qps::query::StmtRef::ofDeclaration("s");
-    ptr2->used = qps::query::EntRef::ofDeclaration("v");
+    std::shared_ptr<qps::query::UsesS> ptr2 = std::make_shared<qps::query::UsesS>();
+    ptr2->useStmt = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
+    ptr2->used = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
     query2.addSuchthat(ptr2);
     query2.addPattern(qps::query::Pattern{"a",
-                                          qps::query::EntRef::ofDeclaration("v"),
+                                          qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE),
                                           qps::query::ExpSpec::ofWildcard()});
     std::list<std::string> result2 = evaluator2.evaluate(query2);
     result2.sort();
@@ -122,7 +122,7 @@ TEST_CASE("test evaluate pattern") {
     query2.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
     query2.addVariable("s");
     query2.addPattern(qps::query::Pattern{"a",
-                                          qps::query::EntRef::ofDeclaration("v"),
+                                          qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE),
                                           qps::query::ExpSpec::ofWildcard()});
     std::list<std::string> result2 = evaluator2.evaluate(query2);
     result2.sort();
@@ -191,7 +191,7 @@ TEST_CASE("test evaluate pattern") {
     query7.addVariable("s");
     std::shared_ptr<qps::query::FollowsT> ptr7 = std::make_shared<qps::query::FollowsT>();
     ptr7->follower = qps::query::StmtRef::ofLineNo(1);
-    ptr7->transitiveFollowed = qps::query::StmtRef::ofDeclaration("s");
+    ptr7->transitiveFollowed = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
     query7.addSuchthat(ptr7);
     query7.addPattern(qps::query::Pattern{"a",
                                           qps::query::EntRef::ofVarName("sum"),
@@ -209,8 +209,8 @@ TEST_CASE("test evaluate pattern") {
     query8.addDeclaration("s", qps::query::DesignEntity::STMT);
     query8.addVariable("s");
     std::shared_ptr<qps::query::Parent> ptr8 = std::make_shared<qps::query::Parent>();
-    ptr8->parent = qps::query::StmtRef::ofDeclaration("s");
-    ptr8->child = qps::query::StmtRef::ofDeclaration("a");
+    ptr8->parent = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
+    ptr8->child = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
     query8.addSuchthat(ptr8);
     query8.addPattern(qps::query::Pattern{"a",
                                           qps::query::EntRef::ofVarName("digit"),

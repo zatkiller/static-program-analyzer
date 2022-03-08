@@ -6,8 +6,7 @@
 #include <memory>
 #include "PKB/PKBField.h"
 #include "logging.h"
-
-#define LOGGER Logger()
+#include "exceptions.h"
 
 namespace qps::query {
 
@@ -40,6 +39,7 @@ struct StmtRef {
 private:
     StmtRefType type = StmtRefType::NOT_INITIALIZED;
     std::string declaration = "";
+    DesignEntity declarationType = DesignEntity::CONSTANT;
     int lineNo = -1;
 
 public:
@@ -47,9 +47,10 @@ public:
         * Returns a StmtRef of type Declaration
         *
         * @param name the name of the declaration
+        * @param de the design entity of the declaration
         * @return StmtRef of type declaration and declaration name
         */
-    static StmtRef ofDeclaration(std::string name);
+    static StmtRef ofDeclaration(std::string name, DesignEntity de);
 
     /*
         * Returns a StmtRef of type LineNo
@@ -69,6 +70,7 @@ public:
     StmtRefType getType();
 
     std::string getDeclaration() const;
+    DesignEntity getDeclarationType() const;
 
     int getLineNo();
 
@@ -80,7 +82,7 @@ public:
 
     bool operator==(const StmtRef &o) const {
         if (type == StmtRefType::DECLARATION && o.type == StmtRefType::DECLARATION)
-            return declaration == o.declaration;
+            return declaration == o.declaration && declarationType == o.declarationType;
         else if (type == StmtRefType::LINE_NO && o.type == StmtRefType::LINE_NO)
             return lineNo == o.lineNo;
 
@@ -102,6 +104,7 @@ struct EntRef {
 private:
     EntRefType type = EntRefType::NOT_INITIALIZED;
     std::string declaration = "";
+    DesignEntity declarationType = DesignEntity::CONSTANT;
     std::string variable = "";
 
 public:
@@ -109,9 +112,10 @@ public:
         * Returns a EntRef of type Declaration
         *
         * @param name the name of the declaration
+        * @param de the design entity of the declaration
         * @return EntRef of type declaration and declaration name
         */
-    static EntRef ofDeclaration(std::string name);
+    static EntRef ofDeclaration(std::string name, DesignEntity de);
 
     /*
         * Returns a EntRef of type variable name
@@ -131,6 +135,7 @@ public:
     EntRefType getType();
 
     std::string getDeclaration() const;
+    DesignEntity getDeclarationType() const;
 
     std::string getVariableName();
 
@@ -142,7 +147,7 @@ public:
 
     bool operator==(const EntRef &o) const {
         if (type == EntRefType::DECLARATION && o.type == EntRefType::DECLARATION)
-            return declaration == o.declaration;
+            return declaration == o.declaration && declarationType == o.declarationType;
         else if (type == EntRefType::VARIABLE_NAME && o.type == EntRefType::VARIABLE_NAME)
             return variable == o.variable;
 
@@ -177,7 +182,15 @@ enum class RelRefType {
     PARENT,
     PARENTT,
     MODIFIESS,
-    USESS
+    MODIFIESP,
+    USESS,
+    USESP,
+    CALLS,
+    CALLST,
+    NEXT,
+    NEXTT,
+    AFFECTS,
+    AFFECTST
 };
 
 /**
@@ -193,6 +206,9 @@ struct RelRef {
     virtual ~RelRef() {}
 
     virtual RelRefType getType() { return type; }
+
+    virtual void checkFirstArg() {}
+    virtual void checkSecondArg() {}
 
     virtual std::vector<PKBField> getField() = 0;
 
@@ -237,24 +253,56 @@ protected:
 };
 
 /**
-* Struct used to represent a Modifies RelRef
+* Struct used to represent a ModifiesS RelRef
 */
-struct Modifies : RelRef {
-    Modifies() : RelRef(RelRefType::MODIFIESS) {}
+struct ModifiesS : RelRef {
+    ModifiesS() : RelRef(RelRefType::MODIFIESS) {}
 
     EntRef modified;
     StmtRef modifiesStmt;
 
     std::vector<PKBField> getField() override;
-
     std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override {
+        if (modifiesStmt.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void checkSecondArg() override {
+        if(modified.isDeclaration() && modified.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
 };
 
 /**
-* Struct used to represent a Uses RelRef
+* Struct used to represent a ModifiesP RelRef
 */
-struct Uses : RelRef {
-    Uses() : RelRef(RelRefType::USESS) {}
+struct ModifiesP : RelRef {
+    ModifiesP() : RelRef(RelRefType::MODIFIESP) {}
+
+    EntRef modified;
+    EntRef modifiesProc;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override {
+        if (modifiesProc.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+    void checkSecondArg() override {
+        if(modified.isDeclaration() && modified.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
+
+};
+
+/**
+* Struct used to represent a UsesS RelRef
+*/
+struct UsesS : RelRef {
+    UsesS() : RelRef(RelRefType::USESS) {}
 
     EntRef used;
     StmtRef useStmt;
@@ -262,6 +310,38 @@ struct Uses : RelRef {
     std::vector<PKBField> getField() override;
 
     std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override{
+        if (useStmt.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void checkSecondArg() override {
+        if (used.isDeclaration() && used.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    };
+};
+/**override
+* Struct used to represent a UsesP RelRef
+*/
+struct UsesP : RelRef {
+    UsesP() : RelRef(RelRefType::USESP) {}
+
+    EntRef used;
+    EntRef useProc;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override {
+        if (useProc.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void checkSecondArg() override{
+        if (used.isDeclaration() && used.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    };
 };
 
 struct Follows : RelRef {
@@ -305,6 +385,46 @@ struct ParentT : RelRef {
 
     std::vector<PKBField> getField() override;
 
+    std::vector<std::string> getSyns() override;
+};
+
+struct Calls : RelRef {
+    Calls() : RelRef(RelRefType::CALLS) {}
+
+    EntRef caller;
+    EntRef callee;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+};
+
+struct CallsT: RelRef {
+    CallsT() : RelRef(RelRefType::CALLST) {}
+
+    EntRef caller;
+    EntRef transitiveCallee;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+};
+
+struct Next : RelRef {
+    Next() : RelRef(RelRefType::NEXT) {}
+
+    StmtRef before;
+    StmtRef after;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+};
+
+struct NextT : RelRef {
+    NextT() : RelRef(RelRefType::NEXTT) {}
+
+    StmtRef before;
+    StmtRef transitiveAfter;
+
+    std::vector<PKBField> getField() override;
     std::vector<std::string> getSyns() override;
 };
 

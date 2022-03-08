@@ -26,6 +26,10 @@ enum class TokenType {
     FOLLOWS_T,
     PARENT,
     PARENT_T,
+    NEXT,
+    NEXT_T,
+    CALLS,
+    CALLS_T,
 
     // Reserved Keywords
     SELECT,
