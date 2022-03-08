@@ -169,7 +169,7 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
 PKBResponse PKB::getStatements() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
-    std::vector<STMT_LO> extracted = statementTable->getAllStmt();
+    std::vector<STMT_LO> extracted = statementTable->getAllEntity();
     for (auto row : extracted) {
         res.insert(PKBField::createConcrete(row));
     }
@@ -191,7 +191,7 @@ PKBResponse PKB::getStatements(StatementType stmtType) {
 PKBResponse PKB::getVariables() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
-    std::vector<VAR_NAME> extracted = variableTable->getAllVars();
+    std::vector<VAR_NAME> extracted = variableTable->getAllEntity();
     for (auto row : extracted) {
         res.insert(PKBField::createConcrete(row));
     }
@@ -202,7 +202,7 @@ PKBResponse PKB::getVariables() {
 PKBResponse PKB::getProcedures() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
-    std::vector<PROC_NAME> extracted = procedureTable->getAllProcs();
+    std::vector<PROC_NAME> extracted = procedureTable->getAllEntity();
     for (auto row : extracted) {
         res.insert(PKBField::createConcrete(row));
     }
@@ -213,7 +213,7 @@ PKBResponse PKB::getProcedures() {
 PKBResponse PKB::getConstants() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
-    std::vector<CONST> extracted = constantTable->getAllConst();
+    std::vector<CONST> extracted = constantTable->getAllEntity();
     for (auto row : extracted) {
         res.insert(PKBField::createConcrete(row));
     }
