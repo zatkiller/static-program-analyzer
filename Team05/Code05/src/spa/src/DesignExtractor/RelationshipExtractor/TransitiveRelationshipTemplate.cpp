@@ -18,6 +18,91 @@ public:
     };
 };
 
+struct CallGraphPreProcessor {
+    using AdjacencyList = std::map<std::string, std::vector<std::string>>;
+    std::vector<std::string> topolst;
+    std::map<std::string, const ast::Procedure*> procMap;
+    struct CallGraphWalker : public TreeWalker {
+        std::string currentProc = "";
+        AdjacencyList callGraph;
+        std::map<std::string, const ast::Procedure*> procMap;
+
+        void visit(const ast::Procedure& node) {
+            if (currentProc == "") {
+                // virtual starting point "1"
+                callGraph["1"].push_back(node.getName());
+            }
+            currentProc = node.getName();
+            procMap[currentProc] = &node;
+        }
+
+        void visit(const ast::Call& node) {
+            callGraph[currentProc].push_back(node.getName());
+        }
+    };
+
+
+    void topo(std::string node, const AdjacencyList& lst, std::map<std::string, bool>& visited, std::vector<std::string>& topolst) {
+        if (visited[node]) {
+            return;
+        }
+        visited.insert_or_assign(node, true);
+
+        if (lst.find(node) != lst.end()) {
+            for (auto m : lst.at(node)) {
+                topo(m, lst, visited, topolst);
+            }
+        }
+
+        topolst.push_back(node);
+    }
+
+    void preprocess(ast::ASTNode *node) {
+        CallGraphWalker cgw;
+        node->accept(&cgw);
+        std::map<std::string, bool> visited;
+        topo("1", cgw.callGraph, visited, topolst);
+
+        // remove the place holder 
+        topolst.pop_back();
+
+        procMap = cgw.procMap;
+    }
+};
+
+
+std::set<VAR_NAME> RelExtractorTemplate::extractVars(const ast::ASTNode *part) {
+    VariablePKBStrategy vps;
+    auto ve = std::make_unique<VariableExtractor>(&vps);
+    part->accept(ve.get());
+
+    return vps.variables;
+}
+
+void TransitiveRelationshipTemplate::visit(const ast::Call &node) {
+    auto proc = PROC_NAME{node.getName()};
+    try {
+        auto vars = procVarMap.at(proc);
+        for (auto var : vars) {
+            insert(STMT_LO{node.getStmtNo(), StatementType::Call}, var);
+        }
+        cascadeToContainer(vars);
+    } catch (std::out_of_range &ex) {
+        // if out of range exception thrown by at, that means something wrong with topo ordering.
+        Logger(Level::ERROR) << "TransitiveRelationshipTemplate.cpp " << 
+        "empty proc at target " << proc.name << " something wrong with topo order";
+    }
+
+}
+
+void TransitiveRelationshipTemplate::extract(ast::ASTNode *node) {
+    CallGraphPreProcessor cgpp;
+    cgpp.preprocess(node);
+    for (auto proc : cgpp.topolst) {
+        cgpp.procMap[proc]->accept(this);
+    }
+}
+
 void TransitiveRelationshipTemplate::cascadeToContainer(const std::set<VAR_NAME> varNames) {
     for (auto stmt : container) {
         for (auto var : varNames) {
@@ -28,19 +113,12 @@ void TransitiveRelationshipTemplate::cascadeToContainer(const std::set<VAR_NAME>
         for (auto var : varNames) {
             insert(currentProcedure, var);
         }
+        procVarMap[currentProcedure].insert(varNames.begin(), varNames.end());
     }
 }
 
-std::set<VAR_NAME> RelExtractorTemplate::extract(const ast::ASTNode *part) {
-    VariablePKBStrategy vps;
-    auto ve = std::make_shared<VariableExtractor>(&vps);
-    part->accept(ve);
-
-    return vps.variables;
-}
-
 void TransitiveRelationshipTemplate::extractAndInsert(Content a1, const ast::ASTNode *part) {
-    auto vars = extract(part);
+    auto vars = extractVars(part);
     for (auto var : vars) {
         insert(a1, var);
     }

@@ -41,6 +41,10 @@ protected:
     PKBStrategy* pkb;
 public:
     explicit Extractor(PKBStrategy* pkb) : pkb(pkb) {}
+
+    virtual void extract(ast::ASTNode *node) {
+        node->accept(this);
+    }
 };
 }  // namespace design_extractor
 }  // namespace sp
