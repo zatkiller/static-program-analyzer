@@ -138,7 +138,7 @@ TEST_CASE("Parser parseDeclarations") {
 
     // Multiple declarations of different Design Entities
     queryObj = Query{};
-    parser.lexer.text = "assign a, a1; variable v; call cl";
+    parser.lexer.text = "assign a, a1; variable v; call cl;";
     parser.parseDeclarations(queryObj);
 
     REQUIRE(queryObj.hasDeclaration("a"));
@@ -152,8 +152,8 @@ TEST_CASE("Parser parseDeclarations") {
     REQUIRE(queryObj.getDeclarationDesignEntity("v") == DesignEntity::VARIABLE);
 
     parser.parseDeclarations(queryObj);
-    REQUIRE(queryObj.hasDeclaration("c"));
-    REQUIRE(queryObj.getDeclarationDesignEntity("c") == DesignEntity::CALL);
+    REQUIRE(queryObj.hasDeclaration("cl"));
+    REQUIRE(queryObj.getDeclarationDesignEntity("cl") == DesignEntity::CALL);
 }
 
 TEST_CASE("Parser parseSelectFields") {
