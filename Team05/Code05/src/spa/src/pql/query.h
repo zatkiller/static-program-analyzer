@@ -456,14 +456,22 @@ struct Pattern {
     }
 };
 
+enum class AttrName {
+    INVALID,
+    PROCNAME,
+    VARNAME,
+    VALUE,
+    STMTNUM
+};
+
 struct AttrRef {
+    AttrName attrName = AttrName::INVALID;
     DesignEntity declarationType {};
     std::string declaration = "";
 };
 
 enum class AttrCompareRefType {
     NOT_INITIALIZED,
-    DECLARATION,
     NUMBER,
     STRING,
     ATTRREF
@@ -472,45 +480,33 @@ enum class AttrCompareRefType {
 struct AttrCompareRef {
 private:
     AttrCompareRefType type = AttrCompareRefType::NOT_INITIALIZED;
-
-    DesignEntity declarationType {};
-    std::string declaration = "";
     int number = -1;
-    std::string str_value = ;
+    std::string str_value = "";
     AttrRef ar;
+
 public:
-    static AttrCompareRef ofDeclaration(std::string declaration, DesignEntity de);
     static AttrCompareRef ofString(std::string str);
     static AttrCompareRef ofNumber(int num);
-    static AttrCompareRef isAttrRef(AttrRef ar);
+    static AttrCompareRef ofAttrRef(AttrRef ar);
 
-    std::string getDeclaration();
-    std::string getString();
-    int getNumber();
-    AttrRef getAttrRef();
+    std::string getString() { return str_value; }
+    int getNumber() { return number; }
+    AttrRef getAttrRef() { return ar; }
 
-    bool isDeclaration();
-    bool isString();
-    bool isNumber();
-    bool isAttrRef();
-
-    bool operator==(const AttrCompareRef &o) const {
-        if (type == AttrCompareRefType::DECLARATION && o.type == AttrCompareRefType::DECLARATION)
-            return declaration == o.declaration && declarationType == o.declarationType;
-        else if (type == AttrCompareRefType::NUMBER && o.type == AttrCompareRefType::NUMBER)
-            return number == o.number;
-        else if (type == AttrCompareRefType::STRING && o.type == AttrCompareRefType::STRING)
-            return str_value == o.str_value;
-        else if (type == AttrCompareRefType::ATTRREF && o.type == AttrCompareRefType::ATTRREF)
-            return ar == o.ar;
-        return false;
-    }
+    bool isString() { return type == AttrCompareRefType::STRING; }
+    bool isNumber() { return type == AttrCompareRefType::NUMBER; }
+    bool isAttrRef() { return type == AttrCompareRefType::ATTRREF; }
 };
 
-struct AttrCompare {
-    AttrCompareRef lhs {};
-    AttrCompareRef rhs {};
 
+struct AttrCompare {
+    AttrCompareRef lhs;
+    AttrCompareRef rhs;
+
+    AttrCompare(AttrCompareRef lhs, AttrCompareRef rhs) : lhs(lhs), rhs(rhs) {}
+
+    AttrCompareRef getLhs() { return lhs; }
+    AttrCompareRef getRhs() { return rhs; }
 };
 
 /**
@@ -522,7 +518,7 @@ private:
     std::vector<std::string> variable;
     std::vector<std::shared_ptr<RelRef>> suchthat;
     std::vector<Pattern> pattern;
-    std::vector<AttrCompare> with;
+//    std::vector<AttrCompare> with;
     bool valid;
 
 public:
@@ -550,7 +546,7 @@ public:
 
     void addPattern(Pattern);
 
-    void addWith(AttrCompare);
+//    void addWith(AttrCompare);
 
     /*
         * Returns the DesignEntity of the specified declaration

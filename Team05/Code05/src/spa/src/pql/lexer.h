@@ -14,6 +14,7 @@ enum class TokenType {
     COMMA,
     OPENING_PARAN,
     CLOSING_PARAN,
+    PERIOD,
 
     IDENTIFIER,
     NUMBER,
@@ -35,12 +36,13 @@ enum class TokenType {
     SELECT,
     SUCH_THAT,
     PATTERN,
+    WITH,
 
     PLUS,
     MINUS,
     MULTIPLY,
     DIVIDE,
-    MODULO
+    MODULO,
 };
 
 /**

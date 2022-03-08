@@ -32,7 +32,7 @@ TEST_CASE("Lexer hasPrefx") {
 }
 
 TEST_CASE("Lexer getNextToken") {
-    Lexer lexer("123 hi123 hi \"test\" ;()_,$+-*/%");
+    Lexer lexer("123 hi123 hi \"test\" ;()_,$+-*/%.");
 
     auto t1 = lexer.getNextToken();
     REQUIRE(t1.getTokenType() == TokenType::NUMBER);
@@ -96,6 +96,11 @@ TEST_CASE("Lexer getNextToken") {
     REQUIRE(t1.getText() == "%");
 
     t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::PERIOD);
+    REQUIRE(t1.getText() == ".");
+
+
+    t1 = lexer.getNextToken();
     REQUIRE(t1.getTokenType() == TokenType::END_OF_FILE);
 }
 
@@ -106,7 +111,7 @@ TEST_CASE("Lexer peekNextToken") {
 }
 
 TEST_CASE("Lexer getNextReservedToken") {
-    Lexer lexer("Select Modifies Uses Follows Follows* Parent Parent* Next Next* Calls Calls* pattern such that");
+    Lexer lexer("Select Modifies Uses Follows Follows* Parent Parent* Next Next* Calls Calls* pattern such that with");
 
     auto t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::SELECT);
@@ -159,6 +164,11 @@ TEST_CASE("Lexer getNextReservedToken") {
     t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::SUCH_THAT);
     REQUIRE(t1.getText() == "such that");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::WITH);
+    REQUIRE(t1.getText() == "with");
+
 }
 
 TEST_CASE("Lexer peekNextReservedToken") {

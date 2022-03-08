@@ -14,18 +14,20 @@ namespace qps::parser {
             { '(', TokenType::OPENING_PARAN },
             { ')', TokenType::CLOSING_PARAN },
             { '_', TokenType::UNDERSCORE },
+            { '.', TokenType::PERIOD },
             { ',', TokenType::COMMA },
             { '+', TokenType::PLUS },
             { '-', TokenType::MINUS },
             { '*', TokenType::MULTIPLY },
             { '/', TokenType::DIVIDE },
-            { '%', TokenType::MODULO}
+            { '%', TokenType::MODULO }
     };
 
     std::vector<std::string> keywords = {
             "Select", "Modifies", "Uses", "Parent*",
             "Parent", "Follows*", "Follows", "Next*",
-            "Next", "Calls*", "Calls", "pattern", "such that"
+            "Next", "Calls*", "Calls", "pattern", "such that",
+            "with"
     };
 
     std::unordered_map<std::string, TokenType> keywordsToTokenTypeMap {
@@ -41,7 +43,8 @@ namespace qps::parser {
             { "Calls*", TokenType::CALLS_T },
             { "Calls", TokenType::CALLS },
             { "pattern", TokenType::PATTERN },
-            { "such that", TokenType::SUCH_THAT }
+            { "such that", TokenType::SUCH_THAT },
+            { "with", TokenType::WITH }
     };
 
     Token Lexer::getReservedToken(std::string keyword) {

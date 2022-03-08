@@ -399,4 +399,25 @@ namespace qps::query {
         return getFieldHelper(&NextT::before, &NextT::transitiveAfter);
     }
 
+    AttrCompareRef AttrCompareRef::ofString(std::string str) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::STRING;
+        acr.str_value = str;
+        return acr;
+    }
+
+    AttrCompareRef AttrCompareRef::ofNumber(int num) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::NUMBER;
+        acr.number = num;
+        return acr;
+    }
+
+    AttrCompareRef AttrCompareRef::ofAttrRef(AttrRef ar) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::ATTRREF;
+        acr.ar = ar;
+        return acr;
+    }
+
 }  // namespace qps::query
