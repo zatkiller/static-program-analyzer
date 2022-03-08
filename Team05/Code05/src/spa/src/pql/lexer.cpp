@@ -180,5 +180,9 @@ namespace qps::parser {
         text = copy;
         return token;
     }
+
+    bool Lexer::hasLeadingWhitespace() {
+        return isspace(text[0]);
+    }
 }  // namespace qps::parser
 

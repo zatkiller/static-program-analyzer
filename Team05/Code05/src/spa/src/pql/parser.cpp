@@ -31,6 +31,13 @@ namespace qps::parser {
             { TokenType::STMTNUM, AttrName::STMTNUM }
     };
 
+
+
+    bool Parser::hasLeadingWhitespace() {
+        return lexer.hasLeadingWhitespace();
+    }
+
+
     std::string Parser::getParsedText() {
         return lexer.text;
     }
@@ -397,8 +404,10 @@ namespace qps::parser {
         if (tt == TokenType::IDENTIFIER) {
             return AttrCompareRef::ofAttrRef(parseAttrRef(query));
         } else if (tt == TokenType::STRING) {
+            getNextToken();
             return AttrCompareRef::ofString(t.getText());
         } else if (tt == TokenType::NUMBER) {
+            getNextToken();
             int lineNo;
             std::stringstream ss(t.getText());
             ss >> lineNo;

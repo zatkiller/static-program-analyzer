@@ -5,6 +5,12 @@ using qps::parser::Lexer;
 using qps::parser::Token;
 using qps::parser::TokenType;
 
+TEST_CASE("Lexer hasLeadingWhitespace") {
+    Lexer lexer(" ");
+
+    REQUIRE(lexer.hasLeadingWhitespace());
+}
+
 TEST_CASE("Lexer getText") {
     std::string testQuery = "assign a; variable v;\n Select a such that Uses (a, v) pattern a (v, _)";
     Lexer lexer(testQuery);

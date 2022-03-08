@@ -29,6 +29,7 @@ using qps::query::AttrCompareRef;
 struct Parser {
     Lexer lexer = Lexer("");
 
+    bool hasLeadingWhitespace();
     void checkType(Token, TokenType);
 
     /*

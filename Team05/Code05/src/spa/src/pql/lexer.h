@@ -132,6 +132,8 @@ struct Lexer {
 
     Token getReservedToken(std::string keyword);
 
+    bool hasLeadingWhitespace();
+
     bool operator==(const Lexer &o) const {
         return this->text == o.text;
     }

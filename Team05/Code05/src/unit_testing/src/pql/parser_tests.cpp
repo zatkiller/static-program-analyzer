@@ -30,6 +30,10 @@ using qps::query::Calls;
 using qps::query::CallsT;
 using qps::query::Pattern;
 using qps::query::ExpSpec;
+using qps::query::AttrRef;
+using qps::query::AttrName;
+using qps::query::AttrCompareRef;
+using qps::query::AttrCompare;
 
 TEST_CASE("Parser checkType") {
     Parser parser;
@@ -974,12 +978,127 @@ TEST_CASE("Parser parseRelRef") {
     }
 }
 
-TEST_CASE("Parser parseWith") {
-    Parser parser;
-    parser.lexer.text = "with";
+TEST_CASE("Parser parseAttrRef") {
     Query query;
+    query.addDeclaration("s", DesignEntity::STMT);
+    query.addDeclaration("v", DesignEntity::VARIABLE);
+    query.addDeclaration("p", DesignEntity::PROCEDURE);
+    query.addDeclaration("c", DesignEntity::CONSTANT);
 
-    parser.parseWith(query);
+    AttrRef ar;
+    Parser parser;
+
+    SECTION("stmt#") {
+        parser.lexer.text = "s.stmt#";
+        ar = parser.parseAttrRef(query);
+        REQUIRE(ar.declaration == "s");
+        REQUIRE(ar.declarationType == DesignEntity::STMT);
+        REQUIRE(ar.attrName == AttrName::STMTNUM);
+    }
+
+    SECTION ("varName") {
+        parser.lexer.text = "v.varName";
+        ar = parser.parseAttrRef(query);
+        REQUIRE(ar.declaration == "v");
+        REQUIRE(ar.declarationType == DesignEntity::VARIABLE);
+        REQUIRE(ar.attrName == AttrName::VARNAME);
+    }
+
+    SECTION ("procName") {
+        parser.lexer.text = "p.procName";
+        ar = parser.parseAttrRef(query);
+        REQUIRE(ar.declaration == "p");
+        REQUIRE(ar.declarationType == DesignEntity::PROCEDURE);
+        REQUIRE(ar.attrName == AttrName::PROCNAME);
+    }
+
+    SECTION ("value") {
+        parser.lexer.text = "c.value";
+        ar = parser.parseAttrRef(query);
+        REQUIRE(ar.declaration == "c");
+        REQUIRE(ar.declarationType == DesignEntity::CONSTANT);
+        REQUIRE(ar.attrName == AttrName::VALUE);
+    }
+
+}
+
+TEST_CASE("Parser parseAttrCompareRef") {
+    SECTION ("AttrRef") {
+        Query query;
+        query.addDeclaration("s", DesignEntity::STMT);
+
+        AttrCompareRef acr;
+        Parser parser;
+
+        parser.lexer.text = "s.stmt#";
+        acr = parser.parseAttrCompareRef(query);
+        REQUIRE(acr.isAttrRef());
+        AttrRef ar = acr.getAttrRef();
+        REQUIRE(ar.declaration == "s");
+        REQUIRE(ar.declarationType == DesignEntity::STMT);
+        REQUIRE(ar.attrName == AttrName::STMTNUM);
+    }
+
+    SECTION ("Number") {
+        Query query;
+        AttrCompareRef acr;
+        Parser parser;
+
+
+        parser.lexer.text = "3";
+        acr = parser.parseAttrCompareRef(query);
+        REQUIRE(acr.isNumber());
+        REQUIRE(acr.getNumber() == 3);
+    }
+
+    SECTION ("String") {
+        Query query;
+
+        AttrCompareRef acr;
+        Parser parser;
+
+        parser.lexer.text = "\"Monke\"";
+        acr = parser.parseAttrCompareRef(query);
+        REQUIRE(acr.isString());
+        REQUIRE(acr.getString() == "Monke");
+    }
+}
+
+TEST_CASE("Parser parseWith") {
+
+    SECTION ("AttrRef on LHS and String on RHS") {
+        Parser parser;
+        parser.lexer.text = "with p.procName = \"Monke\"";
+
+        Query query;
+        query.addDeclaration("p", DesignEntity::PROCEDURE);
+
+        parser.parseWith(query);
+
+        REQUIRE(!query.getWith().empty());
+        AttrCompare ac = query.getWith()[0];
+        AttrCompareRef lhs = ac.getLhs();
+        AttrCompareRef rhs = ac.getRhs();
+        REQUIRE(lhs.isAttrRef());
+        REQUIRE(rhs.isString());
+    }
+
+    SECTION ("Number on LHS and AttRef on Rhs") {
+        Parser parser;
+        parser.lexer.text = "with 3 = rd.stmt#";
+
+        Query query;
+        query.addDeclaration("rd", DesignEntity::READ);
+
+        parser.parseWith(query);
+
+        REQUIRE(!query.getWith().empty());
+        AttrCompare ac = query.getWith()[0];
+        AttrCompareRef lhs = ac.getLhs();
+        AttrCompareRef rhs = ac.getRhs();
+        REQUIRE(lhs.isNumber());
+        REQUIRE(rhs.isAttrRef());
+    }
 }
 
 TEST_CASE("Parser parseQuery") {
@@ -991,7 +1110,7 @@ TEST_CASE("Parser parseQuery") {
 
     REQUIRE(query.hasVariable("c"));
 
-    parser.lexer.text = "Select a such that Modifies (a, v1) pattern a1 (v, _\"x\"_)";
+    parser.lexer.text = "Select a such that Modifies (a, v1) pattern a1 (v, _\"x\"_) with a.stmt# = 3";
     query = {};
     query.addDeclaration("a", DesignEntity::ASSIGN);
     query.addDeclaration("a1", DesignEntity::ASSIGN);
@@ -1019,10 +1138,18 @@ TEST_CASE("Parser parseQuery") {
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
     REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
+
+    // Check with
+    std::vector<AttrCompare> withLst = query.getWith();
+    REQUIRE(!withLst.empty());
+    AttrCompare with = withLst[0];
+
+    REQUIRE(with.getLhs().isAttrRef());
+    REQUIRE(with.getRhs().isNumber());
 }
 
 TEST_CASE("Parser parsePql") {
-    std::string testQuery = "assign a, a1; variable v; Select a such that Modifies (a, _) pattern a (v, _\"x\"_)";
+    std::string testQuery = "assign a, a1; variable v; Select a such that Modifies (a, _) pattern a (v, _\"x\"_) with \"Monke\" = v.varName";
 
     Parser parser;
     Query queryObj = parser.parsePql(testQuery);
@@ -1057,6 +1184,13 @@ TEST_CASE("Parser parsePql") {
     bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
     REQUIRE(validDeclaration);
     REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
+
+    std::vector<AttrCompare> withLst = queryObj.getWith();
+    REQUIRE(!withLst.empty());
+    AttrCompare with = withLst[0];
+
+    REQUIRE(with.getLhs().isString());
+    REQUIRE(with.getRhs().isAttrRef());
 }
 
 TEST_CASE("Parser isValidStatement") {
