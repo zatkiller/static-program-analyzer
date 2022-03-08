@@ -16,6 +16,7 @@ PKB::PKB() {
     followsTable = std::make_unique<FollowsRelationshipTable>();
     parentTable = std::make_unique<ParentRelationshipTable>();
     usesTable = std::make_unique<UsesRelationshipTable>();
+    callsTable = std::make_unique<CallsRelationshipTable>();
 }
 
 // INSERT API
@@ -60,6 +61,9 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
     case PKBRelationship::USES:
         usesTable->insert(field1, field2);
         break;
+    case PKBRelationship::CALLS:
+        callsTable->insert(field1, field2);
+        break;
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
         break;
@@ -88,6 +92,10 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
         return followsTable->containsT(field1, field2);
     case PKBRelationship::PARENTT:
         return parentTable->containsT(field1, field2);
+    case PKBRelationship::CALLS:
+        return callsTable->contains(field1, field2);
+    case PKBRelationship::CALLST:
+        return callsTable->containsT(field1, field2);
     default:
         Logger(Level::INFO) << "Checking for an invalid relationship table\n";
         return false;
@@ -141,6 +149,12 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
         break;
     case PKBRelationship::PARENTT:
         extracted = parentTable->retrieveT(field1, field2);
+        break;
+    case PKBRelationship::CALLS:
+        extracted = callsTable->retrieve(field1, field2);
+        break;
+    case PKBRelationship::CALLST:
+        extracted = callsTable->retrieveT(field1, field2);
         break;
     default:
         throw "Invalid relationship type used!";
@@ -207,7 +221,10 @@ PKBResponse PKB::getConstants() {
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
 }
 
-PKBResponse PKB::match(StatementType type, sp::design_extractor::PatternParam lhs, sp::design_extractor::PatternParam rhs) {
+PKBResponse PKB::match(
+    StatementType type, 
+    sp::design_extractor::PatternParam lhs, 
+    sp::design_extractor::PatternParam rhs) {
     auto matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs);
     FieldRowResponse res;
 

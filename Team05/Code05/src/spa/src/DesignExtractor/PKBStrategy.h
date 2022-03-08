@@ -9,21 +9,11 @@ namespace design_extractor {
  * Interface for handling PKB insertions. There could be different strategy like NullPKBStrategy, TestPKBStrategy, ActualPKBStrategy
  */
 struct PKBStrategy {
-        /**
-    * Inserts a statement information into the PKB.
-    *
-    * @param type statement type
-    * @param statementNumber line number
-    */
-    virtual void insertStatement(STMT_LO) = 0;
-
     /**
-    * Inserts a variable into the PKB.
+    * Inserts an entity into the PKB.
     *
-    * @param name variable name
+    * @param Content the entity to be inserted.
     */
-    virtual void insertVariable(std::string) = 0;
-
     virtual void insertEntity(Content) = 0;
 
     /**
@@ -42,8 +32,6 @@ struct PKBStrategy {
  */
 class NullPKBStrategy : public PKBStrategy {
 public:
-    void insertStatement(STMT_LO) override {};
-    void insertVariable(std::string) override {};
     void insertEntity(Content) override {};
     void insertRelationship(PKBRelationship, Content, Content) override {};
 };
@@ -56,8 +44,6 @@ private:
     PKB *pkb;
 public:
     explicit ActualPKBStrategy(PKB *pkb) : pkb(pkb) {}
-    void insertStatement(STMT_LO) override;
-    void insertVariable(std::string) override;
     void insertEntity(Content) override;
     void insertRelationship(PKBRelationship, Content, Content) override;
 };

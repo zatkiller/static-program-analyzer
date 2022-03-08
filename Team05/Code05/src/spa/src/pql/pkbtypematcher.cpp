@@ -30,4 +30,4 @@ namespace qps::evaluator {
     StatementType PKBTypeMatcher::getStatementType(query::DesignEntity d) {
         return statementTypeMap.find(d)->second;
     }
-}
+}  // namespace qps::evaluator

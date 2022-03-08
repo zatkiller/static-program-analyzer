@@ -83,10 +83,11 @@ namespace qps::query {
         return e;
     }
 
-    EntRef EntRef::ofDeclaration(std::string d) {
+    EntRef EntRef::ofDeclaration(std::string d, DesignEntity de) {
         EntRef e;
         e.declaration = d;
         e.type = EntRefType::DECLARATION;
+        e.declarationType = de;
         return e;
     }
 
@@ -100,8 +101,12 @@ namespace qps::query {
         return type;
     }
 
-    std::string EntRef::getDeclaration() const{
+    std::string EntRef::getDeclaration() const {
         return declaration;
+    }
+
+    DesignEntity EntRef::getDeclarationType() const {
+        return declarationType;
     }
 
     std::string EntRef::getVariableName() {
@@ -120,10 +125,11 @@ namespace qps::query {
         return type == EntRefType::WILDCARD;
     }
 
-    StmtRef StmtRef::ofDeclaration(std::string d) {
+    StmtRef StmtRef::ofDeclaration(std::string d, DesignEntity de) {
         StmtRef s;
         s.type = StmtRefType::DECLARATION;
         s.declaration = d;
+        s.declarationType = de;
         return s;
     }
 
@@ -142,6 +148,10 @@ namespace qps::query {
 
     StmtRefType StmtRef::getType() {
         return type;
+    }
+
+    DesignEntity StmtRef::getDeclarationType() const {
+        return declarationType;
     }
 
     std::string StmtRef::getDeclaration() const {
@@ -228,20 +238,36 @@ namespace qps::query {
         return expression;
     }
 
-    std::vector<PKBField> Modifies::getField() {
-        return getFieldHelper(&Modifies::modifiesStmt, &Modifies::modified);
+    std::vector<PKBField> ModifiesS::getField() {
+        return getFieldHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
-    std::vector<std::string> Modifies::getSyns(){
-        return getSynsHelper(&Modifies::modifiesStmt, &Modifies::modified);
+    std::vector<std::string> ModifiesS::getSyns() {
+        return getSynsHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
-    std::vector<PKBField> Uses::getField() {
-        return getFieldHelper(&Uses::useStmt, &Uses::used);
+    std::vector<PKBField> ModifiesP::getField() {
+        return getFieldHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
     }
 
-    std::vector<std::string> Uses::getSyns()  {
-        return getSynsHelper(&Uses::useStmt, &Uses::used);
+    std::vector<std::string> ModifiesP::getSyns() {
+        return getSynsHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
+    }
+
+    std::vector<PKBField> UsesP::getField() {
+        return getFieldHelper(&UsesP::useProc, &UsesP::used);
+    }
+
+    std::vector<std::string> UsesP::getSyns()  {
+        return getSynsHelper(&UsesP::useProc, &UsesP::used);
+    }
+
+    std::vector<PKBField> UsesS::getField() {
+        return getFieldHelper(&UsesS::useStmt, &UsesS::used);
+    }
+
+    std::vector<std::string> UsesS::getSyns()  {
+        return getSynsHelper(&UsesS::useStmt, &UsesS::used);
     }
 
     std::vector<PKBField> Follows::getField() {
@@ -275,4 +301,37 @@ namespace qps::query {
     std::vector<std::string> ParentT::getSyns() {
         return getSynsHelper(&ParentT::parent, &ParentT::transitiveChild);
     }
+
+    std::vector<PKBField> Calls::getField() {
+        return getFieldHelper(&Calls::caller, &Calls::callee);
+    }
+
+    std::vector<std::string> Calls::getSyns() {
+        return getSynsHelper(&Calls::caller, &Calls::callee);
+    }
+
+    std::vector<PKBField> CallsT::getField() {
+        return getFieldHelper(&CallsT::caller, &CallsT::transitiveCallee);
+    }
+
+    std::vector<std::string> CallsT::getSyns() {
+        return getSynsHelper(&CallsT::caller, &CallsT::transitiveCallee);
+    }
+
+    std::vector<std::string> Next::getSyns() {
+        return getSynsHelper(&Next::before, &Next::after);
+    }
+
+    std::vector<PKBField> Next::getField() {
+        return getFieldHelper(&Next::before, &Next::after);
+    }
+
+    std::vector<std::string> NextT::getSyns() {
+        return getSynsHelper(&NextT::before, &NextT::transitiveAfter);
+    }
+
+    std::vector<PKBField> NextT::getField() {
+        return getFieldHelper(&NextT::before, &NextT::transitiveAfter);
+    }
+
 }  // namespace qps::query

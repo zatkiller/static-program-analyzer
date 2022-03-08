@@ -7,14 +7,6 @@ template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 // explicit deduction guide (not needed as of C++20)
 template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-void ActualPKBStrategy::insertStatement(STMT_LO stmt) {
-    pkb->insertStatement(stmt.type.value_or(StatementType::All), stmt.statementNum);
-}
-
-void ActualPKBStrategy::insertVariable(std::string name) {
-    pkb->insertVariable(name);
-}
-
 void ActualPKBStrategy::insertEntity(Content entity) {
     std::visit(overloaded {
         [&](VAR_NAME& item) { pkb->insertVariable(item.name); },

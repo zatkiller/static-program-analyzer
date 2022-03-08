@@ -5,12 +5,18 @@
 
 namespace qps::parser {
     using qps::query::designEntityMap;
-    using qps::query::Uses;
-    using qps::query::Modifies;
+    using qps::query::UsesS;
+    using qps::query::UsesP;
+    using qps::query::ModifiesS;
+    using qps::query::ModifiesP;
     using qps::query::Follows;
     using qps::query::FollowsT;
     using qps::query::Parent;
     using qps::query::ParentT;
+    using qps::query::Next;
+    using qps::query::NextT;
+    using qps::query::Calls;
+    using qps::query::CallsT;
     using qps::query::Pattern;
     using qps::query::ExpSpec;
 
@@ -86,7 +92,7 @@ namespace qps::parser {
         getAndCheckNextToken(TokenType::SEMICOLON);
     }
 
-    void Parser::addPql(std::string query) {
+    void Parser::addInput(std::string query) {
         lexer = Lexer(query);
     }
 
@@ -102,28 +108,6 @@ namespace qps::parser {
         queryObj.addVariable(name);
     }
 
-    bool Parser::isStmtRef(Token token, Query &queryObj) {
-        TokenType type = token.getTokenType();
-        if (type == TokenType::NUMBER || type == TokenType::UNDERSCORE)
-            return true;
-
-        if (type == TokenType::IDENTIFIER && queryObj.hasDeclaration(token.getText()))
-            return true;
-
-        return false;
-    }
-
-    bool Parser::isEntRef(Token token, Query &queryObj) {
-        TokenType type = token.getTokenType();
-        if (type == TokenType::STRING || type == TokenType::UNDERSCORE)
-            return true;
-
-        if (type == TokenType::IDENTIFIER && queryObj.hasDeclaration(token.getText()))
-            return true;
-
-        return false;
-    }
-
     StmtRef Parser::parseStmtRef(Query &queryObj) {
         Token token = getNextToken();
         TokenType type = token.getTokenType();
@@ -136,7 +120,13 @@ namespace qps::parser {
         } else if (type == TokenType::UNDERSCORE) {
             stmtRef = StmtRef::ofWildcard();
         } else if (type == TokenType::IDENTIFIER) {
-            stmtRef = StmtRef::ofDeclaration(token.getText());
+            stmtRef = StmtRef::ofDeclaration(token.getText(), queryObj.getDeclarationDesignEntity(token.getText()));
+
+            if (!isValidStatementType(queryObj, stmtRef))
+                throw exceptions::PqlSemanticException(messages::qps::parser::synonymNotStatementTypeMessage);
+
+        } else {
+            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidStmtRefMessage);
         }
 
         return stmtRef;
@@ -151,64 +141,79 @@ namespace qps::parser {
         } else if (type == TokenType::UNDERSCORE) {
             entRef = EntRef::ofWildcard();
         } else if (type == TokenType::IDENTIFIER) {
-            entRef = EntRef::ofDeclaration(token.getText());
+            entRef = EntRef::ofDeclaration(token.getText(), queryObj.getDeclarationDesignEntity(token.getText()));
+
+            if (!isValidEntityType(queryObj, entRef))
+                throw exceptions::PqlSemanticException(messages::qps::parser::synonymNotEntityTypeMessage);
+
+        } else {
+            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidEntRefMessage);
         }
 
         return entRef;
     }
 
-    std::shared_ptr<RelRef> Parser::parseModifiesOrUsesVariables(Query &queryObj, TokenType tt) {
-        getAndCheckNextToken(TokenType::OPENING_PARAN);
+    bool usePVariant(Token t, Query &query) {
+        TokenType tt = t.getTokenType();
+        if (tt == TokenType::STRING) {
+            return true;
+        } else if (tt == TokenType::NUMBER) {
+            return false;
+        } else if (tt == TokenType::IDENTIFIER) {
+            auto de = query.getDeclarationDesignEntity(t.getText());
+            return de == DesignEntity::PROCEDURE;
+        }
 
-        if (!isStmtRef(peekNextToken(), queryObj))
-            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidStmtRefMessage);
+        return false;
+    }
 
-        StmtRef sr = parseStmtRef(queryObj);
+    std::shared_ptr<RelRef> Parser::parseModifiesOrUsesVariables(Query &query, TokenType tt) {
+        Token t1 = peekNextToken();
+        bool isPVariant = usePVariant(t1, query);
 
-        if (sr.isWildcard())
-            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
-
-        getAndCheckNextToken(TokenType::COMMA);
-
-        if (!isEntRef(peekNextToken(), queryObj))
-            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidEntRefMessage);
-
-        EntRef er = parseEntRef(queryObj);
-
-        if (er.isDeclaration() && queryObj.getDeclarationDesignEntity(er.getDeclaration()) != DesignEntity::VARIABLE)
-            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
-
-        getAndCheckNextToken(TokenType::CLOSING_PARAN);
-
-        if (tt == TokenType::USES) {
-            std::shared_ptr<Uses> usesPtr = std::make_shared<Uses>();
-            usesPtr->used = er;
-            usesPtr->useStmt = sr;
-            return usesPtr;
+        if (isPVariant && tt == TokenType::MODIFIES) {
+            return parseRelRefVariables<ModifiesP>(query, &ModifiesP::modifiesProc, &ModifiesP::modified);
+        } else if (isPVariant && tt == TokenType::USES) {
+            return parseRelRefVariables<UsesP>(query, &UsesP::useProc, &UsesP::used);
+        } else if (!isPVariant && tt == TokenType::MODIFIES) {
+            return parseRelRefVariables<ModifiesS>(query, &ModifiesS::modifiesStmt, &ModifiesS::modified);
+        } else if (!isPVariant && tt == TokenType::USES) {
+            return parseRelRefVariables<UsesS>(query, &UsesS::useStmt, &UsesS::used);
         } else {
-            std::shared_ptr<Modifies> modifiesPtr = std::make_shared<Modifies>();
-            modifiesPtr->modifiesStmt = sr;
-            modifiesPtr->modified = er;
-            return modifiesPtr;
+            throw exceptions::PqlSyntaxException("Satisfy none of the modifies and uses relref variants");
         }
     }
 
     std::shared_ptr<RelRef> Parser::parseRelRef(Query &queryObj) {
         TokenType tokenType = getNextReservedToken().getTokenType();
+        getAndCheckNextToken(TokenType::OPENING_PARAN);
+
+        std::shared_ptr<RelRef> ptr;
 
         if ((tokenType == TokenType::USES) || (tokenType == TokenType::MODIFIES)) {
-            return parseModifiesOrUsesVariables(queryObj, tokenType);
+            ptr = parseModifiesOrUsesVariables(queryObj, tokenType);
         } else if (tokenType == TokenType::FOLLOWS) {
-            return parseRelRefVariables<Follows>(queryObj, &Follows::follower, &Follows::followed);
+            ptr =  parseRelRefVariables<Follows>(queryObj, &Follows::follower, &Follows::followed);
         } else if (tokenType == TokenType::FOLLOWS_T) {
-            return parseRelRefVariables<FollowsT>(queryObj, &FollowsT::follower, &FollowsT::transitiveFollowed);
+            ptr =  parseRelRefVariables<FollowsT>(queryObj, &FollowsT::follower, &FollowsT::transitiveFollowed);
         } else if (tokenType == TokenType::PARENT) {
-            return parseRelRefVariables<Parent>(queryObj, &Parent::parent, &Parent::child);
+            ptr =  parseRelRefVariables<Parent>(queryObj, &Parent::parent, &Parent::child);
         } else if (tokenType == TokenType::PARENT_T) {
-            return parseRelRefVariables<ParentT>(queryObj, &ParentT::parent, &ParentT::transitiveChild);
+            ptr =  parseRelRefVariables<ParentT>(queryObj, &ParentT::parent, &ParentT::transitiveChild);
+        } else if (tokenType == TokenType::NEXT) {
+            ptr =  parseRelRefVariables<Next>(queryObj, &Next::before, &Next::after);
+        } else if (tokenType == TokenType::NEXT_T) {
+            ptr =  parseRelRefVariables<NextT>(queryObj, &NextT::before, &NextT::transitiveAfter);
+        } else if (tokenType == TokenType::CALLS) {
+            ptr =  parseRelRefVariables<Calls>(queryObj, &Calls::caller, &Calls::callee);
+        } else if (tokenType == TokenType::CALLS_T) {
+            ptr =  parseRelRefVariables<CallsT>(queryObj, &CallsT::caller, &CallsT::transitiveCallee);
+        } else{
+            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidRelRefMessage);
         }
 
-        throw exceptions::PqlSyntaxException(messages::qps::parser::invalidRelRefMessage);
+        getAndCheckNextToken(TokenType::CLOSING_PARAN);
+        return ptr;
     }
 
     bool Parser::isValidStatementType(Query &query, StmtRef s) {
@@ -221,7 +226,18 @@ namespace qps::parser {
             DesignEntity d = query.getDeclarationDesignEntity(s.getDeclaration());
             return statementsType.find(d) != statementsType.end();
         }
-        return true;
+        return false;
+    }
+
+    bool Parser::isValidEntityType(Query &query, EntRef e) {
+        std::unordered_set<DesignEntity> entityTypes {
+                DesignEntity::PROCEDURE, DesignEntity::VARIABLE
+        };
+        if (e.isDeclaration()) {
+            DesignEntity d = query.getDeclarationDesignEntity(e.getDeclaration());
+            return entityTypes.find(d) != entityTypes.end();
+        }
+        return false;
     }
 
     ExpSpec Parser::parseExpSpec() {
@@ -241,6 +257,7 @@ namespace qps::parser {
             }
             Token token = getAndCheckNextToken(TokenType::STRING);
             value = token.getText();
+            validateExpr(value);
         }
 
         if (isPartialMatch) {
@@ -254,6 +271,68 @@ namespace qps::parser {
 
         return ExpSpec::ofFullMatch(value);
     }
+
+    void Parser::validateExpr(std::string expr) {
+        Parser expParser;
+        expParser.addInput(expr);
+        expParser.parseExpr();
+    }
+
+    void Parser::parseExpr() {
+        parseCurrentExpr();
+        parseNextExpr(0);
+    }
+
+    void Parser::parseCurrentExpr() {
+        Token token = getNextToken();
+        TokenType tt = token.getTokenType();
+
+        if ((tt == TokenType::END_OF_FILE)) {
+            throw exceptions::PqlSyntaxException(messages::qps::parser::expressionUnexpectedEndMessage);
+        } else if ((tt == TokenType::NUMBER) || (tt == TokenType::IDENTIFIER)) {
+            return;
+        } else if (tt == TokenType::OPENING_PARAN) {
+            parseExpr();
+            getAndCheckNextToken(TokenType::CLOSING_PARAN);
+        } else {
+            throw exceptions::PqlSyntaxException(messages::qps::parser::expressionInvalidGrammarMessage);
+        }
+    }
+
+    int Parser::getOperatorPriority(Token token) {
+        TokenType type = token.getTokenType();
+        if ((type == TokenType::MULTIPLY) || (type == TokenType::DIVIDE) || (type == TokenType::MODULO)) {
+            return 20;
+        } else if ((type == TokenType::PLUS) || (type == TokenType::MINUS)) {
+            return 10;
+        } else {
+            return -10;
+        }
+    }
+
+    void Parser::parseNextExpr(int priority) {
+        if (priority == -10) {
+            return;
+        }
+
+        while (true) {
+            int currPriority = getOperatorPriority(peekNextToken());
+
+            if (currPriority < priority) {
+                break;
+            }
+
+            Token op = getNextToken();
+            parseCurrentExpr();
+
+            int nextPriority = getOperatorPriority(peekNextToken());
+            if (nextPriority > currPriority) {
+                parseNextExpr(priority + 10);
+            }
+        }
+    }
+
+
 
     void Parser::parseSuchThat(Query &queryObj) {
         getAndCheckNextReservedToken(TokenType::SUCH_THAT);
@@ -298,7 +377,7 @@ namespace qps::parser {
     }
 
     Query Parser::parsePql(std::string query) {
-        addPql(query);
+        addInput(query);
         Query queryObj;
         queryObj.setValid(true);
 

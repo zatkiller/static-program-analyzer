@@ -10,6 +10,7 @@ public:
     void visit(const ast::While&) override;
     void visit(const ast::If&) override;
     void visit(const ast::Assign&) override;
+    void visit(const ast::Call&) override;
 };
 }  // namespace design_extractor
 }  // namespace sp

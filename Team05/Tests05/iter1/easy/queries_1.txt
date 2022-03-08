@@ -623,3 +623,8 @@ stmt s; assign a;
 Select s pattern a(s, "x")
 none
 5000
+126 - Invalid syntax query - Pattern expression is invalid
+stmt s; assign a;
+Select s pattern a(s, _"+test"_)
+none
+5000

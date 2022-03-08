@@ -1,5 +1,4 @@
-#include "PKB/StatementType.h"
-#include "PKB/PKBRelationship.h"
+#include "PKB/PKBCommons.h"
 #include "query.h"
 
 namespace qps::evaluator {
@@ -21,4 +20,4 @@ public:
      */
     static StatementType getStatementType(query::DesignEntity d);
 };
-}
+}  // namespace qps::evaluator

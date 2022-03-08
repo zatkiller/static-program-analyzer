@@ -44,13 +44,6 @@ public:
     std::map<PKBEntityType, std::set<Content>> entities;
     std::map<PKBRelationship, std::set<std::pair<Content, Content>>> relationships;
 
-    void insertStatement(STMT_LO stmt) override {
-        statements.insert(stmt);
-    };
-    void insertVariable(std::string name) override {
-        variables.insert(name);
-    };
-
     void insertEntity(Content entity) override {
         std::visit(overloaded {
             [&](VAR_NAME &item) { entities[PKBEntityType::VARIABLE].emplace(item); },
@@ -79,7 +72,7 @@ std::set<T> setDiff(std::set<T> set1, std::set<T> set2) {
 
 TEST_CASE("TestPKBStrategy Test") {
     TestPKBStrategy pkbStrategy;
-    std::set<STMT_LO> stmts = {
+    std::set<Content> stmts = {
         STMT_LO{1, StatementType::Assignment},
         STMT_LO{2, StatementType::Read},
         STMT_LO{3, StatementType::Print},
@@ -87,19 +80,19 @@ TEST_CASE("TestPKBStrategy Test") {
         STMT_LO{5, StatementType::While},
     };
     for (auto stmt : stmts) {
-        pkbStrategy.insertStatement(stmt);
+        pkbStrategy.insertEntity(stmt);
     }
-    REQUIRE(pkbStrategy.statements == stmts);
+    REQUIRE(pkbStrategy.entities[PKBEntityType::STATEMENT] == stmts);
 
-    std::set<std::string> vars = {
-        "x",
-        "x123",
-        "jaosidjfaoisdjfiaosdjfioasjd"
+    std::set<Content> vars = {
+        VAR_NAME{"x"},
+        VAR_NAME{"x123"},
+        VAR_NAME{"jaosidjfaoisdjfiaosdjfioasjd"}
     };
     for (auto var : vars) {
-        pkbStrategy.insertVariable(var);
+        pkbStrategy.insertEntity(var);
     }
-    REQUIRE(pkbStrategy.variables == vars);
+    REQUIRE(pkbStrategy.entities[PKBEntityType::VARIABLE] == vars);
 
     
     auto p = [](auto a1, auto a2) {
@@ -141,11 +134,15 @@ namespace ast {
                 make<Print>(3, make<Var>("v3"))
             );
             auto whileBlk = make<While>(1, std::move(relExpr), std::move(stmtlst));
-            auto ve = std::make_shared<VariableExtractor>(&pkbStrategy);
-            whileBlk->accept(ve);
+            auto ve = std::make_unique<VariableExtractor>(&pkbStrategy);
+            ve->extract(whileBlk.get());
             // variable extractions
             
-            REQUIRE(pkbStrategy.variables == std::set<std::string>({"v1", "v3"}));
+            REQUIRE(
+                pkbStrategy.entities[PKBEntityType::VARIABLE] == std::set<Content>(
+                    {VAR_NAME{"v1"}, VAR_NAME{"v3"}}
+                )
+            );
         }
 
 
@@ -190,35 +187,41 @@ namespace ast {
                 make<Print>(11, make<Var>("sum"))
             ));
 
-            auto program = std::make_unique<Program>(std::move(procedure));
+            auto program = makeProgram(std::move(procedure));
 
             SECTION("Variable extractor test") {
-                auto ve = std::make_shared<VariableExtractor>(&pkbStrategy);
-                program->accept(ve);
+                auto ve = std::make_unique<VariableExtractor>(&pkbStrategy);
+                ve->extract(program.get());
 
-                std::set<std::string> expectedVars = { "x", "remainder", "digit", "sum" };
-                REQUIRE(pkbStrategy.variables == expectedVars);
+                std::set<Content> expectedVars = {
+                    VAR_NAME{"x"},
+                    VAR_NAME{"remainder"},
+                    VAR_NAME{"digit"},
+                    VAR_NAME{"sum"} 
+                };
+                
+                REQUIRE(pkbStrategy.entities[PKBEntityType::VARIABLE] == expectedVars);
             }
 
             SECTION("Const extractor test") {
-                auto ve = std::make_shared<ConstExtractor>(&pkbStrategy);
-                program->accept(ve);
+                auto ce = std::make_unique<ConstExtractor>(&pkbStrategy);
+                ce->extract(program.get());
 
                 std::set<Content> expectedVars = { CONST{0}, CONST{2}, CONST{10} };
                 REQUIRE(pkbStrategy.entities[PKBEntityType::CONST] == expectedVars);
             }
 
             SECTION("Procedure extractor test") {
-                auto ve = std::make_shared<ProcedureExtractor>(&pkbStrategy);
-                program->accept(ve);
-
+                auto pe = std::make_unique<ProcedureExtractor>(&pkbStrategy);
+                pe->extract(program.get());
+                
                 std::set<Content> expectedVars = { PROC_NAME{"main"} };
                 REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedVars);
             }
 
             SECTION("Modifies extractor test") {
-                auto me = std::make_shared<ModifiesExtractor>(&pkbStrategy);
-                program->accept(me);
+                auto me = std::make_unique<ModifiesExtractor>(&pkbStrategy);
+                me->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(PROC_NAME{"main"}, VAR_NAME{"x"}),
@@ -242,8 +245,8 @@ namespace ast {
             }
 
             SECTION("Uses extractor test") {
-                auto ue = std::make_shared<UsesExtractor>(&pkbStrategy);
-                program->accept(ue);
+                auto ue = std::make_unique<UsesExtractor>(&pkbStrategy);
+                ue->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(PROC_NAME{"main"}, VAR_NAME{"x"}),
@@ -273,8 +276,8 @@ namespace ast {
             }
         
             SECTION("Follows extractor test") {
-                auto fe = std::make_shared<FollowsExtractor>(&pkbStrategy);
-                program->accept(fe);
+                auto fe = std::make_unique<FollowsExtractor>(&pkbStrategy);
+                fe->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
@@ -289,8 +292,8 @@ namespace ast {
             }
 
             SECTION("Parents extractor test") {
-                auto pe = std::make_shared<ParentExtractor>(&pkbStrategy);
-                program->accept(pe);
+                auto pe = std::make_unique<ParentExtractor>(&pkbStrategy);
+                pe->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(STMT_LO{3, StatementType::While}, STMT_LO{4, StatementType::Print}),
@@ -304,6 +307,153 @@ namespace ast {
                 REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENT] == expected);
             }
         }    
+        
+        /**
+         * procedure main {
+         *    call foo;
+         *    call bar;
+         * }
+         * procedure foo {
+         *    call gee;
+         * }
+         * procedure bar {
+         *    call gee;
+         *    call foo;
+         * }
+         * procedure gee {
+         *    read x;
+         *    print y;
+         * }
+         * 
+         */
+        SECTION("Multi procedure test 1") {
+            auto program = makeProgram(
+                make<ast::Procedure>(
+                    "main", 
+                    ast::makeStmts(
+                        make<ast::Call>(1, "foo"),
+                        make<ast::Call>(2, "bar")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "foo", 
+                    ast::makeStmts(
+                        make<ast::Call>(3, "gee")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "bar", 
+                    ast::makeStmts(
+                        make<ast::Call>(4, "gee"),
+                        make<ast::Call>(5, "foo")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "gee", 
+                    ast::makeStmts(
+                        make<ast::Read>(6, make<ast::Var>("x")),
+                        make<ast::Print>(7, make<ast::Var>("y"))
+                    )
+                )
+            );
+            std::set<std::pair<Content, Content>> expected;
+
+            ModifiesExtractor me(&pkbStrategy);
+            me.extract(program.get());
+
+            expected = {
+                p(STMT_LO{1, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{3, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{4, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{5, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{6, StatementType::Read}, VAR_NAME{"x"}),
+                p(PROC_NAME{"bar"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"foo"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"gee"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"x"})
+            };
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
+            
+            UsesExtractor ue(&pkbStrategy);
+            ue.extract(program.get());
+
+            expected = {
+                p(STMT_LO{1, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{3, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{4, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{5, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{7, StatementType::Print}, VAR_NAME{"y"}),
+                p(PROC_NAME{"bar"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"foo"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"gee"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"y"})
+            };
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
+
+        }
+
+        /**
+         * procedure main {
+         *      while (m1 > 0) {
+         *          call foo;
+         *          m2 = m3;
+         *      }
+         * }
+         * procedure foo {
+         *      f1 = f2;
+         * }
+         */
+        SECTION("Multi procedure test 2") {
+            auto program = makeProgram(
+                make<Procedure>("main", makeStmts(
+                    make<While>(1,
+                        make<RelExpr>(RelOp::GT, make<Var>("m1"), make<Const>(0)),
+                        makeStmts(
+                            make<Call>(2, "foo"),
+                            make<Assign>(3, make<Var>("m2"), make<Var>("m3"))
+                        )
+                    )
+                )),
+                make<Procedure>("foo", makeStmts(
+                    make<Assign>(4, make<Var>("f1"), make<Var>("f2"))
+                ))
+            );
+
+            std::set<std::pair<Content, Content>> expected;
+            ModifiesExtractor me(&pkbStrategy);
+            me.extract(program.get());
+
+            expected = {
+                p(STMT_LO{1, StatementType::While}, VAR_NAME{"f1"}),
+                p(STMT_LO{1, StatementType::While}, VAR_NAME{"m2"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"f1"}),
+                p(STMT_LO{3, StatementType::Assignment}, VAR_NAME{"m2"}),
+                p(STMT_LO{4, StatementType::Assignment}, VAR_NAME{"f1"}),
+                p(PROC_NAME{"foo"}, VAR_NAME{"f1"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"f1"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"m2"})
+            };
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
+
+            UsesExtractor ue(&pkbStrategy);
+            ue.extract(program.get());
+            expected = {
+                p(STMT_LO{1, StatementType::While}, VAR_NAME{"m1"}),
+                p(STMT_LO{1, StatementType::While}, VAR_NAME{"m3"}),
+                p(STMT_LO{1, StatementType::While}, VAR_NAME{"f2"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"f2"}),
+                p(STMT_LO{3, StatementType::Assignment}, VAR_NAME{"m3"}),
+                p(STMT_LO{4, StatementType::Assignment}, VAR_NAME{"f2"}),
+                p(PROC_NAME{"foo"}, VAR_NAME{"f2"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"f2"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"m1"}),
+                p(PROC_NAME{"main"}, VAR_NAME{"m3"})
+            };
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
+        }
+    
     }
 
     TEST_CASE("Pattern matcher test") {

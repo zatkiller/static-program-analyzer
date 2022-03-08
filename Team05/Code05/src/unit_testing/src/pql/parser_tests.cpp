@@ -16,12 +16,18 @@ using qps::query::StmtRef;
 using qps::query::EntRef;
 using qps::query::RelRef;
 using qps::query::RelRefType;
-using qps::query::Uses;
-using qps::query::Modifies;
+using qps::query::UsesS;
+using qps::query::UsesP;
+using qps::query::ModifiesS;
+using qps::query::ModifiesP;
 using qps::query::Parent;
 using qps::query::ParentT;
 using qps::query::Follows;
 using qps::query::FollowsT;
+using qps::query::Next;
+using qps::query::NextT;
+using qps::query::Calls;
+using qps::query::CallsT;
 using qps::query::Pattern;
 using qps::query::ExpSpec;
 
@@ -66,17 +72,17 @@ TEST_CASE("Parser peekNextToken and getNextToken") {
     REQUIRE(parser.getAndCheckNextToken(TokenType::IDENTIFIER) == Token{"a", TokenType::IDENTIFIER});
 }
 
-TEST_CASE("Parser addPql") {
+TEST_CASE("Parser addInput") {
     std::string testQuery1 = "assign a; \n Select a such that Uses (a, v) pattern a (v, _)";
     std::string testQuery2 = "variable v; \n Select v such that Uses (a, v) pattern a (v, _)";
 
     Parser parser;
-    parser.addPql(testQuery1);
+    parser.addInput(testQuery1);
 
     Lexer lexer1 = parser.lexer;
     REQUIRE(parser.getParsedText() == testQuery1);
 
-    parser.addPql(testQuery2);
+    parser.addInput(testQuery2);
 
     REQUIRE(parser.getParsedText() == testQuery2);
     REQUIRE(!(lexer1 == parser.lexer));
@@ -130,19 +136,17 @@ TEST_CASE("Parser parseDeclarations") {
 
 TEST_CASE("Parser parseSelectFields") {
     Parser parser;
-    parser.addPql("assign a; \n Select a");
+    parser.addInput("Select a");
 
     Query queryObj;
 
-    parser.parseDeclarations(queryObj);
+    queryObj.addDeclaration("a", DesignEntity::ASSIGN);
     parser.parseSelectFields(queryObj);
 
     REQUIRE(queryObj.hasVariable("a"));
 
     queryObj = Query{};
-    parser.addPql("assign a; \n Select v");
-
-    parser.parseDeclarations(queryObj);
+    parser.addInput("Select v");
 
     REQUIRE_THROWS_MATCHES(parser.parseSelectFields(queryObj), exceptions::PqlSyntaxException,
                            Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
@@ -150,48 +154,46 @@ TEST_CASE("Parser parseSelectFields") {
 
 TEST_CASE("Parser parseSuchThat - Uses") {
     SECTION ("Valid query with Uses relationship") {
-        std::string testQuery = "assign a;\n Select a such that Uses (a, _)";
+        std::string testQuery = "such that Uses (a, _)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+
         parser.parseSuchThat(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::USESS);
 
-        std::shared_ptr<Uses> usesPtr = std::dynamic_pointer_cast<Uses>(relRefPtr);
+        std::shared_ptr<UsesS> usesPtr = std::dynamic_pointer_cast<UsesS>(relRefPtr);
         REQUIRE(usesPtr->useStmt.getDeclaration() == "a");
         REQUIRE(usesPtr->useStmt.isDeclaration());
         REQUIRE(usesPtr->used.isWildcard());
     }
 
     SECTION("Invalid first argument (wildcard) for Uses") {
-        std::string testQuery = "assign a;\n Select a such that Uses (_, _)";
+        std::string testQuery = "such that Uses (_, _)";
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
         REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
     }
 
     SECTION("Invalid second argument non-variable design entity for Uses") {
-        std::string testQuery = "assign a;\n Select a such that Uses (1, a)";
+        std::string testQuery = "such that Uses (1, p)";
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
         REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::notVariableSynonymMessage));
     }
@@ -199,48 +201,45 @@ TEST_CASE("Parser parseSuchThat - Uses") {
 
 TEST_CASE("Parser parseSuchThat - Modifies") {
     SECTION ("Valid query with Modifies relationship") {
-        std::string testQuery = "assign a; \n Select a such that Modifies (a, _)";
+        std::string testQuery = "such that Modifies (a, _)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
         parser.parseSuchThat(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
 
-        std::shared_ptr<Modifies> modifiesPtr = std::dynamic_pointer_cast<Modifies>(relRefPtr);
+        std::shared_ptr<ModifiesS> modifiesPtr = std::dynamic_pointer_cast<ModifiesS>(relRefPtr);
         REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
         REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
         REQUIRE(modifiesPtr->modified.isWildcard());
     }
 
     SECTION("Invalid first argument (wildcard) for Modifies") {
-        std::string testQuery = "assign a;\n Select a such that Modifies (_, _)";
+        std::string testQuery = "such that Modifies (_, _)";
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
         REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
     }
 
     SECTION("Invalid second argument non-variable design entity for Modifies") {
-        std::string testQuery = "assign a;\n Select a such that Modifies (1, a)";
+        std::string testQuery = "such that Modifies (1, p)";
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
         REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::notVariableSynonymMessage));
     }
@@ -248,15 +247,15 @@ TEST_CASE("Parser parseSuchThat - Modifies") {
 
 TEST_CASE("Parser parseSuchThat - Follows") {
     SECTION ("Valid query with Follows relationship") {
-        std::string testQuery = "stmt s1, s2; \n Select s1 such that Follows (s1, 20)";
+        std::string testQuery = "such that Follows (s1, 20)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("s1", DesignEntity::STMT);
+        queryObj.addDeclaration("s2", DesignEntity::STMT);
         parser.parseSuchThat(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
@@ -272,15 +271,15 @@ TEST_CASE("Parser parseSuchThat - Follows") {
 
 TEST_CASE("Parser parseSuchThat - Follows*") {
     SECTION ("Valid query with Follows* relationship") {
-        std::string testQuery = "stmt s1, s2; \n Select s1 such that Follows* (s2, 20)";
+        std::string testQuery = "such that Follows* (s2, 20)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("s1", DesignEntity::STMT);
+        queryObj.addDeclaration("s2", DesignEntity::STMT);
         parser.parseSuchThat(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
@@ -296,15 +295,16 @@ TEST_CASE("Parser parseSuchThat - Follows*") {
 
 TEST_CASE("Parser parseSuchThat - Parent") {
     SECTION ("Valid query with Parent relationship") {
-        std::string testQuery = "stmt s1, s2; \n Select s1 such that Parent (20, s2)";
+        std::string testQuery = "such that Parent (20, s2)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("s1", DesignEntity::STMT);
+        queryObj.addDeclaration("s2", DesignEntity::STMT);
+
         parser.parseSuchThat(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
@@ -320,15 +320,16 @@ TEST_CASE("Parser parseSuchThat - Parent") {
 
 TEST_CASE("Parser parseSuchThat - Parent*") {
     SECTION ("Valid query with Parent* relationship") {
-        std::string testQuery = "stmt s1, s2; \n Select s1 such that Parent* (20, s2)";
+        std::string testQuery = "such that Parent* (20, s2)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("s1", DesignEntity::STMT);
+        queryObj.addDeclaration("s2", DesignEntity::STMT);
+
         parser.parseSuchThat(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
@@ -342,41 +343,158 @@ TEST_CASE("Parser parseSuchThat - Parent*") {
     }
 }
 
+TEST_CASE("Parser parseSuchThat - Next") {
+    SECTION ("Valid query with Next relationship") {
+        std::string testQuery = "such that Next (s1, s2)";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("s1", DesignEntity::STMT);
+        queryObj.addDeclaration("s2", DesignEntity::STMT);
+
+        parser.parseSuchThat(queryObj);
+
+        std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
+        REQUIRE(relRefPtr->getType() == RelRefType::NEXT);
+
+        std::shared_ptr<Next> nPtr = std::dynamic_pointer_cast<Next>(relRefPtr);
+        REQUIRE(nPtr->before.isDeclaration());
+        REQUIRE(nPtr->before.getDeclaration() == "s1");
+        REQUIRE(nPtr->after.isDeclaration());
+        REQUIRE(nPtr->after.getDeclaration() == "s2");
+    }
+}
+
+TEST_CASE("Parser parseSuchThat - Next*") {
+    SECTION ("Valid query with Next* relationship") {
+        std::string testQuery = "such that Next* (s1, s2)";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("s1", DesignEntity::STMT);
+        queryObj.addDeclaration("s2", DesignEntity::STMT);
+
+        parser.parseSuchThat(queryObj);
+
+        std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
+        REQUIRE(relRefPtr->getType() == RelRefType::NEXTT);
+
+        std::shared_ptr<NextT> nPtr = std::dynamic_pointer_cast<NextT>(relRefPtr);
+        REQUIRE(nPtr->before.isDeclaration());
+        REQUIRE(nPtr->before.getDeclaration() == "s1");
+        REQUIRE(nPtr->transitiveAfter.isDeclaration());
+        REQUIRE(nPtr->transitiveAfter.getDeclaration() == "s2");
+    }
+}
+
+TEST_CASE("Parser parseSuchThat - Calls") {
+    SECTION ("Valid query with Calls relationship") {
+        std::string testQuery = "such that Calls (p1, p2)";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("p1", DesignEntity::PROCEDURE);
+        queryObj.addDeclaration("p2", DesignEntity::PROCEDURE);
+
+        parser.parseSuchThat(queryObj);
+
+        std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
+        REQUIRE(relRefPtr->getType() == RelRefType::CALLS);
+
+        std::shared_ptr<Calls> cPtr = std::dynamic_pointer_cast<Calls>(relRefPtr);
+        REQUIRE(cPtr->caller.isDeclaration());
+        REQUIRE(cPtr->caller.getDeclaration() == "p1");
+        REQUIRE(cPtr->callee.isDeclaration());
+        REQUIRE(cPtr->callee.getDeclaration() == "p2");
+    }
+}
+
+TEST_CASE("Parser parseSuchThat - Calls*") {
+    SECTION ("Valid query with Calls* relationship") {
+        std::string testQuery = "such that Calls* (p1, p2)";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("p1", DesignEntity::PROCEDURE);
+        queryObj.addDeclaration("p2", DesignEntity::PROCEDURE);
+
+        parser.parseSuchThat(queryObj);
+
+        std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
+        REQUIRE(relRefPtr->getType() == RelRefType::CALLST);
+
+        std::shared_ptr<CallsT> cPtr = std::dynamic_pointer_cast<CallsT>(relRefPtr);
+        REQUIRE(cPtr->caller.isDeclaration());
+        REQUIRE(cPtr->caller.getDeclaration() == "p1");
+        REQUIRE(cPtr->transitiveCallee.isDeclaration());
+        REQUIRE(cPtr->transitiveCallee.getDeclaration() == "p2");
+    }
+}
+
 TEST_CASE("Parser parseExpSpec") {
     std::string testQuery = "_";
 
     Parser parser;
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
 
     REQUIRE(parser.parseExpSpec() == ExpSpec::ofWildcard());
 
     testQuery = "_\"x\"_";
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
 
     REQUIRE(parser.parseExpSpec() == ExpSpec::ofPartialMatch("x"));
 
     testQuery = "\"x\"";
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
 
     REQUIRE(parser.parseExpSpec() == ExpSpec::ofFullMatch("x"));
 
     testQuery = "_\"x\"";
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
     REQUIRE_THROWS_MATCHES(parser.parseExpSpec(), exceptions::PqlSyntaxException,
                            Catch::Message(messages::qps::parser::notExpectingTokenMessage));
 }
 
+TEST_CASE("Parser validateExpr") {
+    Parser parser;
+
+    REQUIRE_NOTHROW(parser.validateExpr("1"));
+    REQUIRE_NOTHROW(parser.validateExpr("x"));
+    REQUIRE_NOTHROW(parser.validateExpr("1+2-3"));
+    REQUIRE_NOTHROW(parser.validateExpr("1+3*x"));
+    REQUIRE_NOTHROW(parser.validateExpr("3/(1+x)"));
+    REQUIRE_NOTHROW(parser.validateExpr("(1+x)%3"));
+
+    REQUIRE_THROWS_MATCHES(parser.validateExpr("+temp"), exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::expressionInvalidGrammarMessage));
+
+    REQUIRE_THROWS_MATCHES(parser.validateExpr("temp-"), exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::expressionUnexpectedEndMessage));
+}
+
 TEST_CASE("Parser parsePattern - wildcard expression") {
-    std::string testQuery = "assign a; variable v;\n Select a pattern a (v, _)";
+    std::string testQuery = "pattern a (v, _)";
 
     Parser parser;
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
 
     Query queryObj;
 
-    parser.parseDeclarations(queryObj);
-    parser.parseDeclarations(queryObj);
-    parser.parseSelectFields(queryObj);
+    queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+    queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
     parser.parsePattern(queryObj);
 
     std::vector<Pattern> patterns = queryObj.getPattern();
@@ -389,16 +507,15 @@ TEST_CASE("Parser parsePattern - wildcard expression") {
 }
 
 TEST_CASE("Parser parsePattern - string expression") {
-    std::string testQuery = "assign a; variable v;\n Select a pattern a (v, \"x\")";
+    std::string testQuery = "pattern a (v, \"x\")";
 
     Parser parser;
-    parser.addPql(testQuery);
+    parser.addInput(testQuery);
 
     Query queryObj;
 
-    parser.parseDeclarations(queryObj);
-    parser.parseDeclarations(queryObj);
-    parser.parseSelectFields(queryObj);
+    queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+    queryObj.addDeclaration("v", DesignEntity::VARIABLE);
     parser.parsePattern(queryObj);
 
     std::vector<Pattern> patterns = queryObj.getPattern();
@@ -411,18 +528,16 @@ TEST_CASE("Parser parsePattern - string expression") {
 }
 
 TEST_CASE("Parser parsePattern - string expression with wildcard") {
-
     SECTION("Valid Pattern semantics") {
-        std::string testQuery = "assign a; variable v;\n Select a pattern a (v, _\"x\"_)";
+        std::string testQuery = "pattern a (v, _\"x\"_)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
         parser.parsePattern(queryObj);
 
         std::vector<Pattern> patterns = queryObj.getPattern();
@@ -435,63 +550,85 @@ TEST_CASE("Parser parsePattern - string expression with wildcard") {
     }
 
     SECTION("Invalid Pattern semantics") {
-        std::string testQuery = "assign a;\n Select a pattern a (a, _\"x\"_)";
+        std::string testQuery = "pattern a (p, _\"x\"_)";
 
         Parser parser;
-        parser.addPql(testQuery);
+        parser.addInput(testQuery);
 
         Query queryObj;
 
-        parser.parseDeclarations(queryObj);
-        parser.parseSelectFields(queryObj);
+        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+        queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
+        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
         REQUIRE_THROWS_MATCHES(parser.parsePattern(queryObj),
                                exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::notVariableSynonymMessage));
     }
 }
 
-TEST_CASE("Parser isEntRef") {
-    Parser parser;
-    Query query;
-    Token token = {"", TokenType::STRING};
-    REQUIRE(parser.isEntRef(token, query));
-    token = {"", TokenType::PATTERN};
-    REQUIRE(!(parser.isEntRef(token, query)));
-}
-
-TEST_CASE("Parser isSmtRef") {
-    Parser parser;
-    Query query;
-    Token token = {"", TokenType::NUMBER};
-    REQUIRE(parser.isStmtRef(token, query));
-    token = {"", TokenType::PATTERN};
-    REQUIRE(!(parser.isEntRef(token, query)));
-}
-
 TEST_CASE("Parser parseStmtRef") {
-    Parser parser;
-    parser.addPql("3");
-    Query query;
-    StmtRef sr = parser.parseStmtRef(query);
-    REQUIRE(sr.isLineNo());
-    REQUIRE(sr.getLineNo() == 3);
+    SECTION ("Valid StmtRef") {
+        Parser parser;
+        parser.addInput("3");
+        Query query;
+        StmtRef sr = parser.parseStmtRef(query);
+        REQUIRE(sr.isLineNo());
+        REQUIRE(sr.getLineNo() == 3);
+    }
+
+    SECTION ("Invalid StmtRef - argument is a string") {
+        Parser parser;
+        parser.addInput("\"x\"");
+        Query query;
+        REQUIRE_THROWS_MATCHES(parser.parseStmtRef(query), exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::invalidStmtRefMessage));
+    }
+
+    SECTION ("Invalid StmtRef - synonym is not of statement type") {
+        Parser parser;
+        parser.addInput("v");
+        Query query;
+        query.addDeclaration("v", DesignEntity::VARIABLE);
+        REQUIRE_THROWS_MATCHES(parser.parseStmtRef(query), exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::synonymNotStatementTypeMessage));
+    }
 }
 
 TEST_CASE("Parser parseEntRef") {
-    Parser parser;
-    parser.addPql("\"x\"");
-    Query query;
-    EntRef er = parser.parseEntRef(query);
-    REQUIRE(er.isVarName());
-    REQUIRE(er.getVariableName() == "x");
+    SECTION ("Valid EntRef") {
+        Parser parser;
+        parser.addInput("\"x\"");
+        Query query;
+        EntRef er = parser.parseEntRef(query);
+        REQUIRE(er.isVarName());
+        REQUIRE(er.getVariableName() == "x");
+    }
+
+    SECTION ("Invalid EntRef - argument is a number") {
+        Parser parser;
+        parser.addInput("3");
+        Query query;
+        REQUIRE_THROWS_MATCHES(parser.parseEntRef(query), exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::invalidEntRefMessage));
+    }
+
+    SECTION ("Invalid EntRef - synonym is not of entity type") {
+        Parser parser;
+        parser.addInput("v");
+        Query query;
+        query.addDeclaration("v", DesignEntity::STMT);
+        REQUIRE_THROWS_MATCHES(parser.parseEntRef(query), exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::synonymNotEntityTypeMessage));
+    }
+
 }
 
 TEST_CASE("Parser parseRelRefVariables") {
-
     SECTION("parseRelRefVariables - Follows") {
         Query queryObj;
         Parser parser;
-        parser.lexer.text = "(3, 5)";
+        parser.lexer.text = "3, 5";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Follows>(queryObj, &Follows::follower,
                                                                            &Follows::followed);
         REQUIRE(ptr.get()->getType() == RelRefType::FOLLOWS);
@@ -506,7 +643,7 @@ TEST_CASE("Parser parseRelRefVariables") {
     SECTION("parseRelRefVariables - FollowsT") {
         Query queryObj;
         Parser parser;
-        parser.lexer.text = "(3, 10)";
+        parser.lexer.text = "3, 10";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<FollowsT>(queryObj, &FollowsT::follower,
                                                                             &FollowsT::transitiveFollowed);
         REQUIRE(ptr.get()->getType() == RelRefType::FOLLOWST);
@@ -521,7 +658,7 @@ TEST_CASE("Parser parseRelRefVariables") {
     SECTION("parseRelRefVariables - Parent") {
         Query queryObj;
         Parser parser;
-        parser.lexer.text = "(3, 5)";
+        parser.lexer.text = "3, 5";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Parent>(queryObj, &Parent::parent, &Parent::child);
         REQUIRE(ptr.get()->getType() == RelRefType::PARENT);
 
@@ -535,7 +672,7 @@ TEST_CASE("Parser parseRelRefVariables") {
     SECTION("parseRelRefVariables - ParentT") {
         Query queryObj;
         Parser parser;
-        parser.lexer.text = "(3, 10)";
+        parser.lexer.text = "3, 10";
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<ParentT>(queryObj, &ParentT::parent,
                                                                            &ParentT::transitiveChild);
         REQUIRE(ptr.get()->getType() == RelRefType::PARENTT);
@@ -551,79 +688,260 @@ TEST_CASE("Parser parseRelRefVariables") {
         Query queryObj;
         Parser parser;
         queryObj.addDeclaration("v", DesignEntity::VARIABLE);
-        parser.lexer.text = "(v, v)";
+        parser.lexer.text = "v, v";
         REQUIRE_THROWS_MATCHES(parser.parseRelRefVariables<Follows>(queryObj, &Follows::follower, &Follows::followed),
                                exceptions::PqlSemanticException,
-                               Catch::Message(messages::qps::parser::notStatementSynonymMessage));
+                               Catch::Message(messages::qps::parser::synonymNotStatementTypeMessage));
     }
+
+    SECTION("parseRelRefVariables - Next") {
+        Query queryObj;
+        Parser parser;
+        parser.lexer.text = "3, 5";
+        std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Next>(queryObj, &Next::before,
+                                                                           &Next::after);
+        REQUIRE(ptr.get()->getType() == RelRefType::NEXT);
+
+        Next *nPtr = std::dynamic_pointer_cast<Next>(ptr).get();
+        REQUIRE(nPtr->before.isLineNo());
+        REQUIRE(nPtr->before.getLineNo() == 3);
+        REQUIRE(nPtr->after.isLineNo());
+        REQUIRE(nPtr->after.getLineNo() == 5);
+    }
+
+    SECTION("parseRelRefVariables - NextT") {
+        Query queryObj;
+        Parser parser;
+        parser.lexer.text = "s1, s2";
+        queryObj.addDeclaration("s1", DesignEntity::STMT);
+        queryObj.addDeclaration("s2", DesignEntity::STMT);
+        std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<NextT>(queryObj, &NextT::before,
+                                                                        &NextT::transitiveAfter);
+        REQUIRE(ptr.get()->getType() == RelRefType::NEXTT);
+
+        NextT *nPtr = std::dynamic_pointer_cast<NextT>(ptr).get();
+        REQUIRE(nPtr->before.isDeclaration());
+        REQUIRE(nPtr->before.getDeclaration() == "s1");
+        REQUIRE(nPtr->transitiveAfter.isDeclaration());
+        REQUIRE(nPtr->transitiveAfter.getDeclaration() == "s2");
+    }
+
+    SECTION("parseRelRefVariables - Calls") {
+        Query queryObj;
+        Parser parser;
+        parser.lexer.text = "p1, p2";
+        queryObj.addDeclaration("p1", DesignEntity::PROCEDURE);
+        queryObj.addDeclaration("p2", DesignEntity::PROCEDURE);
+
+        std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<Calls>(queryObj, &Calls::caller,
+                                                                            &Calls::callee);
+        REQUIRE(ptr.get()->getType() == RelRefType::CALLS);
+
+        Calls *cPtr = std::dynamic_pointer_cast<Calls>(ptr).get();
+        REQUIRE(cPtr->caller.isDeclaration());
+        REQUIRE(cPtr->caller.getDeclaration() == "p1");
+        REQUIRE(cPtr->callee.isDeclaration());
+        REQUIRE(cPtr->callee.getDeclaration() == "p2");
+    }
+
+    SECTION("parseRelRefVariables - Calls*") {
+        Query queryObj;
+        Parser parser;
+        parser.lexer.text = "\"first\", \"second\"";
+
+        std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<CallsT>(queryObj, &CallsT::caller,
+                                                                         &CallsT::transitiveCallee);
+        REQUIRE(ptr.get()->getType() == RelRefType::CALLST);
+
+        CallsT *cPtr = std::dynamic_pointer_cast<CallsT>(ptr).get();
+        REQUIRE(cPtr->caller.isVarName());
+        REQUIRE(cPtr->caller.getVariableName() == "first");
+        REQUIRE(cPtr->transitiveCallee.isVarName());
+        REQUIRE(cPtr->transitiveCallee.getVariableName() == "second");
+    }
+
+
 }
 
 TEST_CASE("Parser parseModifiesOrUsesVariables") {
     Query queryObj;
     Parser parser;
 
-    SECTION("Valid Modifies Rel Variables") {
-        parser.lexer.text = "(3, \"x\")";
+    SECTION("Valid ModifiesS Rel Variables") {
+        parser.lexer.text = "3, \"x\"";
         std::shared_ptr<RelRef> ptr = parser.parseModifiesOrUsesVariables(queryObj, TokenType::MODIFIES);
         REQUIRE(ptr.get()->getType() == RelRefType::MODIFIESS);
 
-        std::shared_ptr<Modifies> sharedPtr = std::dynamic_pointer_cast<Modifies>(ptr);
-        Modifies *mPtr = sharedPtr.get();
+        std::shared_ptr<ModifiesS> sharedPtr = std::dynamic_pointer_cast<ModifiesS>(ptr);
+        ModifiesS *mPtr = sharedPtr.get();
         REQUIRE(mPtr->modifiesStmt.isLineNo());
         REQUIRE(mPtr->modifiesStmt.getLineNo() == 3);
         REQUIRE(mPtr->modified.isVarName());
         REQUIRE(mPtr->modified.getVariableName() == "x");
     }
 
-    SECTION("Invalid Modifies Rel Variables - Wildcard in first argument") {
-        parser.lexer.text = "(_, \"x\")";
+    SECTION("Invalid ModifiesS Rel Variables - Wildcard in first argument") {
+        parser.lexer.text = "_, \"x\"";
         REQUIRE_THROWS_MATCHES(parser.parseModifiesOrUsesVariables(queryObj, TokenType::MODIFIES),
                                exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
     }
 
-    SECTION("Invalid Modifies Rel Variables - synonym does not belong to variable") {
-        parser.lexer.text = "(_, x)";
+    SECTION("Invalid ModifiesS Rel Variables - synonym does not belong to variable") {
+        parser.lexer.text = "3, x";
         queryObj = {};
-        queryObj.addDeclaration("x", DesignEntity::ASSIGN);
+        queryObj.addDeclaration("x", DesignEntity::PROCEDURE);
         REQUIRE_THROWS_MATCHES(parser.parseModifiesOrUsesVariables(queryObj, TokenType::MODIFIES),
                                exceptions::PqlSemanticException,
-                               Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
+                               Catch::Message(messages::qps::parser::notVariableSynonymMessage));
     }
 
-    SECTION("Valid Uses Rel Variables") {
-        parser.lexer.text = "(3, \"x\")";
+    SECTION("Valid ModifiesP Rel Variables - First argument is of design entity procedure") {
+        parser.lexer.text = "p, _";
+        queryObj = {};
+        queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
+
+        std::shared_ptr<RelRef> ptr = parser.parseModifiesOrUsesVariables(queryObj, TokenType::MODIFIES);
+        REQUIRE(ptr.get()->getType() == RelRefType::MODIFIESP);
+
+        std::shared_ptr<ModifiesP> sharedPtr = std::dynamic_pointer_cast<ModifiesP>(ptr);
+        ModifiesP *mPtr = sharedPtr.get();
+        REQUIRE(mPtr->modifiesProc.isDeclaration());
+        REQUIRE(mPtr->modifiesProc.getDeclaration() == "p");
+        REQUIRE(mPtr->modified.isWildcard());
+    }
+
+    SECTION("Valid UsesP Rel Variables - First argument is of string (Procedure name) ") {
+        parser.lexer.text = "\"Monke\", _";
+        queryObj = {};
+
+        std::shared_ptr<RelRef> ptr = parser.parseModifiesOrUsesVariables(queryObj, TokenType::MODIFIES);
+        REQUIRE(ptr.get()->getType() == RelRefType::MODIFIESP);
+
+        std::shared_ptr<ModifiesP> sharedPtr = std::dynamic_pointer_cast<ModifiesP>(ptr);
+        ModifiesP *mPtr = sharedPtr.get();
+        REQUIRE(mPtr->modifiesProc.isVarName());
+        REQUIRE(mPtr->modifiesProc.getVariableName() == "Monke");
+        REQUIRE(mPtr->modified.isWildcard());
+    }
+
+
+    SECTION("Valid UsesS Rel Variables") {
+        parser.lexer.text = "3, \"x\"";
         std::shared_ptr<RelRef> ptr = parser.parseModifiesOrUsesVariables(queryObj, TokenType::USES);
         REQUIRE(ptr.get()->getType() == RelRefType::USESS);
 
-        std::shared_ptr<Uses> sharedPtr = std::dynamic_pointer_cast<Uses>(ptr);
-        Uses *uPtr = sharedPtr.get();
+        std::shared_ptr<UsesS> sharedPtr = std::dynamic_pointer_cast<UsesS>(ptr);
+        UsesS *uPtr = sharedPtr.get();
         REQUIRE(uPtr->useStmt.isLineNo());
         REQUIRE(uPtr->useStmt.getLineNo() == 3);
         REQUIRE(uPtr->used.isVarName());
         REQUIRE(uPtr->used.getVariableName() == "x");
     }
 
-    SECTION("Invalid Uses Rel Variables - Wildcard in first argument") {
-        parser.lexer.text = "(_, \"x\")";
+    SECTION("Invalid UsesS Rel Variables - Wildcard in first argument") {
+        parser.lexer.text = "_, \"x\"";
         REQUIRE_THROWS_MATCHES(parser.parseModifiesOrUsesVariables(queryObj, TokenType::USES),
                                exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
     }
+
+    SECTION("Invalid UsesS Rel Variables - synonym does not belong to variable") {
+        parser.lexer.text = "3, x";
+        queryObj = {};
+        queryObj.addDeclaration("x", DesignEntity::PROCEDURE);
+        REQUIRE_THROWS_MATCHES(parser.parseModifiesOrUsesVariables(queryObj, TokenType::USES),
+                               exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::notVariableSynonymMessage));
+    }
+
+    SECTION("Valid UsesP Rel Variables - First argument is of design entity procedure") {
+        parser.lexer.text = "p, _";
+        queryObj = {};
+        queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
+
+        std::shared_ptr<RelRef> ptr = parser.parseModifiesOrUsesVariables(queryObj, TokenType::USES);
+        REQUIRE(ptr.get()->getType() == RelRefType::USESP);
+
+        std::shared_ptr<UsesP> sharedPtr = std::dynamic_pointer_cast<UsesP>(ptr);
+        UsesP *uPtr = sharedPtr.get();
+        REQUIRE(uPtr->useProc.isDeclaration());
+        REQUIRE(uPtr->useProc.getDeclaration() == "p");
+        REQUIRE(uPtr->used.isWildcard());
+    }
+
+    SECTION("Valid UsesP Rel Variables - First argument is of string (Procedure name) ") {
+        parser.lexer.text = "\"Monke\", _";
+        queryObj = {};
+
+        std::shared_ptr<RelRef> ptr = parser.parseModifiesOrUsesVariables(queryObj, TokenType::USES);
+        REQUIRE(ptr.get()->getType() == RelRefType::USESP);
+
+        std::shared_ptr<UsesP> sharedPtr = std::dynamic_pointer_cast<UsesP>(ptr);
+        UsesP *uPtr = sharedPtr.get();
+        REQUIRE(uPtr->useProc.isVarName());
+        REQUIRE(uPtr->useProc.getVariableName() == "Monke");
+        REQUIRE(uPtr->used.isWildcard());
+    }
 }
 
 TEST_CASE("Parser parseRelRef") {
-    Query queryObj;
-    queryObj.addDeclaration("x", DesignEntity::VARIABLE);
-    Parser parser;
-    parser.lexer.text = "Uses(x,_)";
-    std::shared_ptr<RelRef> ptr = parser.parseRelRef(queryObj);
-    REQUIRE(ptr.get()->getType() == RelRefType::USESS);
 
-    std::shared_ptr<Uses> sharedPtr = std::dynamic_pointer_cast<Uses>(ptr);
-    Uses *uPtr = sharedPtr.get();
-    REQUIRE(uPtr->useStmt.isDeclaration());
-    REQUIRE(uPtr->used.isWildcard());
+    SECTION("UseS RelRef") {
+        Query queryObj;
+        queryObj.addDeclaration("s", DesignEntity::STMT);
+        Parser parser;
+        parser.lexer.text = "Uses(s,_)";
+        std::shared_ptr<RelRef> ptr = parser.parseRelRef(queryObj);
+        REQUIRE(ptr.get()->getType() == RelRefType::USESS);
+
+        std::shared_ptr<UsesS> sharedPtr = std::dynamic_pointer_cast<UsesS>(ptr);
+        UsesS *uPtr = sharedPtr.get();
+        REQUIRE(uPtr->useStmt.isDeclaration());
+        REQUIRE(uPtr->used.isWildcard());
+    }
+
+    SECTION("UsesP RelRef") {
+        Query queryObj;
+        queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
+        Parser parser;
+        parser.lexer.text = "Uses(p,_)";
+        std::shared_ptr<RelRef> ptr = parser.parseRelRef(queryObj);
+        REQUIRE(ptr.get()->getType() == RelRefType::USESP);
+
+        std::shared_ptr<UsesP> sharedPtr = std::dynamic_pointer_cast<UsesP>(ptr);
+        UsesP *uPtr = sharedPtr.get();
+        REQUIRE(uPtr->useProc.isDeclaration());
+        REQUIRE(uPtr->used.isWildcard());
+    }
+
+    SECTION("ModifiesS RelRef") {
+        Query queryObj;
+        queryObj.addDeclaration("s", DesignEntity::STMT);
+        Parser parser;
+        parser.lexer.text = "Modifies(s,_)";
+        std::shared_ptr<RelRef> ptr = parser.parseRelRef(queryObj);
+        REQUIRE(ptr.get()->getType() == RelRefType::MODIFIESS);
+
+        std::shared_ptr<ModifiesS> sharedPtr = std::dynamic_pointer_cast<ModifiesS>(ptr);
+        ModifiesS *mPtr = sharedPtr.get();
+        REQUIRE(mPtr->modifiesStmt.isDeclaration());
+        REQUIRE(mPtr->modified.isWildcard());
+    }
+
+    SECTION("ModifiesP RelRef") {
+        Query queryObj;
+        queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
+        Parser parser;
+        parser.lexer.text = "Modifies(p,_)";
+        std::shared_ptr<RelRef> ptr = parser.parseRelRef(queryObj);
+        REQUIRE(ptr.get()->getType() == RelRefType::MODIFIESP);
+
+        std::shared_ptr<ModifiesP> sharedPtr = std::dynamic_pointer_cast<ModifiesP>(ptr);
+        ModifiesP *mPtr = sharedPtr.get();
+        REQUIRE(mPtr->modifiesProc.isDeclaration());
+        REQUIRE(mPtr->modified.isWildcard());
+    }
 }
 
 TEST_CASE("Parser parseQuery") {
@@ -649,7 +967,7 @@ TEST_CASE("Parser parseQuery") {
     std::shared_ptr<RelRef> relRefPtr = (query.getSuchthat())[0];
     REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
 
-    std::shared_ptr<Modifies> modifiesPtr = std::dynamic_pointer_cast<Modifies>(relRefPtr);
+    std::shared_ptr<ModifiesS> modifiesPtr = std::dynamic_pointer_cast<ModifiesS>(relRefPtr);
     REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
     REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
     REQUIRE(modifiesPtr->modified.isDeclaration());
@@ -688,7 +1006,7 @@ TEST_CASE("Parser parsePql") {
     std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
     REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
 
-    std::shared_ptr<Modifies> modifiesPtr = std::dynamic_pointer_cast<Modifies>(relRefPtr);
+    std::shared_ptr<ModifiesS> modifiesPtr = std::dynamic_pointer_cast<ModifiesS>(relRefPtr);
     REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
     REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
     REQUIRE(modifiesPtr->modified.isWildcard());
@@ -720,21 +1038,21 @@ TEST_CASE("Parser isValidStatement") {
     query.addDeclaration("c", DesignEntity::CONSTANT);
 
     // Valid declarations
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("s")));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("a")));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("pn")));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("r")));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("ifs")));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("w")));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("cl")));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("s", DesignEntity::STMT)));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("a", DesignEntity::ASSIGN)));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("pn", DesignEntity::PRINT)));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("r", DesignEntity::READ)));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("ifs", DesignEntity::IF)));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("w", DesignEntity::WHILE)));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("cl", DesignEntity::CALL)));
 
     // Invalid statement types
-    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("v"))));
-    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("p"))));
-    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("c"))));
+    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("v", DesignEntity::VARIABLE))));
+    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("p", DesignEntity::PROCEDURE))));
+    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("c", DesignEntity::CONSTANT))));
 
     // Declarations which do not exist
-    REQUIRE_THROWS_MATCHES(p.isValidStatementType(query, StmtRef::ofDeclaration("x")),
+    REQUIRE_THROWS_MATCHES(p.isValidStatementType(query, StmtRef::ofDeclaration("x", qps::query::DesignEntity::ASSIGN)),
                            exceptions::PqlSyntaxException,
                            Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
 }

@@ -32,7 +32,7 @@ TEST_CASE("Lexer hasPrefx") {
 }
 
 TEST_CASE("Lexer getNextToken") {
-    Lexer lexer("123 hi123 hi \"test\" ;()_,.");
+    Lexer lexer("123 hi123 hi \"test\" ;()_,$+-*/%");
 
     auto t1 = lexer.getNextToken();
     REQUIRE(t1.getTokenType() == TokenType::NUMBER);
@@ -75,6 +75,27 @@ TEST_CASE("Lexer getNextToken") {
     REQUIRE(t1.getText() == "");
 
     t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::PLUS);
+    REQUIRE(t1.getText() == "+");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::MINUS);
+    REQUIRE(t1.getText() == "-");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::MULTIPLY);
+    REQUIRE(t1.getText() == "*");
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::DIVIDE);
+    REQUIRE(t1.getText() == "/");
+
+
+    t1 = lexer.getNextToken();
+    REQUIRE(t1.getTokenType() == TokenType::MODULO);
+    REQUIRE(t1.getText() == "%");
+
+    t1 = lexer.getNextToken();
     REQUIRE(t1.getTokenType() == TokenType::END_OF_FILE);
 }
 
@@ -85,7 +106,7 @@ TEST_CASE("Lexer peekNextToken") {
 }
 
 TEST_CASE("Lexer getNextReservedToken") {
-    Lexer lexer("Select Modifies Uses Follows Follows* Parent Parent* pattern such that");
+    Lexer lexer("Select Modifies Uses Follows Follows* Parent Parent* Next Next* Calls Calls* pattern such that");
 
     auto t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::SELECT);
@@ -114,6 +135,22 @@ TEST_CASE("Lexer getNextReservedToken") {
     t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::PARENT_T);
     REQUIRE(t1.getText() == "Parent*");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::NEXT);
+    REQUIRE(t1.getText() == "Next");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::NEXT_T);
+    REQUIRE(t1.getText() == "Next*");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::CALLS);
+    REQUIRE(t1.getText() == "Calls");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::CALLS_T);
+    REQUIRE(t1.getText() == "Calls*");
 
     t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::PATTERN);

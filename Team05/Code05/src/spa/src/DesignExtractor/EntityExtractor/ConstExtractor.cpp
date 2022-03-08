@@ -1,5 +1,5 @@
 #include "ConstExtractor.h"
-#include "PKB/PKBDataTypes.h"
+#include "PKB/PKBField.h"
 
 namespace sp {
 namespace design_extractor {

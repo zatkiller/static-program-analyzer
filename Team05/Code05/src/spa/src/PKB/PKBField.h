@@ -3,11 +3,48 @@
 #include <variant>
 #include <vector>
 #include <stdexcept>
-
-#include "PKBEntityType.h"
-#include "PKBDataTypes.h"
-#include "PKBFieldType.h"
 #include <optional>
+#include <string>
+
+#include "PKBCommons.h"
+
+enum class PKBEntityType {
+    STATEMENT, VARIABLE, PROCEDURE, CONST
+};
+
+enum class PKBFieldType {
+    CONCRETE, DECLARATION, WILDCARD
+};
+
+typedef int CONST;
+
+typedef struct VAR_NAME {
+    VAR_NAME(std::string str) : name(str) {}
+    std::string name;
+
+    bool operator == (const VAR_NAME&) const;
+    bool operator < (const VAR_NAME&) const;
+} VAR_NAME;
+
+typedef struct PROC_NAME {
+    PROC_NAME(std::string str) : name(str) {}
+    std::string name;
+
+    bool operator == (const PROC_NAME&) const;
+    bool operator < (const PROC_NAME&) const;
+} PROC_NAME;
+
+typedef struct STMT_LO {
+    STMT_LO(int statementNum) : statementNum(statementNum), type(std::nullopt) {}
+    STMT_LO(int statementNum, StatementType type) : statementNum(statementNum), type(type) {}
+    int statementNum;
+    std::optional<StatementType> type;
+
+    bool hasStatementType();
+    bool operator == (const STMT_LO&) const;
+    bool operator < (const STMT_LO&) const;
+} STMT_LO;
+
 
 using Content = std::variant<std::monostate, STMT_LO, VAR_NAME, PROC_NAME, CONST>;
 
@@ -15,16 +52,13 @@ using Content = std::variant<std::monostate, STMT_LO, VAR_NAME, PROC_NAME, CONST
 * A data structure to represent a program design entity.
 */
 struct PKBField {
-    /* Type of field */
-    PKBFieldType fieldType;
-
-    /* Type of program design entity */
-    PKBEntityType entityType;
-
+    PKBFieldType fieldType; /**< Type of field */
+    PKBEntityType entityType; /**< Type of program design entity */
     std::optional<StatementType> statementType;
     Content content;
 
-    PKBField() {};
+    PKBField() {}
+
     /**
     * Creates a concrete field. The type of data must be a PKBEntityType.
     */
@@ -45,7 +79,7 @@ struct PKBField {
             type = PKBEntityType::CONST;
             break;
         default:
-            throw std::invalid_argument("Content of a concrete field must be provided.");
+            throw std::invalid_argument("Invalid entity type provided.");
         }
 
         return PKBField{ PKBFieldType::CONCRETE, type, content };

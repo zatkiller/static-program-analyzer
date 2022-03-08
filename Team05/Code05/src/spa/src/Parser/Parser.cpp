@@ -7,6 +7,7 @@
 #include <vector>
 #include <variant>
 #include <utility>
+#include <unordered_map>
 
 #include "Lexer.h"
 #include "Parser.h"
@@ -183,45 +184,94 @@ ast::CondOp parseCondOp(deque<Token>& tokens) {
 }
 
 /**
- * Helper method for shunting yard algorithm
+ * @brief a map that maps each char symbol to the equivalent enum ::BinOp
  */
-ast::BinOp charToBinOp(char c) {
-    switch (c) {
-    case '+': return ast::BinOp::PLUS;
-    case '-': return ast::BinOp::MINUS;
-    case '*': return ast::BinOp::MULT;
-    case '/': return ast::BinOp::DIVIDE;
-    case '%': return ast::BinOp::MOD;
-}
-}
+std::unordered_map<char, ast::BinOp> binOpMap = {
+    {'+', ast::BinOp::PLUS},
+    {'-', ast::BinOp::MINUS},
+    {'*', ast::BinOp::MULT},
+    {'/', ast::BinOp::DIVIDE},
+    {'%', ast::BinOp::MOD}
+};
 
 }  // namespace AtomicParser
 
 /** ================================= EXPR PARSER ================================= */
 namespace expr_parser {
+/**
+ * @brief a map that maps each char operator to the equivalent precedence for Shunting-Yard.
+ */
+std::unordered_map<char, int> binOpPrecedence = {
+    {'+', 10},
+    {'-', 10},
+    {'*', 20},
+    {'/', 20},
+    {'%', 20}
+};
+
+/**
+ * @brief Helper function for Shunting-Yard that pop 2 operands and make BinExpr with an operator.
+ * 
+ * @param operands  a reference to a stack of operands
+ * @param operators a reference to a stack of operators
+ */
+void popAndPush(std::stack<std::unique_ptr<ast::Expr>>& operands, std::stack<char>& operators) {
+    char top = operators.top();
+    auto expr1 = move(operands.top());
+    operands.pop();
+    auto expr2 = move(operands.top());
+    operands.pop();
+    operands.push(make_unique<ast::BinExpr>(AtomicParser::binOpMap[top], move(expr2), move(expr1)));
+    operators.pop();
+}
+
+/**
+ * @brief Helper function for Shunting-Yard that handles a valid ::BinOp operand
+ * 
+ * @param operands  a reference to a stack of operands
+ * @param operators a reference to a stack of operators
+ * @param operand    an operand that is being parsed
+ */
+void handleOperand(
+    std::stack<std::unique_ptr<ast::Expr>>& operands, 
+    std::stack<char>& operators, 
+    char operand) {
+    while (!operators.empty()) {
+        char top = operators.top();
+        if (top == '(' || binOpPrecedence[top] < binOpPrecedence[operand]) {
+            break;
+        }
+        popAndPush(operands, operators);   // make BinExpr with two operands and one operator
+    }
+    operators.push(operand);
+}
+
+/**
+ * @brief Helper function for Shunting-Yard that handles the closing parenthesis ')'
+ * @details Helper function will keep popping and forming expressions until a matching '(' is found.
+ * If it is found, the expression can continue to be parsed.
+ * Otherwise, it is the end of the expression. 
+ * 
+ * @param operands  a reference to a stack of operands
+ * @param operators a reference to a stack of operators
+ * @return a bool indicating whether it is the end of an expression or not  
+ */
+bool handleClosingParen(std::stack<std::unique_ptr<ast::Expr>>& operands, std::stack<char>& operators) {
+    while (!operators.empty()) {
+        char top = operators.top();
+        if (top == '(') {
+            return false;  // not the end of expr
+        }
+        popAndPush(operands, operators);  // make BinExpr with two operands and one operator
+    }
+    return true;
+}
+
 unique_ptr<ast::Expr> shuntingYardParser(deque<Token>& tokens) {
     // converting from infix to postfix expr
-    std::map<char, string> binOpPrecedence;
-    binOpPrecedence['+'] = 10;
-    binOpPrecedence['-'] = 10;
-    binOpPrecedence['*'] = 20;
-    binOpPrecedence['/'] = 20;
-    binOpPrecedence['%'] = 20;
-
     std::stack<std::unique_ptr<ast::Expr>> operands;
     deque<Token> queue;
     std::stack<char> operators;
-
-    auto popAndPush = [&]() {
-        // Pop 2 from operands, make BinExpr with symbol.
-        char top = operators.top();
-        auto expr1 = move(operands.top());
-        operands.pop();
-        auto expr2 = move(operands.top());
-        operands.pop();
-        operands.push(make_unique<ast::BinExpr>(AtomicParser::charToBinOp(top), move(expr2), move(expr1)));
-        operators.pop();
-    };
 
     bool isEnd = false;
     do {
@@ -243,49 +293,20 @@ unique_ptr<ast::Expr> shuntingYardParser(deque<Token>& tokens) {
                 isEnd = true;
                 break;
             }
-
             // If the symbol is (, we push it onto stack and continue
             if (symbol == '(') {
                 operators.push(symbol);
                 tokens.pop_front();
                 // If it's operators, we resolve what we can
-            } else if (symbol == '*' || symbol == '/' || symbol == '%') {
-                while (!operators.empty()) {
-                    char top = operators.top();
-                    if (top == '(' || binOpPrecedence[top] < binOpPrecedence[symbol]) {
-                        break;
-                    }
-
-                    // Pop 2 from operands, make BinExpr with symbol.
-                    popAndPush();
-                }
-                operators.push(symbol);
-                tokens.pop_front();
-            } else if (symbol == '+' || symbol == '-') {
-                while (!operators.empty()) {
-                    char top = operators.top();
-                    if (top == '(' || binOpPrecedence[top] < binOpPrecedence[symbol]) {
-                        break;
-                    }
-
-                    // Pop 2 from operands, make BinExpr with symbol.
-                    popAndPush();
-                }
-                operators.push(symbol);
+            } else if (symbol == '*' || symbol == '/' || symbol == '%' || symbol == '+' || symbol == '-') {
+                handleOperand(operands, operators, symbol);
                 tokens.pop_front();
             } else if (symbol == ')') {
-                // assume this is the closing bracket unless there is matching open bracket in the stack.
-                isEnd = true;
-                while (!operators.empty()) {
-                    char top = operators.top();
-                    if (top == '(') {
-                        operators.pop();
-                        tokens.pop_front();
-                        isEnd = false;
-                        break;
-                    }
-                    // Pop 2 from operands, make BinExpr with symbol.
-                    popAndPush();
+                isEnd = handleClosingParen(operands, operators);
+                if (!isEnd) {
+                    // if it is not the end of parsing the expr, we found the matching parenthesis
+                    operators.pop();  // consume '('
+                    tokens.pop_front();  // consume ')'
                 }
             } else {
                 // If it's not a symbol we are expecting, exit.
@@ -297,12 +318,11 @@ unique_ptr<ast::Expr> shuntingYardParser(deque<Token>& tokens) {
     } while (!isEnd && tokens.front().type != TokenType::eof);
 
     while (!operators.empty()) {
-        popAndPush();
+        popAndPush(operands, operators);
     }
 
     if (operands.size() != 1) {
-        Logger(Level::ERROR) << "Some parsing error";
-        throw invalid_argument("Unexpected Termination!");
+        throwInvalidArgError("Expr Parsing Error!");
     }
 
     return move(operands.top());
@@ -344,10 +364,7 @@ bool isCondExpr(deque<Token>& tokens) {
                 break;
             }
             if (openBrCount == 0 && sym != ')') {
-                if (sym == '&' || sym == '|') {
-                    return true;
-                }
-                return false;
+                return sym == '&' || sym == '|';
             } else if (openBrCount < 0) {
                 return true;
             }
@@ -361,7 +378,6 @@ bool isCondExpr(deque<Token>& tokens) {
 }
 
 unique_ptr<ast::CondExpr> parse(deque<Token>& tokens) {
-    // Token currToken = getNextToken(tokens);
     Token currToken = tokens.front();
     unique_ptr<ast::CondExpr> condExprResult;
     if (currToken.type == TokenType::special) {
@@ -479,6 +495,22 @@ unique_ptr<ast::Statement> parseIfStmt(deque<Token>& tokens) {
     );
 }
 
+unique_ptr<ast::Statement> parseCallStmt(deque<Token>& tokens) {
+    int lineNo = lineCount++;
+    checkAndConsume("call", tokens);
+    // get procName
+    auto currToken = getNextToken(tokens);
+    if (currToken.type != TokenType::name) {
+        throwUnexpectedToken("procName");
+    }
+    string procName = get<string>(currToken.value);
+    checkAndConsume(';', tokens);
+    return make_unique<ast::Call>(
+        lineNo,
+        procName
+    );
+}
+
 ast::StmtLst parse(deque<Token>& tokens) {
     vector<unique_ptr<ast::Statement>> list;
     do {
@@ -496,6 +528,8 @@ ast::StmtLst parse(deque<Token>& tokens) {
             list.push_back(move(parseWhileStmt(tokens)));
         } else if (*keyword == "if") {
             list.push_back(move(parseIfStmt(tokens)));
+        } else if (*keyword == "call") {
+            list.push_back(move(parseCallStmt(tokens)));
         } else {
             list.push_back(move(parseAssignStmt(tokens)));
         }
@@ -527,13 +561,19 @@ unique_ptr<ast::Procedure> parseProcedure(deque<Token>& tokens) {
 }
 
 unique_ptr<ast::Program> parseProgram(deque<Token>& tokens) {
-    Token currToken = tokens.front();
-    if (currToken.type != TokenType::name || get<string>(currToken.value) != "procedure") {
-        throwUnexpectedToken("procedure");
+    if (tokens.empty() || tokens.front().type == TokenType::eof) {
+        throwInvalidArgError("Empty program received!");
     }
-    auto resultProc = parseProcedure(tokens);
-    currToken = getNextToken(tokens);  // consume eof
-    return make_unique<ast::Program>(move(resultProc));
+    std::vector<unique_ptr<ast::Procedure>> res;
+    while (!tokens.empty() && tokens.front().type != TokenType::eof) {
+        if (tokens.front().type != TokenType::name || get<string>(tokens.front().value) != "procedure") {
+            throwUnexpectedToken("procedure");
+        }
+        res.push_back(parseProcedure(tokens));
+    }
+
+    Token currToken = getNextToken(tokens);  // consume eof
+    return make_unique<ast::Program>(move(res));
 }
 
 unique_ptr<ast::Program> parse(const string& source) {

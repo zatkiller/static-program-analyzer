@@ -26,11 +26,21 @@ enum class TokenType {
     FOLLOWS_T,
     PARENT,
     PARENT_T,
+    NEXT,
+    NEXT_T,
+    CALLS,
+    CALLS_T,
 
     // Reserved Keywords
     SELECT,
     SUCH_THAT,
-    PATTERN
+    PATTERN,
+
+    PLUS,
+    MINUS,
+    MULTIPLY,
+    DIVIDE,
+    MODULO
 };
 
 /**
@@ -104,6 +114,15 @@ struct Lexer {
      * @return a token
      */
     Token peekNextReservedToken();
+
+    TokenType getSpecialCharTokenType(char ch);
+
+    Token getString();
+    Token getIdentifier();
+    Token getNumber();
+    Token getSpecialChar();
+
+    Token getReservedToken(std::string keyword);
 
     bool operator==(const Lexer &o) const {
         return this->text == o.text;

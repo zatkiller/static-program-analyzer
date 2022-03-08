@@ -395,7 +395,7 @@ TEST_CASE("UsesRelationshipTable regression test") {
         table->insert(proc, var2);
         REQUIRE(table->retrieve(stmt1, var1) == FieldRowResponse{ {stmt1, var1} });
         REQUIRE(table->retrieve(stmt2, var2) == FieldRowResponse{ {stmt2, var2} });
-        REQUIRE(table->retrieve(proc, var2) == FieldRowResponse{ {proc,var2} });
+        REQUIRE(table->retrieve(proc, var2) == FieldRowResponse{ {proc, var2} });
         REQUIRE(table->retrieve(PKBField::createDeclaration(StatementType::All),
             PKBField::createDeclaration(PKBEntityType::PROCEDURE)) == FieldRowResponse{ });
     }
@@ -560,7 +560,6 @@ TEST_CASE("FollowsRelationshipTable::retrieveT case 1") {
             {field2, field5}, {field3, field4} });
 }
 
-// incomplete
 TEST_CASE("FollowsRelationshipTable::retrieveT case 2") {
     auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
@@ -592,6 +591,7 @@ TEST_CASE("FollowsRelationshipTable::retrieveT case 2") {
             {field5, field6},
             {field1, field9}} });
 
+    auto asdas = table->retrieveT(assnDecl, whileDecl);
     REQUIRE(table->retrieveT(assnDecl, whileDecl) == FieldRowResponse{ { {field1, field2}} });
     REQUIRE(table->retrieveT(whileDecl, whileDecl) == FieldRowResponse{ });
     REQUIRE(table->retrieveT(assnDecl, ifDecl) == FieldRowResponse{ {field3, field4} });
@@ -849,4 +849,134 @@ TEST_CASE("ParentRelationshipTable::retrieveT") {
 
     REQUIRE(table->retrieveT(conc3, decl2) == FieldRowResponse{});
     REQUIRE(table->retrieveT(invalidConc, decl1) == FieldRowResponse{});
+}
+
+TEST_CASE("CallsRelationshipTable::getType") {
+    auto table = std::unique_ptr<CallsRelationshipTable>(new CallsRelationshipTable());
+    REQUIRE(table->getType() == PKBRelationship::CALLS);
+}
+
+TEST_CASE("CallsRelationshipTable test 1") {
+    auto table = std::unique_ptr<CallsRelationshipTable>(new CallsRelationshipTable());
+
+    /*
+    procedure main {
+        call foo;
+        call bar;
+    }
+
+    procedure foo {
+        call foo_sub;
+    }
+
+    procedure bar {
+        call bar_sub;
+    }
+    */
+    PKBField field1 = PKBField::createConcrete(PROC_NAME{ "main" });
+    PKBField field2 = PKBField::createConcrete(PROC_NAME{ "foo" });
+    PKBField field3 = PKBField::createConcrete(PROC_NAME{ "bar" });
+    PKBField field4 = PKBField::createConcrete(PROC_NAME{ "foo_sub" });
+    PKBField field5 = PKBField::createConcrete(PROC_NAME{ "bar_sub" });
+
+    // Empty table
+    REQUIRE_FALSE(table->contains(field1, field2));
+
+    table->insert(field1, field2);
+    table->insert(field1, field3);
+    table->insert(field2, field4);
+    table->insert(field3, field5);
+
+    PKBField invalid_1 = PKBField::createConcrete(VAR_NAME{ "a" });
+    PKBField invalid_2 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
+    PKBField invalid_3 = PKBField::createDeclaration(PKBEntityType::PROCEDURE);
+    PKBField invalid_4 = PKBField::createDeclaration(StatementType::Assignment);
+    PKBField decl1 = PKBField::createDeclaration(PKBEntityType::PROCEDURE);
+    PKBField decl2 = PKBField::createDeclaration(StatementType::Assignment);
+    PKBField decl3 = PKBField::createDeclaration(PKBEntityType::VARIABLE);
+    PKBField wild1 = PKBField::createWildcard(PKBEntityType::PROCEDURE);
+    PKBField wild2 = PKBField::createWildcard(PKBEntityType::STATEMENT);
+    PKBField wild3 = PKBField::createWildcard(PKBEntityType::VARIABLE);
+
+    SECTION("CallsRelationshipTable::insert, CallsRelationshipTable::contains") {
+        REQUIRE(table->contains(field1, field2));
+        REQUIRE(table->contains(field1, field3));
+        REQUIRE(table->contains(field2, field4));
+        REQUIRE(table->contains(field3, field5));
+
+        // Both fields must be the same types
+        table->insert(field1, invalid_1);
+        REQUIRE_FALSE(table->contains(field1, invalid_1));
+        table->insert(field1, invalid_2);
+        REQUIRE_FALSE(table->contains(field1, invalid_2));
+        table->insert(field1, invalid_3);
+        REQUIRE_FALSE(table->contains(field1, invalid_3));
+        table->insert(field1, invalid_4);
+        REQUIRE_FALSE(table->contains(field1, invalid_4));
+
+        // Both fields are the same type but are not PROC_NAMEs
+        table->insert(invalid_2, invalid_2);
+        REQUIRE_FALSE(table->contains(invalid_2, invalid_2));
+
+        REQUIRE_FALSE(table->contains(field1, decl1));
+        REQUIRE_FALSE(table->contains(field1, wild1));
+    }
+
+    SECTION("CallsRelationshipTable::retrieve") {
+        REQUIRE(table->retrieve(field1, field2) == FieldRowResponse{ {field1, field2} });
+        REQUIRE(table->retrieve(field1, field4) == FieldRowResponse{ });
+        REQUIRE(table->retrieve(field1, decl1) == FieldRowResponse{ {field1, field2}, {field1, field3} });
+        REQUIRE(table->retrieve(field1, wild1) == FieldRowResponse{ {field1, field2}, {field1, field3} });
+        REQUIRE(table->retrieve(field2, decl1) == FieldRowResponse{ {field2, field4} });
+        REQUIRE(table->retrieve(decl1, field4) == FieldRowResponse{ {field2, field4} });
+        REQUIRE(table->retrieve(decl1, decl1) == FieldRowResponse{ {field1, field2}, {field1, field3},
+            {field2, field4}, {field3, field5} });
+        REQUIRE(table->retrieve(decl1, decl1) == FieldRowResponse{ {field1, field2}, {field1, field3},
+            {field2, field4}, {field3, field5} });
+        REQUIRE(table->retrieve(wild1, wild1) == FieldRowResponse{ {field1, field2}, {field1, field3},
+            {field2, field4}, {field3, field5} });
+
+        // Invalid queries
+        REQUIRE(table->retrieve(field1, decl2) == FieldRowResponse{ });
+        REQUIRE(table->retrieve(decl3, field4) == FieldRowResponse{ });
+        REQUIRE(table->retrieve(wild3, field4) == FieldRowResponse{ });
+        REQUIRE(table->retrieve(decl2, decl2) == FieldRowResponse{ });
+        REQUIRE(table->retrieve(wild2, wild2) == FieldRowResponse{ });
+    }
+
+    SECTION("CallsRelationshipTable::containsT") {
+        REQUIRE(table->containsT(field1, field2));
+        REQUIRE(table->containsT(field1, field3));
+        REQUIRE(table->containsT(field2, field4));
+        REQUIRE(table->containsT(field3, field5));
+        REQUIRE(table->containsT(field1, field4));
+        REQUIRE(table->containsT(field1, field5));
+
+        REQUIRE_FALSE(table->containsT(field2, field5));
+        REQUIRE_FALSE(table->containsT(field1, decl1));
+        REQUIRE_FALSE(table->containsT(field1, wild1));
+    }
+
+    SECTION("CallsRelationshipTable::retrieveT") {
+        REQUIRE(table->retrieveT(field1, field2) == FieldRowResponse{ {field1, field2} });
+        REQUIRE(table->retrieveT(field1, decl1) == FieldRowResponse{ {field1, field2}, {field1, field3},
+            {field1, field4}, {field1, field5} });
+        REQUIRE(table->retrieveT(field1, wild1) == FieldRowResponse{ {field1, field2}, {field1, field3},
+            {field1, field4}, {field1, field5} });
+        REQUIRE(table->retrieveT(field2, decl1) == FieldRowResponse{ {field2, field4} });
+        REQUIRE(table->retrieveT(decl1, field4) == FieldRowResponse{ {field1, field4}, {field2, field4} });
+        REQUIRE(table->retrieveT(decl1, decl1) == FieldRowResponse{ {field1, field2}, {field1, field3},
+            {field1, field4}, {field1, field5}, {field2, field4}, {field3, field5} });
+        REQUIRE(table->retrieveT(decl1, decl1) == FieldRowResponse{ {field1, field2}, {field1, field3},
+            {field1, field4}, {field1, field5}, {field2, field4}, {field3, field5} });
+        REQUIRE(table->retrieveT(wild1, wild1) == FieldRowResponse{ {field1, field2}, {field1, field3},
+            {field1, field4}, {field1, field5}, {field2, field4}, {field3, field5} });
+
+        // Invalid queries
+        REQUIRE(table->retrieveT(field1, decl2) == FieldRowResponse{ });
+        REQUIRE(table->retrieveT(decl3, field4) == FieldRowResponse{ });
+        REQUIRE(table->retrieveT(wild3, field4) == FieldRowResponse{ });
+        REQUIRE(table->retrieveT(decl2, decl2) == FieldRowResponse{ });
+        REQUIRE(table->retrieveT(wild2, wild2) == FieldRowResponse{ });
+    }
 }

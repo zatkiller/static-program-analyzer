@@ -4,29 +4,31 @@ namespace sp {
 namespace ast {
 
 // Victims
-void Var::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void Var::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
 }
 
-void StmtLst::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void StmtLst::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
     for (auto& s : list) {
         s->accept(visitor);
     }
 }
 
-void Procedure::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void Procedure::accept(ASTNodeVisitor* visitor) const {
     visitor->enterContainer(procName);
     visitor->visit(*this);
     stmtLst.accept(visitor);
 }
 
-void Program::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void Program::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
-    procedure->accept(visitor);
+    for (auto& p : procedures) {
+        p->accept(visitor);
+    }
 }
 
-void If::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void If::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
     condExpr->accept(visitor);
 
@@ -39,7 +41,7 @@ void If::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
     visitor->exitContainer();
 }
 
-void While::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void While::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
     condExpr->accept(visitor);
 
@@ -49,45 +51,49 @@ void While::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
 }
 
 
-void Assign::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void Assign::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
     var->accept(visitor);
     expr->accept(visitor);
 }
 
-void Read::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void Read::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
     this->getVar().accept(visitor);
 }
 
-void Print::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void Print::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
     this->getVar().accept(visitor);
 }
 
-void Const::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void Call::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
 }
 
-void BinExpr::accept(std::shared_ptr <ASTNodeVisitor> visitor) const {
+void Const::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
-    LHS->accept(visitor);
-    RHS->accept(visitor);
 }
 
-void RelExpr::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void BinExpr::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
     LHS->accept(visitor);
     RHS->accept(visitor);
 }
 
-void CondBinExpr::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void RelExpr::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
     LHS->accept(visitor);
     RHS->accept(visitor);
 }
 
-void NotCondExpr::accept(std::shared_ptr<ASTNodeVisitor> visitor) const {
+void CondBinExpr::accept(ASTNodeVisitor* visitor) const {
+    visitor->visit(*this);
+    LHS->accept(visitor);
+    RHS->accept(visitor);
+}
+
+void NotCondExpr::accept(ASTNodeVisitor* visitor) const {
     visitor->visit(*this);
     condExpr->accept(visitor);
 }
@@ -120,8 +126,14 @@ bool Procedure::operator==(ASTNode const& o) const {
 
 bool Program::operator==(ASTNode const& o) const {
     if (typeid(*this) != typeid(o)) return false;
-    auto that = static_cast<const Program*>(&o);
-    return *this->procedure == *that->procedure;
+    auto that = static_cast<Program const*>(&o);
+    if (procedures.size() != that->procedures.size()) return false;
+    for (int i = 0; i < procedures.size(); i++) {
+        if (!(*procedures[i] == *that->procedures[i])) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool If::operator==(ASTNode const& o) const {
@@ -154,6 +166,13 @@ bool IO::operator==(ASTNode const& o) const {
     auto that = static_cast<IO const*>(&o);
     return *this->var == *that->var &&
         (this->getStmtNo() == that->getStmtNo());
+}
+
+bool Call::operator==(ASTNode const& o) const {
+    if (typeid(*this) != typeid(o)) return false;
+    auto that = static_cast<Call const&>(o);
+    return (this->procName == that.procName) &&
+        (this->getStmtNo() == that.getStmtNo());
 }
 
 bool Const::operator==(ASTNode const& o) const {

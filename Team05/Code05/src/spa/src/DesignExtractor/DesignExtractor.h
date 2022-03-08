@@ -34,7 +34,7 @@ public:
 
     void extract(ast::ASTNode* ast) {
         for (auto extractor : extractors) {
-            ast->accept(extractor);
+            extractor->extract(ast);
         }
     }
 };
