@@ -30,6 +30,21 @@ struct Parser {
     Lexer lexer = Lexer("");
 
     bool hasLeadingWhitespace();
+
+    /*
+     * Checks if the next token is surrounded by whitespace, throwing an error if it is
+     *
+     * @param f a function used to pull the next token
+     */
+    template<typename F>
+    void checkSurroundingWhitespace(F f) {
+        if (hasLeadingWhitespace())
+            throw exceptions::PqlSyntaxException(messages::qps::parser::unexpectedWhitespaceMessage);
+        f();
+        if (hasLeadingWhitespace())
+            throw exceptions::PqlSyntaxException(messages::qps::parser::unexpectedWhitespaceMessage);
+    }
+
     void checkType(Token, TokenType);
 
     /*

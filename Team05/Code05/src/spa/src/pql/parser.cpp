@@ -350,8 +350,6 @@ namespace qps::parser {
         }
     }
 
-
-
     void Parser::parseSuchThat(Query &queryObj) {
         getAndCheckNextReservedToken(TokenType::SUCH_THAT);
         std::shared_ptr<RelRef> relRef = parseRelRef(queryObj);
@@ -386,15 +384,21 @@ namespace qps::parser {
 
     AttrRef Parser::parseAttrRef(Query &query) {
         Token identifier = getAndCheckNextToken(TokenType::IDENTIFIER);
-        DesignEntity de = query.getDeclarationDesignEntity(identifier.getText());
 
-        getAndCheckNextToken(TokenType::PERIOD);
+        std::string declaration = identifier.getText();
+        DesignEntity de = query.getDeclarationDesignEntity(declaration);
+
+        Parser* p = this;
+        auto f = [p]() {
+            p->getAndCheckNextToken(TokenType::PERIOD);
+        };
+        checkSurroundingWhitespace(f);
 
         Token attrRefToken = getNextReservedToken();
         auto pos = tokenTypeToAttrName.find(attrRefToken.getTokenType());
         AttrName attrName = pos->second;
 
-        return AttrRef { attrName, de, identifier.getText() };
+        return AttrRef { attrName, de, declaration };
     }
 
     AttrCompareRef Parser::parseAttrCompareRef(Query &query) {
@@ -413,7 +417,7 @@ namespace qps::parser {
             ss >> lineNo;
             return AttrCompareRef::ofNumber(lineNo);
         } else {
-            throw exceptions::PqlSemanticException("Invalid token appeared when parsing With clause");
+            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidAttrCompRefMessage);
         }
     }
 

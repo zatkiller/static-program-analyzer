@@ -45,6 +45,14 @@ TEST_CASE("Parser checkType") {
                            Catch::Message(messages::qps::parser::notExpectingTokenMessage));
 }
 
+TEST_CASE("Parser checkSurroundingWhitespacee") {
+    Parser parser;
+    parser.lexer.text = " hi ";
+    auto f = [](){};
+    REQUIRE_THROWS_MATCHES(parser.checkSurroundingWhitespace(f), exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::unexpectedWhitespaceMessage));
+}
+
 TEST_CASE("Parser getAndCheckNextToken and peekAndCheckNextToken") {
     Parser parser;
     parser.lexer.text = "hello 123";
@@ -1020,6 +1028,15 @@ TEST_CASE("Parser parseAttrRef") {
         REQUIRE(ar.attrName == AttrName::VALUE);
     }
 
+    SECTION ("Invalid - whitespace before and after .") {
+        parser.lexer.text = "c .value";
+        REQUIRE_THROWS_MATCHES(parser.parseAttrRef(query), exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::unexpectedWhitespaceMessage));
+
+        parser.lexer.text = "c. value";
+        REQUIRE_THROWS_MATCHES(parser.parseAttrRef(query), exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::unexpectedWhitespaceMessage));
+    }
 }
 
 TEST_CASE("Parser parseAttrCompareRef") {
@@ -1098,6 +1115,17 @@ TEST_CASE("Parser parseWith") {
         AttrCompareRef rhs = ac.getRhs();
         REQUIRE(lhs.isNumber());
         REQUIRE(rhs.isAttrRef());
+    }
+
+    SECTION ("Number on LHS and AttRef on Rhs") {
+        Parser parser;
+        parser.lexer.text = "with & = rd.stmt#";
+
+        Query query;
+        query.addDeclaration("rd", DesignEntity::READ);
+
+        REQUIRE_THROWS_MATCHES(parser.parseWith(query), exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::invalidAttrCompRefMessage));
     }
 }
 
