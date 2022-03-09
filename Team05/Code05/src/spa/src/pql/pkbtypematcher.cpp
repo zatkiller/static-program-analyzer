@@ -6,11 +6,15 @@ namespace qps::evaluator {
 
     std::unordered_map<query::RelRefType, PKBRelationship> PKBRelationshipMap {
             {RelRefType::MODIFIESS, PKBRelationship::MODIFIES},
+            {RelRefType::MODIFIESP, PKBRelationship::MODIFIES},
             {RelRefType::USESS, PKBRelationship::USES},
+            {RelRefType::USESP, PKBRelationship::USES},
             {RelRefType::FOLLOWS, PKBRelationship::FOLLOWS},
             {RelRefType::FOLLOWST, PKBRelationship::FOLLOWST},
             {RelRefType::PARENT, PKBRelationship::PARENT},
-            {RelRefType::PARENTT, PKBRelationship::PARENTT}
+            {RelRefType::PARENTT, PKBRelationship::PARENTT},
+            {RelRefType::CALLS, PKBRelationship::CALLS},
+            {RelRefType::CALLST, PKBRelationship::CALLST}
     };
 
     std::unordered_map<query::DesignEntity, StatementType> statementTypeMap {

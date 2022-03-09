@@ -19,6 +19,55 @@ using qps::query::StmtRefType;
 using qps::query::EntRefType;
 using qps::query::DesignEntity;
 using qps::query::ExpSpec;
+using qps::query::AttrName;
+using qps::query::AttrRef;
+using qps::query::AttrCompare;
+using qps::query::AttrCompareRef;
+using qps::query::AttrCompareRefType;
+
+TEST_CASE("AttrRef") {
+    AttrRef ar = AttrRef { AttrName::PROCNAME, DesignEntity::PROCEDURE, "p" };
+    REQUIRE(ar.attrName == AttrName::PROCNAME);
+    REQUIRE(ar.declarationType == DesignEntity::PROCEDURE);
+    REQUIRE(ar.declaration == "p");
+}
+
+TEST_CASE("AttrCompareRef") {
+
+    AttrCompareRef acr = AttrCompareRef::ofString("p");
+    REQUIRE(acr.isString());
+    REQUIRE(acr.getString() == "p");
+
+    acr = AttrCompareRef::ofNumber(1);
+    REQUIRE(acr.isNumber());
+    REQUIRE(acr.getNumber() == 1);
+
+    acr = AttrCompareRef::ofAttrRef(AttrRef { AttrName::PROCNAME, DesignEntity::PROCEDURE, "p" });
+    REQUIRE(acr.isAttrRef());
+    AttrRef ar = acr.getAttrRef();
+    REQUIRE(ar.attrName == AttrName::PROCNAME);
+    REQUIRE(ar.declarationType == DesignEntity::PROCEDURE);
+    REQUIRE(ar.declaration == "p");
+}
+
+TEST_CASE("AttrCompare") {
+    AttrCompare ac(AttrCompareRef::ofAttrRef( AttrRef {AttrName::VARNAME, DesignEntity::VARIABLE, "v" }),
+                   AttrCompareRef::ofString("v"));
+
+    AttrCompareRef lhs = ac.getLhs();
+    AttrCompareRef rhs = ac.getRhs();
+
+    REQUIRE(lhs.isAttrRef());
+    AttrRef ar = lhs.getAttrRef();
+
+    REQUIRE(ar.declaration == "v");
+    REQUIRE(ar.declarationType == DesignEntity::VARIABLE);
+    REQUIRE(ar.attrName == AttrName::VARNAME);
+
+    REQUIRE(rhs.isString());
+    REQUIRE(rhs.getString() == "v");
+}
+
 
 TEST_CASE("StmtRef") {
     StmtRef stmtRef;
@@ -133,6 +182,17 @@ TEST_CASE("Query") {
     REQUIRE(query.getPattern()[0] == p);
 
     REQUIRE(query.getDeclarationDesignEntity("a") == DesignEntity::STMT);
+
+    query.addWith(AttrCompare { AttrCompareRef::ofNumber(1), AttrCompareRef::ofString("v") });
+    REQUIRE(!query.getWith().empty());
+    AttrCompare ac2 = query.getWith()[0];
+    AttrCompareRef lhs = ac2.getLhs();
+    AttrCompareRef rhs = ac2.getRhs();
+
+    REQUIRE(lhs.isNumber());
+    REQUIRE(lhs.getNumber() == 1);
+    REQUIRE(rhs.isString());
+    REQUIRE(rhs.getString() == "v");
 }
 
 TEST_CASE("Query getDeclarationDesignEntity") {

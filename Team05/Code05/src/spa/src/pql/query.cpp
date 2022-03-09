@@ -1,7 +1,9 @@
 #include <algorithm>
+#include <unordered_set>
 
 #include "exceptions.h"
 #include "pql/query.h"
+#include "pql/lexer.h"
 
 namespace qps::query {
     std::unordered_map<std::string, DesignEntity> designEntityMap = {
@@ -13,7 +15,16 @@ namespace qps::query {
             {"assign",    DesignEntity::ASSIGN},
             {"variable",  DesignEntity::VARIABLE},
             {"constant",  DesignEntity::CONSTANT},
-            {"procedure", DesignEntity::PROCEDURE}
+            {"procedure", DesignEntity::PROCEDURE},
+            {"call", DesignEntity::CALL}
+    };
+
+    std::unordered_map<AttrName, std::unordered_set<DesignEntity>> attrNameToDesignEntityMap = {
+            { AttrName::PROCNAME, { DesignEntity::PROCEDURE, DesignEntity::CALL} },
+            { AttrName::VARNAME, { DesignEntity::VARIABLE, DesignEntity::READ, DesignEntity::PRINT} },
+            { AttrName::VALUE, { DesignEntity::CONSTANT } },
+            { AttrName::STMTNUM, { DesignEntity::STMT, DesignEntity::CALL, DesignEntity::READ, DesignEntity::PRINT,
+                                   DesignEntity::WHILE, DesignEntity::IF, DesignEntity::ASSIGN} }
     };
 
     bool Query::isValid() {
@@ -55,6 +66,11 @@ namespace qps::query {
         return pattern;
     }
 
+    std::vector<AttrCompare> Query::getWith() {
+        return with;
+    }
+
+
     void Query::addDeclaration(std::string var, DesignEntity de) {
         if (declarations.find(var) != declarations.end())
             throw exceptions::PqlSyntaxException("Declaration already exists!");
@@ -73,6 +89,10 @@ namespace qps::query {
 
     void Query::addPattern(Pattern p) {
         pattern.push_back(p);
+    }
+
+    void Query::addWith(AttrCompare ac) {
+        with.push_back(ac);
     }
 
 
@@ -214,7 +234,7 @@ namespace qps::query {
         return stmtField;
     }
 
-    PKBField PKBFieldTransformer::transformEntRef(EntRef e) {
+    PKBField PKBFieldTransformer::transformEntRefVar(EntRef e) {
         PKBField entField;
         if (e.isVarName()) {
             entField = PKBField::createConcrete(VAR_NAME{e.getVariableName()});
@@ -222,6 +242,18 @@ namespace qps::query {
             entField = PKBField::createWildcard(PKBEntityType::VARIABLE);
         } else if (e.isDeclaration()) {
             entField = PKBField::createDeclaration(PKBEntityType::VARIABLE);
+        }
+        return entField;
+    }
+
+    PKBField PKBFieldTransformer::transformEntRefProc(EntRef e) {
+        PKBField entField;
+        if (e.isVarName()) {
+            entField = PKBField::createConcrete(PROC_NAME{e.getVariableName()});
+        } else if (e.isWildcard()) {
+            entField = PKBField::createWildcard(PKBEntityType::PROCEDURE);
+        } else if (e.isDeclaration()) {
+            entField = PKBField::createDeclaration(PKBEntityType::PROCEDURE);
         }
         return entField;
     }
@@ -257,7 +289,9 @@ namespace qps::query {
     }
 
     std::vector<PKBField> ModifiesP::getField() {
-        return getFieldHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(modifiesProc);
+        PKBField field2 = PKBFieldTransformer::transformEntRefVar(modified);
+        return std::vector<PKBField>{field1, field2};
     }
 
     std::vector<std::string> ModifiesP::getSyns() {
@@ -276,7 +310,9 @@ namespace qps::query {
 
 
     std::vector<PKBField> UsesP::getField() {
-        return getFieldHelper(&UsesP::useProc, &UsesP::used);
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(useProc);
+        PKBField field2 = PKBFieldTransformer::transformEntRefVar(used);
+        return std::vector<PKBField>{field1, field2};
     }
 
     std::vector<std::string> UsesP::getSyns()  {
@@ -344,7 +380,9 @@ namespace qps::query {
     }
 
     std::vector<PKBField> Calls::getField() {
-        return getFieldHelper(&Calls::caller, &Calls::callee);
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(caller);
+        PKBField field2 = PKBFieldTransformer::transformEntRefProc(callee);
+        return std::vector<PKBField>{field1, field2};
     }
 
     std::vector<std::string> Calls::getSyns() {
@@ -364,7 +402,9 @@ namespace qps::query {
     }
 
     std::vector<PKBField> CallsT::getField() {
-        return getFieldHelper(&CallsT::caller, &CallsT::transitiveCallee);
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(caller);
+        PKBField field2 = PKBFieldTransformer::transformEntRefProc(transitiveCallee);
+        return std::vector<PKBField>{field1, field2};
     }
 
     std::vector<std::string> CallsT::getSyns() {
@@ -397,6 +437,27 @@ namespace qps::query {
 
     std::vector<PKBField> NextT::getField() {
         return getFieldHelper(&NextT::before, &NextT::transitiveAfter);
+    }
+
+    AttrCompareRef AttrCompareRef::ofString(std::string str) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::STRING;
+        acr.str_value = str;
+        return acr;
+    }
+
+    AttrCompareRef AttrCompareRef::ofNumber(int num) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::NUMBER;
+        acr.number = num;
+        return acr;
+    }
+
+    AttrCompareRef AttrCompareRef::ofAttrRef(AttrRef ar) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::ATTRREF;
+        acr.ar = ar;
+        return acr;
     }
 
 }  // namespace qps::query
