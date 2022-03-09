@@ -214,7 +214,7 @@ namespace qps::query {
         return stmtField;
     }
 
-    PKBField PKBFieldTransformer::transformEntRef(EntRef e) {
+    PKBField PKBFieldTransformer::transformEntRefVar(EntRef e) {
         PKBField entField;
         if (e.isVarName()) {
             entField = PKBField::createConcrete(VAR_NAME{e.getVariableName()});
@@ -222,6 +222,18 @@ namespace qps::query {
             entField = PKBField::createWildcard(PKBEntityType::VARIABLE);
         } else if (e.isDeclaration()) {
             entField = PKBField::createDeclaration(PKBEntityType::VARIABLE);
+        }
+        return entField;
+    }
+
+    PKBField PKBFieldTransformer::transformEntRefProc(EntRef e) {
+        PKBField entField;
+        if (e.isVarName()) {
+            entField = PKBField::createConcrete(PROC_NAME{e.getVariableName()});
+        } else if (e.isWildcard()) {
+            entField = PKBField::createWildcard(PKBEntityType::PROCEDURE);
+        } else if (e.isDeclaration()) {
+            entField = PKBField::createDeclaration(PKBEntityType::PROCEDURE);
         }
         return entField;
     }
@@ -257,7 +269,9 @@ namespace qps::query {
     }
 
     std::vector<PKBField> ModifiesP::getField() {
-        return getFieldHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(modifiesProc);
+        PKBField field2 = PKBFieldTransformer::transformEntRefVar(modified);
+        return std::vector<PKBField>{field1, field2};
     }
 
     std::vector<std::string> ModifiesP::getSyns() {
@@ -276,7 +290,9 @@ namespace qps::query {
 
 
     std::vector<PKBField> UsesP::getField() {
-        return getFieldHelper(&UsesP::useProc, &UsesP::used);
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(useProc);
+        PKBField field2 = PKBFieldTransformer::transformEntRefVar(used);
+        return std::vector<PKBField>{field1, field2};
     }
 
     std::vector<std::string> UsesP::getSyns()  {
@@ -344,7 +360,9 @@ namespace qps::query {
     }
 
     std::vector<PKBField> Calls::getField() {
-        return getFieldHelper(&Calls::caller, &Calls::callee);
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(caller);
+        PKBField field2 = PKBFieldTransformer::transformEntRefProc(callee);
+        return std::vector<PKBField>{field1, field2};
     }
 
     std::vector<std::string> Calls::getSyns() {
@@ -364,7 +382,9 @@ namespace qps::query {
     }
 
     std::vector<PKBField> CallsT::getField() {
-        return getFieldHelper(&CallsT::caller, &CallsT::transitiveCallee);
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(caller);
+        PKBField field2 = PKBFieldTransformer::transformEntRefProc(transitiveCallee);
+        return std::vector<PKBField>{field1, field2};
     }
 
     std::vector<std::string> CallsT::getSyns() {

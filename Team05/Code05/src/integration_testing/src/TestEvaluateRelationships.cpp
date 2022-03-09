@@ -36,6 +36,12 @@ PKB createPKB() {
     PKBField field8 = PKBField::createConcrete(VAR_NAME("current"));
     PKBField field9 = PKBField::createConcrete(VAR_NAME("x"));
     PKBField field10 = PKBField::createConcrete(VAR_NAME("y"));
+    PKBField field11 = PKBField::createConcrete(PROC_NAME("proc1"));
+    PKBField field12 = PKBField::createConcrete(PROC_NAME("proc2"));
+    PKBField field13 = PKBField::createConcrete(PROC_NAME{"proc3"});
+    pkb.insertProcedure("proc1");
+    pkb.insertProcedure("proc2");
+    pkb.insertProcedure("proc3");
     pkb.insertStatement(StatementType::Assignment, 5);
     pkb.insertStatement(StatementType::Assignment, 2);
     pkb.insertStatement(StatementType::Assignment, 4);
@@ -51,18 +57,32 @@ PKB createPKB() {
     pkb.insertRelationship(PKBRelationship::MODIFIES, field3, field7);
     pkb.insertRelationship(PKBRelationship::MODIFIES, field4, field7);
     pkb.insertRelationship(PKBRelationship::MODIFIES, field3, field8);
+    pkb.insertRelationship(PKBRelationship::MODIFIES, field11, field8);
+    pkb.insertRelationship(PKBRelationship::MODIFIES, field11, field7);
+    pkb.insertRelationship(PKBRelationship::MODIFIES, field11, field9);
+    pkb.insertRelationship(PKBRelationship::MODIFIES, field12, field7);
+
     pkb.insertRelationship(PKBRelationship::USES, field1, field9);
     pkb.insertRelationship(PKBRelationship::USES, field6, field10);
     pkb.insertRelationship(PKBRelationship::USES, field5, field8);
+    pkb.insertRelationship(PKBRelationship::USES, field11, field8);
+    pkb.insertRelationship(PKBRelationship::USES, field11, field9);
+    pkb.insertRelationship(PKBRelationship::USES, field12, field7);
+    pkb.insertRelationship(PKBRelationship::USES, field12, field10);
+
     pkb.insertRelationship(PKBRelationship::FOLLOWS, field4, field1);
     pkb.insertRelationship(PKBRelationship::FOLLOWS, field1, field5);
     pkb.insertRelationship(PKBRelationship::FOLLOWS, field5, field2);
     pkb.insertRelationship(PKBRelationship::FOLLOWS, field2, field3);
     pkb.insertRelationship(PKBRelationship::FOLLOWS, field3, field6);
+
     pkb.insertRelationship(PKBRelationship::PARENT, field4, field1);
     pkb.insertRelationship(PKBRelationship::PARENT, field5, field2);
     pkb.insertRelationship(PKBRelationship::PARENT, field5, field3);
     pkb.insertRelationship(PKBRelationship::PARENT, field5, field6);
+
+    pkb.insertRelationship(PKBRelationship::CALLS, field11, field12);
+    pkb.insertRelationship(PKBRelationship::CALLS, field12, field13);
     return pkb;
 }
 
@@ -138,10 +158,42 @@ TEST_CASE("Test get Modifies") {
     mPtr4->modified = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
     query4.addSuchthat(mPtr4);
     qps::evaluator::Evaluator evaluator4 = qps::evaluator::Evaluator{pkbPtr};
-    std::list<std::string> result4 = evaluator3.evaluate(query4);
+    std::list<std::string> result4 = evaluator4.evaluate(query4);
     printResult(result4);
     result4.sort();
     REQUIRE(result4.empty());
+
+    TEST_LOG << "select p such that ModifiesP(p, 'variable')";
+    qps::query::Query query5;
+    std::shared_ptr<qps::query::ModifiesP> mPtr5 = std::make_shared<qps::query::ModifiesP>();
+    mPtr5->modifiesProc = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr5->modified = qps::query::EntRef::ofVarName("variable");
+
+    query5.addVariable("p");
+    query5.addDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    query5.addSuchthat(mPtr5);
+    qps::evaluator::Evaluator evaluator5 = qps::evaluator::Evaluator{pkbPtr};
+
+    std::list<std::string> result5 = evaluator5.evaluate(query5);
+    printResult(result5);
+    result5.sort();
+    REQUIRE(result5 == std::list<std::string>{"proc1", "proc2"});
+
+    TEST_LOG << "select v such that ModifiesP('proc1', v)";
+    qps::query::Query query6;
+    std::shared_ptr<qps::query::ModifiesP> mPtr6 = std::make_shared<qps::query::ModifiesP>();
+    mPtr6->modifiesProc = qps::query::EntRef::ofVarName("proc1");
+    mPtr6->modified = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
+
+    query6.addVariable("v");
+    query6.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    query6.addSuchthat(mPtr6);
+    qps::evaluator::Evaluator evaluator6 = qps::evaluator::Evaluator{pkbPtr};
+
+    std::list<std::string> result6 = evaluator6.evaluate(query6);
+    printResult(result6);
+    result6.sort();
+    REQUIRE(result6 == std::list<std::string>{"current", "variable", "x"});
 }
 
 TEST_CASE("Test get Uses") {
@@ -191,6 +243,52 @@ TEST_CASE("Test get Uses") {
     result3.sort();
     printResult(result3);
     REQUIRE(result3 == std::list<std::string>{"current", "x", "y"});
+
+    TEST_LOG << "select v such that UsesP('proc1', v)";
+    qps::query::Query query4;
+    query4.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    query4.addVariable("v");
+    std::shared_ptr<qps::query::UsesP> mPtr4 = std::make_shared<qps::query::UsesP>();
+    mPtr4->useProc = qps::query::EntRef::ofVarName("proc1");
+    mPtr4->used = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    query4.addSuchthat(mPtr4);
+    qps::evaluator::Evaluator evaluator4 = qps::evaluator::Evaluator{pkbPtr};
+    std::list<std::string> result4 = evaluator4.evaluate(query4);
+    printResult(result4);
+    result4.sort();
+    REQUIRE(result4 == std::list<std::string>{"current", "x"});
+
+    TEST_LOG << "select p such that UsesP(p, 'variable')";
+    qps::query::Query query5;
+    std::shared_ptr<qps::query::UsesP> mPtr5 = std::make_shared<qps::query::UsesP>();
+    mPtr5->useProc = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr5->used = qps::query::EntRef::ofVarName("variable");
+
+    query5.addVariable("p");
+    query5.addDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    query5.addSuchthat(mPtr5);
+    qps::evaluator::Evaluator evaluator5 = qps::evaluator::Evaluator{pkbPtr};
+
+    std::list<std::string> result5 = evaluator5.evaluate(query5);
+    printResult(result5);
+    result5.sort();
+    REQUIRE(result5 == std::list<std::string>{"proc2"});
+
+    TEST_LOG << "select p such that ModifiesP(p, _)";
+    qps::query::Query query6;
+    std::shared_ptr<qps::query::UsesP> mPtr6 = std::make_shared<qps::query::UsesP>();
+    mPtr6->useProc = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr6->used = qps::query::EntRef::ofWildcard();
+
+    query6.addVariable("p");
+    query6.addDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    query6.addSuchthat(mPtr6);
+    qps::evaluator::Evaluator evaluator6 = qps::evaluator::Evaluator{pkbPtr};
+
+    std::list<std::string> result6 = evaluator6.evaluate(query6);
+    printResult(result6);
+    result6.sort();
+    REQUIRE(result6 == std::list<std::string>{"proc1", "proc2"});
 }
 
 TEST_CASE("Test get Follows FollowsT") {
@@ -284,6 +382,52 @@ TEST_CASE("Test Parent") {
     std::list<std::string> result2 = e2.evaluate(query2);
     printResult(result2);
     REQUIRE(result2.empty());
+}
+
+TEST_CASE("Test get Calls and CallsT") {
+    PKB pkb = createPKB();
+    PKB* pkbPtr = &pkb;
+
+    TEST_LOG << "select p such that Calls(p, 'proc2')";
+    qps::query::Query query1;
+    query1.addDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    query1.addVariable("p");
+    std::shared_ptr<qps::query::Calls> mPtr1 = std::make_shared<qps::query::Calls>();
+    mPtr1->caller = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr1->callee = qps::query::EntRef::ofVarName("proc2");
+    query1.addSuchthat(mPtr1);
+    qps::evaluator::Evaluator e1 = qps::evaluator::Evaluator{pkbPtr};
+    std::list<std::string> result1 = e1.evaluate(query1);
+    result1.sort();
+    printResult(result1);
+    REQUIRE(result1 == std::list<std::string>{"proc1"});
+
+    TEST_LOG << "select p such that CallsT('proc1', p)";
+    qps::query::Query query2;
+    query2.addDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    query2.addVariable("p");
+    std::shared_ptr<qps::query::CallsT> mPtr2 = std::make_shared<qps::query::CallsT>();
+    mPtr2->caller = qps::query::EntRef::ofVarName("proc1");
+    mPtr2->transitiveCallee = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    query2.addSuchthat(mPtr2);
+    qps::evaluator::Evaluator e2 = qps::evaluator::Evaluator{pkbPtr};
+    std::list<std::string> result2 = e2.evaluate(query2);
+    printResult(result2);
+    REQUIRE(result2 == std::list<std::string>{"proc2", "proc3"});
+
+    TEST_LOG << "select p such that CallsT(p, _)";
+    qps::query::Query query3;
+    query3.addDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    query3.addVariable("p");
+    std::shared_ptr<qps::query::CallsT> mPtr3 = std::make_shared<qps::query::CallsT>();
+    mPtr3->caller = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr3->transitiveCallee = qps::query::EntRef::ofWildcard();
+    query3.addSuchthat(mPtr3);
+    qps::evaluator::Evaluator e3 = qps::evaluator::Evaluator{pkbPtr};
+    std::list<std::string> result3 = e3.evaluate(query3);
+    result3.sort();
+    printResult(result3);
+    REQUIRE(result3 == std::list<std::string>{"proc1", "proc2"});
 }
 
 TEST_CASE("Test isRelationshipPresent") {

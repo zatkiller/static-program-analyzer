@@ -162,9 +162,9 @@ struct PKBFieldTransformer {
      * @param entRef
      * @return a PKBField of the given entRef
      */
-    static PKBField transformEntRef(EntRef e);
+    static PKBField transformEntRefVar(EntRef e);
 
-
+    static PKBField transformEntRefProc(EntRef e);
     /**
      * Transforms a stmtRef into a PKBField.
      *
@@ -222,14 +222,14 @@ protected:
             if constexpr(std::is_same_v<F1, StmtRef>) {
                 return PKBFieldTransformer::transformStmtRef(derivedPtr->*f1);
             } else {
-                return PKBFieldTransformer::transformEntRef(derivedPtr->*f1);
+                return PKBFieldTransformer::transformEntRefVar(derivedPtr->*f1);
             }
         }();
         PKBField field2 = [&]() {
             if constexpr(std::is_same_v<F2, StmtRef>) {
                 return PKBFieldTransformer::transformStmtRef(derivedPtr->*f2);
             } else {
-                return PKBFieldTransformer::transformEntRef(derivedPtr->*f2);
+                return PKBFieldTransformer::transformEntRefVar(derivedPtr->*f2);
             }
         }();
 
