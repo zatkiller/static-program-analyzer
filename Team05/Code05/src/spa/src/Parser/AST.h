@@ -22,7 +22,7 @@ struct ASTNodeVisitor;
 class ASTNode {
 public:
     virtual ~ASTNode() {}
-    virtual void accept(std::shared_ptr<ASTNodeVisitor> visitor) const = 0;
+    virtual void accept(ASTNodeVisitor* visitor) const = 0;
     virtual bool operator==(ASTNode const& o) const = 0;
 };
 
@@ -44,6 +44,7 @@ class While;
 class Read;
 class Print;
 class Assign;
+class Call;
 
 // expressions
 class Var;
@@ -64,6 +65,7 @@ struct ASTNodeVisitor {
     virtual void visit(const Read& node) = 0;
     virtual void visit(const Print& node) = 0;
     virtual void visit(const Assign& node) = 0;
+    virtual void visit(const Call& node) = 0;
     virtual void visit(const Var& node) = 0;
     virtual void visit(const Const& node) = 0;
     virtual void visit(const BinExpr& node) = 0;
@@ -105,7 +107,7 @@ private:
 public:
     explicit Var(const std::string& varName) : varName(varName) {}
     const std::string& getVarName() const { return varName; }
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
     
     virtual bool operator==(ASTNode const& o) const;
 };
@@ -170,7 +172,7 @@ public:
     explicit StmtLst(std::vector<std::unique_ptr<Statement>>& list)
     : list(std::move(list)) {}
 
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
 
     virtual bool operator==(ASTNode const& o) const;
 };
@@ -194,7 +196,7 @@ public:
         StmtLst stmtLst) :
         procName(procName), stmtLst(std::move(stmtLst)) {}
 
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
     std::string getName() const { return procName; }
     virtual bool operator==(ASTNode const& o) const;
 };
@@ -210,12 +212,12 @@ public:
  */
 class Program : public ASTNode {
 private:
-    std::unique_ptr<Procedure> procedure;
+    std::vector<std::unique_ptr<Procedure>> procedures;
 public:
-    explicit Program(std::unique_ptr<Procedure> procedure) :
-        procedure(std::move(procedure)) {}
+    explicit Program(std::vector<std::unique_ptr<Procedure>> procedures) :
+        procedures(std::move(procedures)) {}
     
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
 
     virtual bool operator==(ASTNode const& o) const;
 };
@@ -249,7 +251,7 @@ public:
         thenBlk(std::move(thenBlk)),
         elseBlk(std::move(elseBlk)) {}
 
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
     CondExpr* getCondExpr() const {
         return condExpr.get();
     }
@@ -282,7 +284,7 @@ public:
         condExpr(std::move(condExpr)),
         stmtLst(std::move(stmtLst)) {}
 
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
     CondExpr* getCondExpr() const {
         return condExpr.get();
     }
@@ -315,7 +317,7 @@ public:
         var(std::move(var)), 
         expr(std::move(expr)) {}
 
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
 
     Var* getLHS() const {
         return var.get();
@@ -364,7 +366,7 @@ public:
 class Read : public IO {
 public:
     using IO::IO;
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
 };
 
 /**
@@ -376,7 +378,24 @@ public:
 class Print : public IO {
 public:
     using IO::IO;
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
+};
+
+/**
+ * @class Call
+ * @brief Class that represents a Call statement in the AST.
+ * @details Call is identified by: 'call' proc_name';'
+ */
+class Call : public Statement {
+private:
+    std::string procName;
+public:
+    Call(int stmtNo, const std::string& procName) :
+        Statement(stmtNo),
+        procName(procName) {}
+    void accept(ASTNodeVisitor* visitor) const;
+    std::string getName() const { return procName; }
+    virtual bool operator==(ASTNode const& o) const;
 };
 
 /**
@@ -393,7 +412,7 @@ private:
     int constValue;
 public:
     explicit Const(int constValue) : constValue(constValue) {}
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
     const int getConstValue() const { return constValue; }
 
     virtual bool operator==(ASTNode const& o) const;
@@ -435,7 +454,7 @@ public:
         LHS(std::move(LHS)), 
         RHS(std::move(RHS)) {}
 
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
 
     virtual bool operator==(ASTNode const& o) const;
 };
@@ -480,7 +499,7 @@ public:
         LHS(std::move(LHS)), 
         RHS(std::move(RHS)) {}
 
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
 
     virtual bool operator==(ASTNode const& o) const;
 };
@@ -521,7 +540,7 @@ public:
         LHS(std::move(LHS)), 
         RHS(std::move(RHS)) {}
 
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
 
     virtual bool operator==(ASTNode const& o) const;
 };
@@ -545,7 +564,7 @@ public:
     ) : 
         condExpr(std::move(condExpr)) {}
 
-    void accept(std::shared_ptr<ASTNodeVisitor> visitor) const;
+    void accept(ASTNodeVisitor* visitor) const;
 
     virtual bool operator==(ASTNode const& o) const;
 };
@@ -630,6 +649,15 @@ StmtLst makeStmts(Ts &&... ts) {
     };
 
     return StmtLst(lst);
+}
+
+template <typename ...Ts>
+std::unique_ptr<Program> makeProgram(Ts &&... ts) {
+    std::unique_ptr<Procedure> procArr[] = { std::move(ts)... };
+    auto lst = std::vector<std::unique_ptr<Procedure>> {
+        std::make_move_iterator(std::begin(procArr)), std::make_move_iterator(std::end(procArr))
+    };
+    return std::make_unique<Program>(std::move(lst));
 }
 
 }  // namespace ast

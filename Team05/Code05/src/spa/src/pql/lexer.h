@@ -14,6 +14,8 @@ enum class TokenType {
     COMMA,
     OPENING_PARAN,
     CLOSING_PARAN,
+    PERIOD,
+    EQUAL,
 
     IDENTIFIER,
     NUMBER,
@@ -26,17 +28,27 @@ enum class TokenType {
     FOLLOWS_T,
     PARENT,
     PARENT_T,
+    NEXT,
+    NEXT_T,
+    CALLS,
+    CALLS_T,
 
     // Reserved Keywords
     SELECT,
     SUCH_THAT,
     PATTERN,
+    WITH,
 
     PLUS,
     MINUS,
     MULTIPLY,
     DIVIDE,
-    MODULO
+    MODULO,
+
+    PROCNAME,
+    VARNAME,
+    VALUE,
+    STMTNUM
 };
 
 /**
@@ -119,6 +131,8 @@ struct Lexer {
     Token getSpecialChar();
 
     Token getReservedToken(std::string keyword);
+
+    bool hasLeadingWhitespace();
 
     bool operator==(const Lexer &o) const {
         return this->text == o.text;

@@ -1,7 +1,9 @@
 #include <algorithm>
+#include <unordered_set>
 
 #include "exceptions.h"
 #include "pql/query.h"
+#include "pql/lexer.h"
 
 namespace qps::query {
     std::unordered_map<std::string, DesignEntity> designEntityMap = {
@@ -13,7 +15,16 @@ namespace qps::query {
             {"assign",    DesignEntity::ASSIGN},
             {"variable",  DesignEntity::VARIABLE},
             {"constant",  DesignEntity::CONSTANT},
-            {"procedure", DesignEntity::PROCEDURE}
+            {"procedure", DesignEntity::PROCEDURE},
+            {"call", DesignEntity::CALL}
+    };
+
+    std::unordered_map<AttrName, std::unordered_set<DesignEntity>> attrNameToDesignEntityMap = {
+            { AttrName::PROCNAME, { DesignEntity::PROCEDURE, DesignEntity::CALL} },
+            { AttrName::VARNAME, { DesignEntity::VARIABLE, DesignEntity::READ, DesignEntity::PRINT} },
+            { AttrName::VALUE, { DesignEntity::CONSTANT } },
+            { AttrName::STMTNUM, { DesignEntity::STMT, DesignEntity::CALL, DesignEntity::READ, DesignEntity::PRINT,
+                                   DesignEntity::WHILE, DesignEntity::IF, DesignEntity::ASSIGN} }
     };
 
     bool Query::isValid() {
@@ -55,6 +66,11 @@ namespace qps::query {
         return pattern;
     }
 
+    std::vector<AttrCompare> Query::getWith() {
+        return with;
+    }
+
+
     void Query::addDeclaration(std::string var, DesignEntity de) {
         if (declarations.find(var) != declarations.end())
             throw exceptions::PqlSyntaxException("Declaration already exists!");
@@ -75,6 +91,10 @@ namespace qps::query {
         pattern.push_back(p);
     }
 
+    void Query::addWith(AttrCompare ac) {
+        with.push_back(ac);
+    }
+
 
     EntRef EntRef::ofVarName(std::string name) {
         EntRef e;
@@ -83,10 +103,11 @@ namespace qps::query {
         return e;
     }
 
-    EntRef EntRef::ofDeclaration(std::string d) {
+    EntRef EntRef::ofDeclaration(std::string d, DesignEntity de) {
         EntRef e;
         e.declaration = d;
         e.type = EntRefType::DECLARATION;
+        e.declarationType = de;
         return e;
     }
 
@@ -102,6 +123,10 @@ namespace qps::query {
 
     std::string EntRef::getDeclaration() const {
         return declaration;
+    }
+
+    DesignEntity EntRef::getDeclarationType() const {
+        return declarationType;
     }
 
     std::string EntRef::getVariableName() {
@@ -120,10 +145,11 @@ namespace qps::query {
         return type == EntRefType::WILDCARD;
     }
 
-    StmtRef StmtRef::ofDeclaration(std::string d) {
+    StmtRef StmtRef::ofDeclaration(std::string d, DesignEntity de) {
         StmtRef s;
         s.type = StmtRefType::DECLARATION;
         s.declaration = d;
+        s.declarationType = de;
         return s;
     }
 
@@ -142,6 +168,10 @@ namespace qps::query {
 
     StmtRefType StmtRef::getType() {
         return type;
+    }
+
+    DesignEntity StmtRef::getDeclarationType() const {
+        return declarationType;
     }
 
     std::string StmtRef::getDeclaration() const {
@@ -204,7 +234,7 @@ namespace qps::query {
         return stmtField;
     }
 
-    PKBField PKBFieldTransformer::transformEntRef(EntRef e) {
+    PKBField PKBFieldTransformer::transformEntRefVar(EntRef e) {
         PKBField entField;
         if (e.isVarName()) {
             entField = PKBField::createConcrete(VAR_NAME{e.getVariableName()});
@@ -212,6 +242,18 @@ namespace qps::query {
             entField = PKBField::createWildcard(PKBEntityType::VARIABLE);
         } else if (e.isDeclaration()) {
             entField = PKBField::createDeclaration(PKBEntityType::VARIABLE);
+        }
+        return entField;
+    }
+
+    PKBField PKBFieldTransformer::transformEntRefProc(EntRef e) {
+        PKBField entField;
+        if (e.isVarName()) {
+            entField = PKBField::createConcrete(PROC_NAME{e.getVariableName()});
+        } else if (e.isWildcard()) {
+            entField = PKBField::createWildcard(PKBEntityType::PROCEDURE);
+        } else if (e.isDeclaration()) {
+            entField = PKBField::createDeclaration(PKBEntityType::PROCEDURE);
         }
         return entField;
     }
@@ -228,20 +270,81 @@ namespace qps::query {
         return expression;
     }
 
-    std::vector<PKBField> Modifies::getField() {
-        return getFieldHelper(&Modifies::modifiesStmt, &Modifies::modified);
+    std::vector<PKBField> ModifiesS::getField() {
+        return getFieldHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
-    std::vector<std::string> Modifies::getSyns() {
-        return getSynsHelper(&Modifies::modifiesStmt, &Modifies::modified);
+    std::vector<std::string> ModifiesS::getSyns() {
+        return getSynsHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
-    std::vector<PKBField> Uses::getField() {
-        return getFieldHelper(&Uses::useStmt, &Uses::used);
+    void ModifiesS::checkFirstArg() {
+        if (modifiesStmt.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
     }
 
-    std::vector<std::string> Uses::getSyns()  {
-        return getSynsHelper(&Uses::useStmt, &Uses::used);
+    void ModifiesS::checkSecondArg() {
+        if(modified.isDeclaration() && modified.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
+
+    std::vector<PKBField> ModifiesP::getField() {
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(modifiesProc);
+        PKBField field2 = PKBFieldTransformer::transformEntRefVar(modified);
+        return std::vector<PKBField>{field1, field2};
+    }
+
+    std::vector<std::string> ModifiesP::getSyns() {
+        return getSynsHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
+    }
+
+    void ModifiesP::checkFirstArg() {
+        if (modifiesProc.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void ModifiesP::checkSecondArg() {
+        if(modified.isDeclaration() && modified.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
+
+
+    std::vector<PKBField> UsesP::getField() {
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(useProc);
+        PKBField field2 = PKBFieldTransformer::transformEntRefVar(used);
+        return std::vector<PKBField>{field1, field2};
+    }
+
+    std::vector<std::string> UsesP::getSyns()  {
+        return getSynsHelper(&UsesP::useProc, &UsesP::used);
+    }
+
+    void UsesP::checkFirstArg() {
+        if (useProc.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void UsesP::checkSecondArg() {
+        if (used.isDeclaration() && used.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
+
+    std::vector<PKBField> UsesS::getField() {
+        return getFieldHelper(&UsesS::useStmt, &UsesS::used);
+    }
+
+    std::vector<std::string> UsesS::getSyns()  {
+        return getSynsHelper(&UsesS::useStmt, &UsesS::used);
+    }
+
+    void UsesS::checkFirstArg() {
+        if (useStmt.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void UsesS::checkSecondArg() {
+        if (used.isDeclaration() && used.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
     }
 
     std::vector<PKBField> Follows::getField() {
@@ -275,4 +378,86 @@ namespace qps::query {
     std::vector<std::string> ParentT::getSyns() {
         return getSynsHelper(&ParentT::parent, &ParentT::transitiveChild);
     }
+
+    std::vector<PKBField> Calls::getField() {
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(caller);
+        PKBField field2 = PKBFieldTransformer::transformEntRefProc(callee);
+        return std::vector<PKBField>{field1, field2};
+    }
+
+    std::vector<std::string> Calls::getSyns() {
+        return getSynsHelper(&Calls::caller, &Calls::callee);
+    }
+
+    void Calls::checkFirstArg() {
+        if (caller.isDeclaration() && caller.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
+    }
+
+    void Calls::checkSecondArg() {
+        if (callee.isDeclaration() && callee.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
+    }
+
+    std::vector<PKBField> CallsT::getField() {
+        PKBField field1 = PKBFieldTransformer::transformEntRefProc(caller);
+        PKBField field2 = PKBFieldTransformer::transformEntRefProc(transitiveCallee);
+        return std::vector<PKBField>{field1, field2};
+    }
+
+    std::vector<std::string> CallsT::getSyns() {
+        return getSynsHelper(&CallsT::caller, &CallsT::transitiveCallee);
+    }
+
+    void CallsT::checkFirstArg() {
+        if (caller.isDeclaration() && caller.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
+    }
+
+    void CallsT::checkSecondArg() {
+        if (transitiveCallee.isDeclaration() && transitiveCallee.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
+    }
+
+    std::vector<std::string> Next::getSyns() {
+        return getSynsHelper(&Next::before, &Next::after);
+    }
+
+    std::vector<PKBField> Next::getField() {
+        return getFieldHelper(&Next::before, &Next::after);
+    }
+
+    std::vector<std::string> NextT::getSyns() {
+        return getSynsHelper(&NextT::before, &NextT::transitiveAfter);
+    }
+
+    std::vector<PKBField> NextT::getField() {
+        return getFieldHelper(&NextT::before, &NextT::transitiveAfter);
+    }
+
+    AttrCompareRef AttrCompareRef::ofString(std::string str) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::STRING;
+        acr.str_value = str;
+        return acr;
+    }
+
+    AttrCompareRef AttrCompareRef::ofNumber(int num) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::NUMBER;
+        acr.number = num;
+        return acr;
+    }
+
+    AttrCompareRef AttrCompareRef::ofAttrRef(AttrRef ar) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::ATTRREF;
+        acr.ar = ar;
+        return acr;
+    }
+
 }  // namespace qps::query

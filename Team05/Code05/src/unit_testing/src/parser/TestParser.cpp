@@ -484,10 +484,44 @@ TEST_CASE("Testing Parser") {
                     make<ast::Assign>(3, make<ast::Var>("v2"), make<ast::Var>("v1"))
                 );
             };
-            expected = std::make_unique<ast::Program>(make<ast::Procedure>(
-                "main",
-                genStmtlst()
-            ));
+            expected = makeProgram(make<ast::Procedure>("main", std::move(genStmtlst())));
+
+            REQUIRE(*ast == *expected);
+
+            lineCount = 1;  // reset lineCount
+            tokens = Lexer(R"(
+            procedure main {
+                read v1;
+                print v1;
+                v2 = v1;
+                call monke;
+            }
+            procedure monke {
+                read v3;
+                v2 = v3;
+            }
+            )").getTokens();
+
+            ast = parseProgram(tokens);
+
+            expected = makeProgram(
+                make<ast::Procedure>(
+                    "main", 
+                    ast::makeStmts(
+                        make<ast::Read>(1, make<ast::Var>("v1")),
+                        make<ast::Print>(2, make<ast::Var>("v1")),
+                        make<ast::Assign>(3, make<ast::Var>("v2"), make<ast::Var>("v1")),
+                        make<ast::Call>(4, "monke")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "monke", 
+                    ast::makeStmts(
+                        make<ast::Read>(5, make<ast::Var>("v3")),
+                        make<ast::Assign>(6, make<ast::Var>("v2"), make<ast::Var>("v3"))
+                    )
+                )
+            );
 
             REQUIRE(*ast == *expected);
         }
@@ -518,7 +552,7 @@ TEST_CASE("Testing Parser") {
                 }
             }
         )";
-        auto parsedCorrect = std::make_unique<ast::Program>(
+        auto parsedCorrect = makeProgram(
             make<ast::Procedure>(
                 "a",
                 ast::makeStmts(
@@ -553,7 +587,7 @@ TEST_CASE("Testing Parser") {
                 read c;
             }
         })";
-        auto parsedCorrect2 = std::make_unique<ast::Program>(
+        auto parsedCorrect2 = makeProgram(
             make<ast::Procedure>(
                 "a",
                 ast::makeStmts(
@@ -588,7 +622,7 @@ TEST_CASE("Testing Parser") {
             ave = sum / 3;
             print ave;
         })";
-        auto parsedTestCode = std::make_unique<ast::Program>(
+        auto parsedTestCode = makeProgram(
             make<ast::Procedure>(
                 "computeAverage",
                 ast::makeStmts(
@@ -638,7 +672,7 @@ TEST_CASE("Testing Parser") {
             print num2;
             print noSwap;
         })";
-        auto parsedTestCode2 = std::make_unique<ast::Program>(
+        auto parsedTestCode2 = makeProgram(
             make<ast::Procedure>(
                 "printAscending",
                 ast::makeStmts(

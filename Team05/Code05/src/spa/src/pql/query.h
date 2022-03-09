@@ -4,10 +4,10 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <unordered_set>
 #include "PKB/PKBField.h"
 #include "logging.h"
-
-#define LOGGER Logger()
+#include "exceptions.h"
 
 namespace qps::query {
 
@@ -24,7 +24,10 @@ enum class DesignEntity {
     PROCEDURE
 };
 
+enum class AttrName;
+
 extern std::unordered_map<std::string, DesignEntity> designEntityMap;
+extern std::unordered_map<AttrName, std::unordered_set<DesignEntity>> attrNameToDesignEntityMap;
 
 enum class StmtRefType {
     NOT_INITIALIZED,
@@ -40,6 +43,7 @@ struct StmtRef {
 private:
     StmtRefType type = StmtRefType::NOT_INITIALIZED;
     std::string declaration = "";
+    DesignEntity declarationType = DesignEntity::CONSTANT;
     int lineNo = -1;
 
 public:
@@ -47,9 +51,10 @@ public:
         * Returns a StmtRef of type Declaration
         *
         * @param name the name of the declaration
+        * @param de the design entity of the declaration
         * @return StmtRef of type declaration and declaration name
         */
-    static StmtRef ofDeclaration(std::string name);
+    static StmtRef ofDeclaration(std::string name, DesignEntity de);
 
     /*
         * Returns a StmtRef of type LineNo
@@ -69,6 +74,7 @@ public:
     StmtRefType getType();
 
     std::string getDeclaration() const;
+    DesignEntity getDeclarationType() const;
 
     int getLineNo();
 
@@ -80,7 +86,7 @@ public:
 
     bool operator==(const StmtRef &o) const {
         if (type == StmtRefType::DECLARATION && o.type == StmtRefType::DECLARATION)
-            return declaration == o.declaration;
+            return declaration == o.declaration && declarationType == o.declarationType;
         else if (type == StmtRefType::LINE_NO && o.type == StmtRefType::LINE_NO)
             return lineNo == o.lineNo;
 
@@ -102,6 +108,7 @@ struct EntRef {
 private:
     EntRefType type = EntRefType::NOT_INITIALIZED;
     std::string declaration = "";
+    DesignEntity declarationType = DesignEntity::CONSTANT;
     std::string variable = "";
 
 public:
@@ -109,9 +116,10 @@ public:
         * Returns a EntRef of type Declaration
         *
         * @param name the name of the declaration
+        * @param de the design entity of the declaration
         * @return EntRef of type declaration and declaration name
         */
-    static EntRef ofDeclaration(std::string name);
+    static EntRef ofDeclaration(std::string name, DesignEntity de);
 
     /*
         * Returns a EntRef of type variable name
@@ -131,6 +139,7 @@ public:
     EntRefType getType();
 
     std::string getDeclaration() const;
+    DesignEntity getDeclarationType() const;
 
     std::string getVariableName();
 
@@ -142,7 +151,7 @@ public:
 
     bool operator==(const EntRef &o) const {
         if (type == EntRefType::DECLARATION && o.type == EntRefType::DECLARATION)
-            return declaration == o.declaration;
+            return declaration == o.declaration && declarationType == o.declarationType;
         else if (type == EntRefType::VARIABLE_NAME && o.type == EntRefType::VARIABLE_NAME)
             return variable == o.variable;
 
@@ -157,9 +166,9 @@ struct PKBFieldTransformer {
      * @param entRef
      * @return a PKBField of the given entRef
      */
-    static PKBField transformEntRef(EntRef e);
+    static PKBField transformEntRefVar(EntRef e);
 
-
+    static PKBField transformEntRefProc(EntRef e);
     /**
      * Transforms a stmtRef into a PKBField.
      *
@@ -177,7 +186,15 @@ enum class RelRefType {
     PARENT,
     PARENTT,
     MODIFIESS,
-    USESS
+    MODIFIESP,
+    USESS,
+    USESP,
+    CALLS,
+    CALLST,
+    NEXT,
+    NEXTT,
+    AFFECTS,
+    AFFECTST
 };
 
 /**
@@ -194,6 +211,9 @@ struct RelRef {
 
     virtual RelRefType getType() { return type; }
 
+    virtual void checkFirstArg() {}
+    virtual void checkSecondArg() {}
+
     virtual std::vector<PKBField> getField() = 0;
 
     virtual std::vector<std::string> getSyns() = 0;
@@ -206,14 +226,14 @@ protected:
             if constexpr(std::is_same_v<F1, StmtRef>) {
                 return PKBFieldTransformer::transformStmtRef(derivedPtr->*f1);
             } else {
-                return PKBFieldTransformer::transformEntRef(derivedPtr->*f1);
+                return PKBFieldTransformer::transformEntRefVar(derivedPtr->*f1);
             }
         }();
         PKBField field2 = [&]() {
             if constexpr(std::is_same_v<F2, StmtRef>) {
                 return PKBFieldTransformer::transformStmtRef(derivedPtr->*f2);
             } else {
-                return PKBFieldTransformer::transformEntRef(derivedPtr->*f2);
+                return PKBFieldTransformer::transformEntRefVar(derivedPtr->*f2);
             }
         }();
 
@@ -237,24 +257,42 @@ protected:
 };
 
 /**
-* Struct used to represent a Modifies RelRef
+* Struct used to represent a ModifiesS RelRef
 */
-struct Modifies : RelRef {
-    Modifies() : RelRef(RelRefType::MODIFIESS) {}
+struct ModifiesS : RelRef {
+    ModifiesS() : RelRef(RelRefType::MODIFIESS) {}
 
     EntRef modified;
     StmtRef modifiesStmt;
 
     std::vector<PKBField> getField() override;
-
     std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override;
+    void checkSecondArg() override;
 };
 
 /**
-* Struct used to represent a Uses RelRef
+* Struct used to represent a ModifiesP RelRef
 */
-struct Uses : RelRef {
-    Uses() : RelRef(RelRefType::USESS) {}
+struct ModifiesP : RelRef {
+    ModifiesP() : RelRef(RelRefType::MODIFIESP) {}
+
+    EntRef modified;
+    EntRef modifiesProc;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override;
+    void checkSecondArg() override;
+};
+
+/**
+* Struct used to represent a UsesS RelRef
+*/
+struct UsesS : RelRef {
+    UsesS() : RelRef(RelRefType::USESS) {}
 
     EntRef used;
     StmtRef useStmt;
@@ -262,6 +300,24 @@ struct Uses : RelRef {
     std::vector<PKBField> getField() override;
 
     std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override;
+    void checkSecondArg() override;
+};
+/**override
+* Struct used to represent a UsesP RelRef
+*/
+struct UsesP : RelRef {
+    UsesP() : RelRef(RelRefType::USESP) {}
+
+    EntRef used;
+    EntRef useProc;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override;
+    void checkSecondArg() override;
 };
 
 struct Follows : RelRef {
@@ -305,6 +361,53 @@ struct ParentT : RelRef {
 
     std::vector<PKBField> getField() override;
 
+    std::vector<std::string> getSyns() override;
+};
+
+struct Calls : RelRef {
+    Calls() : RelRef(RelRefType::CALLS) {}
+
+    EntRef caller;
+    EntRef callee;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override;
+    void checkSecondArg() override;
+
+};
+
+struct CallsT: RelRef {
+    CallsT() : RelRef(RelRefType::CALLST) {}
+
+    EntRef caller;
+    EntRef transitiveCallee;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override;
+    void checkSecondArg() override;
+};
+
+struct Next : RelRef {
+    Next() : RelRef(RelRefType::NEXT) {}
+
+    StmtRef before;
+    StmtRef after;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+};
+
+struct NextT : RelRef {
+    NextT() : RelRef(RelRefType::NEXTT) {}
+
+    StmtRef before;
+    StmtRef transitiveAfter;
+
+    std::vector<PKBField> getField() override;
     std::vector<std::string> getSyns() override;
 };
 
@@ -357,6 +460,59 @@ struct Pattern {
     }
 };
 
+enum class AttrName {
+    INVALID,
+    PROCNAME,
+    VARNAME,
+    VALUE,
+    STMTNUM
+};
+
+struct AttrRef {
+    AttrName attrName = AttrName::INVALID;
+    DesignEntity declarationType {};
+    std::string declaration = "";
+};
+
+enum class AttrCompareRefType {
+    NOT_INITIALIZED,
+    NUMBER,
+    STRING,
+    ATTRREF
+};
+
+struct AttrCompareRef {
+private:
+    AttrCompareRefType type = AttrCompareRefType::NOT_INITIALIZED;
+    int number = -1;
+    std::string str_value = "";
+    AttrRef ar;
+
+public:
+    static AttrCompareRef ofString(std::string str);
+    static AttrCompareRef ofNumber(int num);
+    static AttrCompareRef ofAttrRef(AttrRef ar);
+
+    std::string getString() { return str_value; }
+    int getNumber() { return number; }
+    AttrRef getAttrRef() { return ar; }
+
+    bool isString() { return type == AttrCompareRefType::STRING; }
+    bool isNumber() { return type == AttrCompareRefType::NUMBER; }
+    bool isAttrRef() { return type == AttrCompareRefType::ATTRREF; }
+};
+
+
+struct AttrCompare {
+    AttrCompareRef lhs;
+    AttrCompareRef rhs;
+
+    AttrCompare(AttrCompareRef lhs, AttrCompareRef rhs) : lhs(lhs), rhs(rhs) {}
+
+    AttrCompareRef getLhs() { return lhs; }
+    AttrCompareRef getRhs() { return rhs; }
+};
+
 /**
 * Struct used to represent a query that has been parsed
 */
@@ -366,32 +522,29 @@ private:
     std::vector<std::string> variable;
     std::vector<std::shared_ptr<RelRef>> suchthat;
     std::vector<Pattern> pattern;
+    std::vector<AttrCompare> with;
     bool valid;
 
 public:
     std::unordered_map<std::string, DesignEntity> getDeclarations();
 
     std::vector<std::string> getVariable();
-
     std::vector<std::shared_ptr<RelRef>> getSuchthat();
-
     std::vector<Pattern> getPattern();
+    std::vector<AttrCompare> getWith();
+
 
     bool isValid();
-
     void setValid(bool);
 
     bool hasDeclaration(std::string);
-
     bool hasVariable(std::string var);
 
     void addDeclaration(std::string, DesignEntity);
-
     void addVariable(std::string var);
-
     void addSuchthat(std::shared_ptr<RelRef>);
-
     void addPattern(Pattern);
+    void addWith(AttrCompare);
 
     /*
         * Returns the DesignEntity of the specified declaration

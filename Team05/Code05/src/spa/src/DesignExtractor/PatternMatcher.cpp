@@ -1,7 +1,7 @@
 #include "PatternMatcher.h"
 #include "Parser/Lexer.h"
 #include "Parser/Parser.h"
-#include "PKB/PKBDataTypes.h"
+#include "PKB/PKBField.h"
 #include "DesignExtractor.h"
 
 namespace sp {
@@ -31,8 +31,8 @@ struct ExprFlattener : public TreeWalker {
 
 // Helper method to flatten any expression tree to a list representation.
 std::list<std::reference_wrapper<const ast::ASTNode>> flatten(ast::Expr *root) {
-    auto flattener = std::make_shared<ExprFlattener>();
-    root->accept(flattener);
+    auto flattener = std::make_unique<ExprFlattener>();
+    root->accept(flattener.get());
     return flattener->nodes;
 }
 
@@ -115,8 +115,8 @@ public:
 };
 
 AssignPatternReturn extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs) {
-    auto ape = std::make_shared<AssignmentPatternExtractor>(lhs, rhs);
-    root->accept(ape);
+    auto ape = std::make_unique<AssignmentPatternExtractor>(lhs, rhs);
+    root->accept(ape.get());
     return ape->nodes;
 }
 }  // namespace design_extractor

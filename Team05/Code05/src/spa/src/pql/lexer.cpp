@@ -6,26 +6,27 @@
 #include "exceptions.h"
 #include "pql/lexer.h"
 
-#define LOGGER Logger(Level::DEBUG) << "pql/lexer.cpp: \n"
-
 namespace qps::parser {
     std::unordered_map<char, TokenType> specialCharToTokenTypeMap {
             { ';', TokenType::SEMICOLON },
             { '(', TokenType::OPENING_PARAN },
             { ')', TokenType::CLOSING_PARAN },
             { '_', TokenType::UNDERSCORE },
+            { '.', TokenType::PERIOD },
             { ',', TokenType::COMMA },
             { '+', TokenType::PLUS },
             { '-', TokenType::MINUS },
             { '*', TokenType::MULTIPLY },
             { '/', TokenType::DIVIDE },
-            { '%', TokenType::MODULO}
+            { '%', TokenType::MODULO },
+            { '=', TokenType::EQUAL }
     };
 
     std::vector<std::string> keywords = {
             "Select", "Modifies", "Uses", "Parent*",
-            "Parent", "Follows*", "Follows", "pattern",
-            "such that"
+            "Parent", "Follows*", "Follows", "Next*",
+            "Next", "Calls*", "Calls", "pattern", "such that",
+            "with", "procName", "varName", "value", "stmt#"
     };
 
     std::unordered_map<std::string, TokenType> keywordsToTokenTypeMap {
@@ -36,8 +37,17 @@ namespace qps::parser {
             { "Parent", TokenType::PARENT },
             { "Follows*", TokenType::FOLLOWS_T },
             { "Follows", TokenType::FOLLOWS },
+            { "Next*", TokenType::NEXT_T },
+            { "Next", TokenType::NEXT },
+            { "Calls*", TokenType::CALLS_T },
+            { "Calls", TokenType::CALLS },
             { "pattern", TokenType::PATTERN },
-            { "such that", TokenType::SUCH_THAT }
+            { "such that", TokenType::SUCH_THAT },
+            { "with", TokenType::WITH },
+            { "procName", TokenType::PROCNAME },
+            { "varName", TokenType::VARNAME },
+            { "value", TokenType::VALUE },
+            { "stmt#", TokenType::STMTNUM }
     };
 
     Token Lexer::getReservedToken(std::string keyword) {
@@ -62,7 +72,6 @@ namespace qps::parser {
     }
 
     TokenType Lexer::getSpecialCharTokenType(char ch) {
-
         auto pos = specialCharToTokenTypeMap.find(ch);
 
         if (pos == specialCharToTokenTypeMap.end()) {
@@ -147,7 +156,7 @@ namespace qps::parser {
             return token;
         }
 
-        for (auto keyword: keywords) {
+        for (auto keyword : keywords) {
             if (hasPrefix(keyword)) {
                 token = getReservedToken(keyword);
                 break;
@@ -170,6 +179,10 @@ namespace qps::parser {
         Token token = getNextReservedToken();
         text = copy;
         return token;
+    }
+
+    bool Lexer::hasLeadingWhitespace() {
+        return isspace(text[0]);
     }
 }  // namespace qps::parser
 

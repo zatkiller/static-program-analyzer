@@ -1,5 +1,5 @@
 #include "ProcedureExtractor.h"
-#include "PKB/PKBDataTypes.h"
+#include "PKB/PKBField.h"
 
 
 namespace sp {

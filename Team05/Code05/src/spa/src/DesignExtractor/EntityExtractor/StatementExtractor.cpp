@@ -29,5 +29,10 @@ void StatementExtractor::visit(const ast::Assign& node) {
     DEBUG_LOG << "Assign Stmt " << node.getStmtNo();
     pkb->insertEntity(STMT_LO{node.getStmtNo(), StatementType::Assignment});
 }
+
+void StatementExtractor::visit(const ast::Call& node) {
+    DEBUG_LOG << "Call Stmt " << node.getStmtNo();
+    pkb->insertEntity(STMT_LO(node.getStmtNo(), StatementType::Call));
+}
 }  // namespace design_extractor
 }  // namespace sp
