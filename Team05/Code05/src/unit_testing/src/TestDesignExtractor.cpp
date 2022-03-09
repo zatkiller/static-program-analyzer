@@ -391,7 +391,6 @@ namespace ast {
                 p(PROC_NAME{"main"}, VAR_NAME{"y"})
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
-
         }
 
         /**
@@ -453,7 +452,6 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
         }
-    
     }
 
     TEST_CASE("Pattern matcher test") {

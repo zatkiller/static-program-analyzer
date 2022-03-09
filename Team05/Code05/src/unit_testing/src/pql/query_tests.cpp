@@ -33,7 +33,6 @@ TEST_CASE("AttrRef") {
 }
 
 TEST_CASE("AttrCompareRef") {
-
     AttrCompareRef acr = AttrCompareRef::ofString("p");
     REQUIRE(acr.isString());
     REQUIRE(acr.getString() == "p");

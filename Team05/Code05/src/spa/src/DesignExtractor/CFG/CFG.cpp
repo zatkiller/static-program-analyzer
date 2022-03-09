@@ -7,11 +7,11 @@ namespace cfg {
 
 void CFGNode::insert(std::shared_ptr<CFGNode> child) {
     children.push_back(child);
-};
+}
 
-bool CFGNode::operator==(CFGNode const& o) const{
+bool CFGNode::operator==(CFGNode const& o) const {
     return (this->stmt == o.stmt);
-};
+}
 
 bool CFGNode::isParentOf(CFGNode* other) {
     for (auto c : this->children) {
@@ -47,7 +47,7 @@ bool CFGNode::isAncestorOf(CFGNode* other) {
     return dfs(this, other, reached);
 }
 
-// TODO
+// TODO(NayLin-H99): AST to CFG construction
 // void visit(const ast::Program& node) override {}; 
 // void visit(const ast::Procedure& node) override {};
 // void visit(const ast::StmtLst& node) override {};
@@ -59,6 +59,5 @@ bool CFGNode::isAncestorOf(CFGNode* other) {
 // void visit(const ast::Call&) override {};
 // void enterContainer(std::variant<int, std::string> containerId) override {};
 // void exitContainer() override {};
-
-}
-}
+}  // namespace cfg
+}  // namespace sp

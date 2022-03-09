@@ -3,11 +3,11 @@
 #include <vector>
 #include <memory>
 
-#include "PKB/PKBDataTypes.h"
+#include "PKB/PKBField.h"
 #include "DesignExtractor/Extractor.h"
 
 namespace sp {
-namespace cfg{
+namespace cfg {
 class CFGNode;
 /**
  * @brief Class to encapsulate a single CFGNode.
@@ -20,7 +20,7 @@ private:
     std::vector<std::shared_ptr<CFGNode>> children;
 public:
     CFGNode () : stmt(std::nullopt) {}
-    CFGNode(int stmtNo) : stmt(STMT_LO(stmtNo)) {}
+    explicit CFGNode(int stmtNo) : stmt(STMT_LO(stmtNo)) {}
 
     void insert(std::shared_ptr<CFGNode> child);
     bool isParentOf(CFGNode* other);
@@ -31,7 +31,7 @@ public:
     std::vector<std::shared_ptr<CFGNode>> getChildren() { return children; }
 };
 
-// TODO
+// TODO(NayLin-H99): AST to CFG construction
 // class CFGExtractor: public TreeWalker {
 //     void visit(const ast::Program& node) override;
 //     void visit(const ast::Procedure& node) override;
@@ -45,6 +45,5 @@ public:
 //     void enterContainer(std::variant<int, std::string> containerId) override;
 //     void exitContainer() override;
 // }
-
 }  // namespace cfg
 }  // namespace sp
