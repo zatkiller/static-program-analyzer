@@ -1,7 +1,9 @@
 #include <algorithm>
+#include <unordered_set>
 
 #include "exceptions.h"
 #include "pql/query.h"
+#include "pql/lexer.h"
 
 namespace qps::query {
     std::unordered_map<std::string, DesignEntity> designEntityMap = {
@@ -13,7 +15,16 @@ namespace qps::query {
             {"assign",    DesignEntity::ASSIGN},
             {"variable",  DesignEntity::VARIABLE},
             {"constant",  DesignEntity::CONSTANT},
-            {"procedure", DesignEntity::PROCEDURE}
+            {"procedure", DesignEntity::PROCEDURE},
+            {"call", DesignEntity::CALL}
+    };
+
+    std::unordered_map<AttrName, std::unordered_set<DesignEntity>> attrNameToDesignEntityMap = {
+            { AttrName::PROCNAME, { DesignEntity::PROCEDURE, DesignEntity::CALL} },
+            { AttrName::VARNAME, { DesignEntity::VARIABLE, DesignEntity::READ, DesignEntity::PRINT} },
+            { AttrName::VALUE, { DesignEntity::CONSTANT } },
+            { AttrName::STMTNUM, { DesignEntity::STMT, DesignEntity::CALL, DesignEntity::READ, DesignEntity::PRINT,
+                                   DesignEntity::WHILE, DesignEntity::IF, DesignEntity::ASSIGN} }
     };
 
     bool Query::isValid() {
@@ -55,6 +66,11 @@ namespace qps::query {
         return pattern;
     }
 
+    std::vector<AttrCompare> Query::getWith() {
+        return with;
+    }
+
+
     void Query::addDeclaration(std::string var, DesignEntity de) {
         if (declarations.find(var) != declarations.end())
             throw exceptions::PqlSyntaxException("Declaration already exists!");
@@ -73,6 +89,10 @@ namespace qps::query {
 
     void Query::addPattern(Pattern p) {
         pattern.push_back(p);
+    }
+
+    void Query::addWith(AttrCompare ac) {
+        with.push_back(ac);
     }
 
 
@@ -258,6 +278,16 @@ namespace qps::query {
         return getSynsHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
+    void ModifiesS::checkFirstArg() {
+        if (modifiesStmt.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void ModifiesS::checkSecondArg() {
+        if(modified.isDeclaration() && modified.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
+
     std::vector<PKBField> ModifiesP::getField() {
         PKBField field1 = PKBFieldTransformer::transformEntRefProc(modifiesProc);
         PKBField field2 = PKBFieldTransformer::transformEntRefVar(modified);
@@ -267,6 +297,17 @@ namespace qps::query {
     std::vector<std::string> ModifiesP::getSyns() {
         return getSynsHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
     }
+
+    void ModifiesP::checkFirstArg() {
+        if (modifiesProc.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void ModifiesP::checkSecondArg() {
+        if(modified.isDeclaration() && modified.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
+
 
     std::vector<PKBField> UsesP::getField() {
         PKBField field1 = PKBFieldTransformer::transformEntRefProc(useProc);
@@ -278,12 +319,32 @@ namespace qps::query {
         return getSynsHelper(&UsesP::useProc, &UsesP::used);
     }
 
+    void UsesP::checkFirstArg() {
+        if (useProc.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void UsesP::checkSecondArg() {
+        if (used.isDeclaration() && used.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
+
     std::vector<PKBField> UsesS::getField() {
         return getFieldHelper(&UsesS::useStmt, &UsesS::used);
     }
 
     std::vector<std::string> UsesS::getSyns()  {
         return getSynsHelper(&UsesS::useStmt, &UsesS::used);
+    }
+
+    void UsesS::checkFirstArg() {
+        if (useStmt.isWildcard())
+            throw exceptions::PqlSemanticException(messages::qps::parser::cannotBeWildcardMessage);
+    }
+
+    void UsesS::checkSecondArg() {
+        if (used.isDeclaration() && used.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
     }
 
     std::vector<PKBField> Follows::getField() {
@@ -328,6 +389,18 @@ namespace qps::query {
         return getSynsHelper(&Calls::caller, &Calls::callee);
     }
 
+    void Calls::checkFirstArg() {
+        if (caller.isDeclaration() && caller.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
+    }
+
+    void Calls::checkSecondArg() {
+        if (callee.isDeclaration() && callee.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
+    }
+
     std::vector<PKBField> CallsT::getField() {
         PKBField field1 = PKBFieldTransformer::transformEntRefProc(caller);
         PKBField field2 = PKBFieldTransformer::transformEntRefProc(transitiveCallee);
@@ -336,6 +409,18 @@ namespace qps::query {
 
     std::vector<std::string> CallsT::getSyns() {
         return getSynsHelper(&CallsT::caller, &CallsT::transitiveCallee);
+    }
+
+    void CallsT::checkFirstArg() {
+        if (caller.isDeclaration() && caller.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
+    }
+
+    void CallsT::checkSecondArg() {
+        if (transitiveCallee.isDeclaration() && transitiveCallee.getDeclarationType() != DesignEntity::PROCEDURE) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notProcedureSynonymMessage);
+        }
     }
 
     std::vector<std::string> Next::getSyns() {
@@ -352,6 +437,27 @@ namespace qps::query {
 
     std::vector<PKBField> NextT::getField() {
         return getFieldHelper(&NextT::before, &NextT::transitiveAfter);
+    }
+
+    AttrCompareRef AttrCompareRef::ofString(std::string str) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::STRING;
+        acr.str_value = str;
+        return acr;
+    }
+
+    AttrCompareRef AttrCompareRef::ofNumber(int num) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::NUMBER;
+        acr.number = num;
+        return acr;
+    }
+
+    AttrCompareRef AttrCompareRef::ofAttrRef(AttrRef ar) {
+        AttrCompareRef acr;
+        acr.type = AttrCompareRefType::ATTRREF;
+        acr.ar = ar;
+        return acr;
     }
 
 }  // namespace qps::query
