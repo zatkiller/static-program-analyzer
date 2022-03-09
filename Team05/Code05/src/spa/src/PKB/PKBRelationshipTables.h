@@ -211,7 +211,7 @@ using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 */
 template<typename T>
 struct Node {
-    using NodeSet = std::vector<Node<T>*>;
+    using NodeSet = std::unordered_set<Node<T>*>;
 
     Node(T val, NodeSet prev, NodeSet next) : val(val), next(next), prev(prev) {}
 
@@ -264,13 +264,10 @@ public:
         }
 
         // Add the edge between uNode and vNode
-        uNode->next.push_back(vNode);
+        uNode->next.insert(vNode);
 
         // Add the edge between vNode and uNode
-        vNode->prev.push_back(uNode);
-        /*if (!vNode->prev) {
-            vNode->prev = uNode;
-        }*/
+        vNode->prev.insert(uNode);
     }
 
     /**
@@ -291,7 +288,7 @@ public:
             typename Node<T>::NodeSet nextNodes = curr->next;
             typename Node<T>::NodeSet filtered;
             std::copy_if(nextNodes.begin(), nextNodes.end(),
-                std::back_inserter(filtered), [second](Node<T>* const& node) {
+                std::inserter(filtered, filtered.end()), [second](Node<T>* const& node) {
                     return node->val == second;
                 });
             return (filtered.size() == 1);
@@ -467,7 +464,7 @@ private:
             if (!curr->next.empty()) {
                 typename Node<T>::NodeSet nextNodes = curr->next;
                 typename Node<T>::NodeSet filtered;
-                std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
+                std::copy_if(nextNodes.begin(), nextNodes.end(), std::inserter(filtered, filtered.end()),
                     [&](Node<T>* const& node) {
                         // filter for statements. for all other type no filtering is required.
                         if constexpr (std::is_same_v<T, STMT_LO>) {
@@ -541,7 +538,7 @@ private:
     */
     void traverseStartT(std::set<T>* found, Node<T>* node, Node<T>* initial, StatementType targetType = StatementType::None) const {
         typename Node<T>::NodeSet nextNodes = node->next;
-        bool isTerminating = std::find(nextNodes.begin(), nextNodes.end(), initial) != nextNodes.end();
+        bool isTerminating = std::count(nextNodes.begin(), nextNodes.end(), initial) == 1;
 
         for (auto nextNode : nextNodes) {
             // targetType is specified for statements
@@ -593,7 +590,7 @@ private:
             if (!curr->prev.empty()) {
                 typename Node<T>::NodeSet prevNodes = curr->prev;
                 typename Node<T>::NodeSet filtered;
-                std::copy_if(prevNodes.begin(), prevNodes.end(), std::back_inserter(filtered),
+                std::copy_if(prevNodes.begin(), prevNodes.end(), std::inserter(filtered, filtered.end()),
                     [&](Node<T>* const& node) {
                         // filter for statements. for all other type no filtering is required.
                         if constexpr (std::is_same_v<T, STMT_LO>) {
@@ -718,7 +715,7 @@ private:
 
                 // Filter nodes that match second statement type
                 typename Node<T>::NodeSet filtered;
-                std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
+                std::copy_if(nextNodes.begin(), nextNodes.end(), std::inserter(filtered, filtered.end()),
                     [&](Node<T>* const& node) {
                         if constexpr (std::is_same_v<T, STMT_LO>) {
                             return node->val.type.value() == field2.statementType.value() ||
