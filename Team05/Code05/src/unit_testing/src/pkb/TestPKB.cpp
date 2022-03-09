@@ -44,7 +44,7 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     PKBField stmt1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     PKBField stmt2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment });
     PKBField stmt3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
-    PKBField stmt4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::Read });
+    PKBField stmt4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::Read, VAR_NAME{"monke"} });
     PKBField stmt5 = PKBField::createConcrete(STMT_LO{ 5, StatementType::While });
     PKBField stmt6 = PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment });
     PKBField stmt7 = PKBField::createConcrete(STMT_LO{ 7, StatementType::If });
@@ -52,9 +52,9 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     PKBField stmt9 = PKBField::createConcrete(STMT_LO{ 9, StatementType::Assignment });
     PKBField stmt10 = PKBField::createConcrete(STMT_LO{ 10, StatementType::Assignment });
     PKBField stmt11 = PKBField::createConcrete(STMT_LO{ 11, StatementType::Assignment });
-    PKBField stmt12 = PKBField::createConcrete(STMT_LO{ 12, StatementType::Print });
-    PKBField stmt13 = PKBField::createConcrete(STMT_LO{ 13, StatementType::Call });
-    PKBField stmt14 = PKBField::createConcrete(STMT_LO{ 14, StatementType::Call });
+    PKBField stmt12 = PKBField::createConcrete(STMT_LO{ 12, StatementType::Print, VAR_NAME{"monke"}});
+    PKBField stmt13 = PKBField::createConcrete(STMT_LO{ 13, StatementType::Call, PROC_NAME{"abc"} });
+    PKBField stmt14 = PKBField::createConcrete(STMT_LO{ 14, StatementType::Call, PROC_NAME{"def"} });
     PKBField stmt15 = PKBField::createConcrete(STMT_LO{ 15, StatementType::Assignment });
     PKBField Example = PKBField::createConcrete(PROC_NAME{ "Example" });
     PKBField abc = PKBField::createConcrete(PROC_NAME{ "abc" });
@@ -99,7 +99,7 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
         pkb->insertRelationship(PKBRelationship::USES, Example, x);
         pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt6);
         pkb->insertRelationship(PKBRelationship::CALLS, Example, abc);
-        
+
         // relationships involving statements will not be inserted because the statements are not in StatementTable
         REQUIRE_FALSE(pkb->isRelationshipPresent(stmt1, stmt2, PKBRelationship::FOLLOWS));
         REQUIRE_FALSE(pkb->isRelationshipPresent(stmt1, x, PKBRelationship::MODIFIES));

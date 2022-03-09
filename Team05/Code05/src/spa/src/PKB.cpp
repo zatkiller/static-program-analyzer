@@ -22,7 +22,21 @@ PKB::PKB() {
 // INSERT API
 
 void PKB::insertStatement(StatementType type, int statementNumber) {
+    // TODO:: add checks to restrict to Assignment, If, While
+    //if (type != StatementType::Assignment || type != StatementType::If || type != StatementType::While) {
+    //    Logger(Level::INFO) << "insertStatement(StatementType, int) is only for Assignments, Ifs, Whiles.\n";
+    //}
+
     statementTable->insert(type, statementNumber);
+}
+
+void PKB::insertStatement(StatementType type, int statementNumber, StatementAttribute attribute) {
+    // TODO:: add checks to restrict to Call, Read, Print
+    //if (type != StatementType::Call || type != StatementType::Read || type != StatementType::Print) {
+    //    Logger(Level::INFO) << "insertStatement(StatementType, int, StatementAttribute) is only for Calls, Reads, Prints.\n";
+    //}
+
+    statementTable->insert(type, statementNumber, attribute);
 }
 
 void PKB::insertVariable(std::string name) {
@@ -80,27 +94,28 @@ bool PKB::validateStatement(PKBField* field) {
         auto content = field->getContent<STMT_LO>();
         auto statementNum = content->statementNum;
         auto statementType = content->type;
+        auto attribute = content->attribute;
+        auto stmts = statementTable->getStmts(statementNum);
 
-        if (!statementTable->contains(statementNum)) {
+        if (stmts.size() != 1) {
             return false;
         }
 
-        // if STMT_LO has no statement type, extract from StatementTable if it exists
+        auto stmt = stmts.at(0);
+
         if (!statementType.has_value() || statementType == StatementType::All) {
-            statementType = statementTable->getStmtTypeOfLine(statementNum);
-
-            if (!statementType.has_value()) {
-                return false;
-            }
-
-            field->content = STMT_LO{ statementNum, statementType.value() };
+            statementType = stmt.type;
         } else {
-            // check whether the values provided exists in StatementTable. 
-            // if the type is All, we do not need to check 
-            if (!statementTable->contains(statementType.value(), statementNum)) {
+            if (statementType != stmt.type) {
                 return false;
             }
         }
+
+        // no relationship API will provide a STMT_LO with an attribute
+        attribute = stmt.attribute;
+        field->content = attribute.has_value() ? 
+            STMT_LO{ statementNum, statementType.value(), attribute.value() } : 
+            STMT_LO{statementNum, statementType.value()};
     }
 
     return true;

@@ -17,12 +17,21 @@ public:
     PKB();
 
     /**
-    * Inserts a statement information into the PKB.
+    * Inserts an assignment, if, or while statement information into the PKB.
     *
     * @param type statement type
     * @param statementNumber line number
     */
     void insertStatement(StatementType type, int statementNumber);
+
+    /**
+    * Inserts a call, read, or print statement information into the PKB.
+    *
+    * @param type statement type
+    * @param statementNumber line number
+    * @param attribute a VAR_NAME or PROC_NAME
+    */
+    void insertStatement(StatementType type, int statementNumber, StatementAttribute attribute);
 
     /**
     * Inserts a variable into the PKB.

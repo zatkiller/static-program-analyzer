@@ -89,6 +89,9 @@ std::vector<PROC_NAME> ProcedureTable::getAllProcs() const {
 /** ============================== STATEMENTROW METHODS =============================== */
 
 StatementRow::StatementRow(StatementType t, int stmtNum) : stmt{ stmtNum, t } {}
+StatementRow::StatementRow(StatementType t, int stmtNum, StatementAttribute attribute) :
+    stmt{ stmtNum, t, attribute } {
+}
 
 bool StatementRow::operator == (const StatementRow& row) const {
     return stmt == row.stmt;
@@ -122,8 +125,25 @@ void StatementTable::insert(StatementType type, int statementNumber) {
     }
 }
 
+void StatementTable::insert(StatementType type, int statementNumber, StatementAttribute attribute) {
+    if (!contains(statementNumber)) {
+        rows.insert(StatementRow(type, statementNumber, attribute));
+    }
+}
+
 int StatementTable::getSize() const {
     return rows.size();
+}
+
+std::vector<STMT_LO> StatementTable::getStmts(int statementNumber) const {
+    std::vector<STMT_LO> res;
+
+    for (const auto& row : rows) {
+        if (row.getStmt().statementNum == statementNumber) {
+            res.push_back(row.getStmt());
+        }
+    }
+    return res;
 }
 
 std::vector<STMT_LO> StatementTable::getAllStmt() const {

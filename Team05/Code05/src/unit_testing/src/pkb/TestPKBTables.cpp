@@ -141,8 +141,10 @@ TEST_CASE("StatementTable insert and contains") {
     StatementTable table{};
     StatementType type1 = StatementType::Assignment;
     StatementType type2 = StatementType::While;
+    StatementType type3 = StatementType::Call;
     int statementNumber1 = 1;
     int statementNumber2 = 2;
+    int statementNumber3 = 3;
 
     REQUIRE_FALSE(table.contains(type1, statementNumber1));
 
@@ -154,6 +156,14 @@ TEST_CASE("StatementTable insert and contains") {
     REQUIRE_FALSE(table.contains(type2, statementNumber2));
     REQUIRE_FALSE(table.contains(type1, statementNumber2));
     REQUIRE_FALSE(table.contains(type2, statementNumber2));
+
+    auto assignmentStatement = table.getStmtOfType(StatementType::Assignment).at(0);
+    REQUIRE(assignmentStatement == STMT_LO{ statementNumber1, type1 });
+
+    // call.procName exists
+    table.insert(type3, statementNumber3, PROC_NAME{ "foo" });
+    auto callStatement = table.getStmtOfType(StatementType::Call).at(0);
+    REQUIRE(callStatement == STMT_LO{ statementNumber3, type3, PROC_NAME{"foo"} });
 }
 
 TEST_CASE("StatementTable getSize") {

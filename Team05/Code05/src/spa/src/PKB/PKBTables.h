@@ -150,6 +150,7 @@ private:
 class StatementRow {
 public:
     StatementRow(StatementType, int);
+    StatementRow(StatementType, int, StatementAttribute);
 
     /**
     * Retrieves the statement information stored in the StatementRow.
@@ -181,19 +182,24 @@ public:
     /**
     * Checks whether the StatementTable contains the statement information wrapped in a PKBField.
     *
-    * @param entry the PKBField containing the statement information to be checked
     * @returns whether the statement information is present in the ConstantTable
     */
     bool contains(StatementType, int) const;
 
+    /**
+    * Checks whether the StatementTable contains the statement with the given statement number.
+    */
     bool contains(int) const;
 
     /**
-    * Inserts statement information wrapped in a PKBField into the StatementTable.
-    *
-    * @param entry the PKBField containing the statement information to be inserted
+    * Inserts statement (assignment, if, or while) information wrapped in a PKBField into the StatementTable.
     */
     void insert(StatementType, int);
+
+    /**
+    * Inserts statement (call, read, or print) information wrapped in a PKBField into the StatementTable.
+    */
+    void insert(StatementType, int, StatementAttribute);
 
     /**
     * Returns the number of StatementRows.
@@ -201,6 +207,13 @@ public:
     * @return number of StatementRows
     */
     int getSize() const;
+
+    /**
+    * Retrieve the STMT_LO with the given statement number.
+    * 
+    * @return a STMT_LO
+    */
+    std::vector<STMT_LO> getStmts(int) const;
 
     /**
     * Retrieves all statement information stored in the StatementTable.

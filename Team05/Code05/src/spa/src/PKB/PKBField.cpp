@@ -15,6 +15,10 @@ bool STMT_LO::hasStatementType() {
     return type.has_value();
 }
 
+bool STMT_LO::hasAttribute() {
+    return attribute.has_value();
+}
+
 bool VAR_NAME::operator == (const VAR_NAME& other) const {
     return name == other.name;
 }
