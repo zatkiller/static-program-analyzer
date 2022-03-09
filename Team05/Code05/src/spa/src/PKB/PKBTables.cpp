@@ -34,7 +34,9 @@ bool StatementTable::contains(StatementType stmtType, int stmtNum) const {
 }
 
 void StatementTable::insert(StatementType stmtType, int stmtNum) {
-    insertVal(STMT_LO(stmtNum, stmtType));
+    if (!contains(stmtNum)) {
+        insertVal(STMT_LO(stmtNum, stmtType));
+    }
 }
 
 std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType stmtType) const {
