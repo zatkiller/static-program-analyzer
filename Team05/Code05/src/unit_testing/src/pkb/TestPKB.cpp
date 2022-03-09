@@ -37,35 +37,6 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     }
     */
 
-    pkb->insertProcedure("Example");
-    pkb->insertProcedure("abc");
-    pkb->insertProcedure("def");
-    pkb->insertVariable("x");
-    pkb->insertVariable("z");
-    pkb->insertVariable("i");
-    pkb->insertVariable("y");
-    pkb->insertVariable("w");
-    pkb->insertVariable("monke");
-    pkb->insertConstant(2);
-    pkb->insertConstant(3);
-    pkb->insertConstant(5);
-    pkb->insertConstant(1);
-    pkb->insertStatement(StatementType::Assignment, 1);
-    pkb->insertStatement(StatementType::Assignment, 2);
-    pkb->insertStatement(StatementType::Assignment, 3);
-    pkb->insertStatement(StatementType::Read, 4);
-    pkb->insertStatement(StatementType::While, 5);
-    pkb->insertStatement(StatementType::Assignment, 6);
-    pkb->insertStatement(StatementType::If, 7);
-    pkb->insertStatement(StatementType::Assignment, 8);
-    pkb->insertStatement(StatementType::Assignment, 9);
-    pkb->insertStatement(StatementType::Assignment, 10);
-    pkb->insertStatement(StatementType::Assignment, 11);
-    pkb->insertStatement(StatementType::Print, 12);
-    pkb->insertStatement(StatementType::Call, 13);
-    pkb->insertStatement(StatementType::Call, 14);
-    pkb->insertStatement(StatementType::Assignment, 15);
-
     PKBField const1 = PKBField::createConcrete(CONST{ 1 });
     PKBField const2 = PKBField::createConcrete(CONST{ 2 });
     PKBField const3 = PKBField::createConcrete(CONST{ 3 });
@@ -94,6 +65,65 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     PKBField i = PKBField::createConcrete(VAR_NAME{ "i" });
     PKBField w = PKBField::createConcrete(VAR_NAME{ "w" });
     PKBField monke = PKBField::createConcrete(VAR_NAME{ "monke" });
+
+    SECTION("PKB::validate with empty tables") {
+        pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt1, stmt2);
+        pkb->insertRelationship(PKBRelationship::MODIFIES, stmt1, x);
+        pkb->insertRelationship(PKBRelationship::USES, Example, x);
+        pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt6);
+        pkb->insertRelationship(PKBRelationship::CALLS, Example, abc);
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt1, stmt2, PKBRelationship::FOLLOWS));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt1, x, PKBRelationship::MODIFIES));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(Example, x, PKBRelationship::USES));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt5, stmt6, PKBRelationship::PARENT));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(Example, abc, PKBRelationship::CALLS));
+    }
+
+    pkb->insertProcedure("Example");
+    pkb->insertProcedure("abc");
+    pkb->insertProcedure("def");
+    pkb->insertVariable("x");
+    pkb->insertVariable("z");
+    pkb->insertVariable("i");
+    pkb->insertVariable("y");
+    pkb->insertVariable("w");
+    pkb->insertVariable("monke");
+    pkb->insertConstant(2);
+    pkb->insertConstant(3);
+    pkb->insertConstant(5);
+    pkb->insertConstant(1);
+
+    SECTION("PKB::validate with partially empty tables") {
+        pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt1, stmt2);
+        pkb->insertRelationship(PKBRelationship::MODIFIES, stmt1, x);
+        pkb->insertRelationship(PKBRelationship::USES, Example, x);
+        pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt6);
+        pkb->insertRelationship(PKBRelationship::CALLS, Example, abc);
+        
+        // relationships involving statements will not be inserted because the statements are not in StatementTable
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt1, stmt2, PKBRelationship::FOLLOWS));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt1, x, PKBRelationship::MODIFIES));
+        REQUIRE(pkb->isRelationshipPresent(Example, x, PKBRelationship::USES));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt5, stmt6, PKBRelationship::PARENT));
+        REQUIRE(pkb->isRelationshipPresent(Example, abc, PKBRelationship::CALLS));
+    }
+
+    pkb->insertStatement(StatementType::Assignment, 1);
+    pkb->insertStatement(StatementType::Assignment, 2);
+    pkb->insertStatement(StatementType::Assignment, 3);
+    pkb->insertStatement(StatementType::Read, 4);
+    pkb->insertStatement(StatementType::While, 5);
+    pkb->insertStatement(StatementType::Assignment, 6);
+    pkb->insertStatement(StatementType::If, 7);
+    pkb->insertStatement(StatementType::Assignment, 8);
+    pkb->insertStatement(StatementType::Assignment, 9);
+    pkb->insertStatement(StatementType::Assignment, 10);
+    pkb->insertStatement(StatementType::Assignment, 11);
+    pkb->insertStatement(StatementType::Print, 12);
+    pkb->insertStatement(StatementType::Call, 13);
+    pkb->insertStatement(StatementType::Call, 14);
+    pkb->insertStatement(StatementType::Assignment, 15);
+
 
     pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt1, stmt2);
     pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt2, stmt3);
@@ -551,7 +581,7 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
             FieldRowResponse{ {Example, abc}, {abc, def} } });
 
         // Calls(Example, p)
-        REQUIRE(pkb->getRelationship(Example, PKBField::createDeclaration(PKBEntityType::PROCEDURE), 
+        REQUIRE(pkb->getRelationship(Example, PKBField::createDeclaration(PKBEntityType::PROCEDURE),
             PKBRelationship::CALLS) == PKBResponse{ true, FieldRowResponse{ {Example, abc} } });
 
         // Calls*(_, _)

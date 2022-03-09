@@ -49,7 +49,7 @@ bool PKB::validate(PKBField* field) {
         return validateProcedure(field);
     case PKBEntityType::STATEMENT:
         return validateStatement(field);
-    default: // const
+    default:  // const
         return true;
     }
 }
@@ -74,7 +74,6 @@ bool PKB::validateProcedure(PKBField* field) {
 
     return true;
 }
-
 
 bool PKB::validateStatement(PKBField* field) {
     if (field->fieldType == PKBFieldType::CONCRETE) {
