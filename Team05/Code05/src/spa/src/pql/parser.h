@@ -19,6 +19,9 @@ using qps::query::ModifiesP;
 using qps::query::ModifiesS;
 using qps::query::UsesP;
 using qps::query::UsesS;
+using qps::query::AttrName;
+using qps::query::AttrRef;
+using qps::query::AttrCompareRef;
 
 /**
  * Struct used to represent the Parser
@@ -27,7 +30,24 @@ using qps::query::UsesS;
 struct Parser {
     Lexer lexer = Lexer("");
 
+    bool hasLeadingWhitespace();
+
+    /*
+     * Checks if the next token is surrounded by whitespace, throwing an error if it is
+     *
+     * @param f a function used to pull the next token
+     */
+    template<typename F>
+    void checkSurroundingWhitespace(F f) {
+        if (hasLeadingWhitespace())
+            throw exceptions::PqlSyntaxException(messages::qps::parser::unexpectedWhitespaceMessage);
+        f();
+        if (hasLeadingWhitespace())
+            throw exceptions::PqlSyntaxException(messages::qps::parser::unexpectedWhitespaceMessage);
+    }
+
     void checkType(Token, TokenType);
+    void checkDesignEntityAndAttrNameMatch(DesignEntity, AttrName);
 
     /*
      * Returns the next token from the lexified query
@@ -250,6 +270,31 @@ struct Parser {
      * @param query the query object
      */
     void parsePattern(Query &query);
+
+    /*
+     * Parses and returns a AttrRef
+     *
+     * @param query the query ADT
+     */
+    AttrRef parseAttrRef(Query &query);
+
+    /*
+     * Parses and returns a AttrCompareRef
+     *
+     * @param query the query ADT
+     */
+    AttrCompareRef parseAttrCompareRef(Query &query);
+
+    /*
+     * Parses a with clause and adds them to the query ADT
+     *
+     * @param query the query ADT
+     */
+    void parseWith(Query &query);
+
+    /*
+     * Returns a ExpSpec belonging to an assign pattern
+     */
     ExpSpec parseExpSpec();
 
     /*
@@ -284,6 +329,8 @@ struct Parser {
      * @param token token to get priority
      */
     int getOperatorPriority(Token token);
+
+
 };
 
 }  // namespace qps::parser

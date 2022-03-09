@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <unordered_set>
 #include "PKB/PKBField.h"
 #include "logging.h"
 #include "exceptions.h"
@@ -23,7 +24,10 @@ enum class DesignEntity {
     PROCEDURE
 };
 
+enum class AttrName;
+
 extern std::unordered_map<std::string, DesignEntity> designEntityMap;
+extern std::unordered_map<AttrName, std::unordered_set<DesignEntity>> attrNameToDesignEntityMap;
 
 enum class StmtRefType {
     NOT_INITIALIZED,
@@ -456,6 +460,59 @@ struct Pattern {
     }
 };
 
+enum class AttrName {
+    INVALID,
+    PROCNAME,
+    VARNAME,
+    VALUE,
+    STMTNUM
+};
+
+struct AttrRef {
+    AttrName attrName = AttrName::INVALID;
+    DesignEntity declarationType {};
+    std::string declaration = "";
+};
+
+enum class AttrCompareRefType {
+    NOT_INITIALIZED,
+    NUMBER,
+    STRING,
+    ATTRREF
+};
+
+struct AttrCompareRef {
+private:
+    AttrCompareRefType type = AttrCompareRefType::NOT_INITIALIZED;
+    int number = -1;
+    std::string str_value = "";
+    AttrRef ar;
+
+public:
+    static AttrCompareRef ofString(std::string str);
+    static AttrCompareRef ofNumber(int num);
+    static AttrCompareRef ofAttrRef(AttrRef ar);
+
+    std::string getString() { return str_value; }
+    int getNumber() { return number; }
+    AttrRef getAttrRef() { return ar; }
+
+    bool isString() { return type == AttrCompareRefType::STRING; }
+    bool isNumber() { return type == AttrCompareRefType::NUMBER; }
+    bool isAttrRef() { return type == AttrCompareRefType::ATTRREF; }
+};
+
+
+struct AttrCompare {
+    AttrCompareRef lhs;
+    AttrCompareRef rhs;
+
+    AttrCompare(AttrCompareRef lhs, AttrCompareRef rhs) : lhs(lhs), rhs(rhs) {}
+
+    AttrCompareRef getLhs() { return lhs; }
+    AttrCompareRef getRhs() { return rhs; }
+};
+
 /**
 * Struct used to represent a query that has been parsed
 */
@@ -465,32 +522,29 @@ private:
     std::vector<std::string> variable;
     std::vector<std::shared_ptr<RelRef>> suchthat;
     std::vector<Pattern> pattern;
+    std::vector<AttrCompare> with;
     bool valid;
 
 public:
     std::unordered_map<std::string, DesignEntity> getDeclarations();
 
     std::vector<std::string> getVariable();
-
     std::vector<std::shared_ptr<RelRef>> getSuchthat();
-
     std::vector<Pattern> getPattern();
+    std::vector<AttrCompare> getWith();
+
 
     bool isValid();
-
     void setValid(bool);
 
     bool hasDeclaration(std::string);
-
     bool hasVariable(std::string var);
 
     void addDeclaration(std::string, DesignEntity);
-
     void addVariable(std::string var);
-
     void addSuchthat(std::shared_ptr<RelRef>);
-
     void addPattern(Pattern);
+    void addWith(AttrCompare);
 
     /*
         * Returns the DesignEntity of the specified declaration

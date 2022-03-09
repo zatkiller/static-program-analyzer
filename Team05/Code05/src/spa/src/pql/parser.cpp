@@ -5,6 +5,7 @@
 
 namespace qps::parser {
     using qps::query::designEntityMap;
+    using qps::query::attrNameToDesignEntityMap;
     using qps::query::UsesS;
     using qps::query::UsesP;
     using qps::query::ModifiesS;
@@ -19,6 +20,21 @@ namespace qps::parser {
     using qps::query::CallsT;
     using qps::query::Pattern;
     using qps::query::ExpSpec;
+    using qps::query::AttrName;
+    using qps::query::AttrRef;
+    using qps::query::AttrCompareRef;
+    using qps::query::AttrCompare;
+
+    std::unordered_map<TokenType, AttrName> tokenTypeToAttrName = {
+            { TokenType::PROCNAME, AttrName::PROCNAME },
+            { TokenType::VARNAME, AttrName::VARNAME },
+            { TokenType::VALUE, AttrName::VALUE },
+            { TokenType::STMTNUM, AttrName::STMTNUM }
+    };
+
+    bool Parser::hasLeadingWhitespace() {
+        return lexer.hasLeadingWhitespace();
+    }
 
     std::string Parser::getParsedText() {
         return lexer.text;
@@ -43,6 +59,12 @@ namespace qps::parser {
     void Parser::checkType(Token token, TokenType tokenType) {
         if (token.getTokenType() != tokenType)
             throw exceptions::PqlSyntaxException(messages::qps::parser::notExpectingTokenMessage);
+    }
+
+    void Parser::checkDesignEntityAndAttrNameMatch(DesignEntity de, AttrName an) {
+        auto designEntitySet = attrNameToDesignEntityMap.find(an)->second;
+        if (designEntitySet.count(de) == 0)
+            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidAttrNameForDesignEntity);
     }
 
     Token Parser::getAndCheckNextToken(TokenType tt) {
@@ -332,8 +354,6 @@ namespace qps::parser {
         }
     }
 
-
-
     void Parser::parseSuchThat(Query &queryObj) {
         getAndCheckNextReservedToken(TokenType::SUCH_THAT);
         std::shared_ptr<RelRef> relRef = parseRelRef(queryObj);
@@ -366,6 +386,54 @@ namespace qps::parser {
     }
 
 
+    AttrRef Parser::parseAttrRef(Query &query) {
+        Token identifier = getAndCheckNextToken(TokenType::IDENTIFIER);
+
+        std::string declaration = identifier.getText();
+        DesignEntity de = query.getDeclarationDesignEntity(declaration);
+
+        Parser* p = this;
+        auto f = [p]() {
+            p->getAndCheckNextToken(TokenType::PERIOD);
+        };
+        checkSurroundingWhitespace(f);
+
+        Token attrRefToken = getNextReservedToken();
+        auto pos = tokenTypeToAttrName.find(attrRefToken.getTokenType());
+        AttrName attrName = pos->second;
+        checkDesignEntityAndAttrNameMatch(de, attrName);
+
+        return AttrRef { attrName, de, declaration };
+    }
+
+    AttrCompareRef Parser::parseAttrCompareRef(Query &query) {
+        Token t = peekNextToken();
+        TokenType tt = t.getTokenType();
+
+        if (tt == TokenType::IDENTIFIER) {
+            return AttrCompareRef::ofAttrRef(parseAttrRef(query));
+        } else if (tt == TokenType::STRING) {
+            getNextToken();
+            return AttrCompareRef::ofString(t.getText());
+        } else if (tt == TokenType::NUMBER) {
+            getNextToken();
+            int lineNo;
+            std::stringstream ss(t.getText());
+            ss >> lineNo;
+            return AttrCompareRef::ofNumber(lineNo);
+        } else {
+            throw exceptions::PqlSyntaxException(messages::qps::parser::invalidAttrCompRefMessage);
+        }
+    }
+
+    void Parser::parseWith(Query &query) {
+        getAndCheckNextReservedToken(TokenType::WITH);
+        auto lhs = parseAttrCompareRef(query);
+        getAndCheckNextToken(TokenType::EQUAL);
+        auto rhs = parseAttrCompareRef(query);
+        query.addWith(AttrCompare(lhs, rhs));
+    }
+
     void Parser::parseQuery(Query &queryObj) {
         parseSelectFields(queryObj);
 
@@ -374,6 +442,9 @@ namespace qps::parser {
 
         if (peekNextReservedToken().getTokenType() == TokenType::PATTERN)
             parsePattern(queryObj);
+
+        if (peekNextReservedToken().getTokenType() == TokenType::WITH)
+            parseWith(queryObj);
     }
 
     Query Parser::parsePql(std::string query) {
