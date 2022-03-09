@@ -41,10 +41,80 @@ void PKB::insertAST(std::unique_ptr<sp::ast::Program> root) {
     this->root = std::move(root);
 }
 
+bool PKB::validate(PKBField* field) {
+    switch (field->entityType) {
+    case PKBEntityType::VARIABLE:
+        return validateVariable(field);
+    case PKBEntityType::PROCEDURE:
+        return validateProcedure(field);
+    case PKBEntityType::STATEMENT:
+        return validateStatement(field);
+    default: // const
+        return true;
+    }
+}
+
+bool PKB::validateVariable(PKBField* field) {
+    if (field->fieldType == PKBFieldType::CONCRETE) {
+        auto content = field->getContent<VAR_NAME>();
+        auto varName = content->name;
+        return variableTable->contains(varName);
+    }
+
+    return true;
+}
+
+
+bool PKB::validateProcedure(PKBField* field) {
+    if (field->fieldType == PKBFieldType::CONCRETE) {
+        auto content = field->getContent<PROC_NAME>();
+        auto varName = content->name;
+        return procedureTable->contains(varName);
+    }
+
+    return true;
+}
+
+
+bool PKB::validateStatement(PKBField* field) {
+    if (field->fieldType == PKBFieldType::CONCRETE) {
+        auto content = field->getContent<STMT_LO>();
+        auto statementNum = content->statementNum;
+        auto statementType = content->type;
+
+        if (!statementTable->contains(statementNum)) {
+            return false;
+        }
+
+        // if STMT_LO has no statement type, extract from StatementTable if it exists
+        if (!statementType.has_value() || statementType == StatementType::All) {
+            statementType = statementTable->getStmtTypeOfLine(statementNum);
+
+            if (!statementType.has_value()) {
+                return false;
+            }
+
+            field->content = STMT_LO{ statementNum, statementType.value() };
+        } else {
+            // check whether the values provided exists in StatementTable. 
+            // if the type is All, we do not need to check 
+            if (!statementTable->contains(statementType.value(), statementNum)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField field2) {
     // if both fields are not concrete, no insert can be done
     if (field1.fieldType != PKBFieldType::CONCRETE || field2.fieldType != PKBFieldType::CONCRETE) {
         Logger(Level::INFO) << "Both fields have to be concrete.\n";
+        return;
+    }
+
+    if (!validate(&field1) || !validate(&field2)) {
         return;
     }
 
@@ -75,7 +145,7 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
         return false;
     }
 
-    if (!getStatementTypeOfConcreteField(&field1) || !getStatementTypeOfConcreteField(&field2)) {
+    if (!validate(&field1) || !validate(&field2)) {
         return false;
     }
 
@@ -104,28 +174,8 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
 
 // GET API
 
-// if false, it means the statement number does not exist in the statement table
-bool PKB::getStatementTypeOfConcreteField(PKBField* field) {
-    if (field->fieldType == PKBFieldType::CONCRETE && field->entityType == PKBEntityType::STATEMENT) {
-        auto content = field->getContent<STMT_LO>();
-
-        if (!content->hasStatementType() || content->type.value() == StatementType::All) {
-            auto type = statementTable->getStmtTypeOfLine(content->statementNum);
-
-            if (type.has_value()) {
-                field->content = STMT_LO{ content->statementNum, type.value() };
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
 PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationship rs) {
-    if (!getStatementTypeOfConcreteField(&field1) || !getStatementTypeOfConcreteField(&field2)) {
+    if (!validate(&field1) || !validate(&field2)) {
         return PKBResponse{ false, FieldRowResponse{} };
     }
 
@@ -222,8 +272,8 @@ PKBResponse PKB::getConstants() {
 }
 
 PKBResponse PKB::match(
-    StatementType type, 
-    sp::design_extractor::PatternParam lhs, 
+    StatementType type,
+    sp::design_extractor::PatternParam lhs,
     sp::design_extractor::PatternParam rhs) {
     auto matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs);
     FieldRowResponse res;

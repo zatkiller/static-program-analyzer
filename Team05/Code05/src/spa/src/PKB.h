@@ -158,5 +158,10 @@ private:
     * @param field
     * @return bool
     */
-    bool getStatementTypeOfConcreteField(PKBField* field);
+    //bool getStatementTypeOfConcreteField(PKBField* field);
+
+    bool validate(PKBField* field);
+    bool validateStatement(PKBField* field);
+    bool validateVariable(PKBField* field);
+    bool validateProcedure(PKBField* field);
 };
