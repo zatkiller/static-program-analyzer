@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 #include "PKB/PKBField.h"
 #include "DesignExtractor/Extractor.h"
@@ -31,19 +32,27 @@ public:
     std::vector<std::shared_ptr<CFGNode>> getChildren() { return children; }
 };
 
-// TODO(NayLin-H99): AST to CFG construction
-// class CFGExtractor: public TreeWalker {
-//     void visit(const ast::Program& node) override;
-//     void visit(const ast::Procedure& node) override;
-//     void visit(const ast::StmtLst& node) override;
-//     void visit(const ast::If& node) override;
-//     void visit(const ast::While& node) override;
-//     void visit(const ast::Read& node) override;
-//     void visit(const ast::Print& node) override;
-//     void visit(const ast::Assign& node) override;
-//     void visit(const ast::Call&) override;
-//     void enterContainer(std::variant<int, std::string> containerId) override;
-//     void exitContainer() override;
-// }
+using Depth = int;
+using Bucket = std::unordered_map<Depth, std::shared_ptr<CFGNode>>;
+
+class CFGExtractor: public design_extractor::TreeWalker {
+private:
+    std::map<std::string, std::shared_ptr<CFGNode>> procNameAndRoot;
+    std::shared_ptr<CFGNode> lastVisited;
+    bool isWhile;  // to indicate if we are currently in a while loop
+    int isIf;  // to take 0, 1 (allows 1st enterContainer) or 2 (allows 2nd enterContainer)
+    Bucket bucket;
+
+public:
+    void visit(const ast::Procedure& node) override;
+    void visit(const ast::If& node) override;
+    void visit(const ast::While& node) override;
+    void visit(const ast::Read& node) override;
+    void visit(const ast::Print& node) override;
+    void visit(const ast::Assign& node) override;
+    void visit(const ast::Call& node) override;
+    void enterContainer(std::variant<int, std::string> containerId) override;
+    void exitContainer() override;
+};
 }  // namespace cfg
 }  // namespace sp

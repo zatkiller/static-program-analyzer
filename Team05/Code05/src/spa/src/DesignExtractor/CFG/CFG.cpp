@@ -1,6 +1,9 @@
 #include <unordered_set>
 
 #include "CFG.h"
+#include "logging.h"
+
+#define DEBUG_LOG Logger(Level::DEBUG) << "CFGExtractor.cpp Extracted "
 
 namespace sp {
 namespace cfg {
@@ -10,7 +13,7 @@ void CFGNode::insert(std::shared_ptr<CFGNode> child) {
 }
 
 bool CFGNode::operator==(CFGNode const& o) const {
-    return (this->stmt == o.stmt);
+    return (this->stmt == o.stmt) && (this->children == o.children);
 }
 
 bool CFGNode::isParentOf(CFGNode* other) {
@@ -47,17 +50,69 @@ bool CFGNode::isAncestorOf(CFGNode* other) {
     return dfs(this, other, reached);
 }
 
-// TODO(NayLin-H99): AST to CFG construction
-// void visit(const ast::Program& node) override {}; 
-// void visit(const ast::Procedure& node) override {};
-// void visit(const ast::StmtLst& node) override {};
-// void visit(const ast::If& node) override {};
-// void visit(const ast::While& node) override {};
-// void visit(const ast::Read& node) override {};
-// void visit(const ast::Print& node) override {};
-// void visit(const ast::Assign& node) override {};
-// void visit(const ast::Call&) override {};
-// void enterContainer(std::variant<int, std::string> containerId) override {};
-// void exitContainer() override {};
+void CFGExtractor::visit(const ast::Procedure& node) {
+    // create a dummy node as a start node for each procedure
+    auto startNode = std::make_shared<CFGNode>();
+    procNameAndRoot.insert(
+        std::pair<std::string, std::shared_ptr<CFGNode>>(node.getName(), startNode)
+    );
+    lastVisited = startNode;
+};
+
+void CFGExtractor::visit(const ast::If& node) {
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+    isIf++;
+};
+
+void CFGExtractor::visit(const ast::While& node) {
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+    isWhile = true;
+}
+
+void CFGExtractor::visit(const ast::Read& node) {
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+}
+
+void CFGExtractor::visit(const ast::Print& node) {
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+}
+
+void CFGExtractor::visit(const ast::Assign& node) {
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+}
+
+void CFGExtractor::visit(const ast::Call& node) {
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+}
+
+void CFGExtractor::enterContainer(std::variant<int, std::string> containerId) {
+    if (isIf) {
+        if (isIf > 2) {
+            isIf = 0;
+            return;
+        }
+        isIf++;
+        // TODO
+    }  else if (isWhile) {
+        // TODO
+    }
+}
+
+void CFGExtractor::exitContainer() {
+    // TODO
+};
+
 }  // namespace cfg
 }  // namespace sp
