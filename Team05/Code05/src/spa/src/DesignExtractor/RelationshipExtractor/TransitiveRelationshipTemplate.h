@@ -53,6 +53,7 @@ protected:
 
     void cascadeToContainer(const std::set<VAR_NAME>);
     void extractAndInsert(Content, const ast::ASTNode*) override;
+
 private:
     std::deque<STMT_LO> container;
     PROC_NAME currentProcedure = PROC_NAME{ "" };

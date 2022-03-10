@@ -375,7 +375,6 @@ struct Calls : RelRef {
 
     void checkFirstArg() override;
     void checkSecondArg() override;
-
 };
 
 struct CallsT: RelRef {

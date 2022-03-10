@@ -55,8 +55,11 @@ TEST_CASE("Parser checkSurroundingWhitespace") {
 
 TEST_CASE("Parser checkDesignEntityAndAttrNameMatch") {
     Parser parser;
-    REQUIRE_THROWS_MATCHES(parser.checkDesignEntityAndAttrNameMatch(DesignEntity::CONSTANT, AttrName::PROCNAME), exceptions::PqlSyntaxException,
-                           Catch::Message(messages::qps::parser::invalidAttrNameForDesignEntity));
+    REQUIRE_THROWS_MATCHES(
+        parser.checkDesignEntityAndAttrNameMatch(DesignEntity::CONSTANT, AttrName::PROCNAME), 
+        exceptions::PqlSyntaxException,
+        Catch::Message(messages::qps::parser::invalidAttrNameForDesignEntity)
+    );
 }
 
 TEST_CASE("Parser getAndCheckNextToken and peekAndCheckNextToken") {
@@ -670,10 +673,12 @@ TEST_CASE("Parser parseEntRef") {
         parser.addInput("v");
         Query query;
         query.addDeclaration("v", DesignEntity::STMT);
-        REQUIRE_THROWS_MATCHES(parser.parseEntRef(query), exceptions::PqlSemanticException,
-                               Catch::Message(messages::qps::parser::synonymNotEntityTypeMessage));
+        REQUIRE_THROWS_MATCHES(
+            parser.parseEntRef(query),
+            exceptions::PqlSemanticException,
+            Catch::Message(messages::qps::parser::synonymNotEntityTypeMessage)
+        );
     }
-
 }
 
 TEST_CASE("Parser parseRelRefVariables") {
@@ -811,8 +816,6 @@ TEST_CASE("Parser parseRelRefVariables") {
         REQUIRE(cPtr->transitiveCallee.isVarName());
         REQUIRE(cPtr->transitiveCallee.getVariableName() == "second");
     }
-
-
 }
 
 TEST_CASE("Parser parseModifiesOrUsesVariables") {
@@ -938,7 +941,6 @@ TEST_CASE("Parser parseModifiesOrUsesVariables") {
 }
 
 TEST_CASE("Parser parseRelRef") {
-
     SECTION("UseS RelRef") {
         Query queryObj;
         queryObj.addDeclaration("s", DesignEntity::STMT);
@@ -1052,7 +1054,6 @@ TEST_CASE("Parser parseAttrRef") {
         parser.lexer.text = "v.stmt#";
         REQUIRE_THROWS_MATCHES(parser.parseAttrRef(query), exceptions::PqlSyntaxException,
                                Catch::Message(messages::qps::parser::invalidAttrNameForDesignEntity));
-
     }
 }
 
@@ -1099,7 +1100,6 @@ TEST_CASE("Parser parseAttrCompareRef") {
 }
 
 TEST_CASE("Parser parseWith") {
-
     SECTION ("AttrRef on LHS and String on RHS") {
         Parser parser;
         parser.lexer.text = "with p.procName = \"Monke\"";

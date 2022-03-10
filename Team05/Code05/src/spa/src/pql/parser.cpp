@@ -230,7 +230,7 @@ namespace qps::parser {
             ptr =  parseRelRefVariables<Calls>(queryObj, &Calls::caller, &Calls::callee);
         } else if (tokenType == TokenType::CALLS_T) {
             ptr =  parseRelRefVariables<CallsT>(queryObj, &CallsT::caller, &CallsT::transitiveCallee);
-        } else{
+        } else {
             throw exceptions::PqlSyntaxException(messages::qps::parser::invalidRelRefMessage);
         }
 

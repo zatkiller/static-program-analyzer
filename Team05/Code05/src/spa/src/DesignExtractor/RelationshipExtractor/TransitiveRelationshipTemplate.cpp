@@ -42,7 +42,12 @@ struct CallGraphPreProcessor {
     };
 
 
-    void topo(std::string node, const AdjacencyList& lst, std::map<std::string, bool>& visited, std::vector<std::string>& topolst) {
+    void topo(
+        std::string node, 
+        const AdjacencyList& lst, 
+        std::map<std::string, bool>& visited, 
+        std::vector<std::string>& topolst
+    ) {
         if (visited[node]) {
             return;
         }
@@ -92,7 +97,6 @@ void TransitiveRelationshipTemplate::visit(const ast::Call &node) {
         Logger(Level::ERROR) << "TransitiveRelationshipTemplate.cpp " << 
         "empty proc at target " << proc.name << " something wrong with topo order";
     }
-
 }
 
 void TransitiveRelationshipTemplate::extract(ast::ASTNode *node) {

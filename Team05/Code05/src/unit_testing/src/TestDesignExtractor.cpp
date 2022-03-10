@@ -465,7 +465,6 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
         }
-    
     }
 
     TEST_CASE("Pattern matcher test") {

@@ -329,8 +329,6 @@ struct Parser {
      * @param token token to get priority
      */
     int getOperatorPriority(Token token);
-
-
 };
 
 }  // namespace qps::parser
