@@ -431,7 +431,9 @@ namespace qps::parser {
         auto lhs = parseAttrCompareRef(query);
         getAndCheckNextToken(TokenType::EQUAL);
         auto rhs = parseAttrCompareRef(query);
-        query.addWith(AttrCompare(lhs, rhs));
+        AttrCompare ac = AttrCompare(lhs, rhs);
+        ac.validateComparingTypes();
+        query.addWith(ac);
     }
 
     void Parser::parseQuery(Query &queryObj) {

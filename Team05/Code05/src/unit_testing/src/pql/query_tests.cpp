@@ -30,6 +30,19 @@ TEST_CASE("AttrRef") {
     REQUIRE(ar.attrName == AttrName::PROCNAME);
     REQUIRE(ar.declarationType == DesignEntity::PROCEDURE);
     REQUIRE(ar.declaration == "p");
+
+    AttrRef ar2 = AttrRef { AttrName::VARNAME, DesignEntity::VARIABLE, "v" };
+    AttrRef ar3 = AttrRef { AttrName::STMTNUM, DesignEntity::STMT, "s" };
+    AttrRef ar4 = AttrRef { AttrName::VALUE, DesignEntity::CONSTANT, "c" };
+
+    REQUIRE(ar.compatbileComparison(ar2));
+    REQUIRE(ar3.compatbileComparison(ar4));
+
+    REQUIRE(!ar.compatbileComparison(ar3));
+    REQUIRE(!ar.compatbileComparison(ar4));
+
+    REQUIRE(!ar2.compatbileComparison(ar3));
+    REQUIRE(!ar2.compatbileComparison(ar4));
 }
 
 TEST_CASE("AttrCompareRef") {
@@ -51,21 +64,73 @@ TEST_CASE("AttrCompareRef") {
 }
 
 TEST_CASE("AttrCompare") {
-    AttrCompare ac(AttrCompareRef::ofAttrRef( AttrRef {AttrName::VARNAME, DesignEntity::VARIABLE, "v" }),
-                   AttrCompareRef::ofString("v"));
+    SECTION ("AttrCompare with compatible AttrCompareRef types") {
+        AttrCompare ac(AttrCompareRef::ofAttrRef( AttrRef {AttrName::VARNAME, DesignEntity::VARIABLE, "v" }),
+                       AttrCompareRef::ofString("v"));
 
-    AttrCompareRef lhs = ac.getLhs();
-    AttrCompareRef rhs = ac.getRhs();
+        REQUIRE_NOTHROW(ac.validateComparingTypes());
+        AttrCompareRef lhs = ac.getLhs();
+        AttrCompareRef rhs = ac.getRhs();
 
-    REQUIRE(lhs.isAttrRef());
-    AttrRef ar = lhs.getAttrRef();
+        REQUIRE(lhs.isAttrRef());
+        AttrRef ar = lhs.getAttrRef();
 
-    REQUIRE(ar.declaration == "v");
-    REQUIRE(ar.declarationType == DesignEntity::VARIABLE);
-    REQUIRE(ar.attrName == AttrName::VARNAME);
+        REQUIRE(ar.declaration == "v");
+        REQUIRE(ar.declarationType == DesignEntity::VARIABLE);
+        REQUIRE(ar.attrName == AttrName::VARNAME);
 
-    REQUIRE(rhs.isString());
-    REQUIRE(rhs.getString() == "v");
+        REQUIRE(rhs.isString());
+        REQUIRE(rhs.getString() == "v");
+    }
+
+    SECTION ("AttrCompare validateComparingTypes") {
+
+        SECTION ("Incompatible type matches") {
+            AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, DesignEntity::READ, "rd" }),
+                            AttrCompareRef::ofString("v"));
+
+            REQUIRE_THROWS_MATCHES(ac1.validateComparingTypes(), exceptions::PqlSemanticException,
+                                   Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
+
+            AttrCompare ac2(AttrCompareRef::ofNumber(1), AttrCompareRef::ofAttrRef(
+                    AttrRef {AttrName::VARNAME, DesignEntity::VARIABLE, "v" }));
+
+            REQUIRE_THROWS_MATCHES(ac2.validateComparingTypes(), exceptions::PqlSemanticException,
+                                   Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
+
+            AttrCompare ac3(AttrCompareRef::ofString("v"), AttrCompareRef::ofNumber(1));
+
+            REQUIRE_THROWS_MATCHES(ac3.validateComparingTypes(), exceptions::PqlSemanticException,
+                                   Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
+        }
+
+        SECTION ("Compatible type matches") {
+            AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::PROCNAME, DesignEntity::PROCEDURE, "p" }),
+                            AttrCompareRef::ofString("v"));
+            REQUIRE_NOTHROW(ac1.validateComparingTypes());
+
+            AttrCompare ac2(AttrCompareRef::ofString("v"), AttrCompareRef::ofAttrRef(
+                    AttrRef {AttrName::VARNAME, DesignEntity::VARIABLE, "v" }));
+            REQUIRE_NOTHROW(ac2.validateComparingTypes());
+
+
+            AttrCompare ac3(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, DesignEntity::CALL, "cl" }),
+                            AttrCompareRef::ofNumber(200));
+            REQUIRE_NOTHROW(ac3.validateComparingTypes());
+
+            AttrCompare ac4(AttrCompareRef::ofNumber(99), AttrCompareRef::ofAttrRef(
+                    AttrRef {AttrName::VALUE, DesignEntity::CONSTANT, "c" }));
+            REQUIRE_NOTHROW(ac4.validateComparingTypes());
+
+            AttrCompare ac5(AttrCompareRef::ofAttrRef( AttrRef {AttrName::PROCNAME, DesignEntity::PROCEDURE, "p" }),
+                            AttrCompareRef::ofAttrRef( AttrRef {AttrName::VARNAME, DesignEntity::VARIABLE, "v" }));
+            REQUIRE_NOTHROW(ac5.validateComparingTypes());
+
+            AttrCompare ac6(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, DesignEntity::CALL, "cl" }),
+                            AttrCompareRef::ofAttrRef(AttrRef {AttrName::VALUE, DesignEntity::CONSTANT, "c" }));
+            REQUIRE_NOTHROW(ac6.validateComparingTypes());
+        }
+    }
 }
 
 

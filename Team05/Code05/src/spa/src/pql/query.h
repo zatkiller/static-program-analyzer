@@ -472,6 +472,10 @@ struct AttrRef {
     AttrName attrName = AttrName::INVALID;
     DesignEntity declarationType {};
     std::string declaration = "";
+
+    bool isString() const { return attrName == AttrName::VARNAME || attrName == AttrName::PROCNAME; }
+    bool isNumber() const { return attrName == AttrName::VALUE || attrName == AttrName::STMTNUM; }
+    bool compatbileComparison(AttrRef o) const { return (isString() && o.isString()) || (isNumber() && o.isNumber()); }
 };
 
 enum class AttrCompareRefType {
@@ -497,9 +501,10 @@ public:
     int getNumber() { return number; }
     AttrRef getAttrRef() { return ar; }
 
-    bool isString() { return type == AttrCompareRefType::STRING; }
-    bool isNumber() { return type == AttrCompareRefType::NUMBER; }
-    bool isAttrRef() { return type == AttrCompareRefType::ATTRREF; }
+    bool isString() const { return type == AttrCompareRefType::STRING; }
+    bool isNumber() const { return type == AttrCompareRefType::NUMBER; }
+    bool isAttrRef() const { return type == AttrCompareRefType::ATTRREF; }
+    bool validComparison(AttrCompareRef  o) const;
 };
 
 
@@ -511,6 +516,8 @@ struct AttrCompare {
 
     AttrCompareRef getLhs() { return lhs; }
     AttrCompareRef getRhs() { return rhs; }
+    void validateComparingTypes();
+
 };
 
 /**
