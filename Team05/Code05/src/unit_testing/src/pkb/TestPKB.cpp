@@ -52,7 +52,7 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     PKBField stmt9 = PKBField::createConcrete(STMT_LO{ 9, StatementType::Assignment });
     PKBField stmt10 = PKBField::createConcrete(STMT_LO{ 10, StatementType::Assignment });
     PKBField stmt11 = PKBField::createConcrete(STMT_LO{ 11, StatementType::Assignment });
-    PKBField stmt12 = PKBField::createConcrete(STMT_LO{ 12, StatementType::Print, VAR_NAME{"monke"}});
+    PKBField stmt12 = PKBField::createConcrete(STMT_LO{ 12, StatementType::Print, VAR_NAME{"monke"} });
     PKBField stmt13 = PKBField::createConcrete(STMT_LO{ 13, StatementType::Call, PROC_NAME{"abc"} });
     PKBField stmt14 = PKBField::createConcrete(STMT_LO{ 14, StatementType::Call, PROC_NAME{"def"} });
     PKBField stmt15 = PKBField::createConcrete(STMT_LO{ 15, StatementType::Assignment });
@@ -111,7 +111,7 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     pkb->insertStatement(StatementType::Assignment, 1);
     pkb->insertStatement(StatementType::Assignment, 2);
     pkb->insertStatement(StatementType::Assignment, 3);
-    pkb->insertStatement(StatementType::Read, 4);
+    pkb->insertStatement(StatementType::Read, 4, VAR_NAME{ "monke" });
     pkb->insertStatement(StatementType::While, 5);
     pkb->insertStatement(StatementType::Assignment, 6);
     pkb->insertStatement(StatementType::If, 7);
@@ -119,11 +119,10 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     pkb->insertStatement(StatementType::Assignment, 9);
     pkb->insertStatement(StatementType::Assignment, 10);
     pkb->insertStatement(StatementType::Assignment, 11);
-    pkb->insertStatement(StatementType::Print, 12);
-    pkb->insertStatement(StatementType::Call, 13);
-    pkb->insertStatement(StatementType::Call, 14);
+    pkb->insertStatement(StatementType::Print, 12, VAR_NAME{ "monke" });
+    pkb->insertStatement(StatementType::Call, 13, PROC_NAME{ "abc" });
+    pkb->insertStatement(StatementType::Call, 14, PROC_NAME{ "def" });
     pkb->insertStatement(StatementType::Assignment, 15);
-
 
     pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt1, stmt2);
     pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt2, stmt3);
@@ -226,8 +225,6 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
         using FieldRowResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
         // Follows(_, _)
-        auto asdasd = pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
-            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::FOLLOWS);
         REQUIRE(pkb->getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
             PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::FOLLOWS) == PKBResponse{ true,
             FieldRowResponse{ {stmt1, stmt2}, {stmt2, stmt3}, {stmt3, stmt4}, {stmt4, stmt5}, {stmt5, stmt12},
@@ -338,8 +335,6 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
             FieldRowResponse{ {stmt10, z} } });
 
         // Modifies(10, _) 
-        auto asd = pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 10, StatementType::All }),
-            PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES);
         REQUIRE(pkb->getRelationship(PKBField::createConcrete(STMT_LO{ 10, StatementType::All }),
             PKBField::createWildcard(PKBEntityType::VARIABLE), PKBRelationship::MODIFIES) == PKBResponse{ true,
             FieldRowResponse{ {stmt10, z} } });

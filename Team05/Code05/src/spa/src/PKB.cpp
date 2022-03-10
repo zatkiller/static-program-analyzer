@@ -22,8 +22,7 @@ PKB::PKB() {
 // INSERT API
 
 void PKB::insertStatement(StatementType type, int statementNumber) {
-    // TODO:: add checks to restrict to Assignment, If, While
-    //if (type != StatementType::Assignment || type != StatementType::If || type != StatementType::While) {
+    // if (type != StatementType::Assignment || type != StatementType::If || type != StatementType::While) {
     //    Logger(Level::INFO) << "insertStatement(StatementType, int) is only for Assignments, Ifs, Whiles.\n";
     //}
 
@@ -31,9 +30,9 @@ void PKB::insertStatement(StatementType type, int statementNumber) {
 }
 
 void PKB::insertStatement(StatementType type, int statementNumber, StatementAttribute attribute) {
-    // TODO:: add checks to restrict to Call, Read, Print
-    //if (type != StatementType::Call || type != StatementType::Read || type != StatementType::Print) {
-    //    Logger(Level::INFO) << "insertStatement(StatementType, int, StatementAttribute) is only for Calls, Reads, Prints.\n";
+    // if (type != StatementType::Call || type != StatementType::Read || type != StatementType::Print) {
+    // Logger(Level::INFO) << "insertStatement(StatementType, int, StatementAttribute) 
+    // is only for Calls, Reads, Prints.\n";
     //}
 
     statementTable->insert(type, statementNumber, attribute);
@@ -78,7 +77,6 @@ bool PKB::validateVariable(PKBField* field) {
     return true;
 }
 
-
 bool PKB::validateProcedure(PKBField* field) {
     if (field->fieldType == PKBFieldType::CONCRETE) {
         auto content = field->getContent<PROC_NAME>();
@@ -113,9 +111,9 @@ bool PKB::validateStatement(PKBField* field) {
 
         // no relationship API will provide a STMT_LO with an attribute
         attribute = stmt.attribute;
-        field->content = attribute.has_value() ? 
-            STMT_LO{ statementNum, statementType.value(), attribute.value() } : 
-            STMT_LO{statementNum, statementType.value()};
+        field->content = attribute.has_value() ?
+            STMT_LO{ statementNum, statementType.value(), attribute.value() } :
+            STMT_LO{ statementNum, statementType.value() };
     }
 
     return true;
