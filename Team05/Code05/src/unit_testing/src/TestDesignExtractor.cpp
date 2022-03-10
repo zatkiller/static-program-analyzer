@@ -15,6 +15,7 @@
 #include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/FollowsExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/ParentExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/CallsExtractor.h"
 #include "DesignExtractor/PatternMatcher.h"
 #include "PKB.h"
 #include "logging.h"
@@ -391,6 +392,18 @@ namespace ast {
                 p(PROC_NAME{"main"}, VAR_NAME{"y"})
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
+
+            de::CallsExtractor ce(&pkbStrategy);
+            ce.extract(program.get());
+            expected = {
+                p(PROC_NAME{"main"}, PROC_NAME{"foo"}),
+                p(PROC_NAME{"main"}, PROC_NAME{"bar"}),
+                p(PROC_NAME{"foo"}, PROC_NAME{"gee"}),
+                p(PROC_NAME{"bar"}, PROC_NAME{"gee"}),
+                p(PROC_NAME{"bar"}, PROC_NAME{"foo"})
+            };
+
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::CALLS] == expected);
         }
 
         /**

@@ -460,4 +460,22 @@ namespace qps::query {
         return acr;
     }
 
+    bool AttrCompareRef::validComparison(AttrCompareRef o) const {
+        if ((isString() && o.isString()) || (isNumber() && o.isNumber())) {
+            return true;
+        } else if (isAttrRef() && o.isAttrRef()) {
+            return ar.compatbileComparison(o.getAttrRef());
+        } else if (isAttrRef()) {
+            return (ar.isString() && o.isString()) || (ar.isNumber() && o.isNumber());
+        } else if (o.isAttrRef()) {
+            return (isString() && o.getAttrRef().isString()) || (isNumber() && o.getAttrRef().isNumber());
+        }
+        return false;
+    }
+
+    void AttrCompare::validateComparingTypes() {
+        if (!lhs.validComparison(rhs))
+            throw exceptions::PqlSemanticException(messages::qps::parser::incompatibleComparisonMessage);
+    };
+
 }  // namespace qps::query

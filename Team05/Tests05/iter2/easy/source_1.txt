@@ -1,0 +1,23 @@
+procedure a {
+    read a1;
+    print a1;
+    call b;
+    call d;
+}
+
+procedure b {
+    read b1;
+    print b1;
+    call c;
+}
+
+procedure c {
+    read c1;
+    print c1;
+}
+
+procedure d {
+    read d1;
+    print d1;
+    call c;
+}
