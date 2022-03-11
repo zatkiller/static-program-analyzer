@@ -26,7 +26,7 @@ namespace qps::evaluator {
         return table.empty() && synSequenceMap.empty();
     }
 
-    VectorResponse ResultTable::transToVectorResponse(SingleResonse response) {
+    VectorResponse ResultTable::transToVectorResponse(SingleResponse response) {
         VectorResponse newVectorRes;
         for (auto r : response) {
             newVectorRes.insert(std::vector<PKBField>{r});
@@ -36,7 +36,7 @@ namespace qps::evaluator {
 
     void ResultTable::insert(PKBResponse r) {
         VectorResponse response;
-        if (auto *ptr = std::get_if<SingleResonse>(&r.res)) {
+        if (auto *ptr = std::get_if<SingleResponse>(&r.res)) {
             response = transToVectorResponse(*ptr);
         } else if (auto *ptr = std::get_if<VectorResponse>(&r.res)) {
             response = *ptr;
@@ -53,7 +53,7 @@ namespace qps::evaluator {
         }
         Table newTable;
         VectorResponse response;
-        if (auto *ptr = std::get_if<SingleResonse>(&r.res)) {
+        if (auto *ptr = std::get_if<SingleResponse>(&r.res)) {
             response = transToVectorResponse(*ptr);
         } else if (auto *ptr = std::get_if<VectorResponse>(&r.res)) {
             response = *ptr;
@@ -117,7 +117,7 @@ namespace qps::evaluator {
             return;
         }
         Table newTable;
-        if (auto *ptr = std::get_if<SingleResonse>(&params.response.res)) {
+        if (auto *ptr = std::get_if<SingleResponse>(&params.response.res)) {
             params.vectorResponse = transToVectorResponse(*ptr);
         } else if (auto *ptr = std::get_if<VectorResponse>(&params.response.res)) {
             params.vectorResponse = *ptr;

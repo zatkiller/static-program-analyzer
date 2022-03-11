@@ -36,14 +36,6 @@ public:
     }
 
     /**
-     * Retrieves all the results of a certain design entity from PKB database.
-     *
-     * @param type the design entity type to retrieve
-     * @return PKBResponse contains all results of the design entity type
-     */
-    PKBResponse getAll(query::DesignEntity type);
-
-    /**
      * Wraps a certain PKBFiend into a string representation.
      *
      * @param pkbField the PKBField to wrap
@@ -61,6 +53,15 @@ public:
     void processSuchthat(std::vector<std::shared_ptr<query::RelRef>> clauses,
                          std::vector<std::shared_ptr<query::RelRef>> &noSyn,
                          std::vector<std::shared_ptr<query::RelRef>> &hasSyn);
+
+    /**
+     *
+     * @param withClauses
+     * @param noAttrRef
+     * @param hasAttrRef
+     */
+    void processWith(std::vector<query::AttrCompare> withClauses,
+                     std::vector<query::AttrCompare> &noAttrRef, std::vector<query::AttrCompare> &hasAttrRef);
 
     /**
      * Retrieves the final result from the result table.

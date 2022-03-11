@@ -20,18 +20,6 @@ namespace qps::evaluator {
         return res;
     }
 
-    PKBResponse Evaluator::getAll(query::DesignEntity type) {
-        switch (type) {
-            case query::DesignEntity::PROCEDURE: return pkb->getProcedures();
-            case query::DesignEntity::CONSTANT: return pkb->getConstants();
-            case query::DesignEntity::VARIABLE: return pkb->getVariables();
-            case query::DesignEntity::STMT: return pkb->getStatements();
-            default:
-                StatementType sType = PKBTypeMatcher::getStatementType(type);
-                return pkb->getStatements(sType);
-        }
-    }
-
     void Evaluator::processSuchthat(std::vector<std::shared_ptr<query::RelRef>> clauses,
                                     std::vector<std::shared_ptr<query::RelRef>> &noSyn,
                                     std::vector<std::shared_ptr<query::RelRef>> &hasSyn) {
@@ -41,6 +29,17 @@ namespace qps::evaluator {
                 noSyn.push_back(r);
             } else {
                 hasSyn.push_back(r);
+            }
+        }
+    }
+
+    void Evaluator::processWith(std::vector<query::AttrCompare> withClauses,
+                     std::vector<query::AttrCompare> &noAttrRef, std::vector<query::AttrCompare> &hasAttrRef) {
+        for (auto clause : withClauses) {
+            if (!clause.lhs.isAttrRef() && !clause.rhs.isAttrRef()) {
+                noAttrRef.push_back(clause);
+            } else {
+                hasAttrRef.push_back(clause);
             }
         }
     }
@@ -66,15 +65,24 @@ namespace qps::evaluator {
     std::list<std::string> Evaluator::evaluate(query::Query query) {
         // std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
         std::vector<std::string> variable = query.getVariable();
+        std::vector<query::AttrCompare> with = query.getWith();
+        std::vector<query::AttrCompare> noAttrRef;
+        std::vector<query::AttrCompare> hasAttrRef;
+
         std::vector<std::shared_ptr<query::RelRef>> suchthat = query.getSuchthat();
         std::vector<std::shared_ptr<query::RelRef>> noSyn;
         std::vector<std::shared_ptr<query::RelRef>> hasSyn;
+
         std::vector<query::Pattern> patterns = query.getPattern();
 
         query::DesignEntity returnType = query.getDeclarationDesignEntity(variable[0]);
-        ResultTable &tableRef = resultTable;
-        query::Query &queryRef = query;
-        ClauseHandler handler = ClauseHandler(pkb, tableRef, queryRef);
+        ClauseHandler handler = ClauseHandler(pkb, resultTable, query);
+
+        if (!with.empty()) {
+            processWith(with, noAttrRef, hasAttrRef);
+            if (!handler.handleNoAttrRefWith(noAttrRef)) return std::list<std::string>{};
+            handler.handleAttrRefWith(hasAttrRef);
+        }
 
         if (!suchthat.empty()) {
             processSuchthat(suchthat, noSyn, hasSyn);
@@ -87,12 +95,12 @@ namespace qps::evaluator {
         }
 
         // After process suchthat and pattern if select variable not in result table, add all
-        if ((suchthat.empty() && patterns.empty()) || !tableRef.synExists(variable[0])) {
-            PKBResponse queryResult = getAll(returnType);
+        if ((suchthat.empty() && patterns.empty()) || !resultTable.synExists(variable[0])) {
+            PKBResponse queryResult = handler.getAll(returnType);
             std::vector<std::string> synonyms{variable[0]};
             resultTable.join(queryResult, synonyms);
         }
 
-        return getListOfResult(tableRef, variable[0]);
+        return getListOfResult(resultTable, variable[0]);
     }
 }  // namespace qps::evaluator
