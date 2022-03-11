@@ -211,13 +211,13 @@ using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 */
 template<typename T>
 struct Node {
-    using NodeSet = std::vector<Node<T>*>;
+    using NodeSet = std::unordered_set<Node<T>*>;
 
-    Node(T val, Node* prev, NodeSet next) : val(val), next(next), prev(prev) {}
+    Node(T val, NodeSet prev, NodeSet next) : val(val), next(next), prev(prev) {}
 
     T val;
     NodeSet next; /**< The descendant(s) of this Node. */
-    Node<T>* prev; /**< The predecessor of this Node. */
+    NodeSet prev; /**< The predecessor(s) of this Node. */
 };
 
 /**
@@ -264,10 +264,10 @@ public:
         }
 
         // Add the edge between uNode and vNode
-        uNode->next.push_back(vNode);
-        if (!vNode->prev) {
-            vNode->prev = uNode;
-        }
+        uNode->next.insert(vNode);
+
+        // Add the edge between vNode and uNode
+        vNode->prev.insert(uNode);
     }
 
     /**
@@ -288,7 +288,7 @@ public:
             typename Node<T>::NodeSet nextNodes = curr->next;
             typename Node<T>::NodeSet filtered;
             std::copy_if(nextNodes.begin(), nextNodes.end(),
-                std::back_inserter(filtered), [second](Node<T>* const& node) {
+                std::inserter(filtered, filtered.end()), [second](Node<T>* const& node) {
                     return node->val == second;
                 });
             return (filtered.size() == 1);
@@ -379,7 +379,7 @@ public:
         } else if (isDeclarationFirst && isDeclarationSec) {
             return traverseAllT(field1, field2);
         } else {
-            return Result{};
+            return containsT(field1, field2) ? Result{ {{field1, field2}} } : Result{};
         }
     }
 
@@ -429,7 +429,7 @@ private:
             }
         }
 
-        Node<T>* node = new Node<T>(val, nullptr, typename Node<T>::NodeSet{});
+        Node<T>* node = new Node<T>(val, typename Node<T>::NodeSet{}, typename Node<T>::NodeSet{});
         nodes.emplace(val, node);
         return node;
     }
@@ -464,7 +464,7 @@ private:
             if (!curr->next.empty()) {
                 typename Node<T>::NodeSet nextNodes = curr->next;
                 typename Node<T>::NodeSet filtered;
-                std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
+                std::copy_if(nextNodes.begin(), nextNodes.end(), std::inserter(filtered, filtered.end()),
                     [&](Node<T>* const& node) {
                         // filter for statements. for all other type no filtering is required.
                         if constexpr (std::is_same_v<T, STMT_LO>) {
@@ -508,9 +508,9 @@ private:
         if (nodes.count(start) != 0) {
             if constexpr (std::is_same_v<T, STMT_LO>) {
                 StatementType targetType = field2.statementType.value();
-                traverseStartT(&found, nodes.at(start), targetType);
+                traverseStartT(&found, nodes.at(start), nodes.at(start), targetType);
             } else {
-                traverseStartT(&found, nodes.at(start));
+                traverseStartT(&found, nodes.at(start), nodes.at(start));
             }
         }
 
@@ -536,8 +536,9 @@ private:
     *
     * @see PKBField
     */
-    void traverseStartT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) const {
+    void traverseStartT(std::set<T>* found, Node<T>* node, Node<T>* initial, StatementType targetType = StatementType::None) const {
         typename Node<T>::NodeSet nextNodes = node->next;
+        bool isTerminating = std::count(nextNodes.begin(), nextNodes.end(), initial) == 1;
 
         for (auto nextNode : nextNodes) {
             // targetType is specified for statements
@@ -547,10 +548,14 @@ private:
                     found->insert(nextNode->val);
                 }
 
-                traverseStartT(found, nextNode, targetType);
+                if (!isTerminating) {
+                    traverseStartT(found, nextNode, initial, targetType);
+                } else {
+                    return;
+                }
             } else {
                 found->insert(nextNode->val);
-                traverseStartT(found, nextNode);
+                traverseStartT(found, nextNode, initial);
             }
         }
         return;
@@ -582,18 +587,26 @@ private:
         if (nodes.count(target) != 0) {
             Node<T>* curr = nodes.at(target);
 
-            if (curr->prev != nullptr) {
-                T prev = curr->prev->val;
+            if (!curr->prev.empty()) {
+                typename Node<T>::NodeSet prevNodes = curr->prev;
+                typename Node<T>::NodeSet filtered;
+                std::copy_if(prevNodes.begin(), prevNodes.end(), std::inserter(filtered, filtered.end()),
+                    [&](Node<T>* const& node) {
+                        // filter for statements. for all other type no filtering is required.
+                        if constexpr (std::is_same_v<T, STMT_LO>) {
+                            StatementType targetType = field1.statementType.value();
+                            return (node->val.type.value() == targetType || targetType == StatementType::All);
+                        }
+                        return true;
+                    });
 
-                if constexpr (std::is_same_v<T, STMT_LO>) {
-                    StatementType targetType = field1.statementType.value();
-                    if (prev.type.value() != targetType && targetType != StatementType::All) {
-                        return res;
-                    }
+                for (Node<T>* node : filtered) {
+                    std::vector<PKBField> temp;
+                    PKBField first = PKBField::createConcrete(Content{ node->val });
+                    temp.push_back(first);
+                    temp.push_back(field2);
+                    res.insert(temp);
                 }
-
-                PKBField first = PKBField::createConcrete(Content{ prev });
-                res.insert(std::vector<PKBField>{first, field2});
             }
         }
         return res;
@@ -620,9 +633,9 @@ private:
         if (nodes.count(start) != 0) {
             if (std::is_same_v<T, STMT_LO>) {
                 StatementType targetType = field1.statementType.value();
-                traverseEndT(&found, nodes.at(start), targetType);
+                traverseEndT(&found, nodes.at(start), nodes.at(start), targetType);
             } else {
-                traverseEndT(&found, nodes.at(start));
+                traverseEndT(&found, nodes.at(start), nodes.at(start));
             }
         }
 
@@ -648,19 +661,27 @@ private:
     *
     * @see PKBField
     */
-    void traverseEndT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) const {
-        while (node->prev) {
+    void traverseEndT(std::set<T>* found, Node<T>* node, Node<T>* initial, StatementType targetType = StatementType::None) const {
+        typename Node<T>::NodeSet prevNodes = node->prev;
+        bool isTerminating = std::find(prevNodes.begin(), prevNodes.end(), initial) != prevNodes.end();
+        for (auto prevNode : prevNodes) {
+            // targetType is specified for statements
             if constexpr (std::is_same_v<T, STMT_LO>) {
-                bool typeMatch = node->prev->val.type.value() == targetType || targetType == StatementType::All;
+                bool typeMatch = prevNode->val.type.value() == targetType || targetType == StatementType::All;
                 if (typeMatch) {
-                    found->insert(node->prev->val);
+                    found->insert(prevNode->val);
+                }
+                if (!isTerminating) {
+                    traverseEndT(found, prevNode, initial, targetType);
+                } else {
+                    return;
                 }
             } else {
-                found->insert(node->prev->val);
+                found->insert(prevNode->val);
+                traverseEndT(found, prevNode, initial);
             }
-
-            node = node->prev;
         }
+        return;
     }
 
     /**
@@ -694,7 +715,7 @@ private:
 
                 // Filter nodes that match second statement type
                 typename Node<T>::NodeSet filtered;
-                std::copy_if(nextNodes.begin(), nextNodes.end(), std::back_inserter(filtered),
+                std::copy_if(nextNodes.begin(), nextNodes.end(), std::inserter(filtered, filtered.end()),
                     [&](Node<T>* const& node) {
                         if constexpr (std::is_same_v<T, STMT_LO>) {
                             return node->val.type.value() == field2.statementType.value() ||
@@ -744,9 +765,9 @@ private:
                     continue;
                 }
 
-                traverseStartT(&found, node, field2.statementType.value());
+                traverseStartT(&found, node, node, field2.statementType.value());
             } else {
-                traverseStartT(&found, node);
+                traverseStartT(&found, node, node);
             }
 
             std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, res.end()),
@@ -996,7 +1017,7 @@ public:
 };
 
 /**
- * A data structure to store Follows and FollowsT program design abstractions as FollowsNodes in a FollowsGraph.
+ * A data structure to store Follows and FollowsT program design abstractions as Nodes<STMT_LO> in a Graph<STMT_LO>.
  * Inherits from TransitiveRelationshipTable.
  *
  * @see Node, Graph, TransitiveRelationshipTable
@@ -1007,7 +1028,7 @@ public:
 };
 
 /**
-* A data structure to store Parent and Parent* program design abstractions as ParentNodes in a ParentGraph.
+* A data structure to store Parent and Parent* program design abstractions as Nodes<STMT_LO> in a Graph<STMT_LO>.
 * Inherits from TransitiveRelationshipTable
 *
 * @see Node, Graph, TransitiveRelationshipTable
@@ -1017,7 +1038,24 @@ public:
     ParentRelationshipTable();
 };
 
+/**
+* A data structure to store Calls and Calls* program design abstractions as Nodes<PROC_NAME> in a Graph<PROC_NAME>.
+* Inherits from TransitiveRelationshipTable
+* 
+* @see Node, Graph, TransitiveRelationshipTable
+*/
 class CallsRelationshipTable : public TransitiveRelationshipTable<PROC_NAME> {
 public:
     CallsRelationshipTable();
+};
+
+/**
+* A data structure to store Next and Next* program design abstractions as Nodes<STMT_LO> in a Graph<STMT_LO>.
+* Inherits from TransitiveRelationshipTable
+* 
+* @see Node, Graph, TransitiveRelationshipTable
+*/
+class NextRelationshipTable : public TransitiveRelationshipTable<STMT_LO> {
+public:
+    NextRelationshipTable();
 };
