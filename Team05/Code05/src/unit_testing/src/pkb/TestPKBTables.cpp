@@ -25,19 +25,26 @@ TEST_CASE("EntityRow test operators") {
     EntityRow<PROC_NAME> procRow2{ PROC_NAME("monkeProc") };
 
     EntityRow<CONST> constRow3{ 2 };
-    
+
     REQUIRE(constRow1 == constRow2);
     REQUIRE(stmtRow1 == stmtRow2);
     REQUIRE(varRow1 == varRow2);
     REQUIRE(procRow1 == procRow2);
-    
+
     REQUIRE_FALSE(constRow1 == varRow2);
     REQUIRE_FALSE(constRow1 == constRow3);
 }
 
+template <typename T>
+bool hasSameContents(std::vector<T>* v1, std::vector<T>* v2) {
+    sort(v1->begin(), v1->end());
+    sort(v2->begin(), v2->end());
+    return *v1 == *v2;
+}
 TEST_CASE("ConstantTable") {
     ConstantTable* constTable = new ConstantTable();
-    REQUIRE(constTable->getAllEntity() == std::vector<CONST>());
+    std::vector<CONST> expected{};
+    REQUIRE(constTable->getAllEntity() == expected);
 
     constTable->insert(5);
     constTable->insert(6);
@@ -45,7 +52,9 @@ TEST_CASE("ConstantTable") {
     REQUIRE(constTable->contains(5));
     REQUIRE_FALSE(constTable->contains(7));
 
-    REQUIRE(constTable->getAllEntity() == std::vector<CONST>{5, 6});
+    expected = { CONST{5}, CONST{6} };
+    auto actual = constTable->getAllEntity();
+    REQUIRE(hasSameContents<CONST>(&actual, &expected));
     REQUIRE(constTable->getSize() == 2);
 }
 
@@ -59,8 +68,11 @@ TEST_CASE("ProcedureTable") {
     REQUIRE(procTable->contains("monke1"));
     REQUIRE_FALSE(procTable->contains("monke3"));
 
-    REQUIRE(procTable->getAllEntity() == std::vector<PROC_NAME>{PROC_NAME("monke1"), 
-        PROC_NAME("monke2")});
+    std::vector<PROC_NAME> expected = std::vector<PROC_NAME>{ PROC_NAME("monke1"), PROC_NAME("monke2") };
+    auto actual = procTable->getAllEntity();
+    std::sort(expected.begin(), expected.end());
+    std::sort(actual.begin(), actual.end());
+    REQUIRE(hasSameContents<PROC_NAME>(&actual, &expected));
     REQUIRE(procTable->getSize() == 2);
 }
 
@@ -74,8 +86,11 @@ TEST_CASE("VariableTable") {
     REQUIRE(varTable->contains("monke1"));
     REQUIRE_FALSE(varTable->contains("monke3"));
 
-    REQUIRE(varTable->getAllEntity() == std::vector<VAR_NAME>{VAR_NAME("monke1"),
-        VAR_NAME("monke2")});
+    std::vector<VAR_NAME> expected = std::vector<VAR_NAME>{ VAR_NAME("monke1"), VAR_NAME("monke2") };
+    auto actual = varTable->getAllEntity();
+    std::sort(expected.begin(), expected.end());
+    std::sort(actual.begin(), actual.end());
+    REQUIRE(hasSameContents<VAR_NAME>(&actual, &expected));
     REQUIRE(varTable->getSize() == 2);
 }
 
@@ -103,12 +118,17 @@ TEST_CASE("StatementTable") {
     REQUIRE_FALSE(stmtTable->contains(StatementType::If, 3));
     REQUIRE_FALSE(stmtTable->contains(StatementType::Print, 4));
 
-    REQUIRE(stmtTable->getAllEntity() == std::vector<STMT_LO>{stmt1, stmt2, stmt3, stmt4});
-    REQUIRE(stmtTable->getStmtOfType(StatementType::Assignment) ==
-        std::vector<STMT_LO>{stmt1, stmt4});
+    std::vector<STMT_LO> expected = std::vector<STMT_LO>{ stmt1, stmt2, stmt3, stmt4 };
+    auto actual = stmtTable->getAllEntity();
+    std::sort(expected.begin(), expected.end());
+    std::sort(actual.begin(), actual.end());
+    REQUIRE(hasSameContents<STMT_LO>(&actual, &expected));
+
+    actual = stmtTable->getStmtOfType(StatementType::Assignment);
+    expected = std::vector<STMT_LO>{ stmt1, stmt4 };
+    REQUIRE(hasSameContents<STMT_LO>(&actual, &expected));
 
     REQUIRE(stmtTable->getSize() == 4);
-
     stmtTable->insert(StatementType::Print, 4);
     REQUIRE(stmtTable->getSize() == 4);
     REQUIRE_FALSE(stmtTable->contains(StatementType::Print, 4));

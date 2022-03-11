@@ -694,8 +694,8 @@ TEST_CASE("PKB sample source program test") {
 
         // Next(11, 5) douuble concrete decl
         REQUIRE(pkb->getRelationship(PKBField::createConcrete(Content{ STMT_LO{11, StatementType::Assignment} }),
-            PKBField::createConcrete(Content{ STMT_LO{ 5, StatementType::While } }), PKBRelationship::NEXT) == PKBResponse{ true,
-            FieldRowResponse{ {stmt11, stmt5} } });
+            PKBField::createConcrete(Content{ STMT_LO{ 5, StatementType::While } }), PKBRelationship::NEXT) == 
+            PKBResponse{ true, FieldRowResponse{ {stmt11, stmt5} } });
 
         // Next(7, a) first concrete, second assn decl
         REQUIRE(pkb->getRelationship(PKBField::createConcrete(Content{ STMT_LO{7, StatementType::If } }),
