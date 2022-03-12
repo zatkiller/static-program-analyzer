@@ -536,7 +536,8 @@ private:
     *
     * @see PKBField
     */
-    void traverseStartT(std::set<T>* found, Node<T>* node, Node<T>* initial, StatementType targetType = StatementType::None) const {
+    void traverseStartT(std::set<T>* found, Node<T>* node, Node<T>* initial, 
+        StatementType targetType = StatementType::None) const {
         typename Node<T>::NodeSet nextNodes = node->next;
         bool isTerminating = std::count(nextNodes.begin(), nextNodes.end(), initial) == 1;
 
@@ -661,7 +662,8 @@ private:
     *
     * @see PKBField
     */
-    void traverseEndT(std::set<T>* found, Node<T>* node, Node<T>* initial, StatementType targetType = StatementType::None) const {
+    void traverseEndT(std::set<T>* found, Node<T>* node, Node<T>* initial, 
+        StatementType targetType = StatementType::None) const {
         typename Node<T>::NodeSet prevNodes = node->prev;
         bool isTerminating = std::find(prevNodes.begin(), prevNodes.end(), initial) != prevNodes.end();
         for (auto prevNode : prevNodes) {
