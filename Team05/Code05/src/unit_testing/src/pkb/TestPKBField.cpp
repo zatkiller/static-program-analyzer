@@ -5,18 +5,17 @@
 #include "catch.hpp"
 
 TEST_CASE("STMT_LO equality") {
-    STMT_LO s1 = STMT_LO{ 1, StatementType::Call, PROC_NAME{"abc"} };
-    STMT_LO s2 = STMT_LO{ 1, StatementType::Call, PROC_NAME{"abc"} };
-    STMT_LO s3 = STMT_LO{ 1, StatementType::Call, PROC_NAME{"def"} };
+    STMT_LO s1 = STMT_LO{ 1, StatementType::Call, "abc" };
+    STMT_LO s2 = STMT_LO{ 1, StatementType::Call, "abc" };
+    STMT_LO s3 = STMT_LO{ 1, StatementType::Call, "def" };
     STMT_LO s4 = STMT_LO{ 1, StatementType::Call };
-    STMT_LO s5 = STMT_LO{ 1, StatementType::Assignment};
-    STMT_LO s6 = STMT_LO{ 1, StatementType::Call, VAR_NAME{"abc"} };
+    STMT_LO s5 = STMT_LO{ 1, StatementType::Assignment };
+    STMT_LO s6 = STMT_LO{ 1, StatementType::Call, "abc" };
 
     REQUIRE(s1 == s2);
     REQUIRE_FALSE(s1 == s3);
     REQUIRE_FALSE(s1 == s4);
     REQUIRE_FALSE(s1 == s5);
-    REQUIRE_FALSE(s1 == s6);
 }
 
 TEST_CASE("PKBField createConcrete statement, getContent") {

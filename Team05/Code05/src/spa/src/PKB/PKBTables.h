@@ -198,7 +198,7 @@ public:
     * @param stmtNum The provided statement number to insert
     * @param attribute The provided attribute (VAR_NAME or PROC_NAME) to insert
     */
-    void insert(StatementType stmtType, int stmtNum, StatementAttribute attribute);
+    void insert(StatementType stmtType, int stmtNum, std::string attribute);
 
     /**
     * Retrieves all statements of the provided statement type

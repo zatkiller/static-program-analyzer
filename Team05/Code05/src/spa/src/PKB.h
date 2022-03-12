@@ -31,7 +31,7 @@ public:
     * @param statementNumber line number
     * @param attribute a VAR_NAME or PROC_NAME
     */
-    void insertStatement(StatementType type, int statementNumber, StatementAttribute attribute);
+    void insertStatement(StatementType type, int statementNumber, std::string attribute);
 
     /**
     * Inserts a variable into the PKB.

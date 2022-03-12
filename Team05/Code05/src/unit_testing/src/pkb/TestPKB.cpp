@@ -44,7 +44,7 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     PKBField stmt1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     PKBField stmt2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment });
     PKBField stmt3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
-    PKBField stmt4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::Read, VAR_NAME{"monke"} });
+    PKBField stmt4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::Read, "monke" });
     PKBField stmt5 = PKBField::createConcrete(STMT_LO{ 5, StatementType::While });
     PKBField stmt6 = PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment });
     PKBField stmt7 = PKBField::createConcrete(STMT_LO{ 7, StatementType::If });
@@ -52,9 +52,9 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     PKBField stmt9 = PKBField::createConcrete(STMT_LO{ 9, StatementType::Assignment });
     PKBField stmt10 = PKBField::createConcrete(STMT_LO{ 10, StatementType::Assignment });
     PKBField stmt11 = PKBField::createConcrete(STMT_LO{ 11, StatementType::Assignment });
-    PKBField stmt12 = PKBField::createConcrete(STMT_LO{ 12, StatementType::Print, VAR_NAME{"monke"} });
-    PKBField stmt13 = PKBField::createConcrete(STMT_LO{ 13, StatementType::Call, PROC_NAME{"abc"} });
-    PKBField stmt14 = PKBField::createConcrete(STMT_LO{ 14, StatementType::Call, PROC_NAME{"def"} });
+    PKBField stmt12 = PKBField::createConcrete(STMT_LO{ 12, StatementType::Print, "monke" });
+    PKBField stmt13 = PKBField::createConcrete(STMT_LO{ 13, StatementType::Call, "abc" });
+    PKBField stmt14 = PKBField::createConcrete(STMT_LO{ 14, StatementType::Call, "def" });
     PKBField stmt15 = PKBField::createConcrete(STMT_LO{ 15, StatementType::Assignment });
     PKBField Example = PKBField::createConcrete(PROC_NAME{ "Example" });
     PKBField abc = PKBField::createConcrete(PROC_NAME{ "abc" });
@@ -111,7 +111,7 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     pkb->insertStatement(StatementType::Assignment, 1);
     pkb->insertStatement(StatementType::Assignment, 2);
     pkb->insertStatement(StatementType::Assignment, 3);
-    pkb->insertStatement(StatementType::Read, 4, VAR_NAME{ "monke" });
+    pkb->insertStatement(StatementType::Read, 4, "monke");
     pkb->insertStatement(StatementType::While, 5);
     pkb->insertStatement(StatementType::Assignment, 6);
     pkb->insertStatement(StatementType::If, 7);
@@ -119,11 +119,11 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     pkb->insertStatement(StatementType::Assignment, 9);
     pkb->insertStatement(StatementType::Assignment, 10);
     pkb->insertStatement(StatementType::Assignment, 11);
-    pkb->insertStatement(StatementType::Print, 12, VAR_NAME{ "monke" });
-    pkb->insertStatement(StatementType::Call, 13, PROC_NAME{ "abc" });
-    pkb->insertStatement(StatementType::Call, 14, PROC_NAME{ "def" });
+    pkb->insertStatement(StatementType::Print, 12, "monke");
+    pkb->insertStatement(StatementType::Call, 13, "abc");
+    pkb->insertStatement(StatementType::Call, 14, "def");
     pkb->insertStatement(StatementType::Assignment, 15);
-   
+
     pkb->insertRelationship(PKBRelationship::NEXT, stmt1, stmt2);
     pkb->insertRelationship(PKBRelationship::NEXT, stmt2, stmt3);
     pkb->insertRelationship(PKBRelationship::NEXT, stmt3, stmt4);
@@ -628,23 +628,23 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
         // Next(s1, s2) double statement decl
         REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
             PKBField::createDeclaration(StatementType::All), PKBRelationship::NEXT) == PKBResponse{ true,
-            FieldRowResponse{ {stmt1, stmt2}, {stmt2, stmt3}, {stmt3, stmt4}, {stmt4, stmt5}, {stmt5, stmt6}, 
-            {stmt5, stmt12}, {stmt6, stmt7}, {stmt7, stmt8}, {stmt7, stmt9}, {stmt8, stmt10}, {stmt9, stmt10}, 
+            FieldRowResponse{ {stmt1, stmt2}, {stmt2, stmt3}, {stmt3, stmt4}, {stmt4, stmt5}, {stmt5, stmt6},
+            {stmt5, stmt12}, {stmt6, stmt7}, {stmt7, stmt8}, {stmt7, stmt9}, {stmt8, stmt10}, {stmt9, stmt10},
             {stmt10, stmt11}, {stmt11, stmt5}, {stmt11, stmt12}, {stmt12, stmt13} } });
 
         // Next(11, 5) douuble concrete decl
         REQUIRE(pkb->getRelationship(PKBField::createConcrete(Content{ STMT_LO{11, StatementType::Assignment} }),
-            PKBField::createConcrete(Content{ STMT_LO{ 5, StatementType::While } }), PKBRelationship::NEXT) == 
+            PKBField::createConcrete(Content{ STMT_LO{ 5, StatementType::While } }), PKBRelationship::NEXT) ==
             PKBResponse{ true, FieldRowResponse{ {stmt11, stmt5} } });
 
         // Next(7, a) first concrete, second assn decl
         REQUIRE(pkb->getRelationship(PKBField::createConcrete(Content{ STMT_LO{7, StatementType::If } }),
-            PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::NEXT) == PKBResponse{ true, 
+            PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::NEXT) == PKBResponse{ true,
             FieldRowResponse{ {stmt7, stmt8}, {stmt7, stmt9} } });
 
         // Next(a, 5) first assn decl, second concrete
         REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::Assignment),
-            PKBField::createConcrete(STMT_LO{5, StatementType::While}), PKBRelationship::NEXT) == PKBResponse{ true,
+            PKBField::createConcrete(STMT_LO{ 5, StatementType::While }), PKBRelationship::NEXT) == PKBResponse{ true,
             FieldRowResponse{ {stmt11, stmt5} } });
 
         // Next*(ifs, a) first if decl, second assn decl
@@ -665,7 +665,7 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
 
         // Next*(ifs1, ifs2) test if traversal can handle insertion of initial node i.e. (7, 7)
         REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::If),
-            PKBField::createDeclaration(StatementType::If), PKBRelationship::NEXTT) == PKBResponse{ true, 
+            PKBField::createDeclaration(StatementType::If), PKBRelationship::NEXTT) == PKBResponse{ true,
             FieldRowResponse{ {stmt7, stmt7} } });
     }
 }

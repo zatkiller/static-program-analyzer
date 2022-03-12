@@ -30,7 +30,7 @@ void PKB::insertStatement(StatementType type, int statementNumber) {
     statementTable->insert(type, statementNumber);
 }
 
-void PKB::insertStatement(StatementType type, int statementNumber, StatementAttribute attribute) {
+void PKB::insertStatement(StatementType type, int statementNumber, std::string attribute) {
     // if (type != StatementType::Call || type != StatementType::Read || type != StatementType::Print) {
     // Logger(Level::INFO) << "insertStatement(StatementType, int, StatementAttribute) 
     // is only for Calls, Reads, Prints.\n";

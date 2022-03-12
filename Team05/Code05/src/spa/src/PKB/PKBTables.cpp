@@ -46,7 +46,7 @@ void StatementTable::insert(StatementType stmtType, int stmtNum) {
     }
 }
 
-void StatementTable::insert(StatementType stmtType, int stmtNum, StatementAttribute attribute) {
+void StatementTable::insert(StatementType stmtType, int stmtNum, std::string attribute) {
     if (!contains(stmtNum)) {
         insertVal(STMT_LO(stmtNum, stmtType, attribute));
     }
