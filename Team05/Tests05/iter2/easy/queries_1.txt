@@ -1,0 +1,40 @@
+1 - select all procedures
+procedure p;
+Select p
+a, b, c, d
+5000
+2 - select all calls
+call c;
+Select c
+3, 4, 7, 12
+5000
+3 - Modifies across calls
+variable v;
+Select v such that Modifies(3, v)
+b1, c1
+5000
+4 - Modifies across calls
+variable v;
+Select v such that Modifies("a", v)
+a1, b1, c1, d1
+5000
+5 - Modifies across calls
+variable v;
+Select v such that Modifies("b", v)
+b1, c1
+5000
+6 - Uses across calls
+variable v;
+Select v such that Uses(3, v)
+b1, c1
+5000
+7 - Uses across calls
+variable v;
+Select v such that Uses("a", v)
+a1, b1, c1, d1
+5000
+8 - Uses across calls
+variable v;
+Select v such that Uses("b", v)
+b1, c1
+5000

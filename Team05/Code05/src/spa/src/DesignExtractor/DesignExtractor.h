@@ -13,6 +13,7 @@
 #include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/FollowsExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/ParentExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/CallsExtractor.h"
 
 namespace sp {
 namespace design_extractor {
@@ -30,6 +31,7 @@ public:
         extractors.push_back(std::make_shared<UsesExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<FollowsExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<ParentExtractor>(pkbStrategy));
+        extractors.push_back(std::make_shared<CallsExtractor>(pkbStrategy));
     }
 
     void extract(ast::ASTNode* ast) {

@@ -230,7 +230,7 @@ namespace qps::parser {
             ptr =  parseRelRefVariables<Calls>(queryObj, &Calls::caller, &Calls::callee);
         } else if (tokenType == TokenType::CALLS_T) {
             ptr =  parseRelRefVariables<CallsT>(queryObj, &CallsT::caller, &CallsT::transitiveCallee);
-        } else{
+        } else {
             throw exceptions::PqlSyntaxException(messages::qps::parser::invalidRelRefMessage);
         }
 
@@ -431,7 +431,9 @@ namespace qps::parser {
         auto lhs = parseAttrCompareRef(query);
         getAndCheckNextToken(TokenType::EQUAL);
         auto rhs = parseAttrCompareRef(query);
-        query.addWith(AttrCompare(lhs, rhs));
+        AttrCompare ac = AttrCompare(lhs, rhs);
+        ac.validateComparingTypes();
+        query.addWith(ac);
     }
 
     void Parser::parseQuery(Query &queryObj) {

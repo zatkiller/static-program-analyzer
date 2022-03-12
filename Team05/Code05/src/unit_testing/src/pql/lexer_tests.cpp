@@ -177,7 +177,6 @@ TEST_CASE("Lexer getNextReservedToken") {
     t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::WITH);
     REQUIRE(t1.getText() == "with");
-
 }
 
 TEST_CASE("Lexer peekNextReservedToken") {
