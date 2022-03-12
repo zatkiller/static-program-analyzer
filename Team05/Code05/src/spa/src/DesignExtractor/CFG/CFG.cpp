@@ -60,39 +60,39 @@ void CFGExtractor::visit(const ast::Procedure& node) {
 };
 
 void CFGExtractor::visit(const ast::If& node) {
-    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::If);
     lastVisited->insert(newNode);
     lastVisited = newNode;
     isIf++;
 };
 
 void CFGExtractor::visit(const ast::While& node) {
-    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::While);
     lastVisited->insert(newNode);
     lastVisited = newNode;
     isWhile = true;
 }
 
 void CFGExtractor::visit(const ast::Read& node) {
-    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Read);
     lastVisited->insert(newNode);
     lastVisited = newNode;
 }
 
 void CFGExtractor::visit(const ast::Print& node) {
-    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Print);
     lastVisited->insert(newNode);
     lastVisited = newNode;
 }
 
 void CFGExtractor::visit(const ast::Assign& node) {
-    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Assignment);
     lastVisited->insert(newNode);
     lastVisited = newNode;
 }
 
 void CFGExtractor::visit(const ast::Call& node) {
-    auto newNode = std::make_shared<CFGNode>(node.getStmtNo());
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Call);
     lastVisited->insert(newNode);
     lastVisited = newNode;
 }

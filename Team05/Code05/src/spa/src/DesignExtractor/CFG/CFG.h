@@ -21,7 +21,7 @@ private:
     std::vector<std::shared_ptr<CFGNode>> children;
 public:
     CFGNode () : stmt(std::nullopt) {}
-    explicit CFGNode(int stmtNo) : stmt(STMT_LO(stmtNo)) {}
+    explicit CFGNode(int stmtNo, StatementType stmtType) : stmt(STMT_LO(stmtNo, stmtType)) {}
 
     void insert(std::shared_ptr<CFGNode> child);
     bool isParentOf(CFGNode* other);
@@ -42,7 +42,7 @@ private:
     bool isWhile;  // to indicate if we are currently in a while loop
     int isIf;  // to take 0, 1 (allows 1st enterContainer) or 2 (allows 2nd enterContainer)
     Bucket bucket;
-
+    Depth currentDepth = 0;
 public:
     void visit(const ast::Procedure& node) override;
     void visit(const ast::If& node) override;
