@@ -55,11 +55,9 @@ TEST_CASE("Parser checkSurroundingWhitespace") {
 
 TEST_CASE("Parser checkDesignEntityAndAttrNameMatch") {
     Parser parser;
-    REQUIRE_THROWS_MATCHES(
-        parser.checkDesignEntityAndAttrNameMatch(DesignEntity::CONSTANT, AttrName::PROCNAME), 
-        exceptions::PqlSyntaxException,
-        Catch::Message(messages::qps::parser::invalidAttrNameForDesignEntity)
-    );
+    REQUIRE_THROWS_MATCHES(parser.checkDesignEntityAndAttrNameMatch(DesignEntity::CONSTANT, AttrName::PROCNAME),
+                           exceptions::PqlSyntaxException,
+                           Catch::Message(messages::qps::parser::invalidAttrNameForDesignEntity));
 }
 
 TEST_CASE("Parser getAndCheckNextToken and peekAndCheckNextToken") {
@@ -1194,7 +1192,8 @@ TEST_CASE("Parser parseQuery") {
 }
 
 TEST_CASE("Parser parsePql") {
-    std::string testQuery = "assign a, a1; variable v; Select a such that Modifies (a, _) pattern a (v, _\"x\"_) with \"Monke\" = v.varName";
+    std::string testQuery = "assign a, a1; variable v; Select a such that Modifies (a, _) pattern a (v, _\"x\"_) "
+                            "with \"Monke\" = v.varName";
 
     Parser parser;
     Query queryObj = parser.parsePql(testQuery);
