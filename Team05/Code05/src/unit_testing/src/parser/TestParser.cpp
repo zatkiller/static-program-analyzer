@@ -14,7 +14,11 @@ TEST_CASE("Testing Parser") {
         std::deque<Token> tokens;
         using ast::make;
         std::unique_ptr<ast::ASTNode> ast, expected;
-        lineCount = 1;  // resetting line count
+        // reset state
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
+        
 
         SECTION("ExprParser::parse") {
             // var only basic expression
@@ -488,7 +492,10 @@ TEST_CASE("Testing Parser") {
 
             REQUIRE(*ast == *expected);
 
-            lineCount = 1;  // reset lineCount
+            // reset state.
+            lineCount = 1;
+            callStmts.clear();
+            procedures.clear();
             tokens = Lexer(R"(
             procedure main {
                 read v1;
@@ -544,7 +551,10 @@ TEST_CASE("Testing Parser") {
         REQUIRE(parse(fail) == nullptr);
 
         // Corrected program
-        lineCount = 1;  // reset lineCount
+        // reset state.
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
         std::string correct = R"(
             procedure a {
                 while (c != b) {
@@ -572,7 +582,10 @@ TEST_CASE("Testing Parser") {
         REQUIRE(*parse(correct) == *parsedCorrect);
 
         // Program with incorrect parenthesis
-        lineCount = 1;  // reset lineCount
+        // reset state.
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
         std::string fail2 = R"(procedure a {
             while (!(c == 1))) {
                 read c;
@@ -581,7 +594,10 @@ TEST_CASE("Testing Parser") {
         REQUIRE(parse(fail2) == nullptr);
         
         // corrected program
-        lineCount = 1;  // reset lineCount
+        // reset state.
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
         std::string correct2 = R"(procedure a {
             while (!(c == 1)) {
                 read c;
@@ -607,13 +623,19 @@ TEST_CASE("Testing Parser") {
         REQUIRE(*parse(correct2) == *parsedCorrect2);
 
         // program with invalid variable names
-        lineCount = 1;  // reset lineCount
+        // reset state.
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
         std::string fail3 = R"(procedure 1a {
             1x = 1y + 1z;
         })";
         REQUIRE(parse(fail3) == nullptr);
 
-        lineCount = 1;  // reset lineCount
+        // reset state.
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
         std::string testCode = R"(procedure computeAverage {
             read num1;
             read num2;
@@ -655,7 +677,10 @@ TEST_CASE("Testing Parser") {
         );
         REQUIRE(*parse(testCode) == *parsedTestCode);
 
-        lineCount = 1;  // reset lineCount
+        // reset state.
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
         std::string testCode2 = R"(procedure printAscending {
             read num1;
             read num2;
@@ -716,7 +741,45 @@ TEST_CASE("Testing Parser") {
             )
         );
         REQUIRE(*parse(testCode2) == *parsedTestCode2);
-    }    
+    }
+
+    SECTION("Additional Constraints") {
+        // Same name procedures should not be allowed
+        std::string problemCode1 = R"(
+            procedure monke {
+                read v1;
+                print v1;
+                v2 = v1;
+                call monke;
+            }
+            procedure monke {
+                read v3;
+                v2 = v3;
+            }
+        )";
+        // The InvalidArgumentException will be thrown by parseProgram().
+        auto tokens1 = Lexer(problemCode1).getTokens();
+        REQUIRE_THROWS_AS(parseProgram(tokens1), std::invalid_argument);
+        // It will be caught by the parse() method and return an empty Program.
+        REQUIRE(parse(problemCode1) == nullptr);
+        
+        // Calling non-existent procedures should not be allowed
+        std::string problemCode2 = R"(
+            procedure main {
+                read v1;
+                print v1;
+                v2 = v1;
+                call noExist;
+            }
+            procedure monke {
+                read v3;
+                v2 = v3;
+            }
+        )";
+        auto tokens2 = Lexer(problemCode2).getTokens();
+        REQUIRE_THROWS_AS(parseProgram(tokens2), std::invalid_argument);
+        REQUIRE(parse(problemCode2) == nullptr);
+    }
 }
 
 }  // namespace parser
