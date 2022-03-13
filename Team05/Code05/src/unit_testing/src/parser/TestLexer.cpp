@@ -95,5 +95,11 @@ namespace parser {
         }
     }
 
+    TEST_CASE("Lexer rejects numbers starting with 0") {
+        REQUIRE_THROWS_AS(Lexer("monke = 0420;").getTokens(), std::invalid_argument);
+        REQUIRE_THROWS_AS(Lexer("if (monke == 069) { read monke; }").getTokens(), std::invalid_argument);
+        REQUIRE_NOTHROW(Lexer("monke = 0;").getTokens());
+    }
+
 }  // namespace parser
 }  // namespace sp

@@ -58,6 +58,10 @@ void Lexer::lex(const std::string& source) {
                 it++; lastChar = *it;
                 s.push_back(lastChar);
             }
+            if (s.length() > 1 && s[0] == '0') {
+                Logger(Level::ERROR) << "Number cannot start with 0!";
+                throw std::invalid_argument("Number cannot start with 0!");
+            }
             int number = strtod(s.c_str(), nullptr);
             this->tokens.push_back(Token{TokenType::number, number});
             continue;
