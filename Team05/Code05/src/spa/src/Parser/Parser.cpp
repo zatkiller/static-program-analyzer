@@ -542,7 +542,7 @@ ast::StmtLst parse(deque<Token>& tokens) {
 
 }  // namespace statement_list_parser
 
-/** ================================ PARSER CLASS ================================= */
+/** ============================== HIGH-LEVEL PARSERS =============================== */
 
 unique_ptr<ast::Procedure> parseProcedure(deque<Token>& tokens) {
     // consume "procedure"
