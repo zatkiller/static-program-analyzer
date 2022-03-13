@@ -253,7 +253,6 @@ TEST_CASE("CFG Test") {
         REQUIRE(*result.find("test")->second == *dummyNode1);
         REQUIRE(*result.find("monke")->second == *dummyNode3);
     }
-
 }
 }  // namespace cfg
 }  // namespace sp

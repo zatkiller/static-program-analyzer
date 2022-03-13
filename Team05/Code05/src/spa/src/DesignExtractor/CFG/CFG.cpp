@@ -62,7 +62,7 @@ void CFGExtractor::visit(const ast::Procedure& node) {
         std::pair<std::string, std::shared_ptr<CFGNode>>(node.getName(), startNode)
     );
     lastVisited = startNode;
-};
+}
 
 void CFGExtractor::visit(const ast::If& node) {
     containerCount += 2;
@@ -74,7 +74,7 @@ void CFGExtractor::visit(const ast::If& node) {
     // When you exit an if stmtLst, you need to point to a dummy exit node
     auto dummyExitNode = std::make_shared<CFGNode>();
     exitReference.insert_or_assign(currentDepth, dummyExitNode);
-};
+}
 
 void CFGExtractor::visit(const ast::While& node) {
     containerCount++;
@@ -129,7 +129,7 @@ void CFGExtractor::exitContainer() {
         lastVisited->insert(exitReference.find(currentDepth)->second);
         lastVisited = exitReference.find(currentDepth)->second;
     }
-};
+}
 
 std::map<std::string, std::shared_ptr<CFGNode>> CFGExtractor::extract(ast::ASTNode* node) {
     node->accept(this);
