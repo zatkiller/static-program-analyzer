@@ -47,7 +47,7 @@ using Bucket = std::unordered_map<Depth, std::shared_ptr<CFGNode>>;
  * and subsequent statements will point from the dummy node.
  * The While node will always lead down the path of execution and point back to the parent While node,
  * and subsequent statements will point from the While node.
- * The ::extract() method will return a map of procedure names to their respective CFGs.
+ * The extract() method will return a map of procedure names to their respective CFGs.
  */
 class CFGExtractor: public design_extractor::TreeWalker {
 private:
