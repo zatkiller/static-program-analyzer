@@ -16,6 +16,7 @@ enum class TokenType {
     CLOSING_PARAN,
     PERIOD,
     EQUAL,
+    AND,
 
     IDENTIFIER,
     NUMBER,
@@ -48,7 +49,7 @@ enum class TokenType {
     PROCNAME,
     VARNAME,
     VALUE,
-    STMTNUM
+    STMTNUM,
 };
 
 /**

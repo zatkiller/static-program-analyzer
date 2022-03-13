@@ -171,19 +171,25 @@ struct Parser {
     void parseSelectFields(Query &query);
 
     /*
-     * Parses the such that section of the pql query
-     * and adds them to the query object
+     * Parses the such that clauses and adds them to the query object
      *
      * @param query the query object
      */
-    void parseSuchThat(Query &query);
+    void parseSuchThatClause(Query &query);
 
     /*
      * Parses a RelRef and adds them to a query object
      *
      * @param query the query object
      */
-    std::shared_ptr<RelRef> parseRelRef(Query &query);
+    void parseRelRef(Query &query);
+
+    /*
+     * Helper function to parse RelRef depending on the RelRef subclass
+     *
+     * @param query the query object
+     */
+    std::shared_ptr<RelRef> parseRelRefHelper(Query &query);
 
 
     /**
@@ -264,12 +270,14 @@ struct Parser {
      */
     EntRef parseEntRef(Query &query);
 
+    void parsePattern(Query &query);
+
     /*
      * Parses a Pattern and adds them to a query object
      *
      * @param query the query object
      */
-    void parsePattern(Query &query);
+    void parsePatternClause(Query &query);
 
     /*
      * Parses and returns a AttrRef
@@ -290,7 +298,14 @@ struct Parser {
      *
      * @param query the query ADT
      */
-    void parseWith(Query &query);
+    void parseWithClause(Query &query);
+
+    /*
+     * Parses attrCompare for the with clause
+     *
+     * @param query the query ADT
+     */
+    void parseAttrCompare(Query &query);
 
     /*
      * Returns a ExpSpec belonging to an assign pattern

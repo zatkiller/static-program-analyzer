@@ -83,7 +83,6 @@ TEST_CASE("AttrCompare") {
     }
 
     SECTION ("AttrCompare validateComparingTypes") {
-
         SECTION ("Incompatible type matches") {
             AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, DesignEntity::READ, "rd" }),
                             AttrCompareRef::ofString("v"));

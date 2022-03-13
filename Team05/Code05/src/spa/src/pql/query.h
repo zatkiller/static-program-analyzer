@@ -516,7 +516,6 @@ struct AttrCompare {
     AttrCompareRef getLhs() { return lhs; }
     AttrCompareRef getRhs() { return rhs; }
     void validateComparingTypes();
-
 };
 
 /**

@@ -1,7 +1,6 @@
 #include <sstream>
 
 #include "pql/parser.h"
-#include "logging.h"
 
 namespace qps::parser {
     using qps::query::designEntityMap;
@@ -206,7 +205,7 @@ namespace qps::parser {
         }
     }
 
-    std::shared_ptr<RelRef> Parser::parseRelRef(Query &queryObj) {
+    std::shared_ptr<RelRef> Parser::parseRelRefHelper(Query &queryObj) {
         TokenType tokenType = getNextReservedToken().getTokenType();
         getAndCheckNextToken(TokenType::OPENING_PARAN);
 
@@ -309,7 +308,7 @@ namespace qps::parser {
         Token token = getNextToken();
         TokenType tt = token.getTokenType();
 
-        if ((tt == TokenType::END_OF_FILE)) {
+        if (tt == TokenType::END_OF_FILE) {
             throw exceptions::PqlSyntaxException(messages::qps::parser::expressionUnexpectedEndMessage);
         } else if ((tt == TokenType::NUMBER) || (tt == TokenType::IDENTIFIER)) {
             return;
@@ -354,27 +353,34 @@ namespace qps::parser {
         }
     }
 
-    void Parser::parseSuchThat(Query &queryObj) {
-        getAndCheckNextReservedToken(TokenType::SUCH_THAT);
-        std::shared_ptr<RelRef> relRef = parseRelRef(queryObj);
-        queryObj.addSuchthat(relRef);
+    void Parser::parseRelRef(Query &query) {
+        std::shared_ptr<RelRef> relRef = parseRelRefHelper(query);
+        query.addSuchthat(relRef);
     }
 
-    void Parser::parsePattern(Query &queryObj) {
-        getAndCheckNextReservedToken(TokenType::PATTERN);
+    void Parser::parseSuchThatClause(Query &queryObj) {
+        getAndCheckNextReservedToken(TokenType::SUCH_THAT);
+        parseRelRef(queryObj);
 
+        while (peekNextReservedToken().getTokenType() == TokenType::AND) {
+            getAndCheckNextReservedToken(TokenType::AND);
+            parseRelRef(queryObj);
+        }
+    }
+
+    void Parser::parsePattern(Query &query) {
         Token t = getAndCheckNextToken(TokenType::IDENTIFIER);
         std::string declarationName = t.getText();
-        if (queryObj.getDeclarationDesignEntity(declarationName) != DesignEntity::ASSIGN)
+        if (query.getDeclarationDesignEntity(declarationName) != DesignEntity::ASSIGN)
             throw exceptions::PqlSyntaxException(messages::qps::parser::notAnAssignmentMessage);
 
         Pattern p;
 
         p.synonym = declarationName;
         getAndCheckNextToken(TokenType::OPENING_PARAN);
-        EntRef e = parseEntRef(queryObj);
+        EntRef e = parseEntRef(query);
 
-        if (e.isDeclaration() && queryObj.getDeclarationDesignEntity(e.getDeclaration()) != DesignEntity::VARIABLE)
+        if (e.isDeclaration() && query.getDeclarationDesignEntity(e.getDeclaration()) != DesignEntity::VARIABLE)
             throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
 
         p.lhs = e;
@@ -382,9 +388,19 @@ namespace qps::parser {
         p.expression = parseExpSpec();
         getAndCheckNextToken(TokenType::CLOSING_PARAN);
 
-        queryObj.addPattern(p);
+        query.addPattern(p);
     }
 
+    void Parser::parsePatternClause(Query &queryObj) {
+        getAndCheckNextReservedToken(TokenType::PATTERN);
+
+        parsePattern(queryObj);
+
+        while (peekNextReservedToken().getTokenType() == TokenType::AND) {
+            getAndCheckNextReservedToken(TokenType::AND);
+            parsePattern(queryObj);
+        }
+    }
 
     AttrRef Parser::parseAttrRef(Query &query) {
         Token identifier = getAndCheckNextToken(TokenType::IDENTIFIER);
@@ -426,8 +442,7 @@ namespace qps::parser {
         }
     }
 
-    void Parser::parseWith(Query &query) {
-        getAndCheckNextReservedToken(TokenType::WITH);
+    void Parser::parseAttrCompare(Query &query) {
         auto lhs = parseAttrCompareRef(query);
         getAndCheckNextToken(TokenType::EQUAL);
         auto rhs = parseAttrCompareRef(query);
@@ -436,17 +451,30 @@ namespace qps::parser {
         query.addWith(ac);
     }
 
+    void Parser::parseWithClause(Query &query) {
+        getAndCheckNextReservedToken(TokenType::WITH);
+        parseAttrCompare(query);
+
+        while (peekNextReservedToken().getTokenType() == TokenType::AND) {
+            getAndCheckNextReservedToken(TokenType::AND);
+            parseAttrCompare(query);
+        }
+    }
+
     void Parser::parseQuery(Query &queryObj) {
         parseSelectFields(queryObj);
 
-        if (peekNextReservedToken().getTokenType() == TokenType::SUCH_THAT)
-            parseSuchThat(queryObj);
-
-        if (peekNextReservedToken().getTokenType() == TokenType::PATTERN)
-            parsePattern(queryObj);
-
-        if (peekNextReservedToken().getTokenType() == TokenType::WITH)
-            parseWith(queryObj);
+        TokenType tt = peekNextReservedToken().getTokenType();
+        while (tt != TokenType::END_OF_FILE) {
+            if (tt == TokenType::SUCH_THAT) {
+                parseSuchThatClause(queryObj);
+            } else if (tt == TokenType::PATTERN) {
+                parsePatternClause(queryObj);
+            } else if (tt == TokenType::WITH) {
+                parseWithClause(queryObj);
+            }
+            tt = peekNextReservedToken().getTokenType();
+        }
     }
 
     Query Parser::parsePql(std::string query) {
