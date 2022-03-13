@@ -13,7 +13,7 @@ void CFGNode::insert(std::shared_ptr<CFGNode> child) {
 }
 
 bool CFGNode::operator==(CFGNode const& o) const {
-    return (this->stmt == o.stmt) && (this->children == o.children);
+    return this->stmt == o.stmt;
 }
 
 bool CFGNode::isParentOf(CFGNode* other) {
@@ -47,7 +47,12 @@ bool dfs(
 
 bool CFGNode::isAncestorOf(CFGNode* other) {
     std::unordered_set<CFGNode*> reached;
-    return dfs(this, other, reached);
+    for (auto c : this->children) {
+        if (dfs(c.get(), other, reached)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void CFGExtractor::visit(const ast::Procedure& node) {
@@ -60,59 +65,76 @@ void CFGExtractor::visit(const ast::Procedure& node) {
 };
 
 void CFGExtractor::visit(const ast::If& node) {
+    containerCount += 2;
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::If);
     lastVisited->insert(newNode);
     lastVisited = newNode;
-    isIf++;
+    // Whenever you enter an if ... then or else stmtLst, parent node should be the If node.
+    enterBucket(newNode);
+    // When you exit an if stmtLst, you need to point to a dummy exit node
+    auto dummyExitNode = std::make_shared<CFGNode>();
+    exitReference.insert_or_assign(currentDepth, dummyExitNode);
 };
 
 void CFGExtractor::visit(const ast::While& node) {
+    containerCount++;
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::While);
     lastVisited->insert(newNode);
     lastVisited = newNode;
-    isWhile = true;
+    // When you enter a While stmtLst, the parent node should be the While node.
+    enterBucket(newNode);
+    // When you exit a While container, you need to point back to the While node.
+    exitReference.insert_or_assign(currentDepth, newNode);
 }
 
 void CFGExtractor::visit(const ast::Read& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Read);
     lastVisited->insert(newNode);
     lastVisited = newNode;
+    enterBucket(newNode);
 }
 
 void CFGExtractor::visit(const ast::Print& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Print);
     lastVisited->insert(newNode);
     lastVisited = newNode;
+    enterBucket(newNode);
 }
 
 void CFGExtractor::visit(const ast::Assign& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Assignment);
     lastVisited->insert(newNode);
     lastVisited = newNode;
+    enterBucket(newNode);
 }
 
 void CFGExtractor::visit(const ast::Call& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Call);
     lastVisited->insert(newNode);
     lastVisited = newNode;
+    enterBucket(newNode);
 }
 
 void CFGExtractor::enterContainer(std::variant<int, std::string> containerId) {
-    if (isIf) {
-        if (isIf > 2) {
-            isIf = 0;
-            return;
-        }
-        isIf++;
-        // TODO
-    }  else if (isWhile) {
-        // TODO
+    if (containerCount) {
+        lastVisited = bucket.find(currentDepth)->second;
     }
+    currentDepth++;
 }
 
 void CFGExtractor::exitContainer() {
-    // TODO
+    currentDepth--;
+    if (containerCount) {
+        containerCount--;
+        lastVisited->insert(exitReference.find(currentDepth)->second);
+        lastVisited = exitReference.find(currentDepth)->second;
+    }
 };
+
+std::map<std::string, std::shared_ptr<CFGNode>> CFGExtractor::extract(ast::ASTNode* node) {
+    node->accept(this);
+    return procNameAndRoot;
+}
 
 }  // namespace cfg
 }  // namespace sp

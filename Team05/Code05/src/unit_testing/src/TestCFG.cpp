@@ -5,6 +5,8 @@
 #include "catch.hpp"
 #include "DesignExtractor/CFG/CFG.h"
 #include "Parser/AST.h"
+#include "Parser/Lexer.h"
+#include "Parser/Parser.h"
 
 #define TEST_LOG Logger() << "TestDesignExtractor.cpp "
 
@@ -22,8 +24,11 @@ TEST_CASE("CFG Test") {
     auto node8 = std::make_shared<CFGNode>(8, StatementType::Read);
     auto node9 = std::make_shared<CFGNode>(9, StatementType::Print);
     auto node10 = std::make_shared<CFGNode>(10, StatementType::Read);
+    auto node11 = std::make_shared<CFGNode>(10, StatementType::Read);
+
     auto dummyNode1 = std::make_shared<CFGNode>();
     auto dummyNode2 = std::make_shared<CFGNode>();
+    auto dummyNode3 = std::make_shared<CFGNode>();
 
     /*
     procedure test {
@@ -44,7 +49,12 @@ TEST_CASE("CFG Test") {
         }
         read x;                  10
     }
+    procedure monke {
+        dummyNode3 start
+        read y;                  11
+    }
     */
+
     dummyNode1->insert(node1);
     node1->insert(node2);
     node2->insert(node3);
@@ -60,64 +70,109 @@ TEST_CASE("CFG Test") {
     dummyNode2->insert(node1);
     node1->insert(node10);
 
+    dummyNode3->insert(node11);
+
     SECTION("Equals Test") {
         // Same as node1
         auto nodeTest = std::make_shared<CFGNode>(1, StatementType::While);
         nodeTest->insert(node2);
         nodeTest->insert(node10);
-        // Different child
-        auto nodeTest1 = std::make_shared<CFGNode>(1, StatementType::While);
-        nodeTest1->insert(node3);
         // Different statement number
-        auto nodeTest2 = std::make_shared<CFGNode>(420, StatementType::While);
+        auto nodeTest1 = std::make_shared<CFGNode>(420, StatementType::While);
+        nodeTest1->insert(node2);
+        nodeTest1->insert(node10);
+        // Different StatementType        
+        auto nodeTest2 = std::make_shared<CFGNode>(1, StatementType::If);
         nodeTest2->insert(node2);
         nodeTest2->insert(node10);
-        // Different StatementType        
-        auto nodeTest3 = std::make_shared<CFGNode>(1, StatementType::If);
-        nodeTest3->insert(node2);
-        nodeTest3->insert(node10);
         REQUIRE(*node1 == *nodeTest);
         REQUIRE_FALSE(*node1 == *nodeTest1);
         REQUIRE_FALSE(*node1 == *nodeTest2);
-        REQUIRE_FALSE(*node1 == *nodeTest3);
         // auto dummyNodeTest = std::make_shared<CFGNode>();
     }
 
     SECTION("Traversal Test") {
+        // Testing parent and ancestor relationships for the first procedure in the code
         REQUIRE(dummyNode1->isParentOf(node1.get()));
         REQUIRE(node1->isParentOf(node2.get()));
         REQUIRE(node2->isParentOf(node3.get()));
         REQUIRE(node3->isParentOf(node4.get()));
-        REQUIRE_FALSE(node4->isParentOf(node5.get()));
         REQUIRE(node4->isParentOf(node2.get()));
         REQUIRE(node2->isParentOf(node5.get()));
         REQUIRE(node5->isParentOf(node6.get()));
         REQUIRE(node6->isParentOf(node7.get()));
-        REQUIRE(node6->isParentOf(node7.get()));
         REQUIRE(node7->isParentOf(node8.get()));
         REQUIRE(node7->isParentOf(node9.get()));
+        REQUIRE(node8->isParentOf(dummyNode2.get()));
+        REQUIRE(node9->isParentOf(dummyNode2.get()));
+        REQUIRE(dummyNode2->isParentOf(node1.get()));
+        REQUIRE(node1->isParentOf(node10.get()));
+
+        REQUIRE_FALSE(node10->isParentOf(node1.get()));
+        REQUIRE_FALSE(node10->isParentOf(node2.get()));
+        REQUIRE_FALSE(node10->isParentOf(node3.get()));
+        REQUIRE_FALSE(node10->isParentOf(node4.get()));
+        REQUIRE_FALSE(node10->isParentOf(node5.get()));
+        REQUIRE_FALSE(node10->isParentOf(node6.get()));
+        REQUIRE_FALSE(node10->isParentOf(node7.get()));
+        REQUIRE_FALSE(node10->isParentOf(node8.get()));
+        REQUIRE_FALSE(node10->isParentOf(node9.get()));
+        REQUIRE_FALSE(node10->isParentOf(node10.get()));
+
+        REQUIRE_FALSE(node4->isParentOf(node5.get()));
         REQUIRE_FALSE(node8->isParentOf(node7.get()));
         REQUIRE_FALSE(node9->isParentOf(node7.get()));
         REQUIRE_FALSE(node8->isParentOf(node9.get()));
         REQUIRE_FALSE(node9->isParentOf(node8.get()));
-        REQUIRE(node8->isParentOf(dummyNode2.get()));
-        REQUIRE(node9->isParentOf(dummyNode2.get()));
-        REQUIRE_FALSE(dummyNode2->isParentOf(node10.get()));
-        REQUIRE(dummyNode2->isParentOf(node1.get()));
-        REQUIRE(node1->isParentOf(node10.get()));
+
+        REQUIRE(dummyNode1->isAncestorOf(node1.get()));
+        REQUIRE(node1->isAncestorOf(node2.get()));
+        REQUIRE(node2->isAncestorOf(node3.get()));
+        REQUIRE(node3->isAncestorOf(node4.get()));
+        REQUIRE(node4->isAncestorOf(node2.get()));
+        REQUIRE(node2->isAncestorOf(node5.get()));
+        REQUIRE(node5->isAncestorOf(node6.get()));
+        REQUIRE(node6->isAncestorOf(node7.get()));
+        REQUIRE(node7->isAncestorOf(node8.get()));
+        REQUIRE(node7->isAncestorOf(node9.get()));
+        REQUIRE(node8->isAncestorOf(dummyNode2.get()));
+        REQUIRE(node9->isAncestorOf(dummyNode2.get()));
+        REQUIRE(dummyNode2->isAncestorOf(node1.get()));
+        REQUIRE(node1->isAncestorOf(node10.get()));
 
         REQUIRE(node1->isAncestorOf(node1.get()));
-        REQUIRE(node2->isAncestorOf(node2.get()));
-        REQUIRE(node2->isAncestorOf(node4.get()));
-        REQUIRE(node2->isAncestorOf(node1.get()));
-        REQUIRE(node3->isAncestorOf(node1.get()));
-        REQUIRE(node4->isAncestorOf(node1.get()));
-        REQUIRE(node6->isAncestorOf(node4.get()));
+        REQUIRE(node1->isAncestorOf(node2.get()));
+        REQUIRE(node1->isAncestorOf(node3.get()));
+        REQUIRE(node1->isAncestorOf(node4.get()));
         REQUIRE(node1->isAncestorOf(node5.get()));
         REQUIRE(node1->isAncestorOf(node6.get()));
-        REQUIRE(dummyNode2->isAncestorOf(node1.get()));
-        REQUIRE(node1->isAncestorOf(dummyNode2.get()));
-        REQUIRE_FALSE(node10->isAncestorOf(dummyNode1.get()));
+        REQUIRE(node1->isAncestorOf(node7.get()));
+        REQUIRE(node1->isAncestorOf(node8.get()));
+        REQUIRE(node1->isAncestorOf(node9.get()));
+        REQUIRE(node1->isAncestorOf(node10.get()));
+
+        REQUIRE(node2->isAncestorOf(node1.get()));
+        REQUIRE(node2->isAncestorOf(node2.get()));
+        REQUIRE(node2->isAncestorOf(node3.get()));
+        REQUIRE(node2->isAncestorOf(node4.get()));
+        REQUIRE(node2->isAncestorOf(node5.get()));
+        REQUIRE(node2->isAncestorOf(node6.get()));
+        REQUIRE(node2->isAncestorOf(node7.get()));
+        REQUIRE(node2->isAncestorOf(node8.get()));
+        REQUIRE(node2->isAncestorOf(node9.get()));
+        REQUIRE(node2->isAncestorOf(node10.get()));
+
+        REQUIRE(node3->isAncestorOf(node1.get()));
+        REQUIRE(node3->isAncestorOf(node2.get()));
+        REQUIRE(node3->isAncestorOf(node3.get()));
+        REQUIRE(node3->isAncestorOf(node4.get()));
+        REQUIRE(node3->isAncestorOf(node5.get()));
+        REQUIRE(node3->isAncestorOf(node6.get()));
+        REQUIRE(node3->isAncestorOf(node7.get()));
+        REQUIRE(node3->isAncestorOf(node8.get()));
+        REQUIRE(node3->isAncestorOf(node9.get()));
+        REQUIRE(node3->isAncestorOf(node10.get()));
+
         REQUIRE_FALSE(node10->isAncestorOf(node1.get()));
         REQUIRE_FALSE(node10->isAncestorOf(node2.get()));
         REQUIRE_FALSE(node10->isAncestorOf(node3.get()));
@@ -127,62 +182,78 @@ TEST_CASE("CFG Test") {
         REQUIRE_FALSE(node10->isAncestorOf(node7.get()));
         REQUIRE_FALSE(node10->isAncestorOf(node8.get()));
         REQUIRE_FALSE(node10->isAncestorOf(node9.get()));
-        REQUIRE_FALSE(node10->isAncestorOf(dummyNode2.get()));
+        REQUIRE_FALSE(node10->isAncestorOf(node10.get()));
     }
 
     SECTION("CFG Parsing Test") {
-        auto ast = ast::make<ast::Procedure>(
-            "test",
-            ast::makeStmts(
-                ast::make<ast::While>(1,
-                    ast::make<ast::RelExpr>(
-                        ast::RelOp::LT,
-                        ast::make<ast::Var>("x"),
-                        ast::make<ast::Const>(420)
-                    ),
-                    ast::makeStmts(
-                        ast::make<ast::While>(
-                            2,
-                            ast::make<ast::RelExpr>(
-                                ast::RelOp::GT,
-                                ast::make<ast::Var>("x"),
-                                ast::make<ast::Const>(69)
-                            ),
-                            ast::makeStmts(
-                                ast::make<ast::Assign>(
-                                    3,
-                                    ast::make<ast::Var>("x"), 
-                                    ast::make<ast::BinExpr>(
-                                        ast::BinOp::PLUS, 
-                                        ast::make<ast::Var>("x"), 
-                                        ast::make<ast::Const>(1)
-                                    )
-                                ),
-                                ast::make<ast::Print>(4, ast::make<ast::Var>("x"))
-                            )
+        // Manual AST construction for the code above
+        auto ast = ast::makeProgram(
+            ast::make<ast::Procedure>(
+                "test",
+                ast::makeStmts(
+                    ast::make<ast::While>(1,
+                        ast::make<ast::RelExpr>(
+                            ast::RelOp::LT,
+                            ast::make<ast::Var>("x"),
+                            ast::make<ast::Const>(420)
                         ),
-                        ast::make<ast::Read>(5, ast::make<ast::Var>("x")),
-                        ast::make<ast::Call>(6, "monke"),
-                        ast::make<ast::If>(
-                            7,
-                            ast::make<ast::RelExpr>(
-                                ast::RelOp::EQ,
-                                ast::make<ast::Var>("x"),
-                                ast::make<ast::Const>(369)
+                        ast::makeStmts(
+                            ast::make<ast::While>(
+                                2,
+                                ast::make<ast::RelExpr>(
+                                    ast::RelOp::GT,
+                                    ast::make<ast::Var>("x"),
+                                    ast::make<ast::Const>(69)
+                                ),
+                                ast::makeStmts(
+                                    ast::make<ast::Assign>(
+                                        3,
+                                        ast::make<ast::Var>("x"), 
+                                        ast::make<ast::BinExpr>(
+                                            ast::BinOp::PLUS, 
+                                            ast::make<ast::Var>("x"), 
+                                            ast::make<ast::Const>(1)
+                                        )
+                                    ),
+                                    ast::make<ast::Print>(4, ast::make<ast::Var>("x"))
+                                )
                             ),
-                            ast::makeStmts(
-                                ast::make<ast::Read>(8, ast::make<ast::Var>("x"))
-                            ),
-                            ast::makeStmts(
-                                ast::make<ast::Print>(9, ast::make<ast::Var>("x"))
+                            ast::make<ast::Read>(5, ast::make<ast::Var>("x")),
+                            ast::make<ast::Call>(6, "monke"),
+                            ast::make<ast::If>(
+                                7,
+                                ast::make<ast::RelExpr>(
+                                    ast::RelOp::EQ,
+                                    ast::make<ast::Var>("x"),
+                                    ast::make<ast::Const>(369)
+                                ),
+                                ast::makeStmts(
+                                    ast::make<ast::Read>(8, ast::make<ast::Var>("x"))
+                                ),
+                                ast::makeStmts(
+                                    ast::make<ast::Print>(9, ast::make<ast::Var>("x"))
+                                )
                             )
                         )
-                    )
-                ),
-                ast::make<ast::Read>(10, ast::make<ast::Var>("x"))
+                    ),
+                    ast::make<ast::Read>(10, ast::make<ast::Var>("x"))
+                )
+            ),
+            ast::make<ast::Procedure>(
+                "monke", 
+                ast::makeStmts(
+                    ast::make<ast::Read>(1, ast::make<ast::Var>("y"))
+                )
             )
         );
+
+        CFGExtractor extractor;
+        auto result = extractor.extract(ast.get());
+        
+        REQUIRE(*result.find("test")->second == *dummyNode1);
+        REQUIRE(*result.find("monke")->second == *dummyNode3);
     }
+
 }
 }  // namespace cfg
 }  // namespace sp

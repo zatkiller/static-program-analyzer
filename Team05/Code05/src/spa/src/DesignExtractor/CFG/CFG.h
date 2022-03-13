@@ -39,10 +39,13 @@ class CFGExtractor: public design_extractor::TreeWalker {
 private:
     std::map<std::string, std::shared_ptr<CFGNode>> procNameAndRoot;
     std::shared_ptr<CFGNode> lastVisited;
-    bool isWhile;  // to indicate if we are currently in a while loop
-    int isIf;  // to take 0, 1 (allows 1st enterContainer) or 2 (allows 2nd enterContainer)
+    int containerCount = 0;  // keeps track of # of containers/stmtLst to enter for if or while stmts
     Bucket bucket;
+    Bucket exitReference;
     Depth currentDepth = 0;
+    void enterBucket(std::shared_ptr<CFGNode> node) {
+        bucket.insert_or_assign(currentDepth, node);
+    }
 public:
     void visit(const ast::Procedure& node) override;
     void visit(const ast::If& node) override;
@@ -53,6 +56,7 @@ public:
     void visit(const ast::Call& node) override;
     void enterContainer(std::variant<int, std::string> containerId) override;
     void exitContainer() override;
+    std::map<std::string, std::shared_ptr<CFGNode>> extract(ast::ASTNode* node);
 };
 }  // namespace cfg
 }  // namespace sp
