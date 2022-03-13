@@ -69,9 +69,9 @@ void CFGExtractor::visit(const ast::If& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::If);
     lastVisited->insert(newNode);
     lastVisited = newNode;
-    // Whenever you enter an if ... then or else stmtLst, parent node should be the If node.
+    // Whenever you enter an If/Else stmtLst, parent node should be the If node.
     enterBucket(newNode);
-    // When you exit an if stmtLst, you need to point to a dummy exit node
+    // When you exit an If/Else stmtLst, the last statement should point to a dummy exit node.
     auto dummyExitNode = std::make_shared<CFGNode>();
     exitReference.insert_or_assign(currentDepth, dummyExitNode);
 }
@@ -83,7 +83,7 @@ void CFGExtractor::visit(const ast::While& node) {
     lastVisited = newNode;
     // When you enter a While stmtLst, the parent node should be the While node.
     enterBucket(newNode);
-    // When you exit a While container, you need to point back to the While node.
+    // When you exit a While container, the last statement should point to the While node.
     exitReference.insert_or_assign(currentDepth, newNode);
 }
 
@@ -116,18 +116,26 @@ void CFGExtractor::visit(const ast::Call& node) {
 }
 
 void CFGExtractor::enterContainer(std::variant<int, std::string> containerId) {
+    // if it is an If/While statement list
     if (containerCount) {
-        lastVisited = bucket.find(currentDepth)->second;
+        // the lastVisited node should be the If/While statement itself
+        lastVisited = bucket.at(currentDepth);
     }
     currentDepth++;
 }
 
 void CFGExtractor::exitContainer() {
     currentDepth--;
+    // if it is an If/While statement list
     if (containerCount) {
         containerCount--;
-        lastVisited->insert(exitReference.find(currentDepth)->second);
-        lastVisited = exitReference.find(currentDepth)->second;
+        /* 
+        the lastVisited node should point to
+        1. If: dummy exit node
+        2. While: While statement itself
+        */
+        lastVisited->insert(exitReference.at(currentDepth));
+        lastVisited = exitReference.at(currentDepth);
     }
 }
 

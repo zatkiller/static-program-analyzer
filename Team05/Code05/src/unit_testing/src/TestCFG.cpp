@@ -26,9 +26,9 @@ TEST_CASE("CFG Test") {
     auto node10 = std::make_shared<CFGNode>(10, StatementType::Read);
     auto node11 = std::make_shared<CFGNode>(10, StatementType::Read);
 
-    auto dummyNode1 = std::make_shared<CFGNode>();
+    auto testCFGRoot = std::make_shared<CFGNode>();
     auto dummyNode2 = std::make_shared<CFGNode>();
-    auto dummyNode3 = std::make_shared<CFGNode>();
+    auto monkeCFGRoot = std::make_shared<CFGNode>();
 
     /*
     procedure test {
@@ -55,7 +55,7 @@ TEST_CASE("CFG Test") {
     }
     */
 
-    dummyNode1->insert(node1);
+    testCFGRoot->insert(node1);
     node1->insert(node2);
     node2->insert(node3);
     node3->insert(node4);
@@ -70,7 +70,7 @@ TEST_CASE("CFG Test") {
     dummyNode2->insert(node1);
     node1->insert(node10);
 
-    dummyNode3->insert(node11);
+    monkeCFGRoot->insert(node11);
 
     SECTION("Equals Test") {
         // Same as node1
@@ -93,7 +93,7 @@ TEST_CASE("CFG Test") {
 
     SECTION("Traversal Test") {
         // Testing parent and ancestor relationships for the first procedure in the code
-        REQUIRE(dummyNode1->isParentOf(node1.get()));
+        REQUIRE(testCFGRoot->isParentOf(node1.get()));
         REQUIRE(node1->isParentOf(node2.get()));
         REQUIRE(node2->isParentOf(node3.get()));
         REQUIRE(node3->isParentOf(node4.get()));
@@ -125,7 +125,7 @@ TEST_CASE("CFG Test") {
         REQUIRE_FALSE(node8->isParentOf(node9.get()));
         REQUIRE_FALSE(node9->isParentOf(node8.get()));
 
-        REQUIRE(dummyNode1->isAncestorOf(node1.get()));
+        REQUIRE(testCFGRoot->isAncestorOf(node1.get()));
         REQUIRE(node1->isAncestorOf(node2.get()));
         REQUIRE(node2->isAncestorOf(node3.get()));
         REQUIRE(node3->isAncestorOf(node4.get()));
@@ -250,8 +250,8 @@ TEST_CASE("CFG Test") {
         CFGExtractor extractor;
         auto result = extractor.extract(ast.get());
         
-        REQUIRE(*result.find("test")->second == *dummyNode1);
-        REQUIRE(*result.find("monke")->second == *dummyNode3);
+        REQUIRE(*result.at("test") == *testCFGRoot);
+        REQUIRE(*result.at("monke") == *monkeCFGRoot);
     }
 }
 }  // namespace cfg

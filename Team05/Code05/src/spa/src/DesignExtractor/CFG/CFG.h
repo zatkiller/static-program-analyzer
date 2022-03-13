@@ -21,7 +21,7 @@ private:
     std::vector<std::shared_ptr<CFGNode>> children;
 public:
     CFGNode () : stmt(std::nullopt) {}
-    explicit CFGNode(int stmtNo, StatementType stmtType) : stmt(STMT_LO(stmtNo, stmtType)) {}
+    CFGNode(int stmtNo, StatementType stmtType) : stmt(STMT_LO(stmtNo, stmtType)) {}
 
     void insert(std::shared_ptr<CFGNode> child);
     bool isParentOf(CFGNode* other);
@@ -35,6 +35,20 @@ public:
 using Depth = int;
 using Bucket = std::unordered_map<Depth, std::shared_ptr<CFGNode>>;
 
+/**
+ * @brief Class that extracts a CFG (CFGNode) from AST (ASTNode).
+ * @details The extractor does a pre-order walk of the tree. 
+ * The root of the CFG for each procedure is always a dummy node.
+ * Entrance and exit nodes for if and while statements at different nesting levels are kept track of 
+ * with two buckets, bucket and exitReference.
+ * bucket keeps track of the starting node of each stmtLst.
+ * exitReference keeps track of the exit node of each stmtLst.
+ * The If node will always split into two different paths of execution and converge into a dummy node,
+ * and subsequent statements will point from the dummy node.
+ * The While node will always lead down the path of execution and point back to the parent While node,
+ * and subsequent statements will point from the While node.
+ * The ::extract() method will return a map of procedure names to their respective CFGs.
+ */
 class CFGExtractor: public design_extractor::TreeWalker {
 private:
     std::map<std::string, std::shared_ptr<CFGNode>> procNameAndRoot;
