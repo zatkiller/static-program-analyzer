@@ -476,6 +476,6 @@ namespace qps::query {
     void AttrCompare::validateComparingTypes() {
         if (!lhs.validComparison(rhs))
             throw exceptions::PqlSemanticException(messages::qps::parser::incompatibleComparisonMessage);
-    };
+    }
 
 }  // namespace qps::query

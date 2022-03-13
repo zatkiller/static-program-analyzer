@@ -120,7 +120,8 @@ TEST_CASE("Lexer peekNextToken") {
 }
 
 TEST_CASE("Lexer getNextReservedToken") {
-    Lexer lexer("Select Modifies Uses Follows Follows* Parent Parent* Next Next* Calls Calls* pattern such that with");
+    Lexer lexer("Select Modifies Uses Follows Follows* Parent Parent* Next Next* Calls Calls* pattern such that with "
+                "and");
 
     auto t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::SELECT);
@@ -177,6 +178,10 @@ TEST_CASE("Lexer getNextReservedToken") {
     t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::WITH);
     REQUIRE(t1.getText() == "with");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::AND);
+    REQUIRE(t1.getText() == "and");
 }
 
 TEST_CASE("Lexer peekNextReservedToken") {
