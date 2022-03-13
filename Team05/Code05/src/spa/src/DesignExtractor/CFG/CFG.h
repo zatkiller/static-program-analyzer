@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 #include "PKB/PKBField.h"
 #include "DesignExtractor/Extractor.h"
@@ -20,7 +21,7 @@ private:
     std::vector<std::shared_ptr<CFGNode>> children;
 public:
     CFGNode () : stmt(std::nullopt) {}
-    explicit CFGNode(int stmtNo) : stmt(STMT_LO(stmtNo)) {}
+    CFGNode(int stmtNo, StatementType stmtType) : stmt(STMT_LO(stmtNo, stmtType)) {}
 
     void insert(std::shared_ptr<CFGNode> child);
     bool isParentOf(CFGNode* other);
@@ -31,19 +32,45 @@ public:
     std::vector<std::shared_ptr<CFGNode>> getChildren() { return children; }
 };
 
-// TODO(NayLin-H99): AST to CFG construction
-// class CFGExtractor: public TreeWalker {
-//     void visit(const ast::Program& node) override;
-//     void visit(const ast::Procedure& node) override;
-//     void visit(const ast::StmtLst& node) override;
-//     void visit(const ast::If& node) override;
-//     void visit(const ast::While& node) override;
-//     void visit(const ast::Read& node) override;
-//     void visit(const ast::Print& node) override;
-//     void visit(const ast::Assign& node) override;
-//     void visit(const ast::Call&) override;
-//     void enterContainer(std::variant<int, std::string> containerId) override;
-//     void exitContainer() override;
-// }
+using Depth = int;
+using Bucket = std::unordered_map<Depth, std::shared_ptr<CFGNode>>;
+
+/**
+ * @brief Class that extracts a CFG (CFGNode) from AST (ASTNode).
+ * @details The extractor does a pre-order walk of the tree. 
+ * The root of the CFG for each procedure is always a dummy node.
+ * Entrance and exit nodes for if and while statements at different nesting levels are kept track of 
+ * with two buckets, bucket and exitReference.
+ * bucket keeps track of the starting node of each stmtLst.
+ * exitReference keeps track of the exit node of each stmtLst.
+ * The If node will always split into two different paths of execution and converge into a dummy node,
+ * and subsequent statements will point from the dummy node.
+ * The While node will always lead down the path of execution and point back to the parent While node,
+ * and subsequent statements will point from the While node.
+ * The extract() method will return a map of procedure names to their respective CFGs.
+ */
+class CFGExtractor: public design_extractor::TreeWalker {
+private:
+    std::map<std::string, std::shared_ptr<CFGNode>> procNameAndRoot;
+    std::shared_ptr<CFGNode> lastVisited;
+    int containerCount = 0;  // keeps track of # of containers/stmtLst to enter for if or while stmts
+    Bucket bucket;
+    Bucket exitReference;
+    Depth currentDepth = 0;
+    void enterBucket(std::shared_ptr<CFGNode> node) {
+        bucket.insert_or_assign(currentDepth, node);
+    }
+public:
+    void visit(const ast::Procedure& node) override;
+    void visit(const ast::If& node) override;
+    void visit(const ast::While& node) override;
+    void visit(const ast::Read& node) override;
+    void visit(const ast::Print& node) override;
+    void visit(const ast::Assign& node) override;
+    void visit(const ast::Call& node) override;
+    void enterContainer(std::variant<int, std::string> containerId) override;
+    void exitContainer() override;
+    std::map<std::string, std::shared_ptr<CFGNode>> extract(ast::ASTNode* node);
+};
 }  // namespace cfg
 }  // namespace sp
