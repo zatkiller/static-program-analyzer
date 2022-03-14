@@ -6,6 +6,41 @@
 
 namespace sp {
 namespace design_extractor {
+
+using Entity = Content;
+using Relationship = std::tuple<PKBRelationship, Content, Content>;
+using Entry = std::variant<Entity, Relationship>;
+
+struct IExtractor {
+    virtual std::set<Entry> extract(const ast::ASTNode*) { 
+        return std::set<Entry>(); 
+    };
+    virtual inline ~IExtractor() {};
+};
+
+class PKBInserter {
+private:
+    PKBStrategy *pkb;
+public:
+    PKBInserter(PKBStrategy *pkb) : pkb(pkb) {};
+    void insert(Entry entry);
+};
+
+class ExtractorModule {
+private:
+    std::unique_ptr<IExtractor> extractor;
+    PKBInserter inserter;
+public:
+    ExtractorModule(std::unique_ptr<IExtractor> extractor, PKBStrategy *pkb) : extractor(std::move(extractor)), inserter(pkb) {};
+    void extract(const ast::ASTNode *node) {
+        auto entries = extractor->extract(node);
+        for (auto &entry : entries) {
+            inserter.insert(entry);
+        }
+    }
+};
+
+
 /**
  * A foundation for all design extractor. Performs depth-first traversal on the AST and do nothing.
  * Children classes can inherit this class and override the specific methods that they want to perform

@@ -29,7 +29,7 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 namespace sp {
 namespace de = design_extractor;
 
-using de::VariableExtractor;
+using de::VariableExtractorModule;
 using de::StatementExtractor;
 using de::ConstExtractor;
 using de::ProcedureExtractor;
@@ -135,7 +135,7 @@ namespace ast {
                 make<Print>(3, make<Var>("v3"))
             );
             auto whileBlk = make<While>(1, std::move(relExpr), std::move(stmtlst));
-            auto ve = std::make_unique<VariableExtractor>(&pkbStrategy);
+            auto ve = std::make_unique<VariableExtractorModule>(&pkbStrategy);
             ve->extract(whileBlk.get());
             // variable extractions
             
@@ -191,7 +191,7 @@ namespace ast {
             auto program = makeProgram(std::move(procedure));
 
             SECTION("Variable extractor test") {
-                auto ve = std::make_unique<VariableExtractor>(&pkbStrategy);
+                auto ve = std::make_unique<VariableExtractorModule>(&pkbStrategy);
                 ve->extract(program.get());
 
                 std::set<Content> expectedVars = {

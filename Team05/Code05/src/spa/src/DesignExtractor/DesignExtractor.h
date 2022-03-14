@@ -24,7 +24,7 @@ private:
 public:
     explicit DesignExtractor(PKBStrategy* pkbStrategy) : pkbStrategy(pkbStrategy) {
         extractors.push_back(std::make_shared<StatementExtractor>(pkbStrategy));
-        extractors.push_back(std::make_shared<VariableExtractor>(pkbStrategy));
+        // extractors.push_back(std::make_shared<VariableExtractorModule>(pkbStrategy));
         extractors.push_back(std::make_shared<ConstExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<ProcedureExtractor>(pkbStrategy));
         extractors.push_back(std::make_shared<ModifiesExtractor>(pkbStrategy));

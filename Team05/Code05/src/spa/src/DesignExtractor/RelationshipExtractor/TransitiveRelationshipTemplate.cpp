@@ -78,8 +78,8 @@ struct CallGraphPreProcessor {
 
 std::set<VAR_NAME> RelExtractorTemplate::extractVars(const ast::ASTNode *part) {
     VariablePKBStrategy vps;
-    auto ve = std::make_unique<VariableExtractor>(&vps);
-    part->accept(ve.get());
+    VariableExtractorModule vem(&vps);
+    vem.extract(part);
 
     return vps.variables;
 }
