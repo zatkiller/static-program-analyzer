@@ -65,9 +65,9 @@ TEST_CASE("test simple source code") {
     ptr1->parent = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
     ptr1->child = qps::query::StmtRef::ofLineNo(10);
     query1.addSuchthat(ptr1);
-    query1.addPattern(qps::query::Pattern{"a",
+    query1.addPattern(qps::query::Pattern::ofAssignPattern("a",
                                           qps::query::EntRef::ofVarName("x"),
-                                          qps::query::ExpSpec::ofWildcard()});
+                                          qps::query::ExpSpec::ofWildcard()));
 
     std::list<std::string> result1 = evaluator1.evaluate(query1);
     result1.sort();
@@ -85,9 +85,9 @@ TEST_CASE("test simple source code") {
     ptr2->useStmt = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
     ptr2->used = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
     query2.addSuchthat(ptr2);
-    query2.addPattern(qps::query::Pattern{"a",
+    query2.addPattern(qps::query::Pattern::ofAssignPattern("a",
                                           qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE),
-                                          qps::query::ExpSpec::ofWildcard()});
+                                          qps::query::ExpSpec::ofWildcard()));
     std::list<std::string> result2 = evaluator2.evaluate(query2);
     result2.sort();
     printEvaluatorResult(result2);
@@ -106,9 +106,9 @@ TEST_CASE("test evaluate pattern") {
     query1.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
     query1.addDeclaration("s", qps::query::DesignEntity::STMT);
     query1.addVariable("s");
-    query1.addPattern(qps::query::Pattern{"a",
+    query1.addPattern(qps::query::Pattern::ofAssignPattern("a",
                                           qps::query::EntRef::ofVarName("sum"),
-                                          qps::query::ExpSpec::ofWildcard()});
+                                          qps::query::ExpSpec::ofWildcard()));
     std::list<std::string> result1 = evaluator1.evaluate(query1);
     result1.sort();
     printEvaluatorResult(result1);
@@ -121,9 +121,9 @@ TEST_CASE("test evaluate pattern") {
     query2.addDeclaration("s", qps::query::DesignEntity::STMT);
     query2.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
     query2.addVariable("s");
-    query2.addPattern(qps::query::Pattern{"a",
+    query2.addPattern(qps::query::Pattern::ofAssignPattern("a",
                                           qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE),
-                                          qps::query::ExpSpec::ofWildcard()});
+                                          qps::query::ExpSpec::ofWildcard()));
     std::list<std::string> result2 = evaluator2.evaluate(query2);
     result2.sort();
     printEvaluatorResult(result2);
@@ -135,9 +135,9 @@ TEST_CASE("test evaluate pattern") {
     query3.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
     query3.addDeclaration("s", qps::query::DesignEntity::STMT);
     query3.addVariable("a");
-    query3.addPattern(qps::query::Pattern{"a",
+    query3.addPattern(qps::query::Pattern::ofAssignPattern("a",
                                           qps::query::EntRef::ofWildcard(),
-                                          qps::query::ExpSpec::ofWildcard()});
+                                          qps::query::ExpSpec::ofWildcard()));
     std::list<std::string> result3 = evaluator3.evaluate(query3);
     result3.sort();
     printEvaluatorResult(result3);
@@ -148,9 +148,9 @@ TEST_CASE("test evaluate pattern") {
     qps::query::Query query4{};
     query4.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
     query4.addVariable("a");
-    query4.addPattern(qps::query::Pattern{"a",
+    query4.addPattern(qps::query::Pattern::ofAssignPattern("a",
                                           qps::query::EntRef::ofWildcard(),
-                                          qps::query::ExpSpec::ofPartialMatch("number")});
+                                          qps::query::ExpSpec::ofPartialMatch("number")));
     std::list<std::string> result4 = evaluator4.evaluate(query4);
     result4.sort();
     printEvaluatorResult(result4);
@@ -161,9 +161,9 @@ TEST_CASE("test evaluate pattern") {
     qps::query::Query query5{};
     query5.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
     query5.addVariable("a");
-    query5.addPattern(qps::query::Pattern{"a",
+    query5.addPattern(qps::query::Pattern::ofAssignPattern("a",
                                           qps::query::EntRef::ofVarName("x"),
-                                          qps::query::ExpSpec::ofPartialMatch("number")});
+                                          qps::query::ExpSpec::ofPartialMatch("number")));
     std::list<std::string> result5 = evaluator5.evaluate(query5);
     result5.sort();
     printEvaluatorResult(result5);
@@ -175,9 +175,9 @@ TEST_CASE("test evaluate pattern") {
     query6.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
     query6.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
     query6.addVariable("v");
-    query6.addPattern(qps::query::Pattern{"a",
+    query6.addPattern(qps::query::Pattern::ofAssignPattern("a",
                                           qps::query::EntRef::ofVarName("digit"),
-                                          qps::query::ExpSpec::ofPartialMatch("number")});
+                                          qps::query::ExpSpec::ofPartialMatch("number")));
     std::list<std::string> result6 = evaluator6.evaluate(query6);
     result6.sort();
     printEvaluatorResult(result6);
@@ -193,9 +193,9 @@ TEST_CASE("test evaluate pattern") {
     ptr7->follower = qps::query::StmtRef::ofLineNo(1);
     ptr7->transitiveFollowed = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
     query7.addSuchthat(ptr7);
-    query7.addPattern(qps::query::Pattern{"a",
+    query7.addPattern(qps::query::Pattern::ofAssignPattern("a",
                                           qps::query::EntRef::ofVarName("sum"),
-                                          qps::query::ExpSpec::ofWildcard()});
+                                          qps::query::ExpSpec::ofWildcard()));
     std::list<std::string> result7 = evaluator7.evaluate(query7);
     result7.sort();
     printEvaluatorResult(result7);
@@ -212,9 +212,9 @@ TEST_CASE("test evaluate pattern") {
     ptr8->parent = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
     ptr8->child = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
     query8.addSuchthat(ptr8);
-    query8.addPattern(qps::query::Pattern{"a",
+    query8.addPattern(qps::query::Pattern::ofAssignPattern("a",
                                           qps::query::EntRef::ofVarName("digit"),
-                                          qps::query::ExpSpec::ofWildcard()});
+                                          qps::query::ExpSpec::ofWildcard()));
     std::list<std::string> result8 = evaluator8.evaluate(query8);
     result8.sort();
     printEvaluatorResult(result8);
