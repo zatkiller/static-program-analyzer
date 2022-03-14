@@ -11,11 +11,11 @@ bool STMT_LO::operator < (const STMT_LO& other) const {
     return std::tie(type, statementNum) < std::tie(other.type, other.statementNum);
 }
 
-bool STMT_LO::hasStatementType() {
+bool STMT_LO::hasStatementType() const {
     return type.has_value();
 }
 
-bool STMT_LO::hasAttribute() {
+bool STMT_LO::hasAttribute() const {
     return attribute.has_value();
 }
 
@@ -67,7 +67,7 @@ bool PKBField::isValidConcrete(PKBEntityType type) {
     if (entityType == PKBEntityType::STATEMENT) {
         if (content.index() != 1) return false;
 
-        STMT_LO* stmt = getContent<STMT_LO>();
+        auto stmt = getContent<STMT_LO>();
         if (!stmt->hasStatementType()) return false;
         if (stmt->type.value() == StatementType::All) return false;
     }

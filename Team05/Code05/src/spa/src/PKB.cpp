@@ -55,8 +55,8 @@ void PKB::insertAST(std::unique_ptr<sp::ast::Program> root) {
     this->root = std::move(root);
 }
 
-bool PKB::validate(PKBField* field) {
-    switch (field->entityType) {
+bool PKB::validate(const PKBField field) const {
+    switch (field.entityType) {
     case PKBEntityType::VARIABLE:
         return validateVariable(field);
     case PKBEntityType::PROCEDURE:
@@ -68,9 +68,9 @@ bool PKB::validate(PKBField* field) {
     }
 }
 
-bool PKB::validateVariable(PKBField* field) {
-    if (field->fieldType == PKBFieldType::CONCRETE) {
-        auto content = field->getContent<VAR_NAME>();
+bool PKB::validateVariable(const PKBField field) const {
+    if (field.fieldType == PKBFieldType::CONCRETE) {
+        auto content = field.getContent<VAR_NAME>();
         auto varName = content->name;
         return variableTable->contains(varName);
     }
@@ -78,9 +78,9 @@ bool PKB::validateVariable(PKBField* field) {
     return true;
 }
 
-bool PKB::validateProcedure(PKBField* field) {
-    if (field->fieldType == PKBFieldType::CONCRETE) {
-        auto content = field->getContent<PROC_NAME>();
+bool PKB::validateProcedure(const PKBField field) const {
+    if (field.fieldType == PKBFieldType::CONCRETE) {
+        auto content = field.getContent<PROC_NAME>();
         auto varName = content->name;
         return procedureTable->contains(varName);
     }
@@ -88,9 +88,9 @@ bool PKB::validateProcedure(PKBField* field) {
     return true;
 }
 
-bool PKB::validateStatement(PKBField* field) {
-    if (field->fieldType == PKBFieldType::CONCRETE) {
-        auto content = field->getContent<STMT_LO>();
+bool PKB::validateStatement(const PKBField field) const {
+    if (field.fieldType == PKBFieldType::CONCRETE) {
+        auto content = field.getContent<STMT_LO>();
         auto statementNum = content->statementNum;
         auto statementType = content->type;
         auto attribute = content->attribute;
@@ -102,22 +102,28 @@ bool PKB::validateStatement(PKBField* field) {
 
         auto stmt = stmts.at(0);
 
-        if (!statementType.has_value() || statementType == StatementType::All) {
-            statementType = stmt.type;
-        } else {
-            if (statementType != stmt.type) {
-                return false;
-            }
+        if (statementType.has_value() && statementType.value() != StatementType::All) {
+            return statementType == stmt.type;
         }
 
-        // no relationship API will provide a STMT_LO with an attribute
-        attribute = stmt.attribute;
-        field->content = attribute.has_value() ?
-            STMT_LO{ statementNum, statementType.value(), attribute.value() } :
-            STMT_LO{ statementNum, statementType.value() };
+        //// no relationship API will provide a STMT_LO with an attribute
+        //attribute = stmt.attribute;
+        //field.content = attribute.has_value() ?
+        //    STMT_LO{ statementNum, statementType.value(), attribute.value() } :
+        //    STMT_LO{ statementNum, statementType.value() };
     }
 
     return true;
+}
+
+void PKB::appendStatementInformation(PKBField* field) {
+    if (field->fieldType == PKBFieldType::CONCRETE && field->entityType == PKBEntityType::STATEMENT) {
+        auto content = field->getContent<STMT_LO>();
+        auto statementNum = content->statementNum;
+        auto stmts = statementTable->getStmts(statementNum);
+        auto stmt = stmts.at(0);
+        field->content = stmt;
+    }
 }
 
 void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField field2) {
@@ -127,9 +133,12 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
         return;
     }
 
-    if (!validate(&field1) || !validate(&field2)) {
+    if (!validate(field1) || !validate(field2)) {
         return;
     }
+
+    appendStatementInformation(&field1);
+    appendStatementInformation(&field2);
 
     switch (type) {
     case PKBRelationship::MODIFIES:
@@ -160,9 +169,12 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
         return false;
     }
 
-    if (!validate(&field1) || !validate(&field2)) {
+    if (!validate(field1) || !validate(field2)) {
         return false;
     }
+
+    appendStatementInformation(&field1);
+    appendStatementInformation(&field2);
 
     switch (rs) {
     case PKBRelationship::MODIFIES:
@@ -194,9 +206,12 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
 // GET API
 
 PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationship rs) {
-    if (!validate(&field1) || !validate(&field2)) {
+    if (!validate(field1) || !validate(field2)) {
         return PKBResponse{ false, FieldRowResponse{} };
     }
+
+    appendStatementInformation(&field1);
+    appendStatementInformation(&field2);
 
     FieldRowResponse extracted;
 

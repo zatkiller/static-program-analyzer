@@ -44,8 +44,8 @@ typedef struct STMT_LO {
     std::optional<StatementType> type;
     std::optional<std::string> attribute;
 
-    bool hasStatementType();
-    bool hasAttribute();
+    bool hasStatementType() const;
+    bool hasAttribute() const;
     bool operator == (const STMT_LO&) const;
     bool operator < (const STMT_LO&) const;
 } STMT_LO;
@@ -109,7 +109,7 @@ struct PKBField {
     * equal to T, a nullptr is returned.
     */
     template <typename T>
-    T* getContent() {
+    const T* getContent() const {
         if (fieldType == PKBFieldType::CONCRETE) {
             return std::get_if<T>(&content);
         }

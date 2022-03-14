@@ -166,7 +166,7 @@ private:
     * @param field
     * @return bool
     */
-    bool validate(PKBField* field);
+    bool validate(const PKBField field) const;
 
     /**
     * Checks whether a variable PKBField is valid. If the field is concrete, check if it is in VariableTable.
@@ -174,7 +174,7 @@ private:
     * @param field
     * @return bool
     */
-    bool validateVariable(PKBField* field);
+    bool validateVariable(const PKBField field) const;
 
     /**
     * Checks whether a procedure PKBField is valid. If the field is concrete, check if it is in ProcedureTable.
@@ -182,7 +182,7 @@ private:
     * @param field
     * @return bool
     */
-    bool validateProcedure(PKBField* field);
+    bool validateProcedure(const PKBField field) const;
 
     /**
     * Checks whether a statement PKBField is valid. If the field is concrete, for all the provided fields
@@ -192,5 +192,7 @@ private:
     * @param field
     * @return bool
     */
-    bool validateStatement(PKBField* field);
+    bool validateStatement(const PKBField field) const;
+
+    void appendStatementInformation(PKBField* field);
 };
