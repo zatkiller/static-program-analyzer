@@ -221,12 +221,19 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
         REQUIRE(pkb->isRelationshipPresent(PKBField::createConcrete(STMT_LO{ 1 }), stmt3,
             PKBRelationship::FOLLOWST));
         REQUIRE(pkb->isRelationshipPresent(PKBField::createConcrete(STMT_LO{ 1 }),
-            PKBField::createConcrete(STMT_LO{ 2 }),
+            PKBField::createConcrete(STMT_LO{ 2 }), PKBRelationship::FOLLOWS));
+
+        // Concrete statement will All type will be converted by PKB::appendStatementInformation
+        REQUIRE(pkb->isRelationshipPresent(PKBField::createConcrete(STMT_LO{ 1, StatementType::All}), stmt2,
             PKBRelationship::FOLLOWS));
 
         REQUIRE_FALSE(pkb->isRelationshipPresent(stmt5, stmt6, PKBRelationship::FOLLOWS));
         REQUIRE_FALSE(pkb->isRelationshipPresent(stmt8, stmt9, PKBRelationship::FOLLOWS));
         REQUIRE_FALSE(pkb->isRelationshipPresent(Example, stmt9, PKBRelationship::FOLLOWS));
+
+        // Concrete statements with wrong types will be caught by PKB::validateStatement
+        REQUIRE_FALSE(pkb->isRelationshipPresent(PKBField::createConcrete(STMT_LO{ 1, StatementType::Read}), stmt2,
+            PKBRelationship::FOLLOWS));
 
         // Invalid 
         REQUIRE_FALSE(pkb->isRelationshipPresent(PKBField::createWildcard(PKBEntityType::STATEMENT),

@@ -102,15 +102,12 @@ bool PKB::validateStatement(const PKBField field) const {
 
         auto stmt = stmts.at(0);
 
-        if (statementType.has_value() && statementType.value() != StatementType::All) {
+        // If provided STMT_LO has a type, check if it is equivalent to the one in the table
+        // StatementTypes of All or None will be updated to the correct one in the table by appendStatementInformation
+        if (statementType.has_value() && statementType.value() != StatementType::All && 
+            statementType.value() != StatementType::None) {
             return statementType == stmt.type;
         }
-
-        //// no relationship API will provide a STMT_LO with an attribute
-        //attribute = stmt.attribute;
-        //field.content = attribute.has_value() ?
-        //    STMT_LO{ statementNum, statementType.value(), attribute.value() } :
-        //    STMT_LO{ statementNum, statementType.value() };
     }
 
     return true;

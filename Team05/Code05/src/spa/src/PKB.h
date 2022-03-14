@@ -194,5 +194,11 @@ private:
     */
     bool validateStatement(const PKBField field) const;
 
+    /**
+    * For concrete statement fields, replace its STMT_LO content with the one in the StatementTable. This function will
+    * only run after PKB::validate and PKB::validateStatement return true.
+    * 
+    * @param field
+    */
     void appendStatementInformation(PKBField* field);
 };
