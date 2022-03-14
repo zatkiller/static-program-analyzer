@@ -99,17 +99,17 @@ TEST_CASE("StatementTable") {
     REQUIRE(stmtTable->getAllEntity() == std::vector<STMT_LO>());
 
     STMT_LO stmt1{ 1, StatementType::Assignment };
-    STMT_LO stmt2{ 2, StatementType::Call };
-    STMT_LO stmt3{ 3, StatementType::Print };
+    STMT_LO stmt2{ 2, StatementType::Call, "foo" };
+    STMT_LO stmt3{ 3, StatementType::Print, "x" };
     STMT_LO stmt4{ 4, StatementType::Assignment };
 
-    STMT_LO stmt5{ 5, StatementType::Read };
+    STMT_LO stmt5{ 5, StatementType::Read, "y" };
     STMT_LO stmt6{ 3, StatementType::If };
-    STMT_LO stmt7{ 4, StatementType::Print };
+    STMT_LO stmt7{ 4, StatementType::Print, "z" };
 
     stmtTable->insert(StatementType::Assignment, 1);
-    stmtTable->insert(StatementType::Call, 2);
-    stmtTable->insert(StatementType::Print, 3);
+    stmtTable->insert(StatementType::Call, 2, "foo");
+    stmtTable->insert(StatementType::Print, 3, "x");
     stmtTable->insert(StatementType::Assignment, 4);
 
     REQUIRE(stmtTable->contains(1));

@@ -46,6 +46,23 @@ void StatementTable::insert(StatementType stmtType, int stmtNum) {
     }
 }
 
+void StatementTable::insert(StatementType stmtType, int stmtNum, std::string attribute) {
+    if (!contains(stmtNum)) {
+        insertVal(STMT_LO(stmtNum, stmtType, attribute));
+    }
+}
+
+std::vector<STMT_LO> StatementTable::getStmts(int statementNumber) const {
+    std::vector<STMT_LO> res;
+
+    for (const auto& row : rows) {
+        if (row.getVal().statementNum == statementNumber) {
+            res.push_back(row.getVal());
+        }
+    }
+    return res;
+}
+
 std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType stmtType) const {
     std::vector<STMT_LO> res;
 

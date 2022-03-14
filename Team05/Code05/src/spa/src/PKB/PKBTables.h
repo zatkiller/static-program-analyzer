@@ -144,7 +144,7 @@ class VariableTable : public EntityTable<VAR_NAME> {
 public:
     /**
     * Checks if the provided variable name is in the VariableTable
-    * 
+    *
     * @param varName The provided variable name to check
     * @returns true if the value is in the VariableTable and false otherwise
     */
@@ -152,7 +152,7 @@ public:
 
     /**
     * Inserts the provided variable name into the VariableTable
-    * 
+    *
     * @param varName The provided variable name to insert into the VariableTable
     */
     void insert(std::string varName);
@@ -165,7 +165,7 @@ class StatementTable : public EntityTable<STMT_LO> {
 public:
     /**
     * Checks if the provided statement number is in the StatementTable
-    * 
+    *
     * @param stmtNum The provided statement number to check
     * @return true if the provided statement is in the StatementTable and false otherwise
     */
@@ -174,7 +174,7 @@ public:
     /**
     * Checks if a statement matching the provided statement type and number is in
     * the StatementTable
-    * 
+    *
     * @param stmtType The provided statement type to check
     * @param stmtNum The provided statement number to check
     * @return true if the provided statement is in the StatementTable and false otherwise
@@ -182,29 +182,49 @@ public:
     bool contains(StatementType stmtType, int stmtNum) const;
 
     /**
-    * Inserts a statement with the provided statement type and statement num
+    * Inserts a (assignment, if, or while) statement with the provided statement type and statement num
     * into the StatementTable
-    * 
+    *
     * @param stmtType The provided statement type to insert
     * @param stmtNum The provided statement number to insert
     */
     void insert(StatementType stmtType, int stmtNum);
 
     /**
+    * Inserts a (call, read, or print) statement with the provided statement type and statement num and attribute
+    * into the StatementTable
+    *
+    * @param stmtType The provided statement type to insert
+    * @param stmtNum The provided statement number to insert
+    * @param attribute The provided attribute (VAR_NAME or PROC_NAME) to insert
+    */
+    void insert(StatementType stmtType, int stmtNum, std::string attribute);
+
+    /**
     * Retrieves all statements of the provided statement type
-    * 
+    *
     * @param type The provided statement type to filter for
-    * @return std::vector<STMT_LO> A vector of STMT_LOs that match the 
+    * @return std::vector<STMT_LO> A vector of STMT_LOs that match the
     *    provided statement type
     */
     std::vector<STMT_LO> getStmtOfType(StatementType type) const;
 
     /**
     * Gets the statement type of the statement at the provided statement number
-    * 
+    *
     * @param statementNum The provided statement number to look up
     * @return std::optional<StatementType> The statement type of the provided statement
     *   if it exists
     */
     std::optional<StatementType> getStmtTypeOfLine(int statementNum) const;
+
+    /**
+    * Retrieves a vector of STMT_LOs with the statement number provided. 
+    * 
+    * This method should only return an empty vector or a vector with 1 element.
+    * 
+    * @param statementNumber the provided statement number to look up
+    * @return std::vector<STMT_LO> a vector of STMT_LOs that matches the provided statement number
+    */
+    std::vector<STMT_LO> getStmts(int statementNumber) const;
 };

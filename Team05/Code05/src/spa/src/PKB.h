@@ -17,12 +17,21 @@ public:
     PKB();
 
     /**
-    * Inserts a statement information into the PKB.
+    * Inserts an assignment, if, or while statement information into the PKB.
     *
     * @param type statement type
     * @param statementNumber line number
     */
     void insertStatement(StatementType type, int statementNumber);
+
+    /**
+    * Inserts a call, read, or print statement information into the PKB.
+    *
+    * @param type statement type
+    * @param statementNumber line number
+    * @param attribute a VAR_NAME or PROC_NAME
+    */
+    void insertStatement(StatementType type, int statementNumber, std::string attribute);
 
     /**
     * Inserts a variable into the PKB.
@@ -56,14 +65,14 @@ public:
 
     /**
     * Stores the AST parsed by the source processor.
-    * 
+    *
     * @param root the pointer to the root of the AST of the SIMPLE source program
     */
     void insertAST(std::unique_ptr<sp::ast::Program> root);
 
     /**
     * Checks whether there exist. If any fields are invalid, return false. Both fields must be concrete.
-    * 
+    *
     * @param field1 the first program design entity in the relationship
     * @param field2 the second program design entity in the relationship
     * @param rs the relationship type
@@ -122,19 +131,19 @@ public:
 
     /**
     * @brief Retrieves all the statements of the provided type that satisfy the constraints given.
-    
-    * Currently it does not support strict matching like pattern a(v, "x") 
+
+    * Currently it does not support strict matching like pattern a(v, "x")
     * Only partial matching like pattern a(v, _"x+1"_) is supported. Only assignments are supported.
     *
     * For a(v, _"x+1_), use match(StatementType::Assignment, std::nullopt, "x+1")
     *
     * @param lhs The optional string constraint of LHS variable. Use std::nullopt if LHS is wildcard or synonym.
     * @param rhs The optional string constraint of RHS expression. Use std::nullopt if RHS  is wildcard.
-    * @return PKBResponse 
+    * @return PKBResponse
     */
     PKBResponse match(
-        StatementType type, 
-        sp::design_extractor::PatternParam lhs, 
+        StatementType type,
+        sp::design_extractor::PatternParam lhs,
         sp::design_extractor::PatternParam rhs
     );
 
@@ -152,12 +161,36 @@ private:
     std::unique_ptr<sp::ast::ASTNode> root;
 
     /**
-    * Check whether field is a concrete statement. Returns false if it is a
-    * concrete statement with an uninitialized statement type and its statement number is absent in
-    * the StatementTable.
+    * Checks whether a PKBField is valid for its given entity type.
     *
     * @param field
     * @return bool
     */
-    bool getStatementTypeOfConcreteField(PKBField* field);
+    bool validate(PKBField* field);
+
+    /**
+    * Checks whether a variable PKBField is valid. If the field is concrete, check if it is in VariableTable.
+    *
+    * @param field
+    * @return bool
+    */
+    bool validateVariable(PKBField* field);
+
+    /**
+    * Checks whether a procedure PKBField is valid. If the field is concrete, check if it is in ProcedureTable.
+    *
+    * @param field
+    * @return bool
+    */
+    bool validateProcedure(PKBField* field);
+
+    /**
+    * Checks whether a statement PKBField is valid. If the field is concrete, for all the provided fields
+    * (statement number, type, or attribute), check if it matches any entry in StatementTable. Append any missing
+    * fields.
+    *
+    * @param field
+    * @return bool
+    */
+    bool validateStatement(PKBField* field);
 };
