@@ -5,34 +5,51 @@
 
 namespace sp {
 namespace design_extractor {
-void StatementExtractor::visit(const ast::Read& node) {
+
+struct StatementWalker : public TreeWalker {
+    std::set<Entry> statements;
+    void visit(const ast::Read&) override;
+    void visit(const ast::Print&) override;
+    void visit(const ast::While&) override;
+    void visit(const ast::If&) override;
+    void visit(const ast::Assign&) override;
+    void visit(const ast::Call&) override;
+};
+
+std::set<Entry> StatementExtractor::extract(const ast::ASTNode* node) {
+    StatementWalker extractor;
+    node->accept(&extractor);
+    return extractor.statements;
+}
+
+void StatementWalker::visit(const ast::Read& node) {
     DEBUG_LOG << "Read Stmt " << node.getStmtNo();
-    pkb->insertEntity(STMT_LO{node.getStmtNo(), StatementType::Read});
+    statements.insert(STMT_LO{node.getStmtNo(), StatementType::Read});
 }
 
-void StatementExtractor::visit(const ast::Print& node) {
+void StatementWalker::visit(const ast::Print& node) {
     DEBUG_LOG << "Print Stmt " << node.getStmtNo();
-    pkb->insertEntity(STMT_LO{node.getStmtNo(), StatementType::Print});
+    statements.insert(STMT_LO{node.getStmtNo(), StatementType::Print});
 }
 
-void StatementExtractor::visit(const ast::While& node) {
+void StatementWalker::visit(const ast::While& node) {
     DEBUG_LOG << "While Stmt " << node.getStmtNo();
-    pkb->insertEntity(STMT_LO{node.getStmtNo(), StatementType::While});
+    statements.insert(STMT_LO{node.getStmtNo(), StatementType::While});
 }
 
-void StatementExtractor::visit(const ast::If& node) {
+void StatementWalker::visit(const ast::If& node) {
     DEBUG_LOG << "If Stmt " << node.getStmtNo();
-    pkb->insertEntity(STMT_LO{node.getStmtNo(), StatementType::If});
+    statements.insert(STMT_LO{node.getStmtNo(), StatementType::If});
 }
 
-void StatementExtractor::visit(const ast::Assign& node) {
+void StatementWalker::visit(const ast::Assign& node) {
     DEBUG_LOG << "Assign Stmt " << node.getStmtNo();
-    pkb->insertEntity(STMT_LO{node.getStmtNo(), StatementType::Assignment});
+    statements.insert(STMT_LO{node.getStmtNo(), StatementType::Assignment});
 }
 
-void StatementExtractor::visit(const ast::Call& node) {
+void StatementWalker::visit(const ast::Call& node) {
     DEBUG_LOG << "Call Stmt " << node.getStmtNo();
-    pkb->insertEntity(STMT_LO(node.getStmtNo(), StatementType::Call));
+    statements.insert(STMT_LO(node.getStmtNo(), StatementType::Call));
 }
 }  // namespace design_extractor
 }  // namespace sp

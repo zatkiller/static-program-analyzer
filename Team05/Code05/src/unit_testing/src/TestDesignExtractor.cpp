@@ -30,9 +30,9 @@ namespace sp {
 namespace de = design_extractor;
 
 using de::VariableExtractorModule;
-using de::StatementExtractor;
-using de::ConstExtractor;
-using de::ProcedureExtractor;
+using de::StatementExtractorModule;
+using de::ConstExtractorModule;
+using de::ProcedureExtractorModule;
 using de::UsesExtractor;
 using de::ModifiesExtractor;
 using de::ParentExtractor;
@@ -205,7 +205,7 @@ namespace ast {
             }
 
             SECTION("Const extractor test") {
-                auto ce = std::make_unique<ConstExtractor>(&pkbStrategy);
+                auto ce = std::make_unique<ConstExtractorModule>(&pkbStrategy);
                 ce->extract(program.get());
 
                 std::set<Content> expectedVars = { CONST{0}, CONST{2}, CONST{10} };
@@ -213,11 +213,11 @@ namespace ast {
             }
 
             SECTION("Procedure extractor test") {
-                auto pe = std::make_unique<ProcedureExtractor>(&pkbStrategy);
+                auto pe = std::make_unique<ProcedureExtractorModule>(&pkbStrategy);
                 pe->extract(program.get());
                 
-                std::set<Content> expectedVars = { PROC_NAME{"main"} };
-                REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedVars);
+                std::set<Content> expectedProcs = { PROC_NAME{"main"} };
+                REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedProcs);
             }
 
             SECTION("Modifies extractor test") {

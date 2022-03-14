@@ -3,10 +3,18 @@
 
 namespace sp {
 namespace design_extractor {
-void ConstExtractor::visit(const ast::Const& node) {
-    Logger(Level::DEBUG) << "ConstExtractor.cpp Extracted const " << node.getConstValue();
-    pkb->insertEntity(CONST{node.getConstValue()});
-}
+struct ConstWalker : public TreeWalker {
+    std::set<Entry> procs;
+    void visit(const ast::Const& node) {
+        procs.insert(CONST{node.getConstValue()});
+    }
+};
+
+std::set<Entry> ConstExtractor::extract(const ast::ASTNode* node) {
+    ConstWalker extractor;
+    node->accept(&extractor);
+    return extractor.procs;
+};
 
 }  // namespace design_extractor
 }  // namespace sp

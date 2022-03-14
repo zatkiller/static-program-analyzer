@@ -5,13 +5,17 @@
 
 namespace sp {
 namespace design_extractor {
-/**
- * Extracts all const from the AST and send them to PKB Adaptor.
- */
-class ProcedureExtractor : public Extractor {
+
+class ProcedureExtractor : public IExtractor {
 public:
-    using Extractor::Extractor;
-    void visit(const ast::Procedure& node) override;
+    using IExtractor::IExtractor;
+    std::set<Entry> extract(const ast::ASTNode*) override;
+};
+
+class ProcedureExtractorModule : public ExtractorModule {
+public:
+    ProcedureExtractorModule(PKBStrategy *pkb) : 
+        ExtractorModule(std::make_unique<ProcedureExtractor>(), pkb) {};
 };
 
 }  // namespace design_extractor

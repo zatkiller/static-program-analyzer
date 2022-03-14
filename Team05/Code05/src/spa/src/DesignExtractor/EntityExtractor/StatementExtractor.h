@@ -2,15 +2,17 @@
 
 namespace sp {
 namespace design_extractor {
-class StatementExtractor : public Extractor {
+
+class StatementExtractor : public IExtractor {
 public:
-    using Extractor::Extractor;
-    void visit(const ast::Read&) override;
-    void visit(const ast::Print&) override;
-    void visit(const ast::While&) override;
-    void visit(const ast::If&) override;
-    void visit(const ast::Assign&) override;
-    void visit(const ast::Call&) override;
+    using IExtractor::IExtractor;
+    std::set<Entry> extract(const ast::ASTNode*) override;
+};
+
+class StatementExtractorModule : public ExtractorModule {
+public:
+    StatementExtractorModule(PKBStrategy *pkb) : 
+        ExtractorModule(std::make_unique<StatementExtractor>(), pkb) {};
 };
 }  // namespace design_extractor
 }  // namespace sp
