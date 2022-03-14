@@ -218,5 +218,13 @@ public:
     */
     std::optional<StatementType> getStmtTypeOfLine(int statementNum) const;
 
-    std::vector<STMT_LO> StatementTable::getStmts(int statementNumber) const;
+    /**
+    * Retrieves a vector of STMT_LOs with the statement number provided. 
+    * 
+    * This method should only return an empty vector or a vector with 1 element.
+    * 
+    * @param statementNumber the provided statement number to look up
+    * @return std::vector<STMT_LO> a vector of STMT_LOs that matches the provided statement number
+    */
+    std::vector<STMT_LO> getStmts(int statementNumber) const;
 };
