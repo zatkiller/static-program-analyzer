@@ -22,6 +22,7 @@ using qps::query::UsesS;
 using qps::query::AttrName;
 using qps::query::AttrRef;
 using qps::query::AttrCompareRef;
+using qps::query::Pattern;
 
 /**
  * Struct used to represent the Parser
@@ -269,6 +270,12 @@ struct Parser {
      * @return EntRef that has been parsed
      */
     EntRef parseEntRef(Query &query);
+
+    EntRef parsePatternLhs(Query &query, std::string synonym);
+//    Pattern parseAssignPattern(Query &query, std::string synonym);
+//    Pattern parseIfPattern(Query &query, std::string synonym);
+//    Pattern parseWhilePattern(Query &query, std::string synonym);
+    Pattern parsePatternVariables(Query &query, std::string synonym, DesignEntity de);
 
     void parsePattern(Query &query);
 

@@ -258,16 +258,36 @@ namespace qps::query {
         return entField;
     }
 
-    std::string Pattern::getSynonym() {
-        return synonym;
-    }
+    ExpSpec Pattern::getExpression(){
+        if (synonymType != DesignEntity::ASSIGN)
+            throw exceptions::PqlSyntaxException(messages::qps::parser::notAnAssignPatternMessage);
 
-    EntRef Pattern::getEntRef() {
-        return lhs;
-    }
-
-    ExpSpec Pattern::getExpression() {
         return expression;
+    };
+
+    Pattern Pattern::ofAssignPattern(std::string synonym, EntRef er, ExpSpec exp) {
+        Pattern p;
+        p.synonym = synonym;
+        p.synonymType = DesignEntity::ASSIGN;
+        p.lhs = er;
+        p.expression = exp;
+        return p;
+    }
+
+    Pattern Pattern::ofWhilePattern(std::string synonym, EntRef er) {
+        Pattern p;
+        p.synonym = synonym;
+        p.synonymType = DesignEntity::WHILE;
+        p.lhs = er;
+        return p;
+    }
+
+    Pattern Pattern::ofIfPattern(std::string synonym, EntRef er) {
+        Pattern p;
+        p.synonym = synonym;
+        p.synonymType = DesignEntity::IF;
+        p.lhs = er;
+        return p;
     }
 
     std::vector<PKBField> ModifiesS::getField() {

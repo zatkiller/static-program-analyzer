@@ -625,85 +625,157 @@ TEST_CASE("Parser validateExpr") {
                            Catch::Message(messages::qps::parser::expressionUnexpectedEndMessage));
 }
 
-TEST_CASE("Parser parsePattern") {
-    SECTION ("with wildcard expression") {
-        std::string testQuery = "a (v, _)";
-
-        Parser parser;
-        parser.addInput(testQuery);
-
-        Query queryObj;
-
-        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
-        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
-
-        parser.parsePattern(queryObj);
-
-        std::vector<Pattern> patterns = queryObj.getPattern();
-        Pattern pattern = patterns[0];
-
-        REQUIRE(pattern.getSynonym() == "a");
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
-        REQUIRE(validDeclaration);
-        REQUIRE(pattern.getExpression() == ExpSpec::ofWildcard());
-    }
-
-    SECTION ("With string expression") {
-        std::string testQuery = "a (v, \"x\")";
-
-        Parser parser;
-        parser.addInput(testQuery);
-
-        Query queryObj;
-
-        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
-        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
-        parser.parsePattern(queryObj);
-
-        std::vector<Pattern> patterns = queryObj.getPattern();
-        Pattern pattern = patterns[0];
-
-        REQUIRE(pattern.getSynonym() == "a");
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
-        REQUIRE(validDeclaration);
-        REQUIRE(pattern.getExpression() == ExpSpec::ofFullMatch("x"));
-    }
-
-    SECTION("With partial submatch argument") {
-        std::string testQuery = "a (v, _\"x\"_)";
-
-        Parser parser;
-        parser.addInput(testQuery);
-
-        Query queryObj;
-
-        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
-        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
-        parser.parsePattern(queryObj);
-
-        std::vector<Pattern> patterns = queryObj.getPattern();
-        Pattern pattern = patterns[0];
-
-        REQUIRE(pattern.getSynonym() == "a");
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
-        REQUIRE(validDeclaration);
-        REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
-    }
-
+TEST_CASE("Parser parsePatternLhs") {
     SECTION("Invalid Pattern semantics") {
-        std::string testQuery = "a (p, _\"x\"_)";
+        std::string testQuery = "p";
 
         Parser parser;
         parser.addInput(testQuery);
 
         Query queryObj;
 
-        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
         queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
 
-        REQUIRE_THROWS_MATCHES(parser.parsePattern(queryObj),
+        REQUIRE_THROWS_MATCHES(parser.parsePatternLhs(queryObj, "a"),
                                exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::notVariableSynonymMessage));
+    }
+}
+
+TEST_CASE("Parser parsePattern") {
+    SECTION ("parsePattern - pattern is assign") {
+        SECTION ("with wildcard expression") {
+            std::string testQuery = "a (v, _)";
+
+            Parser parser;
+            parser.addInput(testQuery);
+
+            Query queryObj;
+
+            queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+            queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
+            parser.parsePattern(queryObj);
+
+            std::vector<Pattern> patterns = queryObj.getPattern();
+            Pattern pattern = patterns[0];
+
+            REQUIRE(pattern.getSynonym() == "a");
+            REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
+            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            REQUIRE(validDeclaration);
+            REQUIRE(pattern.getExpression() == ExpSpec::ofWildcard());
+        }
+
+        SECTION ("With string expression") {
+            std::string testQuery = "a (v, \"x\")";
+
+            Parser parser;
+            parser.addInput(testQuery);
+
+            Query queryObj;
+
+            queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+            queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+            parser.parsePattern(queryObj);
+
+            std::vector<Pattern> patterns = queryObj.getPattern();
+            Pattern pattern = patterns[0];
+
+            REQUIRE(pattern.getSynonym() == "a");
+            REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
+            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            REQUIRE(validDeclaration);
+            REQUIRE(pattern.getExpression() == ExpSpec::ofFullMatch("x"));
+        }
+
+        SECTION("With partial submatch argument") {
+            std::string testQuery = "a (v, _\"x\"_)";
+
+            Parser parser;
+            parser.addInput(testQuery);
+
+            Query queryObj;
+
+            queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+            queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+            parser.parsePattern(queryObj);
+
+            std::vector<Pattern> patterns = queryObj.getPattern();
+            Pattern pattern = patterns[0];
+
+            REQUIRE(pattern.getSynonym() == "a");
+            REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
+            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            REQUIRE(validDeclaration);
+            REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
+        }
+    }
+
+    SECTION ("parsePattern - pattern is if") {
+        std::string testQuery = "ifs (v, _ , _ )";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("ifs", DesignEntity::IF);
+        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
+        parser.parsePattern(queryObj);
+
+        std::vector<Pattern> patterns = queryObj.getPattern();
+        Pattern pattern = patterns[0];
+
+        REQUIRE(pattern.getSynonym() == "ifs");
+        REQUIRE(pattern.getSynonymType() == DesignEntity::IF);
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+        REQUIRE(validDeclaration);
+        REQUIRE_THROWS_MATCHES(pattern.getExpression(),
+                               exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::notAnAssignPatternMessage));
+    }
+
+    SECTION ("parsePattern - pattern is while") {
+        std::string testQuery = "w (v, _ )";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("w", DesignEntity::WHILE);
+        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
+        parser.parsePattern(queryObj);
+
+        std::vector<Pattern> patterns = queryObj.getPattern();
+        Pattern pattern = patterns[0];
+
+        REQUIRE(pattern.getSynonym() == "w");
+        REQUIRE(pattern.getSynonymType() == DesignEntity::WHILE);
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+        REQUIRE(validDeclaration);
+        REQUIRE_THROWS_MATCHES(pattern.getExpression(),
+                               exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::notAnAssignPatternMessage));
+    }
+
+    SECTION ("Invalid pattern synonym type") {
+        std::string testQuery = "rd (v, _ )";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("rd", DesignEntity::READ);
+        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
+        REQUIRE_THROWS_MATCHES(parser.parsePattern(queryObj),
+                               exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::notValidPatternType));
     }
 }
 

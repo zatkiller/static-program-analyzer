@@ -255,7 +255,7 @@ namespace qps::parser {
                 DesignEntity::PROCEDURE, DesignEntity::VARIABLE
         };
         if (e.isDeclaration()) {
-            DesignEntity d = query.getDeclarationDesignEntity(e.getDeclaration());
+            DesignEntity d = e.getDeclarationType();
             return entityTypes.find(d) != entityTypes.end();
         }
         return false;
@@ -368,27 +368,49 @@ namespace qps::parser {
         }
     }
 
+    EntRef Parser::parsePatternLhs(Query &query, std::string synonym) {
+        EntRef e = parseEntRef(query);
+
+
+        if (e.isDeclaration() && e.getDeclarationType() != DesignEntity::VARIABLE)
+            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+
+        return e;
+    }
+
+    Pattern Parser::parsePatternVariables(Query &query, std::string synonym, DesignEntity de) {
+        Pattern p;
+        getAndCheckNextToken(TokenType::OPENING_PARAN);
+        EntRef e = parsePatternLhs(query, synonym);
+
+        if (de == DesignEntity::ASSIGN) {
+            getAndCheckNextToken(TokenType::COMMA);
+            ExpSpec expression = parseExpSpec();
+            p = Pattern::ofAssignPattern(synonym, e, expression);
+        } else {
+            int wildcardCount = (de == DesignEntity::IF) ? 2 : 1;
+
+            while (wildcardCount > 0) {
+                getAndCheckNextToken(TokenType::COMMA);
+                getAndCheckNextToken(TokenType::UNDERSCORE);
+                wildcardCount--;
+            }
+
+            p = (de == DesignEntity::IF) ? Pattern::ofIfPattern(synonym, e) : Pattern::ofWhilePattern(synonym, e);
+        }
+
+        getAndCheckNextToken(TokenType::CLOSING_PARAN);
+        return p;
+    }
+
     void Parser::parsePattern(Query &query) {
         Token t = getAndCheckNextToken(TokenType::IDENTIFIER);
         std::string declarationName = t.getText();
-        if (query.getDeclarationDesignEntity(declarationName) != DesignEntity::ASSIGN)
-            throw exceptions::PqlSyntaxException(messages::qps::parser::notAnAssignmentMessage);
+        DesignEntity de = query.getDeclarationDesignEntity(declarationName);
+        if ((de != DesignEntity::ASSIGN) && (de != DesignEntity::IF) && (de != DesignEntity::WHILE))
+            throw exceptions::PqlSyntaxException(messages::qps::parser::notValidPatternType);
 
-        Pattern p;
-
-        p.synonym = declarationName;
-        getAndCheckNextToken(TokenType::OPENING_PARAN);
-        EntRef e = parseEntRef(query);
-
-        if (e.isDeclaration() && query.getDeclarationDesignEntity(e.getDeclaration()) != DesignEntity::VARIABLE)
-            throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
-
-        p.lhs = e;
-        getAndCheckNextToken(TokenType::COMMA);
-        p.expression = parseExpSpec();
-        getAndCheckNextToken(TokenType::CLOSING_PARAN);
-
-        query.addPattern(p);
+        query.addPattern(parsePatternVariables(query, declarationName, de));
     }
 
     void Parser::parsePatternClause(Query &queryObj) {

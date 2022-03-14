@@ -417,7 +417,6 @@ struct ExpSpec {
     ExpSpec() {}
 
     static ExpSpec ofWildcard();
-
     static ExpSpec ofPartialMatch(std::string str);
     static ExpSpec ofFullMatch(std::string str);
 
@@ -444,19 +443,26 @@ private:
 * Struct used to represent a Pattern
 */
 struct Pattern {
-    std::string synonym;
-    EntRef lhs;
-    ExpSpec expression;
+    static Pattern ofAssignPattern(std::string synonym, EntRef er, ExpSpec exp);
+    static Pattern ofIfPattern(std::string synonym, EntRef er);
+    static Pattern ofWhilePattern(std::string synonym, EntRef er);
 
-    std::string getSynonym();
+    std::string getSynonym() { return synonym; };
+    DesignEntity getSynonymType() { return synonymType; };
 
-    EntRef getEntRef();
-
+    EntRef getEntRef() { return lhs; };
     ExpSpec getExpression();
 
     bool operator==(const Pattern &o) const {
-        return (synonym == o.synonym) && (lhs == o.lhs) && (expression == o.expression);
+        return (synonym == o.synonym) && (synonymType == o.synonymType) && (lhs == o.lhs) &&
+            (expression == o.expression);
     }
+
+private:
+    std::string synonym = "";
+    DesignEntity synonymType {};
+    EntRef lhs {};
+    ExpSpec expression {};
 };
 
 enum class AttrName {
