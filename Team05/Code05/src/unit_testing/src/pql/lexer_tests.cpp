@@ -1,4 +1,5 @@
 #include "pql/lexer.h"
+#include "exceptions.h"
 #include "catch.hpp"
 
 using qps::parser::Lexer;
@@ -38,79 +39,91 @@ TEST_CASE("Lexer hasPrefx") {
 }
 
 TEST_CASE("Lexer getNextToken") {
-    Lexer lexer("123 hi123 hi \"test\" ;()_,$+-*/%.=");
+    SECTION("Valid tokens") {
+        Lexer lexer("0 123 hi123 hi \"test\" ;()_,$+-*/%.=");
 
-    auto t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::NUMBER);
-    REQUIRE(t1.getText() == "123");
+        auto t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::NUMBER);
+        REQUIRE(t1.getText() == "0");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::IDENTIFIER);
-    REQUIRE(t1.getText() == "hi123");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::NUMBER);
+        REQUIRE(t1.getText() == "123");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::IDENTIFIER);
-    REQUIRE(t1.getText() == "hi");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::IDENTIFIER);
+        REQUIRE(t1.getText() == "hi123");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::STRING);
-    REQUIRE(t1.getText() == "test");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::IDENTIFIER);
+        REQUIRE(t1.getText() == "hi");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::SEMICOLON);
-    REQUIRE(t1.getText() == ";");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::STRING);
+        REQUIRE(t1.getText() == "test");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::OPENING_PARAN);
-    REQUIRE(t1.getText() == "(");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::SEMICOLON);
+        REQUIRE(t1.getText() == ";");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::CLOSING_PARAN);
-    REQUIRE(t1.getText() == ")");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::OPENING_PARAN);
+        REQUIRE(t1.getText() == "(");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::UNDERSCORE);
-    REQUIRE(t1.getText() == "_");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::CLOSING_PARAN);
+        REQUIRE(t1.getText() == ")");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::COMMA);
-    REQUIRE(t1.getText() == ",");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::UNDERSCORE);
+        REQUIRE(t1.getText() == "_");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::INVALID);
-    REQUIRE(t1.getText() == "");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::COMMA);
+        REQUIRE(t1.getText() == ",");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::PLUS);
-    REQUIRE(t1.getText() == "+");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::INVALID);
+        REQUIRE(t1.getText() == "");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::MINUS);
-    REQUIRE(t1.getText() == "-");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::PLUS);
+        REQUIRE(t1.getText() == "+");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::MULTIPLY);
-    REQUIRE(t1.getText() == "*");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::MINUS);
+        REQUIRE(t1.getText() == "-");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::DIVIDE);
-    REQUIRE(t1.getText() == "/");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::MULTIPLY);
+        REQUIRE(t1.getText() == "*");
+
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::DIVIDE);
+        REQUIRE(t1.getText() == "/");
 
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::MODULO);
-    REQUIRE(t1.getText() == "%");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::MODULO);
+        REQUIRE(t1.getText() == "%");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::PERIOD);
-    REQUIRE(t1.getText() == ".");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::PERIOD);
+        REQUIRE(t1.getText() == ".");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::EQUAL);
-    REQUIRE(t1.getText() == "=");
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::EQUAL);
+        REQUIRE(t1.getText() == "=");
 
-    t1 = lexer.getNextToken();
-    REQUIRE(t1.getTokenType() == TokenType::END_OF_FILE);
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::END_OF_FILE);
+    }
+
+    SECTION ("Invalid Number Token - leading zero") {
+        Lexer lexer("00001");
+        REQUIRE_THROWS_MATCHES(lexer.getNextToken(), exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::leadingZeroMessage));
+    }
 }
 
 TEST_CASE("Lexer peekNextToken") {

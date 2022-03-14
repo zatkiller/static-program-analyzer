@@ -12,6 +12,7 @@ namespace parser {
     inline constexpr char defaultPqlSemanticExceptionMessage[] = "PqlSemanticException is thrown!";
 
     // Parsing syntax error messages
+    inline constexpr char leadingZeroMessage[] = "Leading zero detected!";
     inline constexpr char notExpectingTokenMessage[] = "Not expecting this token type!";
     inline constexpr char unexpectedWhitespaceMessage[] = "Unexpected whitespace";
     inline constexpr char invalidStmtRefMessage[] = "Not a valid StmtRef!";

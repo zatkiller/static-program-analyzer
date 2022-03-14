@@ -107,10 +107,15 @@ namespace qps::parser {
 
     Token Lexer::getNumber() {
         int charCount = 0;
+
         while (text.length() > 0 && (isdigit(text[charCount])))
             charCount++;
 
         std::string number = text.substr(0, charCount);
+
+        if (number[0] == '0' && number.length() > 1)
+            throw exceptions::PqlSyntaxException(messages::qps::parser::leadingZeroMessage);
+
         text.erase(0, charCount);
 
         return Token { number, TokenType::NUMBER };
