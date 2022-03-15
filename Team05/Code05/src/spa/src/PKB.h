@@ -132,40 +132,30 @@ private:
     /**
    * Inserts an assignment, if, or while statement information into the PKB.
    *
-   * @param type statement type
-   * @param statementNumber line number
+   * @param stmt
    */
-    void insertStatement(int statementNumber, StatementType type);
-
-    /**
-    * Inserts a call, read, or print statement information into the PKB.
-    *
-    * @param type statement type
-    * @param statementNumber line number
-    * @param attribute a VAR_NAME or PROC_NAME
-    */
-    void insertStatement(int statementNumber, StatementType type, std::string attribute);
+    void insertStatement(STMT_LO stmt);
 
     /**
     * Inserts a variable into the PKB.
     *
-    * @param name variable name
+    * @param var
     */
-    void insertVariable(std::string name);
+    void insertVariable(VAR_NAME var);
 
     /**
     * Inserts a constant into the PKB.
     *
     * @param constant
     */
-    void insertConstant(int constant);
+    void insertConstant(CONST constant);
 
     /**
     * Inserts a procedure into the PKB.
     *
-    * @param name procedure name
+    * @param proc
     */
-    void insertProcedure(std::string name);
+    void insertProcedure(PROC_NAME proc);
 
     /**
     * Checks whether a PKBField is valid for its given entity type.

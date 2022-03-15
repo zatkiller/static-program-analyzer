@@ -27,46 +27,28 @@ PKB::PKB() {
 // INSERT API
 void PKB::insertEntity(Content entity) {
     std::visit(overloaded{
-    [&](VAR_NAME& item) { insertVariable(item.name); },
-    [&](STMT_LO& item) { 
-            if (item.hasAttribute()) { 
-                insertStatement(item.statementNum, item.type.value_or(StatementType::All), item.attribute.value());
-            } else {
-                insertStatement(item.statementNum, item.type.value_or(StatementType::All));
-            }
-        },
-    [&](PROC_NAME& item) { insertProcedure(item.name); },
-    [&](CONST& item) { insertConstant(item); },
-    [](auto& item) { Logger(Level::ERROR) << "PKB.cpp " << "Unsupported entity type"; },
-        }, entity);
+        [&](VAR_NAME& item) { insertVariable(item); },
+        [&](STMT_LO& item) { insertStatement(item); },
+        [&](PROC_NAME& item) { insertProcedure(item); },
+        [&](CONST& item) { insertConstant(item); },
+        [](auto& item) { Logger(Level::ERROR) << "PKB.cpp " << "Unsupported entity type"; }
+    }, entity);
 }
 
-void PKB::insertStatement(int statementNumber, StatementType type) {
-    // if (type != StatementType::Assignment || type != StatementType::If || type != StatementType::While) {
-    //    Logger(Level::INFO) << "insertStatement(StatementType, int) is only for Assignments, Ifs, Whiles.\n";
-    //}
-
-    statementTable->insert(statementNumber, type);
+void PKB::insertStatement(STMT_LO stmt) {
+    statementTable->insert(stmt);
 }
 
-void PKB::insertStatement(int statementNumber, StatementType type, std::string attribute) {
-    // if (type != StatementType::Call || type != StatementType::Read || type != StatementType::Print) {
-    // Logger(Level::INFO) << "insertStatement(StatementType, int, StatementAttribute) 
-    // is only for Calls, Reads, Prints.\n";
-    //}
 
-    statementTable->insert(statementNumber, type, attribute);
+void PKB::insertVariable(VAR_NAME var) {
+    variableTable->insert(var);
 }
 
-void PKB::insertVariable(std::string name) {
-    variableTable->insert(name);
+void PKB::insertProcedure(PROC_NAME proc) {
+    procedureTable->insert(proc);
 }
 
-void PKB::insertProcedure(std::string name) {
-    procedureTable->insert(name);
-}
-
-void PKB::insertConstant(int constant) {
+void PKB::insertConstant(CONST constant) {
     constantTable->insert(constant);
 }
 
