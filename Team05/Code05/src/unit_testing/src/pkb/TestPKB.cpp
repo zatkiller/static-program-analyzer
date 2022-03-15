@@ -7,96 +7,7 @@
 
 #define TEST_LOG Logger() << "TestPKB.cpp "
 
-/**
- * Ensures token structs and token type are correct.
- */
-TEST_CASE("PKB testing") {
-    std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
-
-    PKBField field1 = PKBField::createConcrete(PROC_NAME{ "main" });
-    PKBField field2 = PKBField::createConcrete(VAR_NAME{ "a" });
-    PKBField field3 = PKBField::createConcrete(VAR_NAME{ "b" });
-    PKBField field4 = PKBField::createConcrete(PROC_NAME{ "foo" });
-    PKBField procDeclaration = PKBField::createDeclaration(PKBEntityType::PROCEDURE);
-    PKBField varDeclaration = PKBField::createDeclaration(PKBEntityType::VARIABLE);
-
-    // isRSPRESENT should check both concrete
-    pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field2);
-    REQUIRE(pkb->isRelationshipPresent(field1, field2, PKBRelationship::MODIFIES));
-    REQUIRE(pkb->isRelationshipPresent(
-        PKBField::createConcrete(PROC_NAME{ "main" }),
-        PKBField::createConcrete(VAR_NAME{ "a" }),
-        PKBRelationship::MODIFIES));
-    REQUIRE_FALSE(pkb->isRelationshipPresent(field1, field3, PKBRelationship::MODIFIES));
-    REQUIRE(*(field3.getContent<VAR_NAME>()) == VAR_NAME{ "b" });
-    TEST_LOG << "Test PKB#insertRelationship MODIFIES";
-
-    pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field2);
-    // REQUIRE(pkb->modifiesTable->getSize() == 1);
-
-
-    TEST_LOG << "Test PKB#getRelationship MODIFIES (All concrete fields)";
-
-    // Both fields are concrete
-    PKBResponse getRes1 = pkb->getRelationship(field1, field2, PKBRelationship::MODIFIES);
-    PKBResponse getExpected1 = PKBResponse{ true, Response{ FieldRowResponse{{field1, field2}} } };
-    REQUIRE(getRes1 == getExpected1);
-
-    // Both fields are not concrete
-    pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field3);
-    pkb->insertRelationship(PKBRelationship::MODIFIES, field4, field2);
-    PKBResponse getRes2 = pkb->getRelationship(procDeclaration, varDeclaration, PKBRelationship::MODIFIES);
-    PKBResponse getExpected2 = PKBResponse{ true,
-        Response{ FieldRowResponse{{field1, field2}, {field1, field3}, {field4, field2}} } };
-    REQUIRE(getRes2 == getExpected2);
-
-
-    // First field concrete, second not concrete
-    PKBResponse getRes3 = pkb->getRelationship(field1, varDeclaration, PKBRelationship::MODIFIES);
-    PKBResponse getExpected3 = PKBResponse{ true, Response{ FieldRowResponse{{field1, field2}, {field1, field3}} } };
-    REQUIRE(getRes3 == getExpected3);
-
-    // First field not concrete, second concrete
-    PKBResponse getRes4 = pkb->getRelationship(procDeclaration, field2, PKBRelationship::MODIFIES);
-    PKBResponse getExpected4 = PKBResponse{ true, Response{ FieldRowResponse{{field1, field2}, {field4, field2}} } };
-    REQUIRE(getRes4 == getExpected4);
-
-    TEST_LOG << "Test PKB#insertVariable";
-
-    std::string varName1 = "a";
-    pkb->insertVariable(varName1);
-    // REQUIRE(pkb->variableTable->getSize() == 1);
-
-    pkb->insertStatement(StatementType::Assignment, 1);
-    pkb->insertStatement(StatementType::While, 2);
-
-    PKBResponse res2 = pkb->getStatements();
-    auto content3 = res2.getResponse<FieldResponse>();
-    REQUIRE(content3->size() == 2);
-
-    PKBResponse res3 = pkb->getStatements(StatementType::Assignment);
-    auto content4 = res3.getResponse<FieldResponse>();
-    REQUIRE(content4->size() == 1);
-}
-
-TEST_CASE("PKB STMT_LO empty type") {
-    std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
-    pkb->insertStatement(StatementType::Assignment, 5);
-    PKBField field1 = PKBField::createConcrete(STMT_LO{ 5 });
-    PKBField field2 = PKBField::createConcrete(VAR_NAME{ "a" });
-    PKBField field3 = PKBField::createConcrete(STMT_LO{ 5, StatementType::Assignment });
-
-    pkb->insertRelationship(PKBRelationship::MODIFIES, field3, field2);
-    PKBResponse res = pkb->getRelationship(field1, field2, PKBRelationship::MODIFIES);
-    auto content = res.getResponse<FieldRowResponse>();
-    REQUIRE(content->size() == 1);
-
-    PKBResponse res2 = pkb->getRelationship(field3, field2, PKBRelationship::MODIFIES);
-    auto content2 = res2.getResponse<FieldRowResponse>();
-    REQUIRE(*content == *content2);  // checks that getStatementTypeOfConcreteField works
-}
-
-TEST_CASE("PKB sample source program test") {
+TEST_CASE("PKB sample source program test - Iteration 1") {
     std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
 
     /*
@@ -126,6 +37,48 @@ TEST_CASE("PKB sample source program test") {
     }
     */
 
+    PKBField const1 = PKBField::createConcrete(CONST{ 1 });
+    PKBField const2 = PKBField::createConcrete(CONST{ 2 });
+    PKBField const3 = PKBField::createConcrete(CONST{ 3 });
+    PKBField const5 = PKBField::createConcrete(CONST{ 5 });
+    PKBField stmt1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
+    PKBField stmt2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment });
+    PKBField stmt3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
+    PKBField stmt4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::Read, "monke" });
+    PKBField stmt5 = PKBField::createConcrete(STMT_LO{ 5, StatementType::While });
+    PKBField stmt6 = PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment });
+    PKBField stmt7 = PKBField::createConcrete(STMT_LO{ 7, StatementType::If });
+    PKBField stmt8 = PKBField::createConcrete(STMT_LO{ 8, StatementType::Assignment });
+    PKBField stmt9 = PKBField::createConcrete(STMT_LO{ 9, StatementType::Assignment });
+    PKBField stmt10 = PKBField::createConcrete(STMT_LO{ 10, StatementType::Assignment });
+    PKBField stmt11 = PKBField::createConcrete(STMT_LO{ 11, StatementType::Assignment });
+    PKBField stmt12 = PKBField::createConcrete(STMT_LO{ 12, StatementType::Print, "monke" });
+    PKBField stmt13 = PKBField::createConcrete(STMT_LO{ 13, StatementType::Call, "abc" });
+    PKBField stmt14 = PKBField::createConcrete(STMT_LO{ 14, StatementType::Call, "def" });
+    PKBField stmt15 = PKBField::createConcrete(STMT_LO{ 15, StatementType::Assignment });
+    PKBField Example = PKBField::createConcrete(PROC_NAME{ "Example" });
+    PKBField abc = PKBField::createConcrete(PROC_NAME{ "abc" });
+    PKBField def = PKBField::createConcrete(PROC_NAME{ "def" });
+    PKBField x = PKBField::createConcrete(VAR_NAME{ "x" });
+    PKBField y = PKBField::createConcrete(VAR_NAME{ "y" });
+    PKBField z = PKBField::createConcrete(VAR_NAME{ "z" });
+    PKBField i = PKBField::createConcrete(VAR_NAME{ "i" });
+    PKBField w = PKBField::createConcrete(VAR_NAME{ "w" });
+    PKBField monke = PKBField::createConcrete(VAR_NAME{ "monke" });
+
+    SECTION("PKB::validate with empty tables") {
+        pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt1, stmt2);
+        pkb->insertRelationship(PKBRelationship::MODIFIES, stmt1, x);
+        pkb->insertRelationship(PKBRelationship::USES, Example, x);
+        pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt6);
+        pkb->insertRelationship(PKBRelationship::CALLS, Example, abc);
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt1, stmt2, PKBRelationship::FOLLOWS));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt1, x, PKBRelationship::MODIFIES));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(Example, x, PKBRelationship::USES));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt5, stmt6, PKBRelationship::PARENT));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(Example, abc, PKBRelationship::CALLS));
+    }
+
     pkb->insertProcedure("Example");
     pkb->insertProcedure("abc");
     pkb->insertProcedure("def");
@@ -139,10 +92,26 @@ TEST_CASE("PKB sample source program test") {
     pkb->insertConstant(3);
     pkb->insertConstant(5);
     pkb->insertConstant(1);
+
+    SECTION("PKB::validate with partially empty tables") {
+        pkb->insertRelationship(PKBRelationship::FOLLOWS, stmt1, stmt2);
+        pkb->insertRelationship(PKBRelationship::MODIFIES, stmt1, x);
+        pkb->insertRelationship(PKBRelationship::USES, Example, x);
+        pkb->insertRelationship(PKBRelationship::PARENT, stmt5, stmt6);
+        pkb->insertRelationship(PKBRelationship::CALLS, Example, abc);
+
+        // relationships involving statements will not be inserted because the statements are not in StatementTable
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt1, stmt2, PKBRelationship::FOLLOWS));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt1, x, PKBRelationship::MODIFIES));
+        REQUIRE(pkb->isRelationshipPresent(Example, x, PKBRelationship::USES));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(stmt5, stmt6, PKBRelationship::PARENT));
+        REQUIRE(pkb->isRelationshipPresent(Example, abc, PKBRelationship::CALLS));
+    }
+
     pkb->insertStatement(StatementType::Assignment, 1);
     pkb->insertStatement(StatementType::Assignment, 2);
     pkb->insertStatement(StatementType::Assignment, 3);
-    pkb->insertStatement(StatementType::Read, 4);
+    pkb->insertStatement(StatementType::Read, 4, "monke");
     pkb->insertStatement(StatementType::While, 5);
     pkb->insertStatement(StatementType::Assignment, 6);
     pkb->insertStatement(StatementType::If, 7);
@@ -150,39 +119,10 @@ TEST_CASE("PKB sample source program test") {
     pkb->insertStatement(StatementType::Assignment, 9);
     pkb->insertStatement(StatementType::Assignment, 10);
     pkb->insertStatement(StatementType::Assignment, 11);
-    pkb->insertStatement(StatementType::Print, 12);
-    pkb->insertStatement(StatementType::Call, 13);
-    pkb->insertStatement(StatementType::Call, 14);
+    pkb->insertStatement(StatementType::Print, 12, "monke");
+    pkb->insertStatement(StatementType::Call, 13, "abc");
+    pkb->insertStatement(StatementType::Call, 14, "def");
     pkb->insertStatement(StatementType::Assignment, 15);
-
-    PKBField const1 = PKBField::createConcrete(CONST{ 1 });
-    PKBField const2 = PKBField::createConcrete(CONST{ 2 });
-    PKBField const3 = PKBField::createConcrete(CONST{ 3 });
-    PKBField const5 = PKBField::createConcrete(CONST{ 5 });
-    PKBField stmt1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
-    PKBField stmt2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment });
-    PKBField stmt3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
-    PKBField stmt4 = PKBField::createConcrete(STMT_LO{ 4, StatementType::Read });
-    PKBField stmt5 = PKBField::createConcrete(STMT_LO{ 5, StatementType::While });
-    PKBField stmt6 = PKBField::createConcrete(STMT_LO{ 6, StatementType::Assignment });
-    PKBField stmt7 = PKBField::createConcrete(STMT_LO{ 7, StatementType::If });
-    PKBField stmt8 = PKBField::createConcrete(STMT_LO{ 8, StatementType::Assignment });
-    PKBField stmt9 = PKBField::createConcrete(STMT_LO{ 9, StatementType::Assignment });
-    PKBField stmt10 = PKBField::createConcrete(STMT_LO{ 10, StatementType::Assignment });
-    PKBField stmt11 = PKBField::createConcrete(STMT_LO{ 11, StatementType::Assignment });
-    PKBField stmt12 = PKBField::createConcrete(STMT_LO{ 12, StatementType::Print });
-    PKBField stmt13 = PKBField::createConcrete(STMT_LO{ 13, StatementType::Call });
-    PKBField stmt14 = PKBField::createConcrete(STMT_LO{ 14, StatementType::Call });
-    PKBField stmt15 = PKBField::createConcrete(STMT_LO{ 15, StatementType::Assignment });
-    PKBField Example = PKBField::createConcrete(PROC_NAME{ "Example" });
-    PKBField abc = PKBField::createConcrete(PROC_NAME{ "abc" });
-    PKBField def = PKBField::createConcrete(PROC_NAME{ "def" });
-    PKBField x = PKBField::createConcrete(VAR_NAME{ "x" });
-    PKBField y = PKBField::createConcrete(VAR_NAME{ "y" });
-    PKBField z = PKBField::createConcrete(VAR_NAME{ "z" });
-    PKBField i = PKBField::createConcrete(VAR_NAME{ "i" });
-    PKBField w = PKBField::createConcrete(VAR_NAME{ "w" });
-    PKBField monke = PKBField::createConcrete(VAR_NAME{ "monke" });
 
     pkb->insertRelationship(PKBRelationship::NEXT, stmt1, stmt2);
     pkb->insertRelationship(PKBRelationship::NEXT, stmt2, stmt3);
@@ -652,7 +592,7 @@ TEST_CASE("PKB sample source program test") {
             FieldRowResponse{ {Example, abc}, {abc, def} } });
 
         // Calls(Example, p)
-        REQUIRE(pkb->getRelationship(Example, PKBField::createDeclaration(PKBEntityType::PROCEDURE), 
+        REQUIRE(pkb->getRelationship(Example, PKBField::createDeclaration(PKBEntityType::PROCEDURE),
             PKBRelationship::CALLS) == PKBResponse{ true, FieldRowResponse{ {Example, abc} } });
 
         // Calls*(_, _)
@@ -688,23 +628,23 @@ TEST_CASE("PKB sample source program test") {
         // Next(s1, s2) double statement decl
         REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::All),
             PKBField::createDeclaration(StatementType::All), PKBRelationship::NEXT) == PKBResponse{ true,
-            FieldRowResponse{ {stmt1, stmt2}, {stmt2, stmt3}, {stmt3, stmt4}, {stmt4, stmt5}, {stmt5, stmt6}, 
-            {stmt5, stmt12}, {stmt6, stmt7}, {stmt7, stmt8}, {stmt7, stmt9}, {stmt8, stmt10}, {stmt9, stmt10}, 
+            FieldRowResponse{ {stmt1, stmt2}, {stmt2, stmt3}, {stmt3, stmt4}, {stmt4, stmt5}, {stmt5, stmt6},
+            {stmt5, stmt12}, {stmt6, stmt7}, {stmt7, stmt8}, {stmt7, stmt9}, {stmt8, stmt10}, {stmt9, stmt10},
             {stmt10, stmt11}, {stmt11, stmt5}, {stmt11, stmt12}, {stmt12, stmt13} } });
 
         // Next(11, 5) douuble concrete decl
         REQUIRE(pkb->getRelationship(PKBField::createConcrete(Content{ STMT_LO{11, StatementType::Assignment} }),
-            PKBField::createConcrete(Content{ STMT_LO{ 5, StatementType::While } }), PKBRelationship::NEXT) == PKBResponse{ true,
-            FieldRowResponse{ {stmt11, stmt5} } });
+            PKBField::createConcrete(Content{ STMT_LO{ 5, StatementType::While } }), PKBRelationship::NEXT) ==
+            PKBResponse{ true, FieldRowResponse{ {stmt11, stmt5} } });
 
         // Next(7, a) first concrete, second assn decl
         REQUIRE(pkb->getRelationship(PKBField::createConcrete(Content{ STMT_LO{7, StatementType::If } }),
-            PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::NEXT) == PKBResponse{ true, 
+            PKBField::createDeclaration(StatementType::Assignment), PKBRelationship::NEXT) == PKBResponse{ true,
             FieldRowResponse{ {stmt7, stmt8}, {stmt7, stmt9} } });
 
         // Next(a, 5) first assn decl, second concrete
         REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::Assignment),
-            PKBField::createConcrete(STMT_LO{5, StatementType::While}), PKBRelationship::NEXT) == PKBResponse{ true,
+            PKBField::createConcrete(STMT_LO{ 5, StatementType::While }), PKBRelationship::NEXT) == PKBResponse{ true,
             FieldRowResponse{ {stmt11, stmt5} } });
 
         // Next*(ifs, a) first if decl, second assn decl
@@ -725,7 +665,7 @@ TEST_CASE("PKB sample source program test") {
 
         // Next*(ifs1, ifs2) test if traversal can handle insertion of initial node i.e. (7, 7)
         REQUIRE(pkb->getRelationship(PKBField::createDeclaration(StatementType::If),
-            PKBField::createDeclaration(StatementType::If), PKBRelationship::NEXTT) == PKBResponse{ true, 
+            PKBField::createDeclaration(StatementType::If), PKBRelationship::NEXTT) == PKBResponse{ true,
             FieldRowResponse{ {stmt7, stmt7} } });
     }
 }
@@ -797,13 +737,24 @@ TEST_CASE("PKB regression test") {
     SECTION("PKB regression test #148") {
         std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
         pkb->insertStatement(StatementType::Assignment, 2);
+
         PKBField field1 = PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment });
         PKBField field2 = PKBField::createConcrete(STMT_LO{ 2 });
         PKBField field3 = PKBField::createConcrete(VAR_NAME{ "a" });
+
+        // Insert fails because "a" is not in variable table
         pkb->insertRelationship(PKBRelationship::MODIFIES, field2, field3);
+        pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field3);
+
+        // Returns false because "a" is not in variable table
+        REQUIRE_FALSE(pkb->isRelationshipPresent(field2, field3, PKBRelationship::MODIFIES));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(field1, field3, PKBRelationship::MODIFIES));
         REQUIRE_FALSE(pkb->isRelationshipPresent(field2, field3, PKBRelationship::MODIFIES));
 
+        pkb->insertVariable("a");
+        pkb->insertRelationship(PKBRelationship::MODIFIES, field2, field3);
         pkb->insertRelationship(PKBRelationship::MODIFIES, field1, field3);
+        REQUIRE(pkb->isRelationshipPresent(field2, field3, PKBRelationship::MODIFIES));
         REQUIRE(pkb->isRelationshipPresent(field1, field3, PKBRelationship::MODIFIES));
         REQUIRE(pkb->isRelationshipPresent(field2, field3, PKBRelationship::MODIFIES));
 

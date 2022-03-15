@@ -1,6 +1,9 @@
 #include <unordered_set>
 
 #include "CFG.h"
+#include "logging.h"
+
+#define DEBUG_LOG Logger(Level::DEBUG) << "CFGExtractor.cpp Extracted "
 
 namespace sp {
 namespace cfg {
@@ -10,7 +13,7 @@ void CFGNode::insert(std::shared_ptr<CFGNode> child) {
 }
 
 bool CFGNode::operator==(CFGNode const& o) const {
-    return (this->stmt == o.stmt);
+    return this->stmt == o.stmt;
 }
 
 bool CFGNode::isParentOf(CFGNode* other) {
@@ -44,20 +47,102 @@ bool dfs(
 
 bool CFGNode::isAncestorOf(CFGNode* other) {
     std::unordered_set<CFGNode*> reached;
-    return dfs(this, other, reached);
+    for (auto c : this->children) {
+        if (dfs(c.get(), other, reached)) {
+            return true;
+        }
+    }
+    return false;
 }
 
-// TODO(NayLin-H99): AST to CFG construction
-// void visit(const ast::Program& node) override {}; 
-// void visit(const ast::Procedure& node) override {};
-// void visit(const ast::StmtLst& node) override {};
-// void visit(const ast::If& node) override {};
-// void visit(const ast::While& node) override {};
-// void visit(const ast::Read& node) override {};
-// void visit(const ast::Print& node) override {};
-// void visit(const ast::Assign& node) override {};
-// void visit(const ast::Call&) override {};
-// void enterContainer(std::variant<int, std::string> containerId) override {};
-// void exitContainer() override {};
+void CFGExtractor::visit(const ast::Procedure& node) {
+    // create a dummy node as a start node for each procedure
+    auto startNode = std::make_shared<CFGNode>();
+    procNameAndRoot.insert(
+        std::pair<std::string, std::shared_ptr<CFGNode>>(node.getName(), startNode)
+    );
+    lastVisited = startNode;
+}
+
+void CFGExtractor::visit(const ast::If& node) {
+    containerCount += 2;
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::If);
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+    // Whenever you enter an If/Else stmtLst, parent node should be the If node.
+    enterBucket(newNode);
+    // When you exit an If/Else stmtLst, the last statement should point to a dummy exit node.
+    auto dummyExitNode = std::make_shared<CFGNode>();
+    exitReference.insert_or_assign(currentDepth, dummyExitNode);
+}
+
+void CFGExtractor::visit(const ast::While& node) {
+    containerCount++;
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::While);
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+    // When you enter a While stmtLst, the parent node should be the While node.
+    enterBucket(newNode);
+    // When you exit a While container, the last statement should point to the While node.
+    exitReference.insert_or_assign(currentDepth, newNode);
+}
+
+void CFGExtractor::visit(const ast::Read& node) {
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Read);
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+    enterBucket(newNode);
+}
+
+void CFGExtractor::visit(const ast::Print& node) {
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Print);
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+    enterBucket(newNode);
+}
+
+void CFGExtractor::visit(const ast::Assign& node) {
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Assignment);
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+    enterBucket(newNode);
+}
+
+void CFGExtractor::visit(const ast::Call& node) {
+    auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Call);
+    lastVisited->insert(newNode);
+    lastVisited = newNode;
+    enterBucket(newNode);
+}
+
+void CFGExtractor::enterContainer(std::variant<int, std::string> containerId) {
+    // if it is an If/While statement list
+    if (containerCount) {
+        // the lastVisited node should be the If/While statement itself
+        lastVisited = bucket.at(currentDepth);
+    }
+    currentDepth++;
+}
+
+void CFGExtractor::exitContainer() {
+    currentDepth--;
+    // if it is an If/While statement list
+    if (containerCount) {
+        containerCount--;
+        /* 
+        the lastVisited node should point to
+        1. If: dummy exit node
+        2. While: While statement itself
+        */
+        lastVisited->insert(exitReference.at(currentDepth));
+        lastVisited = exitReference.at(currentDepth);
+    }
+}
+
+std::map<std::string, std::shared_ptr<CFGNode>> CFGExtractor::extract(ast::ASTNode* node) {
+    node->accept(this);
+    return procNameAndRoot;
+}
+
 }  // namespace cfg
 }  // namespace sp

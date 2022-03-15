@@ -8,6 +8,7 @@
 #include <variant>
 #include <utility>
 #include <unordered_map>
+#include <set>
 
 #include "Lexer.h"
 #include "Parser.h"
@@ -30,7 +31,8 @@ using std::endl;
 using std::vector;
 
 int lineCount = 1;
-
+std::unordered_map<int, std::string> callStmts;
+std::set<std::string> procedures;
 /** =============================== HELPER METHODS ================================ */
 
 void throwInvalidArgError(string msg) {
@@ -505,6 +507,8 @@ unique_ptr<ast::Statement> parseCallStmt(deque<Token>& tokens) {
     }
     string procName = get<string>(currToken.value);
     checkAndConsume(';', tokens);
+    // insert into callStmts tracker
+    callStmts[lineNo] = procName;
     return make_unique<ast::Call>(
         lineNo,
         procName
@@ -542,7 +546,7 @@ ast::StmtLst parse(deque<Token>& tokens) {
 
 }  // namespace statement_list_parser
 
-/** ================================ PARSER CLASS ================================= */
+/** ============================== HIGH-LEVEL PARSERS =============================== */
 
 unique_ptr<ast::Procedure> parseProcedure(deque<Token>& tokens) {
     // consume "procedure"
@@ -557,6 +561,12 @@ unique_ptr<ast::Procedure> parseProcedure(deque<Token>& tokens) {
     checkAndConsume('{', tokens);
     auto stmtLst = statement_list_parser::parse(tokens);
     checkAndConsume('}', tokens);
+    if (procedures.count(procName)) {
+        std::ostringstream os;
+        os << "Repeated procedure name: " << procName << "!";
+        throwInvalidArgError(os.str());
+    }
+    procedures.insert(procName);
     return make_unique<ast::Procedure>(move(procName), move(stmtLst));
 }
 
@@ -573,16 +583,27 @@ unique_ptr<ast::Program> parseProgram(deque<Token>& tokens) {
     }
 
     Token currToken = getNextToken(tokens);  // consume eof
+    // check if the call statements are calling existent procedures
+    for (auto callStmt : callStmts) {
+        if (!procedures.count(callStmt.second)) {
+            std::ostringstream os;
+            os << "Calling a non-existent procedure: " 
+            << callStmt.second << " at " << callStmt.first << "!";
+            throwInvalidArgError(os.str());
+        }
+    }
     return make_unique<ast::Program>(move(res));
 }
 
 unique_ptr<ast::Program> parse(const string& source) {
-    // new program, reset statement line count.
+    // new program, reset state.
     lineCount = 1;
+    callStmts.clear();
+    procedures.clear();
     // we first tokenise the source code
     deque<Token> lexedTokens = Lexer(source).getTokens();
     try {
-        return parseProgram(lexedTokens);
+        return parseProgram(lexedTokens);        
     }
     catch (invalid_argument ex) {
         Logger(Level::ERROR) << "exception caught: " << ex.what();

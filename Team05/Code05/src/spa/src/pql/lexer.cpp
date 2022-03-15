@@ -26,7 +26,7 @@ namespace qps::parser {
             "Select", "Modifies", "Uses", "Parent*",
             "Parent", "Follows*", "Follows", "Next*",
             "Next", "Calls*", "Calls", "pattern", "such that",
-            "with", "procName", "varName", "value", "stmt#"
+            "with", "procName", "varName", "value", "stmt#", "and"
     };
 
     std::unordered_map<std::string, TokenType> keywordsToTokenTypeMap {
@@ -41,6 +41,7 @@ namespace qps::parser {
             { "Next", TokenType::NEXT },
             { "Calls*", TokenType::CALLS_T },
             { "Calls", TokenType::CALLS },
+            { "and", TokenType::AND },
             { "pattern", TokenType::PATTERN },
             { "such that", TokenType::SUCH_THAT },
             { "with", TokenType::WITH },
@@ -106,10 +107,15 @@ namespace qps::parser {
 
     Token Lexer::getNumber() {
         int charCount = 0;
+
         while (text.length() > 0 && (isdigit(text[charCount])))
             charCount++;
 
         std::string number = text.substr(0, charCount);
+
+        if (number[0] == '0' && number.length() > 1)
+            throw exceptions::PqlSyntaxException(messages::qps::parser::leadingZeroMessage);
+
         text.erase(0, charCount);
 
         return Token { number, TokenType::NUMBER };

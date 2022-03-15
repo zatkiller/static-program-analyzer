@@ -12,6 +12,7 @@ namespace parser {
     inline constexpr char defaultPqlSemanticExceptionMessage[] = "PqlSemanticException is thrown!";
 
     // Parsing syntax error messages
+    inline constexpr char leadingZeroMessage[] = "Leading zero detected!";
     inline constexpr char notExpectingTokenMessage[] = "Not expecting this token type!";
     inline constexpr char unexpectedWhitespaceMessage[] = "Unexpected whitespace";
     inline constexpr char invalidStmtRefMessage[] = "Not a valid StmtRef!";
@@ -32,7 +33,7 @@ namespace parser {
     inline constexpr char cannotBeWildcardMessage[] = "cannot be a wildcard!";
     inline constexpr char notVariableSynonymMessage[] = "synonym has to be of variable design entity";
     inline constexpr char notProcedureSynonymMessage[] = "synonym has to be of procedure design entity";
-    inline constexpr char notAnAssignmentMessage[] = "Not an assignment";
+    inline constexpr char notValidPatternType[] = "Not an valid pattern type";
 
     // With clause error messages
     inline constexpr char invalidAttrCompRefMessage[] = "Invalid token appeared when parsing AttrCompareRef";
@@ -42,6 +43,7 @@ namespace parser {
     // Pattern error messages
     inline constexpr char expressionInvalidGrammarMessage[] = "Pattern expr has invalid grammar!";
     inline constexpr char expressionUnexpectedEndMessage[] = "Pattern expr has unexpectedly reached end of expression!";
+    inline constexpr char notAnAssignPatternMessage[] = "Not an assign pattern!";
 
 }  //  namespace parser
 

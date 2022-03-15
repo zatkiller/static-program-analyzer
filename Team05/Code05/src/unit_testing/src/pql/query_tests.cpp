@@ -83,7 +83,6 @@ TEST_CASE("AttrCompare") {
     }
 
     SECTION ("AttrCompare validateComparingTypes") {
-
         SECTION ("Incompatible type matches") {
             AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, DesignEntity::READ, "rd" }),
                             AttrCompareRef::ofString("v"));
@@ -205,14 +204,25 @@ TEST_CASE("Parent*") {
 }
 
 TEST_CASE("Pattern") {
-    Pattern p = {"h", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x")};
+    Pattern p = Pattern::ofAssignPattern("h", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
     REQUIRE(p.getSynonym() == "h");
+    REQUIRE(p.getSynonymType() == DesignEntity::ASSIGN);
     REQUIRE(p.getEntRef().getType() == EntRefType::WILDCARD);
     REQUIRE(p.getExpression() == ExpSpec::ofFullMatch("x"));
 
-    Pattern p2 = {"g", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x")};
+    Pattern p2 = Pattern::ofAssignPattern("g", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
     REQUIRE(!(p == p2));
     REQUIRE(p2 == p2);
+
+    Pattern p3 = Pattern::ofWhilePattern("x", EntRef::ofWildcard());
+    REQUIRE(p3.getSynonym() == "x");
+    REQUIRE(p3.getSynonymType() == DesignEntity::WHILE);
+    REQUIRE(p3.getEntRef().getType() == EntRefType::WILDCARD);
+
+    Pattern p4 = Pattern::ofIfPattern("y", EntRef::ofWildcard());
+    REQUIRE(p4.getSynonym() == "y");
+    REQUIRE(p4.getSynonymType() == DesignEntity::IF);
+    REQUIRE(p4.getEntRef().getType() == EntRefType::WILDCARD);
 }
 
 TEST_CASE("Query") {
@@ -240,7 +250,7 @@ TEST_CASE("Query") {
     REQUIRE(fields[1].entityType == PKBEntityType::VARIABLE);
     REQUIRE(fields[1].fieldType == PKBFieldType::DECLARATION);
 
-    Pattern p = Pattern{"a", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x")};
+    Pattern p = Pattern::ofAssignPattern("a", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
     query.addPattern(p);
     REQUIRE(!query.getPattern().empty());
     REQUIRE(query.getPattern()[0] == p);

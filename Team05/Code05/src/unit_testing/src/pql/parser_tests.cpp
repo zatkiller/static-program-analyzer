@@ -175,9 +175,9 @@ TEST_CASE("Parser parseSelectFields") {
                            Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
 }
 
-TEST_CASE("Parser parseSuchThat - Uses") {
+TEST_CASE("Parser parseRelRef - Uses") {
     SECTION ("Valid query with Uses relationship") {
-        std::string testQuery = "such that Uses (a, _)";
+        std::string testQuery = "Uses (a, _)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -186,7 +186,7 @@ TEST_CASE("Parser parseSuchThat - Uses") {
 
         queryObj.addDeclaration("a", DesignEntity::ASSIGN);
 
-        parser.parseSuchThat(queryObj);
+        parser.parseRelRef(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::USESS);
@@ -198,33 +198,33 @@ TEST_CASE("Parser parseSuchThat - Uses") {
     }
 
     SECTION("Invalid first argument (wildcard) for Uses") {
-        std::string testQuery = "such that Uses (_, _)";
+        std::string testQuery = "Uses (_, _)";
         Parser parser;
         parser.addInput(testQuery);
 
         Query queryObj;
 
         queryObj.addDeclaration("a", DesignEntity::ASSIGN);
-        REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
+        REQUIRE_THROWS_MATCHES(parser.parseRelRef(queryObj), exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
     }
 
     SECTION("Invalid second argument non-variable design entity for Uses") {
-        std::string testQuery = "such that Uses (1, p)";
+        std::string testQuery = "Uses (1, p)";
         Parser parser;
         parser.addInput(testQuery);
 
         Query queryObj;
 
         queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
-        REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
+        REQUIRE_THROWS_MATCHES(parser.parseRelRef(queryObj), exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::notVariableSynonymMessage));
     }
 }
 
-TEST_CASE("Parser parseSuchThat - Modifies") {
+TEST_CASE("Parser parseRelRef - Modifies") {
     SECTION ("Valid query with Modifies relationship") {
-        std::string testQuery = "such that Modifies (a, _)";
+        std::string testQuery = "Modifies (a, _)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -232,7 +232,7 @@ TEST_CASE("Parser parseSuchThat - Modifies") {
         Query queryObj;
 
         queryObj.addDeclaration("a", DesignEntity::ASSIGN);
-        parser.parseSuchThat(queryObj);
+        parser.parseRelRef(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
@@ -244,33 +244,33 @@ TEST_CASE("Parser parseSuchThat - Modifies") {
     }
 
     SECTION("Invalid first argument (wildcard) for Modifies") {
-        std::string testQuery = "such that Modifies (_, _)";
+        std::string testQuery = "Modifies (_, _)";
         Parser parser;
         parser.addInput(testQuery);
 
         Query queryObj;
 
         queryObj.addDeclaration("a", DesignEntity::ASSIGN);
-        REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
+        REQUIRE_THROWS_MATCHES(parser.parseRelRef(queryObj), exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::cannotBeWildcardMessage));
     }
 
     SECTION("Invalid second argument non-variable design entity for Modifies") {
-        std::string testQuery = "such that Modifies (1, p)";
+        std::string testQuery = "Modifies (1, p)";
         Parser parser;
         parser.addInput(testQuery);
 
         Query queryObj;
 
         queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
-        REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
+        REQUIRE_THROWS_MATCHES(parser.parseRelRef(queryObj), exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::notVariableSynonymMessage));
     }
 }
 
-TEST_CASE("Parser parseSuchThat - Follows") {
+TEST_CASE("Parser parseRelRef - Follows") {
     SECTION ("Valid query with Follows relationship") {
-        std::string testQuery = "such that Follows (s1, 20)";
+        std::string testQuery = "Follows (s1, 20)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -279,7 +279,7 @@ TEST_CASE("Parser parseSuchThat - Follows") {
 
         queryObj.addDeclaration("s1", DesignEntity::STMT);
         queryObj.addDeclaration("s2", DesignEntity::STMT);
-        parser.parseSuchThat(queryObj);
+        parser.parseRelRef(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::FOLLOWS);
@@ -292,9 +292,9 @@ TEST_CASE("Parser parseSuchThat - Follows") {
     }
 }
 
-TEST_CASE("Parser parseSuchThat - Follows*") {
+TEST_CASE("Parser parseRelRef - Follows*") {
     SECTION ("Valid query with Follows* relationship") {
-        std::string testQuery = "such that Follows* (s2, 20)";
+        std::string testQuery = "Follows* (s2, 20)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -303,7 +303,7 @@ TEST_CASE("Parser parseSuchThat - Follows*") {
 
         queryObj.addDeclaration("s1", DesignEntity::STMT);
         queryObj.addDeclaration("s2", DesignEntity::STMT);
-        parser.parseSuchThat(queryObj);
+        parser.parseRelRef(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::FOLLOWST);
@@ -316,9 +316,9 @@ TEST_CASE("Parser parseSuchThat - Follows*") {
     }
 }
 
-TEST_CASE("Parser parseSuchThat - Parent") {
+TEST_CASE("Parser parseRelRef - Parent") {
     SECTION ("Valid query with Parent relationship") {
-        std::string testQuery = "such that Parent (20, s2)";
+        std::string testQuery = "Parent (20, s2)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -328,7 +328,7 @@ TEST_CASE("Parser parseSuchThat - Parent") {
         queryObj.addDeclaration("s1", DesignEntity::STMT);
         queryObj.addDeclaration("s2", DesignEntity::STMT);
 
-        parser.parseSuchThat(queryObj);
+        parser.parseRelRef(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::PARENT);
@@ -341,9 +341,9 @@ TEST_CASE("Parser parseSuchThat - Parent") {
     }
 }
 
-TEST_CASE("Parser parseSuchThat - Parent*") {
+TEST_CASE("Parser parseRelRef - Parent*") {
     SECTION ("Valid query with Parent* relationship") {
-        std::string testQuery = "such that Parent* (20, s2)";
+        std::string testQuery = "Parent* (20, s2)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -353,7 +353,7 @@ TEST_CASE("Parser parseSuchThat - Parent*") {
         queryObj.addDeclaration("s1", DesignEntity::STMT);
         queryObj.addDeclaration("s2", DesignEntity::STMT);
 
-        parser.parseSuchThat(queryObj);
+        parser.parseRelRef(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::PARENTT);
@@ -366,9 +366,9 @@ TEST_CASE("Parser parseSuchThat - Parent*") {
     }
 }
 
-TEST_CASE("Parser parseSuchThat - Next") {
+TEST_CASE("Parser parseRelRef - Next") {
     SECTION ("Valid query with Next relationship") {
-        std::string testQuery = "such that Next (s1, s2)";
+        std::string testQuery = "Next (s1, s2)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -378,7 +378,7 @@ TEST_CASE("Parser parseSuchThat - Next") {
         queryObj.addDeclaration("s1", DesignEntity::STMT);
         queryObj.addDeclaration("s2", DesignEntity::STMT);
 
-        parser.parseSuchThat(queryObj);
+        parser.parseRelRef(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::NEXT);
@@ -391,9 +391,9 @@ TEST_CASE("Parser parseSuchThat - Next") {
     }
 }
 
-TEST_CASE("Parser parseSuchThat - Next*") {
+TEST_CASE("Parser parseRelRef - Next*") {
     SECTION ("Valid query with Next* relationship") {
-        std::string testQuery = "such that Next* (s1, s2)";
+        std::string testQuery = "Next* (s1, s2)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -403,7 +403,7 @@ TEST_CASE("Parser parseSuchThat - Next*") {
         queryObj.addDeclaration("s1", DesignEntity::STMT);
         queryObj.addDeclaration("s2", DesignEntity::STMT);
 
-        parser.parseSuchThat(queryObj);
+        parser.parseRelRef(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::NEXTT);
@@ -416,9 +416,9 @@ TEST_CASE("Parser parseSuchThat - Next*") {
     }
 }
 
-TEST_CASE("Parser parseSuchThat - Calls") {
+TEST_CASE("Parser parseRelRef - Calls") {
     SECTION ("Valid query with Calls relationship") {
-        std::string testQuery = "such that Calls (p1, p2)";
+        std::string testQuery = "Calls (p1, p2)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -428,7 +428,7 @@ TEST_CASE("Parser parseSuchThat - Calls") {
         queryObj.addDeclaration("p1", DesignEntity::PROCEDURE);
         queryObj.addDeclaration("p2", DesignEntity::PROCEDURE);
 
-        parser.parseSuchThat(queryObj);
+        parser.parseRelRef(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::CALLS);
@@ -441,7 +441,7 @@ TEST_CASE("Parser parseSuchThat - Calls") {
     }
 
     SECTION ("Invalid query with Calls relationship - synonym is not procedure") {
-        std::string testQuery = "such that Calls (p, v)";
+        std::string testQuery = "Calls (p, v)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -451,14 +451,14 @@ TEST_CASE("Parser parseSuchThat - Calls") {
         queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
         queryObj.addDeclaration("v", DesignEntity::VARIABLE);
 
-        REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
+        REQUIRE_THROWS_MATCHES(parser.parseRelRef(queryObj), exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::notProcedureSynonymMessage));
     }
 }
 
-TEST_CASE("Parser parseSuchThat - Calls*") {
+TEST_CASE("Parser parseRelRef - Calls*") {
     SECTION ("Valid query with Calls* relationship") {
-        std::string testQuery = "such that Calls* (p1, p2)";
+        std::string testQuery = "Calls* (p1, p2)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -468,7 +468,7 @@ TEST_CASE("Parser parseSuchThat - Calls*") {
         queryObj.addDeclaration("p1", DesignEntity::PROCEDURE);
         queryObj.addDeclaration("p2", DesignEntity::PROCEDURE);
 
-        parser.parseSuchThat(queryObj);
+        parser.parseRelRef(queryObj);
 
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
         REQUIRE(relRefPtr->getType() == RelRefType::CALLST);
@@ -481,7 +481,7 @@ TEST_CASE("Parser parseSuchThat - Calls*") {
     }
 
     SECTION ("Invalid query with Calls* relationship - synonym is not procedure") {
-        std::string testQuery = "such that Calls* (v, p)";
+        std::string testQuery = "Calls* (v, p)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -491,8 +491,96 @@ TEST_CASE("Parser parseSuchThat - Calls*") {
         queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
         queryObj.addDeclaration("v", DesignEntity::VARIABLE);
 
-        REQUIRE_THROWS_MATCHES(parser.parseSuchThat(queryObj), exceptions::PqlSemanticException,
+        REQUIRE_THROWS_MATCHES(parser.parseRelRef(queryObj), exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::notProcedureSynonymMessage));
+    }
+}
+
+TEST_CASE("Parser parseSuchThatClause") {
+        SECTION ("Single such that clause") {
+            std::string testQuery = "such that Calls* (p1, p2)";
+
+            Parser parser;
+            parser.addInput(testQuery);
+
+            Query queryObj;
+
+            queryObj.addDeclaration("p1", DesignEntity::PROCEDURE);
+            queryObj.addDeclaration("p2", DesignEntity::PROCEDURE);
+            queryObj.addDeclaration("s1", DesignEntity::STMT);
+            queryObj.addDeclaration("s2", DesignEntity::STMT);
+
+            parser.parseSuchThatClause(queryObj);
+
+            std::vector<std::shared_ptr<RelRef>> suchThat = queryObj.getSuchthat();
+
+            REQUIRE(suchThat.size() == 1);
+
+            std::shared_ptr<RelRef> relRefPtr = suchThat[0];
+            REQUIRE(relRefPtr->getType() == RelRefType::CALLST);
+
+            std::shared_ptr<CallsT> cPtr = std::dynamic_pointer_cast<CallsT>(relRefPtr);
+            REQUIRE(cPtr->caller.isDeclaration());
+            REQUIRE(cPtr->caller.getDeclaration() == "p1");
+            REQUIRE(cPtr->transitiveCallee.isDeclaration());
+            REQUIRE(cPtr->transitiveCallee.getDeclaration() == "p2");
+    }
+
+    SECTION ("Multiple such that clause") {
+        SECTION("Valid Multiple such that clause") {
+            std::string testQuery = "such that Calls* (p1, p2) and Next* (s1, s2)";
+
+            Parser parser;
+            parser.addInput(testQuery);
+
+            Query queryObj;
+
+            queryObj.addDeclaration("p1", DesignEntity::PROCEDURE);
+            queryObj.addDeclaration("p2", DesignEntity::PROCEDURE);
+            queryObj.addDeclaration("s1", DesignEntity::STMT);
+            queryObj.addDeclaration("s2", DesignEntity::STMT);
+
+            parser.parseSuchThatClause(queryObj);
+
+            std::vector<std::shared_ptr<RelRef>> suchThat = queryObj.getSuchthat();
+
+            REQUIRE(suchThat.size() == 2);
+
+            std::shared_ptr<RelRef> relRefPtr = suchThat[0];
+            REQUIRE(relRefPtr->getType() == RelRefType::CALLST);
+
+            std::shared_ptr<CallsT> cPtr = std::dynamic_pointer_cast<CallsT>(relRefPtr);
+            REQUIRE(cPtr->caller.isDeclaration());
+            REQUIRE(cPtr->caller.getDeclaration() == "p1");
+            REQUIRE(cPtr->transitiveCallee.isDeclaration());
+            REQUIRE(cPtr->transitiveCallee.getDeclaration() == "p2");
+
+            std::shared_ptr<RelRef> relRefPtr2 = suchThat[1];
+            REQUIRE(relRefPtr2->getType() == RelRefType::NEXTT);
+
+            std::shared_ptr<NextT> nPtr = std::dynamic_pointer_cast<NextT>(relRefPtr2);
+            REQUIRE(nPtr->before.isDeclaration());
+            REQUIRE(nPtr->before.getDeclaration() == "s1");
+            REQUIRE(nPtr->transitiveAfter.isDeclaration());
+            REQUIRE(nPtr->transitiveAfter.getDeclaration() == "s2");
+        }
+
+        SECTION ("Invalid Multiple such that clause") {
+            std::string testQuery = "such that Calls* (p1, p2) and such that Next* (s1, s2)";
+
+            Parser parser;
+            parser.addInput(testQuery);
+
+            Query queryObj;
+
+            queryObj.addDeclaration("p1", DesignEntity::PROCEDURE);
+            queryObj.addDeclaration("p2", DesignEntity::PROCEDURE);
+            queryObj.addDeclaration("s1", DesignEntity::STMT);
+            queryObj.addDeclaration("s2", DesignEntity::STMT);
+
+            REQUIRE_THROWS_MATCHES(parser.parseSuchThatClause(queryObj), exceptions::PqlSyntaxException,
+                                   Catch::Message(messages::qps::parser::notExpectingTokenMessage));
+        }
     }
 }
 
@@ -537,73 +625,163 @@ TEST_CASE("Parser validateExpr") {
                            Catch::Message(messages::qps::parser::expressionUnexpectedEndMessage));
 }
 
-TEST_CASE("Parser parsePattern - wildcard expression") {
-    std::string testQuery = "pattern a (v, _)";
-
-    Parser parser;
-    parser.addInput(testQuery);
-
-    Query queryObj;
-
-    queryObj.addDeclaration("a", DesignEntity::ASSIGN);
-    queryObj.addDeclaration("v", DesignEntity::VARIABLE);
-
-    parser.parsePattern(queryObj);
-
-    std::vector<Pattern> patterns = queryObj.getPattern();
-    Pattern pattern = patterns[0];
-
-    REQUIRE(pattern.getSynonym() == "a");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
-    REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == ExpSpec::ofWildcard());
-}
-
-TEST_CASE("Parser parsePattern - string expression") {
-    std::string testQuery = "pattern a (v, \"x\")";
-
-    Parser parser;
-    parser.addInput(testQuery);
-
-    Query queryObj;
-
-    queryObj.addDeclaration("a", DesignEntity::ASSIGN);
-    queryObj.addDeclaration("v", DesignEntity::VARIABLE);
-    parser.parsePattern(queryObj);
-
-    std::vector<Pattern> patterns = queryObj.getPattern();
-    Pattern pattern = patterns[0];
-
-    REQUIRE(pattern.getSynonym() == "a");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
-    REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == ExpSpec::ofFullMatch("x"));
-}
-
-TEST_CASE("Parser parsePattern - string expression with wildcard") {
-    SECTION("Valid Pattern semantics") {
-        std::string testQuery = "pattern a (v, _\"x\"_)";
+TEST_CASE("Parser parsePatternLhs") {
+    SECTION("Invalid Pattern semantics") {
+        std::string testQuery = "p";
 
         Parser parser;
         parser.addInput(testQuery);
 
         Query queryObj;
 
-        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+        queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
+
+        REQUIRE_THROWS_MATCHES(parser.parsePatternLhs(queryObj, "a"),
+                               exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::notVariableSynonymMessage));
+    }
+}
+
+TEST_CASE("Parser parsePattern") {
+    SECTION ("parsePattern - pattern is assign") {
+        SECTION ("with wildcard expression") {
+            std::string testQuery = "a (v, _)";
+
+            Parser parser;
+            parser.addInput(testQuery);
+
+            Query queryObj;
+
+            queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+            queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
+            parser.parsePattern(queryObj);
+
+            std::vector<Pattern> patterns = queryObj.getPattern();
+            Pattern pattern = patterns[0];
+
+            REQUIRE(pattern.getSynonym() == "a");
+            REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
+            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            REQUIRE(validDeclaration);
+            REQUIRE(pattern.getExpression() == ExpSpec::ofWildcard());
+        }
+
+        SECTION ("With string expression") {
+            std::string testQuery = "a (v, \"x\")";
+
+            Parser parser;
+            parser.addInput(testQuery);
+
+            Query queryObj;
+
+            queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+            queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+            parser.parsePattern(queryObj);
+
+            std::vector<Pattern> patterns = queryObj.getPattern();
+            Pattern pattern = patterns[0];
+
+            REQUIRE(pattern.getSynonym() == "a");
+            REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
+            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            REQUIRE(validDeclaration);
+            REQUIRE(pattern.getExpression() == ExpSpec::ofFullMatch("x"));
+        }
+
+        SECTION("With partial submatch argument") {
+            std::string testQuery = "a (v, _\"x\"_)";
+
+            Parser parser;
+            parser.addInput(testQuery);
+
+            Query queryObj;
+
+            queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+            queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+            parser.parsePattern(queryObj);
+
+            std::vector<Pattern> patterns = queryObj.getPattern();
+            Pattern pattern = patterns[0];
+
+            REQUIRE(pattern.getSynonym() == "a");
+            REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
+            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            REQUIRE(validDeclaration);
+            REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
+        }
+    }
+
+    SECTION ("parsePattern - pattern is if") {
+        std::string testQuery = "ifs (v, _ , _ )";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("ifs", DesignEntity::IF);
         queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
         parser.parsePattern(queryObj);
 
         std::vector<Pattern> patterns = queryObj.getPattern();
         Pattern pattern = patterns[0];
 
-        REQUIRE(pattern.getSynonym() == "a");
+        REQUIRE(pattern.getSynonym() == "ifs");
+        REQUIRE(pattern.getSynonymType() == DesignEntity::IF);
         bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
         REQUIRE(validDeclaration);
-        REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
+        REQUIRE_THROWS_MATCHES(pattern.getExpression(),
+                               exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::notAnAssignPatternMessage));
     }
 
-    SECTION("Invalid Pattern semantics") {
-        std::string testQuery = "pattern a (p, _\"x\"_)";
+    SECTION ("parsePattern - pattern is while") {
+        std::string testQuery = "w (v, _ )";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("w", DesignEntity::WHILE);
+        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
+        parser.parsePattern(queryObj);
+
+        std::vector<Pattern> patterns = queryObj.getPattern();
+        Pattern pattern = patterns[0];
+
+        REQUIRE(pattern.getSynonym() == "w");
+        REQUIRE(pattern.getSynonymType() == DesignEntity::WHILE);
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+        REQUIRE(validDeclaration);
+        REQUIRE_THROWS_MATCHES(pattern.getExpression(),
+                               exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::notAnAssignPatternMessage));
+    }
+
+    SECTION ("Invalid pattern synonym type") {
+        std::string testQuery = "rd (v, _ )";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("rd", DesignEntity::READ);
+        queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
+        REQUIRE_THROWS_MATCHES(parser.parsePattern(queryObj),
+                               exceptions::PqlSyntaxException,
+                               Catch::Message(messages::qps::parser::notValidPatternType));
+    }
+}
+
+TEST_CASE("Parser parsePatternClause") {
+    SECTION ("Single pattern clause") {
+        std::string testQuery = "pattern a (v, _)";
 
         Parser parser;
         parser.addInput(testQuery);
@@ -611,12 +789,72 @@ TEST_CASE("Parser parsePattern - string expression with wildcard") {
         Query queryObj;
 
         queryObj.addDeclaration("a", DesignEntity::ASSIGN);
-        queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
         queryObj.addDeclaration("v", DesignEntity::VARIABLE);
 
-        REQUIRE_THROWS_MATCHES(parser.parsePattern(queryObj),
-                               exceptions::PqlSemanticException,
-                               Catch::Message(messages::qps::parser::notVariableSynonymMessage));
+        parser.parsePatternClause(queryObj);
+
+        std::vector<Pattern> patterns = queryObj.getPattern();
+        REQUIRE(patterns.size() == 1);
+
+        Pattern pattern1 = patterns[0];
+
+        REQUIRE(pattern1.getSynonym() == "a");
+        bool validDeclaration = (pattern1.getEntRef().isDeclaration()) &&
+                (pattern1.getEntRef().getDeclaration() == "v");
+        REQUIRE(validDeclaration);
+        REQUIRE(pattern1.getExpression() == ExpSpec::ofWildcard());
+    }
+
+    SECTION ("Multi pattern clause") {
+        SECTION ("Valid Multi pattern clause") {
+            std::string testQuery = "pattern a (v, _) and a1 (\"x\", _)";
+
+            Parser parser;
+            parser.addInput(testQuery);
+
+            Query queryObj;
+
+            queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+            queryObj.addDeclaration("a1", DesignEntity::ASSIGN);
+            queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
+            parser.parsePatternClause(queryObj);
+
+            std::vector<Pattern> patterns = queryObj.getPattern();
+            REQUIRE(patterns.size() == 2);
+
+            Pattern pattern1 = patterns[0];
+
+            REQUIRE(pattern1.getSynonym() == "a");
+            bool validDeclaration = (pattern1.getEntRef().isDeclaration()) &&
+                                    (pattern1.getEntRef().getDeclaration() == "v");
+            REQUIRE(validDeclaration);
+            REQUIRE(pattern1.getExpression() == ExpSpec::ofWildcard());
+
+
+            Pattern pattern2 = patterns[1];
+
+            REQUIRE(pattern2.getSynonym() == "a1");
+            validDeclaration = (pattern2.getEntRef().isVarName()) && (pattern2.getEntRef().getVariableName() == "x");
+            REQUIRE(validDeclaration);
+            REQUIRE(pattern2.getExpression() == ExpSpec::ofWildcard());
+        }
+
+        SECTION ("Invalid Multi pattern clause") {
+            std::string testQuery = "pattern a (v, _) and pattern a1 (\"x\", _)";
+
+            Parser parser;
+            parser.addInput(testQuery);
+
+            Query queryObj;
+
+            queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+            queryObj.addDeclaration("a1", DesignEntity::ASSIGN);
+            queryObj.addDeclaration("v", DesignEntity::VARIABLE);
+
+            REQUIRE_THROWS_MATCHES(parser.parsePatternClause(queryObj), exceptions::PqlSyntaxException,
+                                   Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
+        }
     }
 }
 
@@ -938,13 +1176,13 @@ TEST_CASE("Parser parseModifiesOrUsesVariables") {
     }
 }
 
-TEST_CASE("Parser parseRelRef") {
+TEST_CASE("Parser parseRelRefHelper") {
     SECTION("UseS RelRef") {
         Query queryObj;
         queryObj.addDeclaration("s", DesignEntity::STMT);
         Parser parser;
         parser.lexer.text = "Uses(s,_)";
-        std::shared_ptr<RelRef> ptr = parser.parseRelRef(queryObj);
+        std::shared_ptr<RelRef> ptr = parser.parseRelRefHelper(queryObj);
         REQUIRE(ptr.get()->getType() == RelRefType::USESS);
 
         std::shared_ptr<UsesS> sharedPtr = std::dynamic_pointer_cast<UsesS>(ptr);
@@ -958,7 +1196,7 @@ TEST_CASE("Parser parseRelRef") {
         queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
         Parser parser;
         parser.lexer.text = "Uses(p,_)";
-        std::shared_ptr<RelRef> ptr = parser.parseRelRef(queryObj);
+        std::shared_ptr<RelRef> ptr = parser.parseRelRefHelper(queryObj);
         REQUIRE(ptr.get()->getType() == RelRefType::USESP);
 
         std::shared_ptr<UsesP> sharedPtr = std::dynamic_pointer_cast<UsesP>(ptr);
@@ -972,7 +1210,7 @@ TEST_CASE("Parser parseRelRef") {
         queryObj.addDeclaration("s", DesignEntity::STMT);
         Parser parser;
         parser.lexer.text = "Modifies(s,_)";
-        std::shared_ptr<RelRef> ptr = parser.parseRelRef(queryObj);
+        std::shared_ptr<RelRef> ptr = parser.parseRelRefHelper(queryObj);
         REQUIRE(ptr.get()->getType() == RelRefType::MODIFIESS);
 
         std::shared_ptr<ModifiesS> sharedPtr = std::dynamic_pointer_cast<ModifiesS>(ptr);
@@ -986,7 +1224,7 @@ TEST_CASE("Parser parseRelRef") {
         queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
         Parser parser;
         parser.lexer.text = "Modifies(p,_)";
-        std::shared_ptr<RelRef> ptr = parser.parseRelRef(queryObj);
+        std::shared_ptr<RelRef> ptr = parser.parseRelRefHelper(queryObj);
         REQUIRE(ptr.get()->getType() == RelRefType::MODIFIESP);
 
         std::shared_ptr<ModifiesP> sharedPtr = std::dynamic_pointer_cast<ModifiesP>(ptr);
@@ -1097,15 +1335,15 @@ TEST_CASE("Parser parseAttrCompareRef") {
     }
 }
 
-TEST_CASE("Parser parseWith") {
+TEST_CASE("Parser parseAttrCompare") {
     SECTION ("AttrRef on LHS and String on RHS") {
         Parser parser;
-        parser.lexer.text = "with p.procName = \"Monke\"";
+        parser.lexer.text = "p.procName = \"Monke\"";
 
         Query query;
         query.addDeclaration("p", DesignEntity::PROCEDURE);
 
-        parser.parseWith(query);
+        parser.parseAttrCompare(query);
 
         REQUIRE(!query.getWith().empty());
         AttrCompare ac = query.getWith()[0];
@@ -1117,12 +1355,12 @@ TEST_CASE("Parser parseWith") {
 
     SECTION ("Number on LHS and AttRef on Rhs") {
         Parser parser;
-        parser.lexer.text = "with 3 = rd.stmt#";
+        parser.lexer.text = "3 = rd.stmt#";
 
         Query query;
         query.addDeclaration("rd", DesignEntity::READ);
 
-        parser.parseWith(query);
+        parser.parseAttrCompare(query);
 
         REQUIRE(!query.getWith().empty());
         AttrCompare ac = query.getWith()[0];
@@ -1134,13 +1372,70 @@ TEST_CASE("Parser parseWith") {
 
     SECTION ("Number on LHS and AttRef on Rhs") {
         Parser parser;
-        parser.lexer.text = "with & = rd.stmt#";
+        parser.lexer.text = "& = rd.stmt#";
 
         Query query;
         query.addDeclaration("rd", DesignEntity::READ);
 
-        REQUIRE_THROWS_MATCHES(parser.parseWith(query), exceptions::PqlSyntaxException,
+        REQUIRE_THROWS_MATCHES(parser.parseAttrCompare(query), exceptions::PqlSyntaxException,
                                Catch::Message(messages::qps::parser::invalidAttrCompRefMessage));
+    }
+}
+
+TEST_CASE("Parser parseWithClause") {
+    SECTION ("Single With clause") {
+        Parser parser;
+        parser.lexer.text = "with p.procName = \"Monke\"";
+
+        Query query;
+        query.addDeclaration("p", DesignEntity::PROCEDURE);
+
+        parser.parseWithClause(query);
+
+        REQUIRE(query.getWith().size() == 1);
+        AttrCompare ac = query.getWith()[0];
+        AttrCompareRef lhs = ac.getLhs();
+        AttrCompareRef rhs = ac.getRhs();
+        REQUIRE(lhs.isAttrRef());
+        REQUIRE(rhs.isString());
+    }
+
+    SECTION ("Multi With clause") {
+        SECTION ("Valid Multi With clause") {
+            Parser parser;
+            parser.lexer.text = "with p.procName = \"Monke\" and 3 = s.stmt#";
+
+            Query query;
+            query.addDeclaration("p", DesignEntity::PROCEDURE);
+            query.addDeclaration("s", DesignEntity::STMT);
+
+            parser.parseWithClause(query);
+
+            REQUIRE(query.getWith().size() == 2);
+            AttrCompare ac = query.getWith()[0];
+            AttrCompareRef lhs = ac.getLhs();
+            AttrCompareRef rhs = ac.getRhs();
+            REQUIRE(lhs.isAttrRef());
+            REQUIRE(rhs.isString());
+
+            AttrCompare ac2 = query.getWith()[1];
+            AttrCompareRef lhs2 = ac2.getLhs();
+            AttrCompareRef rhs2 = ac2.getRhs();
+            REQUIRE(lhs2.isNumber());
+            REQUIRE(rhs2.isAttrRef());
+        }
+
+        SECTION ("Invalid Multi With clause") {
+            Parser parser;
+            parser.lexer.text = "with p.procName = \"Monke\" and with 3 = s.stmt#";
+
+            Query query;
+            query.addDeclaration("p", DesignEntity::PROCEDURE);
+            query.addDeclaration("s", DesignEntity::STMT);
+
+            REQUIRE_THROWS_MATCHES(parser.parseWithClause(query), exceptions::PqlSyntaxException,
+                                   Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
+        }
     }
 }
 
@@ -1192,49 +1487,98 @@ TEST_CASE("Parser parseQuery") {
 }
 
 TEST_CASE("Parser parsePql") {
-    std::string testQuery = "assign a, a1; variable v; Select a such that Modifies (a, _) pattern a (v, _\"x\"_) "
-                            "with \"Monke\" = v.varName";
+    SECTION ("Valid pql query") {
+        std::string testQuery = "assign a, a1; variable v; Select a such that Modifies (a, _) pattern a (v, _\"x\"_) "
+                                "with \"Monke\" = v.varName";
 
-    Parser parser;
-    Query queryObj = parser.parsePql(testQuery);
+        Parser parser;
+        Query queryObj = parser.parsePql(testQuery);
 
-    // Check declaration
-    REQUIRE(queryObj.hasDeclaration("a"));
-    REQUIRE(queryObj.getDeclarationDesignEntity("a") == DesignEntity::ASSIGN);
+        // Check declaration
+        REQUIRE(queryObj.hasDeclaration("a"));
+        REQUIRE(queryObj.getDeclarationDesignEntity("a") == DesignEntity::ASSIGN);
 
-    REQUIRE(queryObj.hasDeclaration("a1"));
-    REQUIRE(queryObj.getDeclarationDesignEntity("a1") == DesignEntity::ASSIGN);
+        REQUIRE(queryObj.hasDeclaration("a1"));
+        REQUIRE(queryObj.getDeclarationDesignEntity("a1") == DesignEntity::ASSIGN);
 
-    REQUIRE(queryObj.hasDeclaration("v"));
-    REQUIRE(queryObj.getDeclarationDesignEntity("v") == DesignEntity::VARIABLE);
+        REQUIRE(queryObj.hasDeclaration("v"));
+        REQUIRE(queryObj.getDeclarationDesignEntity("v") == DesignEntity::VARIABLE);
 
-    // Check Select
-    REQUIRE(queryObj.hasVariable("a"));
+        // Check Select
+        REQUIRE(queryObj.hasVariable("a"));
 
-    // Check such that
-    std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
-    REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
+        // Check such that
+        std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
+        REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
 
-    std::shared_ptr<ModifiesS> modifiesPtr = std::dynamic_pointer_cast<ModifiesS>(relRefPtr);
-    REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
-    REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
-    REQUIRE(modifiesPtr->modified.isWildcard());
+        std::shared_ptr<ModifiesS> modifiesPtr = std::dynamic_pointer_cast<ModifiesS>(relRefPtr);
+        REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
+        REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
+        REQUIRE(modifiesPtr->modified.isWildcard());
 
-    // Check pattern
-    std::vector<Pattern> patterns = queryObj.getPattern();
-    Pattern pattern = patterns[0];
+        // Check pattern
+        std::vector<Pattern> patterns = queryObj.getPattern();
+        Pattern pattern = patterns[0];
 
-    REQUIRE(pattern.getSynonym() == "a");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
-    REQUIRE(validDeclaration);
-    REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
+        REQUIRE(pattern.getSynonym() == "a");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+        REQUIRE(validDeclaration);
+        REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 
-    std::vector<AttrCompare> withLst = queryObj.getWith();
-    REQUIRE(!withLst.empty());
-    AttrCompare with = withLst[0];
+        std::vector<AttrCompare> withLst = queryObj.getWith();
+        REQUIRE(!withLst.empty());
+        AttrCompare with = withLst[0];
 
-    REQUIRE(with.getLhs().isString());
-    REQUIRE(with.getRhs().isAttrRef());
+        REQUIRE(with.getLhs().isString());
+        REQUIRE(with.getRhs().isAttrRef());
+    }
+
+    SECTION ("Valid pql query with different order of clauses") {
+        std::string testQuery = "assign a, a1; variable v; Select a pattern a (v, _\"x\"_) "
+                                "with \"Monke\" = v.varName such that Modifies (a, _)";
+
+        Parser parser;
+        Query queryObj = parser.parsePql(testQuery);
+
+        // Check declaration
+        REQUIRE(queryObj.hasDeclaration("a"));
+        REQUIRE(queryObj.getDeclarationDesignEntity("a") == DesignEntity::ASSIGN);
+
+        REQUIRE(queryObj.hasDeclaration("a1"));
+        REQUIRE(queryObj.getDeclarationDesignEntity("a1") == DesignEntity::ASSIGN);
+
+        REQUIRE(queryObj.hasDeclaration("v"));
+        REQUIRE(queryObj.getDeclarationDesignEntity("v") == DesignEntity::VARIABLE);
+
+        // Check Select
+        REQUIRE(queryObj.hasVariable("a"));
+
+        // Check pattern
+        std::vector<Pattern> patterns = queryObj.getPattern();
+        Pattern pattern = patterns[0];
+
+        REQUIRE(pattern.getSynonym() == "a");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+        REQUIRE(validDeclaration);
+        REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
+
+        // Check with
+        std::vector<AttrCompare> withLst = queryObj.getWith();
+        REQUIRE(!withLst.empty());
+        AttrCompare with = withLst[0];
+
+        REQUIRE(with.getLhs().isString());
+        REQUIRE(with.getRhs().isAttrRef());
+
+        // Check such that
+        std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
+        REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
+
+        std::shared_ptr<ModifiesS> modifiesPtr = std::dynamic_pointer_cast<ModifiesS>(relRefPtr);
+        REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
+        REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
+        REQUIRE(modifiesPtr->modified.isWildcard());
+    }
 }
 
 TEST_CASE("Parser isValidStatement") {

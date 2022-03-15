@@ -35,16 +35,20 @@ typedef struct PROC_NAME {
 } PROC_NAME;
 
 typedef struct STMT_LO {
-    STMT_LO(int statementNum) : statementNum(statementNum), type(std::nullopt) {}
-    STMT_LO(int statementNum, StatementType type) : statementNum(statementNum), type(type) {}
+    STMT_LO(int statementNum) : statementNum(statementNum), type(std::nullopt), attribute(std::nullopt) {}
+    STMT_LO(int statementNum, StatementType type) : statementNum(statementNum), type(type), attribute(std::nullopt) {}
+    STMT_LO(int statementNum, StatementType type, std::string attribute) :
+        statementNum(statementNum), type(type), attribute(attribute) {}
+
     int statementNum;
     std::optional<StatementType> type;
+    std::optional<std::string> attribute;
 
     bool hasStatementType();
+    bool hasAttribute();
     bool operator == (const STMT_LO&) const;
     bool operator < (const STMT_LO&) const;
 } STMT_LO;
-
 
 using Content = std::variant<std::monostate, STMT_LO, VAR_NAME, PROC_NAME, CONST>;
 

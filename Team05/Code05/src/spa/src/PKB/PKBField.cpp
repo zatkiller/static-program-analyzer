@@ -4,7 +4,7 @@
 #include "PKBField.h"
 
 bool STMT_LO::operator == (const STMT_LO& other) const {
-    return statementNum == other.statementNum && type == other.type;
+    return statementNum == other.statementNum && type == other.type && attribute == other.attribute;
 }
 
 bool STMT_LO::operator < (const STMT_LO& other) const {
@@ -13,6 +13,10 @@ bool STMT_LO::operator < (const STMT_LO& other) const {
 
 bool STMT_LO::hasStatementType() {
     return type.has_value();
+}
+
+bool STMT_LO::hasAttribute() {
+    return attribute.has_value();
 }
 
 bool VAR_NAME::operator == (const VAR_NAME& other) const {
