@@ -17,9 +17,8 @@ private:
     };
 };
 
-
 /**
- * Extracts all Parent relationship from the AST and send them to PKB Adaptor.
+ * Extracts all Parent relationship from the AST and return them as a set of entries
  */
 class ParentExtractor : public Extractor {
 public:
@@ -31,6 +30,9 @@ public:
     }
 };
 
+/**
+ * Extracts all Parent relationship from the AST and send them to the PKBStrategy
+ */
 class ParentExtractorModule : public ExtractorModule {
 public:
     ParentExtractorModule(PKBStrategy *pkb) : 

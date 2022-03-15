@@ -8,7 +8,7 @@ namespace design_extractor {
 
 
 /**
- * Extracts all uses relationship from the AST and send them to PKB Adaptor.
+ * a ASTNodeVisitor that collects the Follows relationship as it walks through the AST.
  */
 class UsesCollector : public TransitiveRelationshipTemplate {
 private:

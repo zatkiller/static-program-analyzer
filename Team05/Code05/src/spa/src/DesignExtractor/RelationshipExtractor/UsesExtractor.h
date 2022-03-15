@@ -13,7 +13,7 @@
 namespace sp {
 namespace design_extractor {
 /**
- * Extracts all uses relationship from the AST and send them to PKB Adaptor.
+ * Extracts all Uses relationship from the AST and return them as a set of entries
  */
 class UsesExtractor : public Extractor {
 public:
@@ -21,6 +21,9 @@ public:
     std::set<Entry> extract(const ast::ASTNode*) override;
 };
 
+/**
+ * Extracts all Uses relationship from the AST and send them to the PKBStrategy
+ */
 class UsesExtractorModule : public ExtractorModule {
 public:
     UsesExtractorModule(PKBStrategy *pkb) : 

@@ -4,7 +4,9 @@
 namespace sp {
 namespace design_extractor {
 
-
+/**
+ * a ASTNodeVisitor that collects the Calls relationship as it walks through the AST.
+ */
 class CallsCollector : public TreeWalker {
 private:
     std::string currentProc = "";

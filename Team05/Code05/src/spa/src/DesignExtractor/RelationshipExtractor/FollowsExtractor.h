@@ -4,6 +4,10 @@
 
 namespace sp {
 namespace design_extractor {
+
+/**
+ * a ASTNodeVisitor that collects the Follows relationship as it walks through the AST.
+ */
 class FollowsCollector : public StatementBucketTemplate {
 public:
     using StatementBucketTemplate::StatementBucketTemplate;
@@ -18,7 +22,7 @@ private:
 };
 
 /**
- * Extracts all follows relationship from the AST and send them to PKB Adaptor.
+ * Extracts all Follows relationship from the AST and return them as a set of entries
  */
 class FollowsExtractor : public Extractor {
 public:
@@ -30,6 +34,9 @@ public:
     }
 };
 
+/**
+ * Extracts all Follows relationship from the AST and send them to the PKBStrategy
+ */
 class FollowsExtractorModule : public ExtractorModule {
 public:
     FollowsExtractorModule(PKBStrategy *pkb) : 

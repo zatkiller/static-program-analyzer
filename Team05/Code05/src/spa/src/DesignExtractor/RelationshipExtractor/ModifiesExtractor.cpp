@@ -5,9 +5,8 @@
 #define DEBUG_LOG Logger(Level::DEBUG) << "ModifiesExtractor.cpp Extracted "
 namespace sp {
 namespace design_extractor {
-
 /**
- * Extracts all uses relationship from the AST and send them to PKB Adaptor.
+ * a ASTNodeVisitor that collects the Modifies relationship as it walks through the AST.
  */
 class ModifiesCollector : public TransitiveRelationshipTemplate {
 private:

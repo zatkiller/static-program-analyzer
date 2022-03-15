@@ -11,7 +11,7 @@
 namespace sp {
 namespace design_extractor {
 /**
- * Extracts all modifies relationship from the AST and send them to PKB Adaptor.
+ * Extracts all Modifies relationship from the AST and return them as a set of entries
  */
 class ModifiesExtractor : public Extractor {
 public:
@@ -19,6 +19,9 @@ public:
     std::set<Entry> extract(const ast::ASTNode*) override;
 };
 
+/**
+ * Extracts all Modifies relationship from the AST and send them to the PKBStrategy
+ */
 class ModifiesExtractorModule : public ExtractorModule {
 public:
     ModifiesExtractorModule(PKBStrategy *pkb) : 
