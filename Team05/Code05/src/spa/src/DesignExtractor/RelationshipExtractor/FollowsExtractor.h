@@ -20,9 +20,9 @@ private:
 /**
  * Extracts all follows relationship from the AST and send them to PKB Adaptor.
  */
-class FollowsExtractor : public IExtractor {
+class FollowsExtractor : public Extractor {
 public:
-    using IExtractor::IExtractor;
+    using Extractor::Extractor;
     std::set<Entry> extract(const ast::ASTNode* node) override {
         FollowsCollector collector;
         node->accept(&collector);

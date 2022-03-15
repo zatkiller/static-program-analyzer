@@ -15,9 +15,9 @@ namespace design_extractor {
 /**
  * Extracts all uses relationship from the AST and send them to PKB Adaptor.
  */
-class UsesExtractor : public IExtractor {
+class UsesExtractor : public Extractor {
 public:
-    using IExtractor::IExtractor;
+    using Extractor::Extractor;
     std::set<Entry> extract(const ast::ASTNode*) override;
 };
 

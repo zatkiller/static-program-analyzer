@@ -17,9 +17,9 @@ struct EntityCollector : public TreeWalker {
 };
 
 template<typename T>
-class EntityExtractor : public IExtractor {
+class EntityExtractor : public Extractor {
 public:
-    using IExtractor::IExtractor;
+    using Extractor::Extractor;
     std::set<Entry> extract(const ast::ASTNode* node) override {
         T collector;
         node->accept(&collector);

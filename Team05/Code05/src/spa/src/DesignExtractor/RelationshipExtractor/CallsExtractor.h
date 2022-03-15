@@ -4,17 +4,7 @@
 
 namespace sp {
 namespace design_extractor {
-
-class CallsCollector : public TreeWalker {
-private:
-    std::string currentProc = "";
-public:
-    std::set<Entry> relationships;
-    void visit(const ast::Procedure&) override;
-    void visit(const ast::Call&) override;
-};
-
-struct CallsExtractor : public IExtractor {
+struct CallsExtractor : public Extractor {
     std::set<Entry> extract(const ast::ASTNode*) override;
 };
 

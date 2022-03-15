@@ -21,9 +21,9 @@ private:
 /**
  * Extracts all Parent relationship from the AST and send them to PKB Adaptor.
  */
-class ParentExtractor : public IExtractor {
+class ParentExtractor : public Extractor {
 public:
-    using IExtractor::IExtractor;
+    using Extractor::Extractor;
     std::set<Entry> extract(const ast::ASTNode* node) override {
         ParentCollector collector;
         node->accept(&collector);

@@ -11,11 +11,11 @@ using Entity = Content;
 using Relationship = std::tuple<PKBRelationship, Content, Content>;
 using Entry = std::variant<Entity, Relationship>;
 
-struct IExtractor {
+struct Extractor {
     virtual std::set<Entry> extract(const ast::ASTNode*) { 
         return std::set<Entry>(); 
     };
-    virtual inline ~IExtractor() {};
+    virtual inline ~Extractor() {};
 };
 
 class PKBInserter {
@@ -28,10 +28,10 @@ public:
 
 class ExtractorModule {
 private:
-    std::unique_ptr<IExtractor> extractor;
+    std::unique_ptr<Extractor> extractor;
     PKBInserter inserter;
 public:
-    ExtractorModule(std::unique_ptr<IExtractor> extractor, PKBStrategy *pkb) : extractor(std::move(extractor)), inserter(pkb) {};
+    ExtractorModule(std::unique_ptr<Extractor> extractor, PKBStrategy *pkb) : extractor(std::move(extractor)), inserter(pkb) {};
     void extract(const ast::ASTNode *node) {
         auto entries = extractor->extract(node);
         for (auto &entry : entries) {
@@ -68,18 +68,5 @@ struct TreeWalker : public ast::ASTNodeVisitor {
     void exitContainer() override {};
 };
 
-/**
- * Base class of all design extractors. Adds a PKB adaptor during construction
- */
-class Extractor : public TreeWalker {
-protected:
-    PKBStrategy* pkb;
-public:
-    explicit Extractor(PKBStrategy* pkb) : pkb(pkb) {}
-
-    virtual void extract(ast::ASTNode *node) {
-        node->accept(this);
-    }
-};
 }  // namespace design_extractor
 }  // namespace sp
