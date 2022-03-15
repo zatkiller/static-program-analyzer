@@ -9,7 +9,7 @@ namespace design_extractor {
 /**
  * Extracts all uses relationship from the AST and send them to PKB Adaptor.
  */
-class ModifiesWalker : public TransitiveRelationshipTemplate {
+class ModifiesCollector : public TransitiveRelationshipTemplate {
 private:
     void insert(Content a1, Content a2);
 public:
@@ -21,28 +21,28 @@ public:
 };
 
 std::set<Entry> ModifiesExtractor::extract(const ast::ASTNode* node) {
-    ModifiesWalker extractor;
+    ModifiesCollector extractor;
     extractor.extract(node);
     return extractor.relationships;
 };
 
-void ModifiesWalker::visit(const ast::Read& node) {
+void ModifiesCollector::visit(const ast::Read& node) {
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::Read}, &node);
 }
 
-void ModifiesWalker::visit(const ast::Assign& node) {
+void ModifiesCollector::visit(const ast::Assign& node) {
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::Assignment}, node.getLHS());
 }
 
-void ModifiesWalker::visit(const ast::While& node) {
+void ModifiesCollector::visit(const ast::While& node) {
     stmtNumToType[node.getStmtNo()] = StatementType::While;
 }
 
-void ModifiesWalker::visit(const ast::If& node) {
+void ModifiesCollector::visit(const ast::If& node) {
     stmtNumToType[node.getStmtNo()] = StatementType::If;
 }
 
-void ModifiesWalker::insert(Content a1, Content a2) {
+void ModifiesCollector::insert(Content a1, Content a2) {
     auto relationship = Relationship(PKBRelationship::MODIFIES, a1, a2);
     relationships.insert(relationship);
 }
