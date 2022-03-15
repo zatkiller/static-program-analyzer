@@ -8,13 +8,14 @@ TEST_CASE("Test get statements") {
     PKB pkb = PKB();
     PKB* ptr = &pkb;
     qps::evaluator::Evaluator evaluator = qps::evaluator::Evaluator(ptr);
-    pkb.insertStatement(StatementType::Assignment, 2);
-    pkb.insertStatement(StatementType::Assignment, 5);
-    pkb.insertStatement(StatementType::Assignment, 8);
-    pkb.insertStatement(StatementType::While, 3);
-    pkb.insertStatement(StatementType::If, 4);
-    pkb.insertStatement(StatementType::If, 6);
-    pkb.insertStatement(StatementType::Print, 7);
+
+    pkb.insertEntity(STMT_LO{ 2, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 5, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 8, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 3, StatementType::While });
+    pkb.insertEntity(STMT_LO{ 4, StatementType::If });
+    pkb.insertEntity(STMT_LO{ 6, StatementType::If });
+    pkb.insertEntity(STMT_LO{ 7, StatementType::Print });
 
     PKBField a1 = PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment });
     PKBField a2 = PKBField::createConcrete(STMT_LO{ 5, StatementType::Assignment });
@@ -30,7 +31,6 @@ TEST_CASE("Test get statements") {
     std::unordered_set<PKBField, PKBFieldHash> expectedSelectIf{i1, i2};
     std::unordered_set<PKBField, PKBFieldHash> expectedSelectPrint{p1};
     std::unordered_set<PKBField, PKBFieldHash> expectedSelectRead{};
-
 
     PKBResponse resAll = evaluator.getAll(qps::query::DesignEntity::STMT);
     PKBResponse resAss = evaluator.getAll(qps::query::DesignEntity::ASSIGN);
@@ -71,9 +71,9 @@ TEST_CASE("Test get variables") {
 
     REQUIRE(evaluator.getAll(qps::query::DesignEntity::VARIABLE).hasResult == false);
 
-    pkb.insertVariable("x");
-    pkb.insertVariable("y");
-    pkb.insertVariable("cur");
+    pkb.insertEntity(VAR_NAME{ "x" });
+    pkb.insertEntity(VAR_NAME{ "y" });
+    pkb.insertEntity(VAR_NAME{ "cur" });
 
     PKBField v1 = PKBField::createConcrete(VAR_NAME{ "x" });
     PKBField v2 = PKBField::createConcrete(VAR_NAME{ "y" });
@@ -99,13 +99,13 @@ TEST_CASE("Test evaluate select s") {
     PKB pkb = PKB();
     PKB* ptr = &pkb;
     qps::evaluator::Evaluator evaluator = qps::evaluator::Evaluator(ptr);
-    pkb.insertStatement(StatementType::Assignment, 2);
-    pkb.insertStatement(StatementType::Assignment, 5);
-    pkb.insertStatement(StatementType::Assignment, 8);
-    pkb.insertStatement(StatementType::While, 3);
-    pkb.insertStatement(StatementType::If, 4);
-    pkb.insertStatement(StatementType::If, 6);
-    pkb.insertStatement(StatementType::Print, 7);
+    pkb.insertEntity(STMT_LO{ 2, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 5, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 8, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 3, StatementType::While });
+    pkb.insertEntity(STMT_LO{ 4, StatementType::If });
+    pkb.insertEntity(STMT_LO{ 6, StatementType::If });
+    pkb.insertEntity(STMT_LO{ 7, StatementType::Print });
 
     std::list<std::string> result = evaluator.evaluate(q);
     result.sort();
@@ -122,8 +122,8 @@ TEST_CASE("Test evaluate select c") {
 
     PKB pkb = PKB();
     PKB* ptr = &pkb;
-    pkb.insertConstant(4);
-    pkb.insertConstant(56);
+    pkb.insertEntity(4);
+    pkb.insertEntity(56);
     qps::evaluator::Evaluator evaluator = qps::evaluator::Evaluator(ptr);
 
     std::list<std::string> result = evaluator.evaluate(q);
@@ -141,13 +141,13 @@ TEST_CASE("Test evaluate select a") {
     PKB pkb = PKB();
     PKB* ptr = &pkb;
     qps::evaluator::Evaluator evaluator = qps::evaluator::Evaluator(ptr);
-    pkb.insertStatement(StatementType::Assignment, 2);
-    pkb.insertStatement(StatementType::Assignment, 5);
-    pkb.insertStatement(StatementType::Assignment, 8);
-    pkb.insertStatement(StatementType::While, 3);
-    pkb.insertStatement(StatementType::If, 4);
-    pkb.insertStatement(StatementType::If, 6);
-    pkb.insertStatement(StatementType::Print, 7);
+    pkb.insertEntity(STMT_LO{ 2, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 5, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 8, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 3, StatementType::While });
+    pkb.insertEntity(STMT_LO{ 4, StatementType::If });
+    pkb.insertEntity(STMT_LO{ 6, StatementType::If });
+    pkb.insertEntity(STMT_LO{ 7, StatementType::Print });
 
     std::list<std::string> result = evaluator.evaluate(q);
     result.sort();
@@ -165,9 +165,9 @@ TEST_CASE("Test evaluate select v") {
     PKB* ptr = &pkb;
     qps::evaluator::Evaluator evaluator = qps::evaluator::Evaluator(ptr);
 
-    pkb.insertVariable("x");
-    pkb.insertVariable("y");
-    pkb.insertVariable("cur");
+    pkb.insertEntity(VAR_NAME{ "x" });
+    pkb.insertEntity(VAR_NAME{ "y" });
+    pkb.insertEntity(VAR_NAME{ "cur" });
 
     std::list<std::string> result = evaluator.evaluate(q);
     result.sort();

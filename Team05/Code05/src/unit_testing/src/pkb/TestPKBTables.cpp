@@ -107,10 +107,10 @@ TEST_CASE("StatementTable") {
     STMT_LO stmt6{ 3, StatementType::If };
     STMT_LO stmt7{ 4, StatementType::Print, "z" };
 
-    stmtTable->insert(StatementType::Assignment, 1);
-    stmtTable->insert(StatementType::Call, 2, "foo");
-    stmtTable->insert(StatementType::Print, 3, "x");
-    stmtTable->insert(StatementType::Assignment, 4);
+    stmtTable->insert(1, StatementType::Assignment);
+    stmtTable->insert(2, StatementType::Call, "foo");
+    stmtTable->insert(3, StatementType::Print, "x");
+    stmtTable->insert(4, StatementType::Assignment);
 
     REQUIRE(stmtTable->contains(1));
     REQUIRE(stmtTable->contains(StatementType::Assignment, 1));
@@ -129,7 +129,7 @@ TEST_CASE("StatementTable") {
     REQUIRE(hasSameContents<STMT_LO>(&actual, &expected));
 
     REQUIRE(stmtTable->getSize() == 4);
-    stmtTable->insert(StatementType::Print, 4);
+    stmtTable->insert(4, StatementType::Print);
     REQUIRE(stmtTable->getSize() == 4);
     REQUIRE_FALSE(stmtTable->contains(StatementType::Print, 4));
 }
