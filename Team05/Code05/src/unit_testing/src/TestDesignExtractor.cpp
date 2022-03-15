@@ -33,8 +33,8 @@ using de::ConstExtractorModule;
 using de::ProcedureExtractorModule;
 using de::UsesExtractorModule;
 using de::ModifiesExtractorModule;
-using de::ParentExtractor;
-using de::FollowsExtractor;
+using de::ParentExtractorModule;
+using de::FollowsExtractorModule;
 
 class TestPKBStrategy : public de::PKBStrategy {
 public:
@@ -275,7 +275,7 @@ namespace ast {
             }
         
             SECTION("Follows extractor test") {
-                auto fe = std::make_unique<FollowsExtractor>(&pkbStrategy);
+                auto fe = std::make_unique<FollowsExtractorModule>(&pkbStrategy);
                 fe->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
@@ -291,7 +291,7 @@ namespace ast {
             }
 
             SECTION("Parents extractor test") {
-                auto pe = std::make_unique<ParentExtractor>(&pkbStrategy);
+                auto pe = std::make_unique<ParentExtractorModule>(&pkbStrategy);
                 pe->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
@@ -391,7 +391,7 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
 
-            de::CallsExtractor ce(&pkbStrategy);
+            de::CallsExtractorModule ce(&pkbStrategy);
             ce.extract(program.get());
             expected = {
                 p(PROC_NAME{"main"}, PROC_NAME{"foo"}),

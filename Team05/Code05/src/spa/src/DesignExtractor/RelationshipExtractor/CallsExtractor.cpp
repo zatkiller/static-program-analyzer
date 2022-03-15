@@ -4,14 +4,20 @@
 namespace sp {
 namespace design_extractor {
 
-void CallsExtractor::visit(const ast::Procedure& node) {
+void CallsCollector::visit(const ast::Procedure& node) {
     currentProc = node.getName();
 }
 
-void CallsExtractor::visit(const ast::Call& node) {
+void CallsCollector::visit(const ast::Call& node) {
     if (!currentProc.empty()) {
-        pkb->insertRelationship(PKBRelationship::CALLS, PROC_NAME{currentProc}, PROC_NAME{node.getName()});
+        relationships.insert(Relationship(PKBRelationship::CALLS, PROC_NAME{currentProc}, PROC_NAME{node.getName()}));
     }
+}
+
+std::set<Entry> CallsExtractor::extract(const ast::ASTNode* node) {
+    CallsCollector cc;
+    node->accept(&cc);
+    return cc.relationships;
 }
 
 }  // namespace design_extractor
