@@ -2,296 +2,209 @@
 
 #include <set>
 #include <optional>
+#include <type_traits>
 #include "PKBField.h"
 #include "PKBRelationshipTables.h"
 
 /**
-* A data structure to store constants (integers) in a ConstantTable.
+* A generic data structure to store entities (PROC_NAME, VAR_NAME, STMT_LO, CONST) in an EntityTable
 */
-class ConstantRow {
+template <typename T>
+class EntityRow {
 public:
-    explicit ConstantRow(CONST value) : constant(value) {}
+    explicit EntityRow<T>(T value) : val(value) {}
 
     /**
-    * Retrieves the constant stored in the ConstantRow.
-    *
-    * @return a constant wrapped in CONST
+    * Retrieves the value stored in the EntityRow<T>
+    * 
+    * @return a value of type T
     */
-    CONST getConst() const;
-    bool operator == (const ConstantRow&) const;
-    bool operator < (const ConstantRow& other) const;
+    T getVal() const {
+        return val;
+    }
 
-private:
-    CONST constant;
+    template <typename U>
+    bool operator == (const EntityRow<U>& other) const {
+        if constexpr (std::is_same<T, U>::value) {
+            return this->val == other.getVal();
+        }
+        return false;
+    }
+
+private: 
+    T val;
 };
 
 /**
-* Hash function for ConstantRow.
+* Hash function for a generic EntityRow
 */
-class ConstantRowHash {
+template <typename T>
+class EntityRowHash {
 public:
-    size_t operator() (const ConstantRow&) const;
+    size_t operator() (const EntityRow<T>& other) const {
+        if constexpr (std::is_same_v<T, STMT_LO>) {
+            return std::hash<int>()(other.getVal().statementNum);
+        } else if constexpr (std::is_same_v<T, PROC_NAME>) {
+            return std::hash<std::string>()(other.getVal().name);
+        } else if constexpr (std::is_same_v<T, CONST>) {
+            return std::hash<int>()(other.getVal());
+        } else {
+            return std::hash<std::string>()(other.getVal().name);
+        }
+    }
 };
 
 /**
-* A data structure to store ConstantRows.
-*
-* @see ConstantRow
+* A data structure to store EntityRows of type <T>
 */
-class ConstantTable {
+template <typename T>
+class EntityTable {
 public:
     /**
-    * Checks whether the ConstantTable contains the constant wrapped in a PKBField.
-    *
-    * @param const the constant to be checked
-    * @return bool whether constant is present in the ConstantTable
-    * @see CONST
+    * Returns all entities stored in the EntityTable
+    * 
+    * @returns a vector of entities 
     */
-    bool contains(CONST constant) const;
+    std::vector<T> getAllEntity() const {
+        std::vector<T> res;
+        for (auto row : rows) {
+            T val = row.getVal();
+            res.push_back(val);
+        }
+        return res;
+    }
 
     /**
-    * Inserts a constant wrapped in a CONST into the ConstantTable.
-    *
-    * @param entry the constant to be inserted
-    * @see CONST
+    * Returns the size of the EntityTable
+    * 
+    * @returns an int representing the size of the EntityTable
     */
-    void insert(CONST constant);
+    int getSize() const {
+        return rows.size();
+    }
 
-    /**
-    * Returns the number of ConstantRows in the ConstantTable.
-    *
-    * @return int number of ConstantRows in the ConstantTable
-    */
-    int getSize() const;
+protected:
+    bool containsVal(T val) const {
+        return rows.count(EntityRow<T>(val)) == 1;
+    }
 
-    /**
-    * Retrieves a vector of all constants stored in the ConstantTable.
-    *
-    * @return std::vector<CONST> a vector of constants
-    * @see CONST
-    */
-    std::vector<CONST> getAllConst() const;
+    void insertVal(T val) {
+        rows.insert(EntityRow<T>(val));
+    }
 
-private:
-    std::set<ConstantRow> rows;
+    std::unordered_set<EntityRow<T>, EntityRowHash<T>> rows;
 };
 
 /**
-* A data structure to store procedure names (strings) in a ProcedureTable.
+* A data structure to hold EntityRow<CONST>
 */
-class ProcedureRow {
+class ConstantTable : public EntityTable<CONST> {
 public:
-    explicit ProcedureRow(PROC_NAME);
+    /**
+    * Checks if the provided CONST is inside the ConstantTable
+    * 
+    * @param value The provided CONST to check
+    * @return true if the value is in the ConstantTable and false otherwise
+    */
+    bool contains(CONST value) const;
 
     /**
-    * Retrieves the procedure name stored in the ProcedureRow.
-    *
-    * @return a procedure name wrapped in PROC_NAME
+    * Inserts the provided CONST into the ConstantTable
+    * 
+    * @param value The provided CONST to insert into the table
     */
-    PROC_NAME getProcName() const;
-    bool operator == (const ProcedureRow&) const;
-    bool operator < (const ProcedureRow& other) const;
-
-private:
-    PROC_NAME procedureName;
+    void insert(CONST value);
 };
 
 /**
-* Hash function for ProcedureRow.
+* A data structure to hold EntityRow<PROC_NAME>
 */
-class ProcedureRowHash {
+class ProcedureTable : public EntityTable<PROC_NAME> {
 public:
-    size_t operator() (const ProcedureRow&) const;
+    /**
+    * Checks if the provided procedure name is in the ProcedureTable
+    * 
+    * @param procName The provided procedure name to check
+    * @returns true if the value is in the ProcedureTable and false otherwise
+    */
+    bool contains(std::string procName) const;
+
+    /**
+    * Inserts the provided PROC_NAME into the ProcedureTable
+    * 
+    * @param procName The string value of the procedure name to be inserted
+    */
+    void insert(std::string procName);
 };
 
 /**
-* A data structure to store ProcedureRows.
-*
-* @see ProcedureRow
+* A data structure to hold EntityRow<VAR_NAME>
 */
-class ProcedureTable {
+class VariableTable : public EntityTable<VAR_NAME> {
 public:
     /**
-    * Checks whether the ProcedureTable contains the procedure name.
-    *
-    * @param name
-    * @returns whether the procedure name is present in the ProcedureTable
+    * Checks if the provided variable name is in the VariableTable
+    * 
+    * @param varName The provided variable name to check
+    * @returns true if the value is in the VariableTable and false otherwise
     */
-    bool contains(std::string name) const;
+    bool contains(std::string varName) const;
 
     /**
-    * Inserts a procedure name into the ProcedureTable.
-    *
-    * @param name
+    * Inserts the provided variable name into the VariableTable
+    * 
+    * @param varName The provided variable name to insert into the VariableTable
     */
-    void insert(std::string name);
-
-    /**
-    * Returns the number of ProcedureRows.
-    *
-    * @return number of ProcedureRows
-    */
-    int getSize() const;
-
-    /**
-    * Retrieves all procedure names stored in the ProcedureTable.
-    *
-    * @return a vector of procedure names
-    */
-    std::vector<PROC_NAME> getAllProcs() const;
-
-private:
-    std::set<ProcedureRow> rows;
+    void insert(std::string varName);
 };
 
 /**
-* A data structure to store statement information (line number and statement type) in a StatementTable.
+* A data structure to hold EntityRow<STMT_LO>
 */
-class StatementRow {
-public:
-    StatementRow(StatementType, int);
-
-    /**
-    * Retrieves the statement information stored in the StatementRow.
-    *
-    * @return the statement information wrapped in CONST
-    */
-    STMT_LO getStmt() const;
-    bool operator == (const StatementRow&) const;
-    bool operator < (const StatementRow& other) const;
-
-private:
-    STMT_LO stmt;
-};
-
-/**
-* Hash function for StatementRow.
-*/
-class StatementRowHash {
-public:
-    size_t operator() (const StatementRow& other) const;
-};
-
-
-/**
-* A data structure to store StatementRows.
-*/
-class StatementTable {
+class StatementTable : public EntityTable<STMT_LO> {
 public:
     /**
-    * Checks whether the StatementTable contains the statement information wrapped in a PKBField.
-    *
-    * @param entry the PKBField containing the statement information to be checked
-    * @returns whether the statement information is present in the ConstantTable
+    * Checks if the provided statement number is in the StatementTable
+    * 
+    * @param stmtNum The provided statement number to check
+    * @return true if the provided statement is in the StatementTable and false otherwise
     */
-    bool contains(StatementType, int) const;
-
-    bool contains(int) const;
+    bool contains(int stmtNum) const;
 
     /**
-    * Inserts statement information wrapped in a PKBField into the StatementTable.
-    *
-    * @param entry the PKBField containing the statement information to be inserted
+    * Checks if a statement matching the provided statement type and number is in
+    * the StatementTable
+    * 
+    * @param stmtType The provided statement type to check
+    * @param stmtNum The provided statement number to check
+    * @return true if the provided statement is in the StatementTable and false otherwise
     */
-    void insert(StatementType, int);
+    bool contains(StatementType stmtType, int stmtNum) const;
 
     /**
-    * Returns the number of StatementRows.
-    *
-    * @return number of StatementRows
+    * Inserts a statement with the provided statement type and statement num
+    * into the StatementTable
+    * 
+    * @param stmtType The provided statement type to insert
+    * @param stmtNum The provided statement number to insert
     */
-    int getSize() const;
+    void insert(StatementType stmtType, int stmtNum);
 
     /**
-    * Retrieves all statement information stored in the StatementTable.
-    *
-    * @return a vector of statement information
+    * Retrieves all statements of the provided statement type
+    * 
+    * @param type The provided statement type to filter for
+    * @return std::vector<STMT_LO> A vector of STMT_LOs that match the 
+    *    provided statement type
     */
-    std::vector<STMT_LO> getAllStmt() const;
+    std::vector<STMT_LO> getStmtOfType(StatementType type) const;
 
     /**
-    * Retrieves all statement information of the given type stored in the StatementTable.
-    *
-    * @param type type of statement
-    * @return a vector of statement information belong to the given type
-    */
-    std::vector<STMT_LO> getStmtOfType(StatementType) const;
-
-    /**
-    * Retrieve the statement type of a statement row with statementNum. If there doesn't exist one,
-    * return a null optional.
-    *
-    * @param statementNum
-    * @return std::optional<StatementType>
+    * Gets the statement type of the statement at the provided statement number
+    * 
+    * @param statementNum The provided statement number to look up
+    * @return std::optional<StatementType> The statement type of the provided statement
+    *   if it exists
     */
     std::optional<StatementType> getStmtTypeOfLine(int statementNum) const;
-
-private:
-    std::set<StatementRow> rows;
-};
-
-/**
-* A data structure to store variable names (strings) in a VariableTable.
-*/
-class VariableRow {
-public:
-    explicit VariableRow(VAR_NAME);
-
-    /**
-    * Retrieves the variable name stored in the VariableTable.
-    *
-    * @return a variable name wrapped in VAR_NAME
-    */
-    VAR_NAME getVarName() const;
-    bool operator == (const VariableRow&) const;
-    bool operator < (const VariableRow& other) const;
-
-private:
-    VAR_NAME variableName;
-};
-
-/**
-* Hash function for VariableTable.
-*/
-class VariableRowHash {
-public:
-    size_t operator()(const VariableRow&) const;
-};
-
-/**
-* A data structure to store VariableRows.
-*/
-class VariableTable {
-public:
-    /**
-    * Checks whether the VariableTable contains the variable name wrapped in a PKBField.
-    *
-    * @param name the PKBField containing the variable name to be checked
-    * @returns whether the variable name is present in the VariableTable
-    */
-    bool contains(std::string name) const;
-
-    /**
-    * Inserts a variable name wrapped in a PKBField into the VariableTable.
-    *
-    * @param name the PKBField containing the variable name to be inserted
-    */
-    void insert(std::string name);
-
-    /**
-    * Returns the number of VariableRows.
-    *
-    * @return number of VariableRows
-    */
-    int getSize() const;
-
-    /**
-    * Retrieves all variable names stored in the VariableTable.
-    *
-    * @return a vector of variable names
-    */
-    std::vector<VAR_NAME> getAllVars() const;
-
-private:
-    std::set<VariableRow> rows;
 };

@@ -17,6 +17,7 @@ PKB::PKB() {
     parentTable = std::make_unique<ParentRelationshipTable>();
     usesTable = std::make_unique<UsesRelationshipTable>();
     callsTable = std::make_unique<CallsRelationshipTable>();
+    nextTable = std::make_unique<NextRelationshipTable>();
 }
 
 // INSERT API
@@ -64,6 +65,8 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
     case PKBRelationship::CALLS:
         callsTable->insert(field1, field2);
         break;
+    case PKBRelationship::NEXT:
+        nextTable->insert(field1, field2);
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
         break;
@@ -96,6 +99,10 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
         return callsTable->contains(field1, field2);
     case PKBRelationship::CALLST:
         return callsTable->containsT(field1, field2);
+    case PKBRelationship::NEXT:
+        return nextTable->contains(field1, field2);
+    case PKBRelationship::NEXTT:
+        return nextTable->containsT(field1, field2);
     default:
         Logger(Level::INFO) << "Checking for an invalid relationship table\n";
         return false;
@@ -156,6 +163,12 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
     case PKBRelationship::CALLST:
         extracted = callsTable->retrieveT(field1, field2);
         break;
+    case PKBRelationship::NEXT:
+        extracted = nextTable->retrieve(field1, field2);
+        break;
+    case PKBRelationship::NEXTT:
+        extracted = nextTable->retrieveT(field1, field2);
+        break;
     default:
         throw "Invalid relationship type used!";
         break;
@@ -169,7 +182,7 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
 PKBResponse PKB::getStatements() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
-    std::vector<STMT_LO> extracted = statementTable->getAllStmt();
+    std::vector<STMT_LO> extracted = statementTable->getAllEntity();
     for (auto row : extracted) {
         res.insert(PKBField::createConcrete(row));
     }
@@ -191,7 +204,7 @@ PKBResponse PKB::getStatements(StatementType stmtType) {
 PKBResponse PKB::getVariables() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
-    std::vector<VAR_NAME> extracted = variableTable->getAllVars();
+    std::vector<VAR_NAME> extracted = variableTable->getAllEntity();
     for (auto row : extracted) {
         res.insert(PKBField::createConcrete(row));
     }
@@ -202,7 +215,7 @@ PKBResponse PKB::getVariables() {
 PKBResponse PKB::getProcedures() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
-    std::vector<PROC_NAME> extracted = procedureTable->getAllProcs();
+    std::vector<PROC_NAME> extracted = procedureTable->getAllEntity();
     for (auto row : extracted) {
         res.insert(PKBField::createConcrete(row));
     }
@@ -213,7 +226,7 @@ PKBResponse PKB::getProcedures() {
 PKBResponse PKB::getConstants() {
     std::unordered_set<PKBField, PKBFieldHash> res;
 
-    std::vector<CONST> extracted = constantTable->getAllConst();
+    std::vector<CONST> extracted = constantTable->getAllEntity();
     for (auto row : extracted) {
         res.insert(PKBField::createConcrete(row));
     }

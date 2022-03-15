@@ -413,6 +413,7 @@ TEST_CASE("Test get Calls and CallsT") {
     qps::evaluator::Evaluator e2 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result2 = e2.evaluate(query2);
     printResult(result2);
+    result2.sort();
     REQUIRE(result2 == std::list<std::string>{"proc2", "proc3"});
 
     TEST_LOG << "select p such that CallsT(p, _)";
