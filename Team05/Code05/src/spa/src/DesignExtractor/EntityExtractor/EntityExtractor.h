@@ -7,6 +7,11 @@
 namespace sp {
 namespace design_extractor {
 
+struct StatementExtractorModule;
+struct VariableExtractorModule;
+struct ConstExtractorModule;
+struct ProcedureExtractorModule;
+
 struct EntityCollector : public TreeWalker {
     std::set<Entry> entities;
 };
