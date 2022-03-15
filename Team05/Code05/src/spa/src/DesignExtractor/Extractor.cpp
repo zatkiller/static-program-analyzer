@@ -19,6 +19,7 @@ void PKBInserter::insert(Entry entry) {
         },
         [](auto &item) {}
     }, entry);
+
 }
 
 }  // namespace design_extractor

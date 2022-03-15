@@ -5,7 +5,6 @@
 
 #include "logging.h"
 #include "PKB.h"
-#include <DesignExtractor/EntityExtractor/VariableExtractor.h>
 
 PKB::PKB() {
     statementTable = std::make_unique<StatementTable>();
