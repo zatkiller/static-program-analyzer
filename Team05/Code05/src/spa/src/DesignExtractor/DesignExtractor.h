@@ -6,11 +6,7 @@
 #include "Parser/AST.h"
 #include "DesignExtractor/Extractor.h"
 #include "DesignExtractor/EntityExtractor/EntityExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/FollowsExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/ParentExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/CallsExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/RelationshipExtractor.h"
 
 namespace sp {
 namespace design_extractor {
