@@ -17,7 +17,7 @@ struct EntityCollector : public TreeWalker {
 };
 
 template<typename T>
-class EntityExtractor : public Extractor {
+class EntityExtractor : public Extractor<const ast::ASTNode*> {
 public:
     using Extractor::Extractor;
     std::set<Entry> extract(const ast::ASTNode* node) override {
@@ -29,7 +29,7 @@ public:
 };
 
 template<typename T>
-class EntityExtractorModule : public ExtractorModule {
+class EntityExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
     EntityExtractorModule(PKBStrategy *pkb) :
         ExtractorModule(std::make_unique<EntityExtractor<T>>(), pkb) {};

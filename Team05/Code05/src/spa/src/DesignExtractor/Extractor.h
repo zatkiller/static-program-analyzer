@@ -18,14 +18,12 @@ using Entry = std::variant<Entity, Relationship>;
 
 /**
  * @brief The base class for all design extractors
- * The extractor only has 1 responsibility, take an AST and return a set of Entry type to be inserted into the PKB.
- * How the extractor perform the extraction from the AST is up to the extractor module itself.
+ * The extractor only has 1 responsibility, take a generic info of T and return a set of Entry type to be inserted into the PKB.
+ * How the extractor perform the extraction from T is up to the extractor module itself.
  */
+template<typename T>
 struct Extractor {
-    virtual std::set<Entry> extract(const ast::ASTNode*) { 
-        return std::set<Entry>(); 
-    };
-    virtual std::set<Entry> extract(const std::map<std::string, std::shared_ptr<cfg::CFGNode>>&) { 
+    virtual std::set<Entry> extract(T) { 
         return std::set<Entry>(); 
     };
     virtual inline ~Extractor() {};
@@ -47,24 +45,19 @@ public:
  * An Extractor module is composed of the extractor and the pkb inserter. The extractor is in charge of extracting the entries
  * while the inserter is in charge of inserting entries into PKB. 
  */
+template<typename T>
 class ExtractorModule {
 private:
-    std::unique_ptr<Extractor> extractor;
+    std::unique_ptr<Extractor<T>> extractor;
     PKBInserter inserter;
 public:
-    ExtractorModule(std::unique_ptr<Extractor> extractor, PKBStrategy *pkb) : extractor(std::move(extractor)), inserter(pkb) {};
-    void extract(const ast::ASTNode *node) {
-        auto entries = extractor->extract(node);
+    ExtractorModule(std::unique_ptr<Extractor<T>> extractor, PKBStrategy *pkb) : extractor(std::move(extractor)), inserter(pkb) {};
+    void extract(T info) {
+        auto entries = extractor->extract(info);
         for (auto &entry : entries) {
             inserter.insert(entry);
         }
     }
-    void extract(const std::map<std::string, std::shared_ptr<cfg::CFGNode>>& cfgs) { 
-        auto entries = extractor->extract(cfgs);
-        for (auto &entry : entries) {
-            inserter.insert(entry);
-        }
-    };
 };
 
 

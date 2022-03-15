@@ -13,7 +13,7 @@ namespace design_extractor {
 /**
  * Extracts all Modifies relationship from the AST and return them as a set of entries
  */
-class ModifiesExtractor : public Extractor {
+class ModifiesExtractor : public Extractor<const ast::ASTNode*> {
 public:
     using Extractor::Extractor;
     std::set<Entry> extract(const ast::ASTNode*) override;
@@ -22,7 +22,7 @@ public:
 /**
  * Extracts all Modifies relationship from the AST and send them to the PKBStrategy
  */
-class ModifiesExtractorModule : public ExtractorModule {
+class ModifiesExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
     ModifiesExtractorModule(PKBStrategy *pkb) : 
         ExtractorModule(std::make_unique<ModifiesExtractor>(), pkb) {};

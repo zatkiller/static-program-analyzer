@@ -24,7 +24,7 @@ private:
 /**
  * Extracts all Follows relationship from the AST and return them as a set of entries
  */
-class FollowsExtractor : public Extractor {
+class FollowsExtractor : public Extractor<const ast::ASTNode*> {
 public:
     using Extractor::Extractor;
     std::set<Entry> extract(const ast::ASTNode* node) override {
@@ -37,7 +37,7 @@ public:
 /**
  * Extracts all Follows relationship from the AST and send them to the PKBStrategy
  */
-class FollowsExtractorModule : public ExtractorModule {
+class FollowsExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
     FollowsExtractorModule(PKBStrategy *pkb) : 
         ExtractorModule(std::make_unique<FollowsExtractor>(), pkb) {};

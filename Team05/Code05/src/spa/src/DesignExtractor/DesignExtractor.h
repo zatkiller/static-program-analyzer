@@ -12,7 +12,7 @@ namespace sp {
 namespace design_extractor {
 class DesignExtractor {
 private:
-    std::list<std::shared_ptr<ExtractorModule>> extractors;
+    std::list<std::shared_ptr<ExtractorModule<const ast::ASTNode*>>> extractors;
     PKBStrategy* pkbStrategy;
 public:
     explicit DesignExtractor(PKBStrategy* pkbStrategy) : pkbStrategy(pkbStrategy) {

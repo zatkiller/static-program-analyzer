@@ -20,7 +20,7 @@ private:
 /**
  * Extracts all Parent relationship from the AST and return them as a set of entries
  */
-class ParentExtractor : public Extractor {
+class ParentExtractor : public Extractor<const ast::ASTNode*> {
 public:
     using Extractor::Extractor;
     std::set<Entry> extract(const ast::ASTNode* node) override {
@@ -33,7 +33,7 @@ public:
 /**
  * Extracts all Parent relationship from the AST and send them to the PKBStrategy
  */
-class ParentExtractorModule : public ExtractorModule {
+class ParentExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
     ParentExtractorModule(PKBStrategy *pkb) : 
         ExtractorModule(std::make_unique<ParentExtractor>(), pkb) {};
