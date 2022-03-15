@@ -16,43 +16,7 @@ class PKB {
 public:
     PKB();
 
-    /**
-    * Inserts an assignment, if, or while statement information into the PKB.
-    *
-    * @param type statement type
-    * @param statementNumber line number
-    */
-    void insertStatement(StatementType type, int statementNumber);
-
-    /**
-    * Inserts a call, read, or print statement information into the PKB.
-    *
-    * @param type statement type
-    * @param statementNumber line number
-    * @param attribute a VAR_NAME or PROC_NAME
-    */
-    void insertStatement(StatementType type, int statementNumber, std::string attribute);
-
-    /**
-    * Inserts a variable into the PKB.
-    *
-    * @param name variable name
-    */
-    void insertVariable(std::string name);
-
-    /**
-    * Inserts a constant into the PKB.
-    *
-    * @param constant
-    */
-    void insertConstant(int constant);
-
-    /**
-    * Inserts a procedure into the PKB.
-    *
-    * @param name procedure name
-    */
-    void insertProcedure(std::string name);
+    void insertEntity(Content entity);
 
     /**
     * Inserts a relationship into the PKB.
@@ -159,6 +123,44 @@ private:
     std::unique_ptr<CallsRelationshipTable> callsTable;
     std::unique_ptr<NextRelationshipTable> nextTable;
     std::unique_ptr<sp::ast::ASTNode> root;
+
+    /**
+   * Inserts an assignment, if, or while statement information into the PKB.
+   *
+   * @param type statement type
+   * @param statementNumber line number
+   */
+    void insertStatement(int statementNumber, StatementType type);
+
+    /**
+    * Inserts a call, read, or print statement information into the PKB.
+    *
+    * @param type statement type
+    * @param statementNumber line number
+    * @param attribute a VAR_NAME or PROC_NAME
+    */
+    void insertStatement(int statementNumber, StatementType type, std::string attribute);
+
+    /**
+    * Inserts a variable into the PKB.
+    *
+    * @param name variable name
+    */
+    void insertVariable(std::string name);
+
+    /**
+    * Inserts a constant into the PKB.
+    *
+    * @param constant
+    */
+    void insertConstant(int constant);
+
+    /**
+    * Inserts a procedure into the PKB.
+    *
+    * @param name procedure name
+    */
+    void insertProcedure(std::string name);
 
     /**
     * Checks whether a PKBField is valid for its given entity type.

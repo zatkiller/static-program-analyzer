@@ -7,6 +7,10 @@
 #include "PKB.h"
 #include <DesignExtractor/EntityExtractor/VariableExtractor.h>
 
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+// explicit deduction guide (not needed as of C++20)
+template<class... Ts> overloaded(Ts...)->overloaded<Ts...>;
+
 PKB::PKB() {
     statementTable = std::make_unique<StatementTable>();
     variableTable = std::make_unique<VariableTable>();
@@ -21,22 +25,37 @@ PKB::PKB() {
 }
 
 // INSERT API
+void PKB::insertEntity(Content entity) {
+    std::visit(overloaded{
+    [&](VAR_NAME& item) { insertVariable(item.name); },
+    [&](STMT_LO& item) { 
+            if (item.hasAttribute()) { 
+                insertStatement(item.statementNum, item.type.value_or(StatementType::All), item.attribute.value());
+            } else {
+                insertStatement(item.statementNum, item.type.value_or(StatementType::All));
+            }
+        },
+    [&](PROC_NAME& item) { insertProcedure(item.name); },
+    [&](CONST& item) { insertConstant(item); },
+    [](auto& item) { Logger(Level::ERROR) << "PKB.cpp " << "Unsupported entity type"; },
+        }, entity);
+}
 
-void PKB::insertStatement(StatementType type, int statementNumber) {
+void PKB::insertStatement(int statementNumber, StatementType type) {
     // if (type != StatementType::Assignment || type != StatementType::If || type != StatementType::While) {
     //    Logger(Level::INFO) << "insertStatement(StatementType, int) is only for Assignments, Ifs, Whiles.\n";
     //}
 
-    statementTable->insert(type, statementNumber);
+    statementTable->insert(statementNumber, type);
 }
 
-void PKB::insertStatement(StatementType type, int statementNumber, std::string attribute) {
+void PKB::insertStatement(int statementNumber, StatementType type, std::string attribute) {
     // if (type != StatementType::Call || type != StatementType::Read || type != StatementType::Print) {
     // Logger(Level::INFO) << "insertStatement(StatementType, int, StatementAttribute) 
     // is only for Calls, Reads, Prints.\n";
     //}
 
-    statementTable->insert(type, statementNumber, attribute);
+    statementTable->insert(statementNumber, type, attribute);
 }
 
 void PKB::insertVariable(std::string name) {
@@ -104,7 +123,7 @@ bool PKB::validateStatement(const PKBField field) const {
 
         // If provided STMT_LO has a type, check if it is equivalent to the one in the table
         // StatementTypes of All or None will be updated to the correct one in the table by appendStatementInformation
-        if (statementType.has_value() && statementType.value() != StatementType::All && 
+        if (statementType.has_value() && statementType.value() != StatementType::All &&
             statementType.value() != StatementType::None) {
             return statementType == stmt.type;
         }

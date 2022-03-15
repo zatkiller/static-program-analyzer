@@ -109,7 +109,7 @@ struct PKBField {
     * equal to T, a nullptr is returned.
     */
     template <typename T>
-    const T* getContent() const {
+     const T* getContent() const {
         if (fieldType == PKBFieldType::CONCRETE) {
             return std::get_if<T>(&content);
         }

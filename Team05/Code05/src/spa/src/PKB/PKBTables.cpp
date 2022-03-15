@@ -40,13 +40,13 @@ bool StatementTable::contains(StatementType stmtType, int stmtNum) const {
     return this->containsVal(STMT_LO(stmtNum, stmtType));
 }
 
-void StatementTable::insert(StatementType stmtType, int stmtNum) {
+void StatementTable::insert(int stmtNum, StatementType stmtType) {
     if (!contains(stmtNum)) {
         insertVal(STMT_LO(stmtNum, stmtType));
     }
 }
 
-void StatementTable::insert(StatementType stmtType, int stmtNum, std::string attribute) {
+void StatementTable::insert(int stmtNum, StatementType stmtType, std::string attribute) {
     if (!contains(stmtNum)) {
         insertVal(STMT_LO(stmtNum, stmtType, attribute));
     }
