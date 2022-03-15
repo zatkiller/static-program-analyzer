@@ -16,6 +16,11 @@ class PKB {
 public:
     PKB();
 
+    /**
+    * Inserts a program design entity into its respective table
+    * 
+    * @param entity a STMT_LO, PROC_NAME, VAR_NAME, or CONST
+    */
     void insertEntity(Content entity);
 
     /**
