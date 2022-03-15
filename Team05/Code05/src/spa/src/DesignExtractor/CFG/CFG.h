@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 #include "PKB/PKBField.h"
-#include "DesignExtractor/Extractor.h"
+#include "DesignExtractor/TreeWalker.h"
 
 namespace sp {
 namespace cfg {
