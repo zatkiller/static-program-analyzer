@@ -62,7 +62,7 @@ struct CallGraphPreProcessor {
         topolst.push_back(node);
     }
 
-    void preprocess(ast::ASTNode *node) {
+    void preprocess(const ast::ASTNode *node) {
         CallGraphWalker cgw;
         node->accept(&cgw);
         std::map<std::string, bool> visited;
@@ -99,7 +99,7 @@ void TransitiveRelationshipTemplate::visit(const ast::Call &node) {
     }
 }
 
-void TransitiveRelationshipTemplate::extract(ast::ASTNode *node) {
+void TransitiveRelationshipTemplate::extract(const ast::ASTNode *node) {
     CallGraphPreProcessor cgpp;
     cgpp.preprocess(node);
     for (auto proc : cgpp.topolst) {

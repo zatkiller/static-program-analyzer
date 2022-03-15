@@ -28,7 +28,7 @@ public:
         // extractors.push_back(std::make_shared<ConstExtractor>(pkbStrategy));
         // extractors.push_back(std::make_shared<ProcedureExtractor>(pkbStrategy));
         // extractors.push_back(std::make_shared<ModifiesExtractor>(pkbStrategy));
-        // extractors.push_back(std::make_shared<UsesExtractor>(pkbStrategy));
+        // extractors.push_back(std::make_shared<UsesExtractorModule>(pkbStrategy));
         // extractors.push_back(std::make_shared<FollowsExtractor>(pkbStrategy));
         // extractors.push_back(std::make_shared<ParentExtractor>(pkbStrategy));
         // extractors.push_back(std::make_shared<CallsExtractor>(pkbStrategy));

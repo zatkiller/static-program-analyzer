@@ -33,8 +33,8 @@ using de::VariableExtractorModule;
 using de::StatementExtractorModule;
 using de::ConstExtractorModule;
 using de::ProcedureExtractorModule;
-using de::UsesExtractor;
-using de::ModifiesExtractor;
+using de::UsesExtractorModule;
+using de::ModifiesExtractorModule;
 using de::ParentExtractor;
 using de::FollowsExtractor;
 
@@ -221,7 +221,7 @@ namespace ast {
             }
 
             SECTION("Modifies extractor test") {
-                auto me = std::make_unique<ModifiesExtractor>(&pkbStrategy);
+                auto me = std::make_unique<ModifiesExtractorModule>(&pkbStrategy);
                 me->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
@@ -246,7 +246,7 @@ namespace ast {
             }
 
             SECTION("Uses extractor test") {
-                auto ue = std::make_unique<UsesExtractor>(&pkbStrategy);
+                auto ue = std::make_unique<UsesExtractorModule>(&pkbStrategy);
                 ue->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
@@ -359,7 +359,7 @@ namespace ast {
             );
             std::set<std::pair<Content, Content>> expected;
 
-            ModifiesExtractor me(&pkbStrategy);
+            ModifiesExtractorModule me(&pkbStrategy);
             me.extract(program.get());
 
             expected = {
@@ -376,7 +376,7 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
             
-            UsesExtractor ue(&pkbStrategy);
+            UsesExtractorModule ue(&pkbStrategy);
             ue.extract(program.get());
 
             expected = {
@@ -434,7 +434,7 @@ namespace ast {
             );
 
             std::set<std::pair<Content, Content>> expected;
-            ModifiesExtractor me(&pkbStrategy);
+            ModifiesExtractorModule me(&pkbStrategy);
             me.extract(program.get());
 
             expected = {
@@ -449,7 +449,7 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
 
-            UsesExtractor ue(&pkbStrategy);
+            UsesExtractorModule ue(&pkbStrategy);
             ue.extract(program.get());
             expected = {
                 p(STMT_LO{1, StatementType::While}, VAR_NAME{"m1"}),

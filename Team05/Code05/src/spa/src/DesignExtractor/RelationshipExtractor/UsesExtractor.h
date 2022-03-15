@@ -15,15 +15,17 @@ namespace design_extractor {
 /**
  * Extracts all uses relationship from the AST and send them to PKB Adaptor.
  */
-class UsesExtractor : public TransitiveRelationshipTemplate {
-private:
-    void insert(Content a1, Content a2);
+class UsesExtractor : public IExtractor {
 public:
-    using TransitiveRelationshipTemplate::TransitiveRelationshipTemplate;
-    void visit(const ast::Print& node) override;
-    void visit(const ast::Assign& node) override;
-    void visit(const ast::While&) override;
-    void visit(const ast::If&) override;
+    using IExtractor::IExtractor;
+    std::set<Entry> extract(const ast::ASTNode*) override;
 };
+
+class UsesExtractorModule : public ExtractorModule {
+public:
+    UsesExtractorModule(PKBStrategy *pkb) : 
+        ExtractorModule(std::make_unique<UsesExtractor>(), pkb) {};
+};
+
 }  // namespace design_extractor
 }  // namespace sp

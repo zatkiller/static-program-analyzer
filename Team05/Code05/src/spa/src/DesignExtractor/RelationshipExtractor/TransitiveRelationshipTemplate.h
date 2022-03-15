@@ -13,9 +13,9 @@
 
 namespace sp {
 namespace design_extractor {
-class RelExtractorTemplate : public Extractor {
+class RelExtractorTemplate : public TreeWalker {
 public:
-    using Extractor::Extractor;
+    std::set<Entry> relationships;
 protected:
     virtual void extractAndInsert(Content, const ast::ASTNode*) = 0;
     virtual void insert(Content, Content) = 0;
@@ -46,7 +46,7 @@ public:
      * 
      * @param node the starting node for extraction.
      */
-    void extract(ast::ASTNode *node) override;
+    void extract(const ast::ASTNode *node);
 
 protected:
     std::map<int, StatementType> stmtNumToType;
