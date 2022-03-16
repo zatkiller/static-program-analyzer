@@ -21,6 +21,6 @@ using AssignPatternReturn = std::list<std::reference_wrapper<const ast::Assign>>
  * @param rhs The optional string constraint of RHS expression being used. Use std::nullopt if RHS  is wildcard.
  * @return AssignPatternReturn return a list of references to the assign nodes.
  */
-AssignPatternReturn extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs);
+AssignPatternReturn extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs, bool isStrict = false);
 }  // namespace design_extractor
 }  // namespace sp

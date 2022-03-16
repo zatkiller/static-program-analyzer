@@ -465,10 +465,10 @@ namespace ast {
         TEST_LOG << "Testing Assign Pattern matcher";
 
         // only support _ or string, treat synonyms as _.
-        auto extractAssignHelper = [](sp::ast::ASTNode *ast, std::string s1, std::string s2){
+        auto extractAssignHelper = [](sp::ast::ASTNode *ast, std::string s1, std::string s2, bool isStrict = false){
             auto field1 = s1 == "_" ? std::nullopt : std::make_optional<>(s1);
             auto field2 = s2 == "_" ? std::nullopt : std::make_optional<>(s2);
-            return de::extractAssign(ast, field1, field2);
+            return de::extractAssign(ast, field1, field2, isStrict);
         };
 
         // assignment: z = 1 + x - 2 + y
@@ -494,6 +494,19 @@ namespace ast {
             REQUIRE(extractAssignHelper(ast.get(), "_", "1 +   x - 2 + y").size() == 1);
             REQUIRE(extractAssignHelper(ast.get(), "_", "(1 + x) - 2 + y").size() == 1);
             REQUIRE(extractAssignHelper(ast.get(), "_", "(1 + x) - 2 + y + 1").size() == 0);
+
+            
+            REQUIRE(extractAssignHelper(ast.get(), "_", "1 + x - 2 + y", true).size() == 1);
+            // bracket should not affect equality if it doesn't change order of opeartion
+            REQUIRE(extractAssignHelper(ast.get(), "_", "(1 + x) - 2 + y", true).size() == 1);
+            // this changes order of operation, thus no longer equal.
+            REQUIRE(extractAssignHelper(ast.get(), "_", "1 + (x - 2) + y", true).size() == 0);
+
+            // strict partial match fails
+            REQUIRE(extractAssignHelper(ast.get(), "_", "1 + x - 2", true).size() == 0);
+            // non strict partial match pass
+            REQUIRE(extractAssignHelper(ast.get(), "_", "1 + x - 2", false).size() == 1);
+
         }
 
         // assignment: x = v + x * (y + z) * t
@@ -528,6 +541,8 @@ namespace ast {
             REQUIRE(extractAssignHelper(ast.get(), "_", "y + z").size() == 1);
             REQUIRE(extractAssignHelper(ast.get(), "_", "(y + z) * t").size() == 0);
             REQUIRE(extractAssignHelper(ast.get(), "_", "x * (y + z)").size() == 1);
+
+            REQUIRE(extractAssignHelper(ast.get(), "_", "v + x * (y + z) * t", true).size() == 1);
         }
     }
 
