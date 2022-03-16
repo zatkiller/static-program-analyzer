@@ -1,5 +1,5 @@
 #include "TransitiveRelationshipTemplate.h"
-#include "DesignExtractor/EntityExtractor/VariableExtractor.h"
+#include "DesignExtractor/EntityExtractor/EntityExtractor.h"
 
 namespace sp {
 namespace design_extractor {
@@ -62,7 +62,7 @@ struct CallGraphPreProcessor {
         topolst.push_back(node);
     }
 
-    void preprocess(ast::ASTNode *node) {
+    void preprocess(const ast::ASTNode *node) {
         CallGraphWalker cgw;
         node->accept(&cgw);
         std::map<std::string, bool> visited;
@@ -78,8 +78,8 @@ struct CallGraphPreProcessor {
 
 std::set<VAR_NAME> RelExtractorTemplate::extractVars(const ast::ASTNode *part) {
     VariablePKBStrategy vps;
-    auto ve = std::make_unique<VariableExtractor>(&vps);
-    part->accept(ve.get());
+    VariableExtractorModule vem(&vps);
+    vem.extract(part);
 
     return vps.variables;
 }
@@ -99,7 +99,7 @@ void TransitiveRelationshipTemplate::visit(const ast::Call &node) {
     }
 }
 
-void TransitiveRelationshipTemplate::extract(ast::ASTNode *node) {
+void TransitiveRelationshipTemplate::extract(const ast::ASTNode *node) {
     CallGraphPreProcessor cgpp;
     cgpp.preprocess(node);
     for (auto proc : cgpp.topolst) {

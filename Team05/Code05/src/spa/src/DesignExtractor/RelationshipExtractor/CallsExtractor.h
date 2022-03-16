@@ -4,15 +4,20 @@
 
 namespace sp {
 namespace design_extractor {
+/**
+ * Extracts all Calls relationship from the AST and return them as a set of entries
+ */
+struct CallsExtractor : public Extractor<const ast::ASTNode*> {
+    std::set<Entry> extract(const ast::ASTNode*) override;
+};
 
-class CallsExtractor : public Extractor {
-private:
-    std::string currentProc = "";
-
+/**
+ * Extracts all Calls relationship from the AST and send them to the PKBStrategy
+ */
+struct CallsExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    using Extractor::Extractor;
-    void visit(const ast::Procedure&) override;
-    void visit(const ast::Call&) override;
+    CallsExtractorModule(PKBStrategy *pkb) : 
+        ExtractorModule(std::make_unique<CallsExtractor>(), pkb) {};
 };
 
 }  // namespace design_extractor

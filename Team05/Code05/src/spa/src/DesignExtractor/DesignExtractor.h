@@ -5,33 +5,26 @@
 #include "PKB.h"
 #include "Parser/AST.h"
 #include "DesignExtractor/Extractor.h"
-#include "DesignExtractor/EntityExtractor/StatementExtractor.h"
-#include "DesignExtractor/EntityExtractor/VariableExtractor.h"
-#include "DesignExtractor/EntityExtractor/ConstExtractor.h"
-#include "DesignExtractor/EntityExtractor/ProcedureExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/FollowsExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/ParentExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/CallsExtractor.h"
+#include "DesignExtractor/EntityExtractor/EntityExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/RelationshipExtractor.h"
 
 namespace sp {
 namespace design_extractor {
 class DesignExtractor {
 private:
-    std::list<std::shared_ptr<Extractor>> extractors;
+    std::list<std::shared_ptr<ExtractorModule<const ast::ASTNode*>>> extractors;
     PKBStrategy* pkbStrategy;
 public:
     explicit DesignExtractor(PKBStrategy* pkbStrategy) : pkbStrategy(pkbStrategy) {
-        extractors.push_back(std::make_shared<StatementExtractor>(pkbStrategy));
-        extractors.push_back(std::make_shared<VariableExtractor>(pkbStrategy));
-        extractors.push_back(std::make_shared<ConstExtractor>(pkbStrategy));
-        extractors.push_back(std::make_shared<ProcedureExtractor>(pkbStrategy));
-        extractors.push_back(std::make_shared<ModifiesExtractor>(pkbStrategy));
-        extractors.push_back(std::make_shared<UsesExtractor>(pkbStrategy));
-        extractors.push_back(std::make_shared<FollowsExtractor>(pkbStrategy));
-        extractors.push_back(std::make_shared<ParentExtractor>(pkbStrategy));
-        extractors.push_back(std::make_shared<CallsExtractor>(pkbStrategy));
+        extractors.push_back(std::make_shared<StatementExtractorModule>(pkbStrategy));
+        extractors.push_back(std::make_shared<VariableExtractorModule>(pkbStrategy));
+        extractors.push_back(std::make_shared<ConstExtractorModule>(pkbStrategy));
+        extractors.push_back(std::make_shared<ProcedureExtractorModule>(pkbStrategy));
+        extractors.push_back(std::make_shared<ModifiesExtractorModule>(pkbStrategy));
+        extractors.push_back(std::make_shared<UsesExtractorModule>(pkbStrategy));
+        extractors.push_back(std::make_shared<FollowsExtractorModule>(pkbStrategy));
+        extractors.push_back(std::make_shared<ParentExtractorModule>(pkbStrategy));
+        extractors.push_back(std::make_shared<CallsExtractorModule>(pkbStrategy));
     }
 
     void extract(ast::ASTNode* ast) {
