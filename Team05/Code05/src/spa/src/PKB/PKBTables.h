@@ -130,11 +130,11 @@ public:
     bool contains(std::string procName) const;
 
     /**
-    * Inserts the provided PROC_NAME into the ProcedureTable
+    * Inserts a procedure into the ProcedureTable
     * 
-    * @param procName The string value of the procedure name to be inserted
+    * @param proc
     */
-    void insert(std::string procName);
+    void insert(PROC_NAME proc);
 };
 
 /**
@@ -151,11 +151,11 @@ public:
     bool contains(std::string varName) const;
 
     /**
-    * Inserts the provided variable name into the VariableTable
+    * Inserts a variable into the VariableTable
     *
-    * @param varName The provided variable name to insert into the VariableTable
+    * @param var
     */
-    void insert(std::string varName);
+    void insert(VAR_NAME var);
 };
 
 /**
@@ -182,23 +182,11 @@ public:
     bool contains(StatementType stmtType, int stmtNum) const;
 
     /**
-    * Inserts a (assignment, if, or while) statement with the provided statement type and statement num
-    * into the StatementTable
+    * Inserts a statement into the StatementTable
     *
-    * @param stmtType The provided statement type to insert
-    * @param stmtNum The provided statement number to insert
+    * @param stmt
     */
-    void insert(StatementType stmtType, int stmtNum);
-
-    /**
-    * Inserts a (call, read, or print) statement with the provided statement type and statement num and attribute
-    * into the StatementTable
-    *
-    * @param stmtType The provided statement type to insert
-    * @param stmtNum The provided statement number to insert
-    * @param attribute The provided attribute (VAR_NAME or PROC_NAME) to insert
-    */
-    void insert(StatementType stmtType, int stmtNum, std::string attribute);
+    void insert(STMT_LO stmt);
 
     /**
     * Retrieves all statements of the provided statement type

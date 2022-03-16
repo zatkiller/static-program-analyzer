@@ -494,7 +494,10 @@ namespace qps::parser {
                 parsePatternClause(queryObj);
             } else if (tt == TokenType::WITH) {
                 parseWithClause(queryObj);
+            } else {
+                throw exceptions::PqlSyntaxException(messages::qps::parser::notExpectingTokenMessage);
             }
+
             tt = peekNextReservedToken().getTokenType();
         }
     }

@@ -62,8 +62,8 @@ TEST_CASE("ProcedureTable") {
     ProcedureTable* procTable = new ProcedureTable();
     REQUIRE(procTable->getAllEntity() == std::vector<PROC_NAME>());
 
-    procTable->insert("monke1");
-    procTable->insert("monke2");
+    procTable->insert(PROC_NAME{ "monke1" });
+    procTable->insert(PROC_NAME{ "monke2" });
 
     REQUIRE(procTable->contains("monke1"));
     REQUIRE_FALSE(procTable->contains("monke3"));
@@ -80,8 +80,8 @@ TEST_CASE("VariableTable") {
     VariableTable* varTable = new VariableTable();
     REQUIRE(varTable->getAllEntity() == std::vector<VAR_NAME>());
 
-    varTable->insert("monke1");
-    varTable->insert("monke2");
+    varTable->insert(VAR_NAME{ "monke1" });
+    varTable->insert(VAR_NAME{ "monke2" });
 
     REQUIRE(varTable->contains("monke1"));
     REQUIRE_FALSE(varTable->contains("monke3"));
@@ -107,10 +107,10 @@ TEST_CASE("StatementTable") {
     STMT_LO stmt6{ 3, StatementType::If };
     STMT_LO stmt7{ 4, StatementType::Print, "z" };
 
-    stmtTable->insert(StatementType::Assignment, 1);
-    stmtTable->insert(StatementType::Call, 2, "foo");
-    stmtTable->insert(StatementType::Print, 3, "x");
-    stmtTable->insert(StatementType::Assignment, 4);
+    stmtTable->insert(STMT_LO{ 1, StatementType::Assignment });
+    stmtTable->insert(STMT_LO{ 2, StatementType::Call, "foo" });
+    stmtTable->insert(STMT_LO{ 3, StatementType::Print, "x" });
+    stmtTable->insert(STMT_LO{ 4, StatementType::Assignment });
 
     REQUIRE(stmtTable->contains(1));
     REQUIRE(stmtTable->contains(StatementType::Assignment, 1));
@@ -129,7 +129,7 @@ TEST_CASE("StatementTable") {
     REQUIRE(hasSameContents<STMT_LO>(&actual, &expected));
 
     REQUIRE(stmtTable->getSize() == 4);
-    stmtTable->insert(StatementType::Print, 4);
+    stmtTable->insert(STMT_LO{4, StatementType::Print });
     REQUIRE(stmtTable->getSize() == 4);
     REQUIRE_FALSE(stmtTable->contains(StatementType::Print, 4));
 }

@@ -17,42 +17,11 @@ public:
     PKB();
 
     /**
-    * Inserts an assignment, if, or while statement information into the PKB.
-    *
-    * @param type statement type
-    * @param statementNumber line number
+    * Inserts a program design entity into its respective table
+    * 
+    * @param entity a STMT_LO, PROC_NAME, VAR_NAME, or CONST
     */
-    void insertStatement(StatementType type, int statementNumber);
-
-    /**
-    * Inserts a call, read, or print statement information into the PKB.
-    *
-    * @param type statement type
-    * @param statementNumber line number
-    * @param attribute a VAR_NAME or PROC_NAME
-    */
-    void insertStatement(StatementType type, int statementNumber, std::string attribute);
-
-    /**
-    * Inserts a variable into the PKB.
-    *
-    * @param name variable name
-    */
-    void insertVariable(std::string name);
-
-    /**
-    * Inserts a constant into the PKB.
-    *
-    * @param constant
-    */
-    void insertConstant(int constant);
-
-    /**
-    * Inserts a procedure into the PKB.
-    *
-    * @param name procedure name
-    */
-    void insertProcedure(std::string name);
+    void insertEntity(Content entity);
 
     /**
     * Inserts a relationship into the PKB.
@@ -161,12 +130,40 @@ private:
     std::unique_ptr<sp::ast::ASTNode> root;
 
     /**
+   * Inserts an assignment, if, or while statement information into the PKB.
+   *
+   * @param stmt
+   */
+    void insertStatement(STMT_LO stmt);
+
+    /**
+    * Inserts a variable into the PKB.
+    *
+    * @param var
+    */
+    void insertVariable(VAR_NAME var);
+
+    /**
+    * Inserts a constant into the PKB.
+    *
+    * @param constant
+    */
+    void insertConstant(CONST constant);
+
+    /**
+    * Inserts a procedure into the PKB.
+    *
+    * @param proc
+    */
+    void insertProcedure(PROC_NAME proc);
+
+    /**
     * Checks whether a PKBField is valid for its given entity type.
     *
     * @param field
     * @return bool
     */
-    bool validate(PKBField* field);
+    bool validate(const PKBField field) const;
 
     /**
     * Checks whether a variable PKBField is valid. If the field is concrete, check if it is in VariableTable.
@@ -174,7 +171,7 @@ private:
     * @param field
     * @return bool
     */
-    bool validateVariable(PKBField* field);
+    bool validateVariable(const PKBField field) const;
 
     /**
     * Checks whether a procedure PKBField is valid. If the field is concrete, check if it is in ProcedureTable.
@@ -182,7 +179,7 @@ private:
     * @param field
     * @return bool
     */
-    bool validateProcedure(PKBField* field);
+    bool validateProcedure(const PKBField field) const;
 
     /**
     * Checks whether a statement PKBField is valid. If the field is concrete, for all the provided fields
@@ -192,5 +189,13 @@ private:
     * @param field
     * @return bool
     */
-    bool validateStatement(PKBField* field);
+    bool validateStatement(const PKBField field) const;
+
+    /**
+    * For concrete statement fields, replace its STMT_LO content with the one in the StatementTable. This function will
+    * only run after PKB::validate and PKB::validateStatement return true.
+    * 
+    * @param field
+    */
+    void appendStatementInformation(PKBField* field);
 };
