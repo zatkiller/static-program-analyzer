@@ -18,6 +18,17 @@ TEST_CASE("STMT_LO equality") {
     REQUIRE_FALSE(s1 == s5);
 }
 
+TEST_CASE("STMT_LO set equality") {
+    // sets uses < for equality intead of ==. Therefore this test is added.
+    STMT_LO s1 = STMT_LO{ 1, StatementType::Call, "" };
+    STMT_LO s2 = STMT_LO{ 1, StatementType::Call};
+    STMT_LO s3 = STMT_LO{ 1, StatementType::Call, "a"};
+    STMT_LO s4 = STMT_LO{ 1, StatementType::Call, "a"};
+    REQUIRE_FALSE((s1 < s2) & (s2 < s1));
+    REQUIRE_FALSE((s1 < s3) & (s3 < s1));
+    REQUIRE((!(s3 < s4) & !(s4 < s3)) & (s4 == s3));
+}
+
 TEST_CASE("PKBField createConcrete statement, getContent") {
     PKBField field = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     REQUIRE(*(field.getContent<STMT_LO>()) == STMT_LO{ 1, StatementType::Assignment });

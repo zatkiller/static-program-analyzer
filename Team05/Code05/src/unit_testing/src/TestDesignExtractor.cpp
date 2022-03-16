@@ -460,10 +460,11 @@ namespace ast {
                 STMT_LO{4, StatementType::Assignment},
             };
             StatementExtractorModule(&pkbStrategy).extract(program.get());
-            auto ExtractedStatements = pkbStrategy.entities[PKBEntityType::STATEMENT];
-            REQUIRE(ExtractedStatements == expectedStatements);
+            auto extractedStatements = pkbStrategy.entities[PKBEntityType::STATEMENT];
+            REQUIRE(extractedStatements == expectedStatements);
             // If call statement without attribute, it's wrong.
-            REQUIRE(ExtractedStatements.find(STMT_LO{2, StatementType::Call}) == ExtractedStatements.end());
+            REQUIRE(extractedStatements.find(STMT_LO{2, StatementType::Call}) == extractedStatements.end());
+            REQUIRE(extractedStatements.find(STMT_LO{2, StatementType::Call, "foo"}) != extractedStatements.end());
 
             std::set<std::pair<Content, Content>> expected;
             ModifiesExtractorModule me(&pkbStrategy);
