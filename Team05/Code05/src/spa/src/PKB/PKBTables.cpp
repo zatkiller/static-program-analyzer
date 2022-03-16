@@ -6,8 +6,8 @@ bool ProcedureTable::contains(std::string procName) const {
     return this->containsVal(PROC_NAME(procName));
 }
 
-void ProcedureTable::insert(std::string procName) {
-    insertVal(PROC_NAME(procName));
+void ProcedureTable::insert(PROC_NAME proc) {
+    insertVal(proc);
 }
 
 /* ---------------------------------ConstantTable Methods ----------------------------------------*/
@@ -26,8 +26,8 @@ bool VariableTable::contains(std::string varName) const {
     return this->containsVal(VAR_NAME(varName));
 }
 
-void VariableTable::insert(std::string varName) {
-    insertVal(VAR_NAME(varName));
+void VariableTable::insert(VAR_NAME var) {
+    insertVal(var);
 }
 
 /* ---------------------------------StatementTable Methods ----------------------------------------*/
@@ -40,15 +40,9 @@ bool StatementTable::contains(StatementType stmtType, int stmtNum) const {
     return this->containsVal(STMT_LO(stmtNum, stmtType));
 }
 
-void StatementTable::insert(StatementType stmtType, int stmtNum) {
-    if (!contains(stmtNum)) {
-        insertVal(STMT_LO(stmtNum, stmtType));
-    }
-}
-
-void StatementTable::insert(StatementType stmtType, int stmtNum, std::string attribute) {
-    if (!contains(stmtNum)) {
-        insertVal(STMT_LO(stmtNum, stmtType, attribute));
+void StatementTable::insert(STMT_LO stmt) {
+    if (!contains(stmt.statementNum)) {
+        insertVal(stmt);
     }
 }
 

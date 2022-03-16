@@ -48,13 +48,13 @@ TEST_CASE("Process such that") {
 TEST_CASE("Get list of result") {
     PKB pkb = PKB();
     PKB* ptr = &pkb;
-    pkb.insertStatement(StatementType::Assignment, 2);
-    pkb.insertStatement(StatementType::Assignment, 5);
-    pkb.insertStatement(StatementType::Assignment, 8);
-    pkb.insertStatement(StatementType::While, 3);
-    pkb.insertStatement(StatementType::If, 4);
-    pkb.insertStatement(StatementType::If, 6);
-    pkb.insertStatement(StatementType::Print, 7);
+    pkb.insertEntity(STMT_LO{ 2, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 5, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 8, StatementType::Assignment });
+    pkb.insertEntity(STMT_LO{ 3, StatementType::While });
+    pkb.insertEntity(STMT_LO{ 4, StatementType::If });
+    pkb.insertEntity(STMT_LO{ 6, StatementType::If });
+    pkb.insertEntity(STMT_LO{ 7, StatementType::Print });
 
     qps::evaluator::Evaluator evaluator(ptr);
     qps::query::Query query{};
