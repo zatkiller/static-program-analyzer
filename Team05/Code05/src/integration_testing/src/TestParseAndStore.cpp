@@ -75,13 +75,13 @@ struct TestParseAndStorePackage1 {
         expectedEntities.emplace(
             PKBEntityType::STATEMENT,
             std::set<Content>({
-                STMT_LO{1, StatementType::Read},
+                STMT_LO{1, StatementType::Read, "number"},
                 STMT_LO{2, StatementType::Assignment},
                 STMT_LO{3, StatementType::While},
                 STMT_LO{4, StatementType::Assignment},
                 STMT_LO{5, StatementType::Assignment},
                 STMT_LO{6, StatementType::Assignment},
-                STMT_LO{7, StatementType::Print}
+                STMT_LO{7, StatementType::Print, "sum"}
             })
         );
         expectedEntities.emplace(
@@ -102,7 +102,7 @@ struct TestParseAndStorePackage1 {
         expectedRelationships.emplace(
             PKBRelationship::MODIFIES,
             std::set<std::pair<Content, Content>> {
-                p(STMT_LO{ 1, StatementType::Read }, VAR_NAME{ "number" }),
+                p(STMT_LO{ 1, StatementType::Read, "number" }, VAR_NAME{ "number" }),
                 p(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{ "sum" }),
                 p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "digit" }),
                 p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "sum" }),
@@ -129,16 +129,16 @@ struct TestParseAndStorePackage1 {
                 p(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{ "sum" }),
                 p(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{ "digit" }),
                 p(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{ "number" }),
-                p(STMT_LO{ 7, StatementType::Print }, VAR_NAME{ "sum" }),
+                p(STMT_LO{ 7, StatementType::Print, "sum"}, VAR_NAME{ "sum" }),
             }
         );
 
         expectedRelationships.emplace(
             PKBRelationship::FOLLOWS,
             std::set<std::pair<Content, Content>> {
-                p(STMT_LO{ 1, StatementType::Read }, STMT_LO{ 2, StatementType::Assignment }),
+                p(STMT_LO{ 1, StatementType::Read, "number" }, STMT_LO{ 2, StatementType::Assignment }),
                 p(STMT_LO{ 2, StatementType::Assignment }, STMT_LO{ 3, StatementType::While }),
-                p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 7, StatementType::Print }),
+                p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 7, StatementType::Print, "sum" }),
                 p(STMT_LO{ 4, StatementType::Assignment }, STMT_LO{ 5, StatementType::Assignment }),
                 p(STMT_LO{ 5, StatementType::Assignment }, STMT_LO{ 6, StatementType::Assignment }),
             }
