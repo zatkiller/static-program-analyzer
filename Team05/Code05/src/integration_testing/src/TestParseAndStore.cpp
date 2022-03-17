@@ -14,22 +14,7 @@ auto p = [](auto first, auto second) {
     return std::make_pair<>(first, second);
 };
 
-struct TestParseAndStorePackage1 {
-    std::string sourceCode = R"(
-        procedure sumDigits {
-            read number;
-            sum = 0;
-
-            while (number > 0) {
-                digit = number % 10;
-                sum = sum + digit;
-                number = number / 10;
-            }
-
-            print sum;
-        }
-    )";
-
+struct DesignExtractionTestTemplate {
     std::map<PKBEntityType, std::set<Content>> expectedEntities;
     std::map<PKBRelationship, std::set<std::pair<Content, Content>>> expectedRelationships;
 
@@ -61,6 +46,32 @@ struct TestParseAndStorePackage1 {
         }
 
         return result == expected;
+    }
+
+
+
+};
+
+struct TestParseAndStorePackage1 : public DesignExtractionTestTemplate {
+
+    std::string sourceCode = R"(
+        procedure sumDigits {
+            read number;
+            sum = 0;
+
+            while (number > 0) {
+                digit = number % 10;
+                sum = sum + digit;
+                number = number / 10;
+            }
+
+            print sum;
+        }
+    )";
+
+    TestParseAndStorePackage1() {
+        initEntities();
+        initRelationships();
     }
 
     void initEntities() {
@@ -153,13 +164,9 @@ struct TestParseAndStorePackage1 {
             }
         );
     }
-    TestParseAndStorePackage1() {
-        initEntities();
-        initRelationships();
-    }
 };
 
-TEST_CASE("Test parse and store") {
+TEST_CASE("Test parse and store for basic package 1") {
     PKB pkb;
     SourceProcessor sp;
     TestParseAndStorePackage1 test1;
