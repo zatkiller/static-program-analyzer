@@ -8,7 +8,7 @@ bool STMT_LO::operator == (const STMT_LO& other) const {
 }
 
 bool STMT_LO::operator < (const STMT_LO& other) const {
-    return std::tie(type, statementNum) < std::tie(other.type, other.statementNum);
+    return std::tie(type, statementNum, attribute) < std::tie(other.type, other.statementNum, other.attribute);
 }
 
 bool STMT_LO::hasStatementType() const {

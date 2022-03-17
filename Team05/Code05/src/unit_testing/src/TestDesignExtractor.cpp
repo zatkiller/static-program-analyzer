@@ -202,8 +202,8 @@ namespace ast {
                 auto ce = std::make_unique<ConstExtractorModule>(&pkbStrategy);
                 ce->extract(program.get());
 
-                std::set<Content> expectedVars = { CONST{0}, CONST{2}, CONST{10} };
-                REQUIRE(pkbStrategy.entities[PKBEntityType::CONST] == expectedVars);
+                std::set<Content> expectedConsts = { CONST{0}, CONST{2}, CONST{10} };
+                REQUIRE(pkbStrategy.entities[PKBEntityType::CONST] == expectedConsts);
             }
 
             SECTION("Procedure extractor test") {
@@ -212,6 +212,25 @@ namespace ast {
                 
                 std::set<Content> expectedProcs = { PROC_NAME{"main"} };
                 REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedProcs);
+            }
+
+            SECTION("Statement extractor test") {
+                auto se = std::make_unique<StatementExtractorModule>(&pkbStrategy);
+                se->extract(program.get());
+
+                std::set<Content> expectedStatements = {
+                    STMT_LO{1, StatementType::Read, "x"},
+                    STMT_LO{2, StatementType::Assignment},
+                    STMT_LO{3, StatementType::While},
+                    STMT_LO{4, StatementType::Print, "x"},
+                    STMT_LO{5, StatementType::Assignment},
+                    STMT_LO{6, StatementType::Assignment},
+                    STMT_LO{7, StatementType::If},
+                    STMT_LO{8, StatementType::Assignment},
+                    STMT_LO{9, StatementType::Print, "x"},
+                    STMT_LO{10, StatementType::Assignment},
+                    STMT_LO{11, StatementType::Print, "sum"},
+                };
             }
 
             SECTION("Modifies extractor test") {
@@ -426,6 +445,26 @@ namespace ast {
                     make<Assign>(4, make<Var>("f1"), make<Var>("f2"))
                 ))
             );
+
+            std::set<Content> expectedProcs = {
+                PROC_NAME{"main"},
+                PROC_NAME{"foo"}
+            };
+            ProcedureExtractorModule(&pkbStrategy).extract(program.get());
+            REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedProcs);
+
+            std::set<Content> expectedStatements = {
+                STMT_LO{1, StatementType::While},
+                STMT_LO{2, StatementType::Call, "foo"},
+                STMT_LO{3, StatementType::Assignment},
+                STMT_LO{4, StatementType::Assignment},
+            };
+            StatementExtractorModule(&pkbStrategy).extract(program.get());
+            auto extractedStatements = pkbStrategy.entities[PKBEntityType::STATEMENT];
+            REQUIRE(extractedStatements == expectedStatements);
+            // If call statement without attribute, it's wrong.
+            REQUIRE(extractedStatements.find(STMT_LO{2, StatementType::Call}) == extractedStatements.end());
+            REQUIRE(extractedStatements.find(STMT_LO{2, StatementType::Call, "foo"}) != extractedStatements.end());
 
             std::set<std::pair<Content, Content>> expected;
             ModifiesExtractorModule me(&pkbStrategy);
