@@ -440,6 +440,17 @@ namespace ast {
             };
 
             REQUIRE(pkbStrategy.relationships[PKBRelationship::CALLS] == expected);
+
+            NextExtractorModule ne(&pkbStrategy);
+            auto cfgs = cfg::CFGExtractor().extract(program.get());
+            ne.extract(&cfgs);
+            expected = {
+                p(STMT_LO{1, StatementType::Call}, STMT_LO{2, StatementType::Call}),
+                p(STMT_LO{4, StatementType::Call}, STMT_LO{5, StatementType::Call}),
+                p(STMT_LO{6, StatementType::Read}, STMT_LO{7, StatementType::Print}),
+            };
+
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
         }
 
         /**
@@ -520,6 +531,17 @@ namespace ast {
                 p(PROC_NAME{"main"}, VAR_NAME{"m3"})
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
+
+            NextExtractorModule ne(&pkbStrategy);
+            auto cfgs = cfg::CFGExtractor().extract(program.get());
+            ne.extract(&cfgs);
+            expected = {
+                p(STMT_LO{1, StatementType::While}, STMT_LO{2, StatementType::Call}),
+                p(STMT_LO{2, StatementType::Call}, STMT_LO{3, StatementType::Assignment}),
+                p(STMT_LO{3, StatementType::Assignment}, STMT_LO{1, StatementType::While}),
+            };
+
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
         }
     }
 
