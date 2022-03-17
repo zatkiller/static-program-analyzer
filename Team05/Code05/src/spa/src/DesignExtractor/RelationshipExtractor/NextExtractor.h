@@ -24,7 +24,7 @@ struct NextExtractor : public Extractor<const cfg::PROC_CFG_MAP*> {
 
         // helper to turn insert nodes as entries.
         std::set<Entry> entries;
-        auto collect = [&entries](auto n1, auto n2) {
+        auto collect = [&entries](cfg::CFGNode *n1, cfg::CFGNode *n2) {
             if (n1->stmt.has_value() && n2->stmt.has_value()) {
                 auto s1 = n1->stmt.value();
                 auto s2 = n2->stmt.value();
@@ -57,10 +57,10 @@ struct NextExtractor : public Extractor<const cfg::PROC_CFG_MAP*> {
                 // extract the dummy node's children instead.
                 if (!child->stmt.has_value()) {
                     for (auto realChild : child->getChildren()) {
-                        collect(curNode, realChild);
+                        collect(curNode, realChild.get());
                     }
                 } else {
-                    collect(curNode, child);
+                    collect(curNode, child.get());
                 }
             }
         }

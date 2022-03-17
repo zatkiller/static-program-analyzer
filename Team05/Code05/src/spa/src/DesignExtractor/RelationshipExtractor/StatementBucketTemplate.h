@@ -55,6 +55,11 @@ public:
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
     }
+    void visit(const ast::Call& node) override {
+        auto stmt = STMT_LO{node.getStmtNo(), StatementType::Call, node.getName()};
+        insert(bucket, currentDepth, stmt);
+        enterBucket(stmt);
+    }
 
     void enterContainer(std::variant<int, std::string> containerId) override {
         currentDepth++;
