@@ -9,7 +9,12 @@
 
 namespace sp {
 namespace cfg {
+
+
+
 class CFGNode;
+using PROC_CFG_MAP = std::map<std::string, std::shared_ptr<cfg::CFGNode>>;
+
 /**
  * @brief Class to encapsulate a single CFGNode.
  * @details children is a list of the direct children of the current node.
@@ -17,9 +22,9 @@ class CFGNode;
  */
 class CFGNode {
 private:
-    std::optional<STMT_LO> stmt;
     std::vector<std::shared_ptr<CFGNode>> children;
 public:
+    std::optional<STMT_LO> stmt;
     CFGNode () : stmt(std::nullopt) {}
     CFGNode(int stmtNo, StatementType stmtType) : stmt(STMT_LO(stmtNo, stmtType)) {}
 

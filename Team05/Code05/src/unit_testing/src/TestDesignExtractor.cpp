@@ -11,6 +11,7 @@
 #include "DesignExtractor/EntityExtractor/EntityExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/RelationshipExtractor.h"
 #include "DesignExtractor/PatternMatcher.h"
+#include "DesignExtractor/CFG/CFG.h"
 #include "PKB.h"
 #include "logging.h"
 
@@ -31,6 +32,7 @@ using de::UsesExtractorModule;
 using de::ModifiesExtractorModule;
 using de::ParentExtractorModule;
 using de::FollowsExtractorModule;
+using de::NextExtractorModule;
 
 class TestPKBStrategy : public de::PKBStrategy {
 public:
@@ -319,6 +321,27 @@ namespace ast {
                     p(STMT_LO{3, StatementType::While}, STMT_LO{10, StatementType::Assignment}),
                 };
                 REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENT] == expected);
+            }
+
+            SECTION("Next extractor test") {
+                auto ne = std::make_unique<NextExtractorModule>(&pkbStrategy);
+                auto cfg = std::make_unique<cfg::CFGExtractor>()->extract(program.get());
+                ne->extract(&cfg);
+                std::set<std::pair<Content, Content>> expected = {
+                    p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
+                    p(STMT_LO{2, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{4, StatementType::Print}),
+                    p(STMT_LO{4, StatementType::Print}, STMT_LO{5, StatementType::Assignment}),
+                    p(STMT_LO{5, StatementType::Assignment}, STMT_LO{6, StatementType::Assignment}),
+                    p(STMT_LO{6, StatementType::Assignment}, STMT_LO{7, StatementType::If}),
+                    p(STMT_LO{7, StatementType::If}, STMT_LO{8, StatementType::Assignment}),
+                    p(STMT_LO{7, StatementType::If}, STMT_LO{9, StatementType::Print}),
+                    p(STMT_LO{8, StatementType::Assignment}, STMT_LO{10, StatementType::Assignment}),
+                    p(STMT_LO{9, StatementType::Print}, STMT_LO{10, StatementType::Assignment}),
+                    p(STMT_LO{10, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{11, StatementType::Print}),
+                };
+                REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
             }
         }    
         
