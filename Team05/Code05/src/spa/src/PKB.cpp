@@ -313,13 +313,7 @@ PKBResponse PKB::match(
     sp::design_extractor::PatternParam lhs,
     sp::design_extractor::PatternParam rhs,
     bool isStrict) {
-
-    sp::design_extractor::AssignPatternReturn matchedStmts;
-    if (isStrict) {
-        matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs, true);
-    } else {
-        matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs);
-    }
+    auto matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs, isStrict);
     FieldRowResponse res;
 
     if (matchedStmts.size() == 0) {
