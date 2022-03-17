@@ -311,8 +311,15 @@ PKBResponse PKB::getConstants() {
 PKBResponse PKB::match(
     StatementType type,
     sp::design_extractor::PatternParam lhs,
-    sp::design_extractor::PatternParam rhs) {
-    auto matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs);
+    sp::design_extractor::PatternParam rhs,
+    bool isStrict) {
+
+    sp::design_extractor::AssignPatternReturn matchedStmts;
+    if (isStrict) {
+        matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs, true);
+    } else {
+        matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs);
+    }
     FieldRowResponse res;
 
     if (matchedStmts.size() == 0) {
