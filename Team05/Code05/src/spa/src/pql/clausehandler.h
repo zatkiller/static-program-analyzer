@@ -91,7 +91,7 @@ public:
         if constexpr(std::is_same_v<T, std::string>) {
             if (auto pptr = field.getContent<PROC_NAME>()) value = pptr->name;
             else if (auto vptr = field.getContent<VAR_NAME>()) value = vptr->name;
-//                else if (auto sptr = field.getContent<STMT_LO>()) value = sptr->attribute.value();
+            else if (auto sptr = field.getContent<STMT_LO>()) value = sptr->attribute.value();
         } else {
             if (auto cptr = field.getContent<CONST>()) value = *cptr;
             if (auto sptr = field.getContent<STMT_LO>()) value = sptr->statementNum;
