@@ -256,11 +256,10 @@ struct TestParseAndStorePackage2 : public DesignExtractionTestTemplate {
                 p(s9, s7),
                 p(s10, s11),
                 p(s11, s12),
-                p(s12, s13),
+                p(s13, s14),
                 p(s14, s15),
                 p(s15, s16),
-                p(s16, s17),
-                p(s17, s16)
+                p(s16, s15),
             }
         );
     }
