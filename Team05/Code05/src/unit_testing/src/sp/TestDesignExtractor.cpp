@@ -429,6 +429,19 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
 
+            // Regression test for #287.
+            FollowsExtractorModule fe(&pkbStrategy);
+            fe.extract(program.get());
+            expected = {
+                p(STMT_LO{1, StatementType::Call}, STMT_LO{2, StatementType::Call}),
+                p(STMT_LO{4, StatementType::Call}, STMT_LO{5, StatementType::Call}),
+                p(STMT_LO{6, StatementType::Read}, STMT_LO{7, StatementType::Print}),
+            };
+
+            auto diff = setDiff(pkbStrategy.relationships[PKBRelationship::FOLLOWS], expected);
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::FOLLOWS] == expected);
+
+
             de::CallsExtractorModule ce(&pkbStrategy);
             ce.extract(program.get());
             expected = {

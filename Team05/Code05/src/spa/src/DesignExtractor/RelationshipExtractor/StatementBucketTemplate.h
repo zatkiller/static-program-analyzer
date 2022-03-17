@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <variant>
 
 #include "DesignExtractor/Extractor.h"
 #include "PKB/PKBField.h"
@@ -56,13 +57,18 @@ public:
         enterBucket(stmt);
     }
     void visit(const ast::Call& node) override {
-        auto stmt = STMT_LO{node.getStmtNo(), StatementType::Call, node.getName()};
+        auto stmt = STMT_LO{node.getStmtNo(), StatementType::Call};
         insert(bucket, currentDepth, stmt);
         enterBucket(stmt);
     }
 
     void enterContainer(std::variant<int, std::string> containerId) override {
-        currentDepth++;
+        if (std::get_if<int>(&containerId) != nullptr) {
+            currentDepth++;
+        } else if (std::get_if<std::string>(&containerId) != nullptr) {
+            currentDepth = 0;
+            bucket.clear();
+        }
     }
     
     void exitContainer() override {
