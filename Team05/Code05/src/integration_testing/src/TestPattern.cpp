@@ -92,6 +92,8 @@ TEST_CASE("test simple source code") {
     result2.sort();
     printEvaluatorResult(result2);
     REQUIRE(result2 == std::list<std::string>{"2", "3", "4"});
+
+
 }
 
 TEST_CASE("test evaluate pattern") {
@@ -219,4 +221,26 @@ TEST_CASE("test evaluate pattern") {
     result8.sort();
     printEvaluatorResult(result8);
     REQUIRE(result8 == std::list<std::string>{"3"});
+
+    TEST_LOG << "stmt a; Select a pattern a(_, _) and a1('number', _) such that Follows(a, a1)";
+    qps::evaluator::Evaluator evaluator9 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query9{};
+    query9.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query9.addDeclaration("a1", qps::query::DesignEntity::ASSIGN);
+    query9.addVariable("a");
+
+    query9.addPattern(qps::query::Pattern::ofAssignPattern("a",
+                                                           qps::query::EntRef::ofWildcard(),
+                                                           qps::query::ExpSpec::ofWildcard()));
+    query9.addPattern(qps::query::Pattern::ofAssignPattern("a1",
+                                                           qps::query::EntRef::ofVarName("number"),
+                                                           qps::query::ExpSpec::ofWildcard()));
+    std::shared_ptr<qps::query::FollowsT> ptr9 = std::make_shared<qps::query::FollowsT>();
+    ptr9->follower = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    ptr9->transitiveFollowed = qps::query::StmtRef::ofDeclaration("a1", qps::query::DesignEntity::ASSIGN);
+    query9.addSuchthat(ptr9);
+    std::list<std::string> result9 = evaluator9.evaluate(query9);
+    result9.sort();
+    printEvaluatorResult(result9);
+    REQUIRE(result9 == std::list<std::string>{"4", "5"});
 }

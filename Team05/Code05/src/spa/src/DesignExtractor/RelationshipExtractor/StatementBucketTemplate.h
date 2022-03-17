@@ -17,7 +17,7 @@ using Bucket = std::unordered_map<Depth, STMT_LO>;
  * of each nested depth is stored. At each statement, the virtual insert method is called to insert into
  * pkb based on the derived class' implementation.
  */
-class StatementBucketTemplate : public Extractor {
+class StatementBucketTemplate : public TreeWalker {
 private:
     Depth currentDepth = 0;
     Bucket bucket;
@@ -26,10 +26,10 @@ private:
         bucket.insert_or_assign(currentDepth, stmt);
     }
 
-    virtual void insert(const Bucket&, Depth, Content) const = 0;
+    virtual void insert(const Bucket&, Depth, Content) = 0;
 
 public:
-    using Extractor::Extractor;
+    std::set<Entry> relationships;
     void visit(const ast::If& node) override {
         auto stmt = STMT_LO{node.getStmtNo(), StatementType::If};
         insert(bucket, currentDepth, stmt);

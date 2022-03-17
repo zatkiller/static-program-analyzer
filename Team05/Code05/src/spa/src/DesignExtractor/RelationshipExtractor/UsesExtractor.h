@@ -13,17 +13,22 @@
 namespace sp {
 namespace design_extractor {
 /**
- * Extracts all uses relationship from the AST and send them to PKB Adaptor.
+ * Extracts all Uses relationship from the AST and return them as a set of entries
  */
-class UsesExtractor : public TransitiveRelationshipTemplate {
-private:
-    void insert(Content a1, Content a2);
+class UsesExtractor : public Extractor<const ast::ASTNode*> {
 public:
-    using TransitiveRelationshipTemplate::TransitiveRelationshipTemplate;
-    void visit(const ast::Print& node) override;
-    void visit(const ast::Assign& node) override;
-    void visit(const ast::While&) override;
-    void visit(const ast::If&) override;
+    using Extractor::Extractor;
+    std::set<Entry> extract(const ast::ASTNode*) override;
 };
+
+/**
+ * Extracts all Uses relationship from the AST and send them to the PKBStrategy
+ */
+class UsesExtractorModule : public ExtractorModule<const ast::ASTNode*> {
+public:
+    UsesExtractorModule(PKBStrategy *pkb) : 
+        ExtractorModule(std::make_unique<UsesExtractor>(), pkb) {};
+};
+
 }  // namespace design_extractor
 }  // namespace sp

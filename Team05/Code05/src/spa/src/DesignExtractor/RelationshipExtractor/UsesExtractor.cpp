@@ -5,25 +5,48 @@
 
 namespace sp {
 namespace design_extractor {
-void UsesExtractor::visit(const ast::Print& node) {
+
+
+/**
+ * a ASTNodeVisitor that collects the Follows relationship as it walks through the AST.
+ */
+class UsesCollector : public TransitiveRelationshipTemplate {
+private:
+    void insert(Content a1, Content a2);
+public:
+    using TransitiveRelationshipTemplate::TransitiveRelationshipTemplate;
+    void visit(const ast::Print& node) override;
+    void visit(const ast::Assign& node) override;
+    void visit(const ast::While&) override;
+    void visit(const ast::If&) override;
+};
+
+std::set<Entry> UsesExtractor::extract(const ast::ASTNode* node) {
+    UsesCollector extractor;
+    extractor.extract(node);
+    return extractor.relationships;
+};
+
+void UsesCollector::visit(const ast::Print& node) {
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::Print}, &node);
 }
 
-void UsesExtractor::visit(const ast::Assign& node) {
+void UsesCollector::visit(const ast::Assign& node) {
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::Assignment}, node.getRHS());
 }
 
-void UsesExtractor::visit(const ast::While& node) {
+void UsesCollector::visit(const ast::While& node) {
     stmtNumToType[node.getStmtNo()] = StatementType::While;
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::While}, node.getCondExpr());
 }
-void UsesExtractor::visit(const ast::If& node) {
+void UsesCollector::visit(const ast::If& node) {
     stmtNumToType[node.getStmtNo()] = StatementType::If;
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::If}, node.getCondExpr());
 }
 
-void UsesExtractor::insert(Content a1, Content a2) {
-    pkb->insertRelationship(PKBRelationship::USES, a1, a2);
+void UsesCollector::insert(Content a1, Content a2) {
+    auto relationship = Relationship(PKBRelationship::USES, a1, a2);
+    relationships.insert(relationship);
 }
 }  // namespace design_extractor
 }  // namespace sp

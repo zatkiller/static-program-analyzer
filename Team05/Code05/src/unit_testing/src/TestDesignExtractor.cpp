@@ -8,14 +8,8 @@
 #include "Parser/AST.h"
 #include "DesignExtractor/PKBStrategy.h"
 #include "DesignExtractor/DesignExtractor.h"
-#include "DesignExtractor/EntityExtractor/VariableExtractor.h"
-#include "DesignExtractor/EntityExtractor/ConstExtractor.h"
-#include "DesignExtractor/EntityExtractor/ProcedureExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/FollowsExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/ParentExtractor.h"
-#include "DesignExtractor/RelationshipExtractor/CallsExtractor.h"
+#include "DesignExtractor/EntityExtractor/EntityExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/RelationshipExtractor.h"
 #include "DesignExtractor/PatternMatcher.h"
 #include "PKB.h"
 #include "logging.h"
@@ -29,14 +23,14 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 namespace sp {
 namespace de = design_extractor;
 
-using de::VariableExtractor;
-using de::StatementExtractor;
-using de::ConstExtractor;
-using de::ProcedureExtractor;
-using de::UsesExtractor;
-using de::ModifiesExtractor;
-using de::ParentExtractor;
-using de::FollowsExtractor;
+using de::VariableExtractorModule;
+using de::StatementExtractorModule;
+using de::ConstExtractorModule;
+using de::ProcedureExtractorModule;
+using de::UsesExtractorModule;
+using de::ModifiesExtractorModule;
+using de::ParentExtractorModule;
+using de::FollowsExtractorModule;
 
 class TestPKBStrategy : public de::PKBStrategy {
 public:
@@ -135,7 +129,7 @@ namespace ast {
                 make<Print>(3, make<Var>("v3"))
             );
             auto whileBlk = make<While>(1, std::move(relExpr), std::move(stmtlst));
-            auto ve = std::make_unique<VariableExtractor>(&pkbStrategy);
+            auto ve = std::make_unique<VariableExtractorModule>(&pkbStrategy);
             ve->extract(whileBlk.get());
             // variable extractions
             
@@ -191,7 +185,7 @@ namespace ast {
             auto program = makeProgram(std::move(procedure));
 
             SECTION("Variable extractor test") {
-                auto ve = std::make_unique<VariableExtractor>(&pkbStrategy);
+                auto ve = std::make_unique<VariableExtractorModule>(&pkbStrategy);
                 ve->extract(program.get());
 
                 std::set<Content> expectedVars = {
@@ -205,7 +199,7 @@ namespace ast {
             }
 
             SECTION("Const extractor test") {
-                auto ce = std::make_unique<ConstExtractor>(&pkbStrategy);
+                auto ce = std::make_unique<ConstExtractorModule>(&pkbStrategy);
                 ce->extract(program.get());
 
                 std::set<Content> expectedVars = { CONST{0}, CONST{2}, CONST{10} };
@@ -213,15 +207,15 @@ namespace ast {
             }
 
             SECTION("Procedure extractor test") {
-                auto pe = std::make_unique<ProcedureExtractor>(&pkbStrategy);
+                auto pe = std::make_unique<ProcedureExtractorModule>(&pkbStrategy);
                 pe->extract(program.get());
                 
-                std::set<Content> expectedVars = { PROC_NAME{"main"} };
-                REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedVars);
+                std::set<Content> expectedProcs = { PROC_NAME{"main"} };
+                REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedProcs);
             }
 
             SECTION("Modifies extractor test") {
-                auto me = std::make_unique<ModifiesExtractor>(&pkbStrategy);
+                auto me = std::make_unique<ModifiesExtractorModule>(&pkbStrategy);
                 me->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
@@ -246,7 +240,7 @@ namespace ast {
             }
 
             SECTION("Uses extractor test") {
-                auto ue = std::make_unique<UsesExtractor>(&pkbStrategy);
+                auto ue = std::make_unique<UsesExtractorModule>(&pkbStrategy);
                 ue->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
@@ -277,7 +271,7 @@ namespace ast {
             }
         
             SECTION("Follows extractor test") {
-                auto fe = std::make_unique<FollowsExtractor>(&pkbStrategy);
+                auto fe = std::make_unique<FollowsExtractorModule>(&pkbStrategy);
                 fe->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
@@ -293,7 +287,7 @@ namespace ast {
             }
 
             SECTION("Parents extractor test") {
-                auto pe = std::make_unique<ParentExtractor>(&pkbStrategy);
+                auto pe = std::make_unique<ParentExtractorModule>(&pkbStrategy);
                 pe->extract(program.get());
 
                 std::set<std::pair<Content, Content>> expected = {
@@ -359,7 +353,7 @@ namespace ast {
             );
             std::set<std::pair<Content, Content>> expected;
 
-            ModifiesExtractor me(&pkbStrategy);
+            ModifiesExtractorModule me(&pkbStrategy);
             me.extract(program.get());
 
             expected = {
@@ -376,7 +370,7 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
             
-            UsesExtractor ue(&pkbStrategy);
+            UsesExtractorModule ue(&pkbStrategy);
             ue.extract(program.get());
 
             expected = {
@@ -393,7 +387,7 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
 
-            de::CallsExtractor ce(&pkbStrategy);
+            de::CallsExtractorModule ce(&pkbStrategy);
             ce.extract(program.get());
             expected = {
                 p(PROC_NAME{"main"}, PROC_NAME{"foo"}),
@@ -434,7 +428,7 @@ namespace ast {
             );
 
             std::set<std::pair<Content, Content>> expected;
-            ModifiesExtractor me(&pkbStrategy);
+            ModifiesExtractorModule me(&pkbStrategy);
             me.extract(program.get());
 
             expected = {
@@ -449,7 +443,7 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
 
-            UsesExtractor ue(&pkbStrategy);
+            UsesExtractorModule ue(&pkbStrategy);
             ue.extract(program.get());
             expected = {
                 p(STMT_LO{1, StatementType::While}, VAR_NAME{"m1"}),
