@@ -258,12 +258,12 @@ namespace qps::query {
         return entField;
     }
 
-    ExpSpec Pattern::getExpression(){
+    ExpSpec Pattern::getExpression() {
         if (synonymType != DesignEntity::ASSIGN)
             throw exceptions::PqlSyntaxException(messages::qps::parser::notAnAssignPatternMessage);
 
         return expression;
-    };
+    }
 
     Pattern Pattern::ofAssignPattern(std::string synonym, EntRef er, ExpSpec exp) {
         Pattern p;

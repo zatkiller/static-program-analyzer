@@ -447,10 +447,10 @@ struct Pattern {
     static Pattern ofIfPattern(std::string synonym, EntRef er);
     static Pattern ofWhilePattern(std::string synonym, EntRef er);
 
-    std::string getSynonym() { return synonym; };
-    DesignEntity getSynonymType() { return synonymType; };
+    std::string getSynonym() { return synonym; }
+    DesignEntity getSynonymType() { return synonymType; }
 
-    EntRef getEntRef() { return lhs; };
+    EntRef getEntRef() { return lhs; }
     ExpSpec getExpression();
 
     bool operator==(const Pattern &o) const {
