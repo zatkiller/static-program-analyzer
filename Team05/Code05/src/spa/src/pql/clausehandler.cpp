@@ -115,7 +115,8 @@ namespace qps::evaluator {
 
             if (lhs.isString() && rhs.isString() && lhs.getString() == rhs.getString()) continue;
             else if (lhs.isNumber() && rhs.isNumber() && lhs.getNumber() == rhs.getNumber()) continue;
-            else return false;
+            else
+                return false;
         }
         return true;
     }
@@ -139,7 +140,6 @@ namespace qps::evaluator {
         if (concrete.isString()) attrResult = filterAttrValue<std::string>(attrResult, concrete.getString());
         if (concrete.isNumber()) attrResult = filterAttrValue<int>(attrResult, concrete.getNumber());
         tableRef.join(attrResult, std::vector<std::string>{attr.declaration});
-
     }
 
     void ClauseHandler::handleAttrRefWith(std::vector<query::AttrCompare> attrClauses) {
@@ -150,7 +150,8 @@ namespace qps::evaluator {
                 handleTwoAttrRef(lhs.getAttrRef(), rhs.getAttrRef());
             } else {
                 if (!lhs.isAttrRef())  handleOneAttrRef(rhs.getAttrRef(), lhs);
-                else handleOneAttrRef(lhs.getAttrRef(), rhs);
+                else
+                    handleOneAttrRef(lhs.getAttrRef(), rhs);
             }
         }
     }

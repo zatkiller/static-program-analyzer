@@ -126,6 +126,5 @@ public:
         bool hasResult = !res.empty();
         return PKBResponse{hasResult, Response{res}};
     }
-
 };
 }  // namespace qps::evaluator

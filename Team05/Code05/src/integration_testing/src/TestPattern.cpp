@@ -92,8 +92,6 @@ TEST_CASE("test simple source code") {
     result2.sort();
     printEvaluatorResult(result2);
     REQUIRE(result2 == std::list<std::string>{"2", "3", "4"});
-
-
 }
 
 TEST_CASE("test evaluate pattern") {
@@ -254,10 +252,10 @@ TEST_CASE("test evaluate pattern") {
 
     query10.addPattern(qps::query::Pattern::ofAssignPattern(
             "a",
-            qps::query::EntRef::ofDeclaration("v",qps::query::DesignEntity::VARIABLE),
+            qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE),
             qps::query::ExpSpec::ofWildcard()));
     qps::query::AttrRef attrl = qps::query::AttrRef{qps::query::AttrName::VARNAME,
-                                                    qps::query::DesignEntity::PRINT, "pr"};
+                                                     qps::query::DesignEntity::PRINT, "pr"};
     qps::query::AttrRef attrr = qps::query::AttrRef{qps::query::AttrName::VARNAME,
                                                     qps::query::DesignEntity::VARIABLE, "v"};
     qps::query::AttrCompareRef lhs = qps::query::AttrCompareRef::ofAttrRef(attrl);
