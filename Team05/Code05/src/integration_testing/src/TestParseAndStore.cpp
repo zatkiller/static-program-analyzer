@@ -209,8 +209,8 @@ struct TestParseAndStorePackage2 : public DesignExtractionTestTemplate {
         initRelationships();
     }
 
-    void initEntities() {
-    }
+    void initEntities() {}
+
     void initRelationships() {
 
         
@@ -232,6 +232,21 @@ struct TestParseAndStorePackage2 : public DesignExtractionTestTemplate {
         auto s16 = STMT_LO{16, StatementType::Call, "p3"};
         auto s17 = STMT_LO{17, StatementType::Read, "x3"};
 
+
+        expectedRelationships.emplace(
+            PKBRelationship::FOLLOWS,
+            std::set<std::pair<Content, Content>> {
+                p(s1, s3),
+                p(s4, s5),
+                p(s6, s7),
+                p(s8, s9),
+                p(s10, s11),
+                p(s11, s12),
+                p(s13, s14),
+                p(s14, s15)
+            }
+        );
+        
         expectedRelationships.emplace(
             PKBRelationship::CALLS,
             std::set<std::pair<Content, Content>> {
@@ -501,9 +516,8 @@ TEST_CASE("Test parse and store for multi procedure package 2") {
 
     using Rows = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
-
     // Testing for results
-    TEST_LOG << "Follows extractions from PKB";
+    TEST_LOG << "Next extractions from PKB";
     {
         auto response = pkb.getRelationship(
             PKBField::createDeclaration(StatementType::All),
@@ -520,5 +534,43 @@ TEST_CASE("Test parse and store for multi procedure package 2") {
             ));
         }
         REQUIRE(test.isCorrect(results, PKBRelationship::NEXT));
+    }
+
+    TEST_LOG << "Calls extractions from PKB";
+    {
+        auto response = pkb.getRelationship(
+            PKBField::createDeclaration(PKBEntityType::PROCEDURE),
+            PKBField::createDeclaration(PKBEntityType::PROCEDURE),
+            PKBRelationship::CALLS
+        );
+        REQUIRE(response.hasResult);
+        auto resultSet = std::get<Rows>(response.res);
+        std::set<std::pair<PROC_NAME, PROC_NAME>> results;
+        for (auto& row : resultSet) {
+            results.insert(p(
+                std::get<PROC_NAME>(row[0].content),
+                std::get<PROC_NAME>(row[1].content)
+            ));
+        }
+        REQUIRE(test.isCorrect(results, PKBRelationship::CALLS));
+    }
+
+    TEST_LOG << "Follows extractions from PKB";
+    {
+        auto response = pkb.getRelationship(
+            PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(StatementType::All),
+            PKBRelationship::FOLLOWS
+        );
+        REQUIRE(response.hasResult);
+        auto resultSet = std::get<Rows>(response.res);
+        std::set<std::pair<STMT_LO, STMT_LO>> results;
+        for (auto& row : resultSet) {
+            results.insert(p(
+                std::get<STMT_LO>(row[0].content),
+                std::get<STMT_LO>(row[1].content)
+            ));
+        }
+        REQUIRE(test.isCorrect(results, PKBRelationship::FOLLOWS));
     }
 }
