@@ -615,6 +615,139 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
         }
+
+        /**
+         * procedure a {
+         *     read x;
+         * }
+         * procedure b {
+         *     call a;
+         * }
+         * procedure h {
+         *     call b;
+         * }
+         * procedure g {
+         *     call a;
+         * }
+         * 
+         * 
+         * procedure c {
+         *     read y;
+         * }
+         * procedure d {
+         *     call c;
+         * }
+         * 
+         * 
+         * procedure e {
+         *     read z;
+         * }
+         * procedure f {
+         *     call e;
+         * }
+         * procedure i {
+         *     call f
+         * }
+         * 
+         * 
+         * procedure j {
+         *     read w;
+         * }
+         */
+        SECTION("Test >= 3 disjoint call graphs") {
+            auto program = makeProgram(
+                // first disjoint graph
+                make<ast::Procedure>(
+                    "a", 
+                    ast::makeStmts(
+                        make<ast::Read>(1, make<ast::Var>("x"))
+                    )
+                ),
+                make<ast::Procedure>(
+                    "b", 
+                    ast::makeStmts(
+                        make<ast::Call>(2, "a")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "h", 
+                    ast::makeStmts(
+                        make<ast::Call>(3, "b")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "g", 
+                    ast::makeStmts(
+                        make<ast::Call>(4, "a")
+                    )
+                ),
+                // second disjoint graph
+                make<ast::Procedure>(
+                    "c", 
+                    ast::makeStmts(
+                        make<ast::Read>(5, make<ast::Var>("y"))
+                    )
+                ),
+                make<ast::Procedure>(
+                    "d", 
+                    ast::makeStmts(
+                        make<ast::Call>(6, "c")
+                    )
+                ),
+                // third disjoint graph
+                make<ast::Procedure>(
+                    "e", 
+                    ast::makeStmts(
+                        make<ast::Read>(7, make<ast::Var>("z"))
+                    )
+                ),
+                make<ast::Procedure>(
+                    "f", 
+                    ast::makeStmts(
+                        make<ast::Call>(8, "e")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "i", 
+                    ast::makeStmts(
+                        make<ast::Call>(9, "f")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "j", 
+                    ast::makeStmts(
+                        make<ast::Read>(10, make<ast::Var>("w"))
+                    )
+                )
+            );
+            std::set<std::pair<Content, Content>> expected;
+
+            ModifiesExtractorModule me(&pkbStrategy);
+            me.extract(program.get());
+            expected = {
+                p(PROC_NAME{"a"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"b"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"g"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"h"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"c"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"d"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"e"}, VAR_NAME{"z"}),
+                p(PROC_NAME{"f"}, VAR_NAME{"z"}),
+                p(PROC_NAME{"i"}, VAR_NAME{"z"}),
+                p(PROC_NAME{"j"}, VAR_NAME{"w"}),
+                p(STMT_LO{1, StatementType::Read}, VAR_NAME{"x"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{3, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{4, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{5, StatementType::Read}, VAR_NAME{"y"}),
+                p(STMT_LO{6, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{7, StatementType::Read}, VAR_NAME{"z"}),
+                p(STMT_LO{8, StatementType::Call}, VAR_NAME{"z"}),
+                p(STMT_LO{9, StatementType::Call}, VAR_NAME{"z"}),
+                p(STMT_LO{10, StatementType::Read}, VAR_NAME{"w"})
+            };
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
+        }
     }
 
     TEST_CASE("Pattern matcher test") {
