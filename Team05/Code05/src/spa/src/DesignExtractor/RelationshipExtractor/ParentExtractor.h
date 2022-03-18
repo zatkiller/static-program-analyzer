@@ -35,8 +35,8 @@ public:
  */
 class ParentExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    ParentExtractorModule(PKBStrategy *pkb) : 
-        ExtractorModule(std::make_unique<ParentExtractor>(), pkb) {};
+    explicit ParentExtractorModule(PKBStrategy *pkb) : 
+        ExtractorModule(std::make_unique<ParentExtractor>(), pkb) {}
 };
 
 }  // namespace design_extractor

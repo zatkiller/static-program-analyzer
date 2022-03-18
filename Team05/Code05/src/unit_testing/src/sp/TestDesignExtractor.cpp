@@ -795,7 +795,6 @@ namespace ast {
             REQUIRE(extractAssignHelper(ast.get(), "_", "1 + x - 2", true).size() == 0);
             // non strict partial match pass
             REQUIRE(extractAssignHelper(ast.get(), "_", "1 + x - 2", false).size() == 1);
-
         }
 
         // assignment: x = v + x * (y + z) * t

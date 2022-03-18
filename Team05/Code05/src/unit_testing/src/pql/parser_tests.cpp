@@ -662,7 +662,8 @@ TEST_CASE("Parser parsePattern") {
 
             REQUIRE(pattern.getSynonym() == "a");
             REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
-            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            bool validDeclaration = 
+                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
             REQUIRE(validDeclaration);
             REQUIRE(pattern.getExpression() == ExpSpec::ofWildcard());
         }
@@ -684,7 +685,8 @@ TEST_CASE("Parser parsePattern") {
 
             REQUIRE(pattern.getSynonym() == "a");
             REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
-            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            bool validDeclaration = 
+                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
             REQUIRE(validDeclaration);
             REQUIRE(pattern.getExpression() == ExpSpec::ofFullMatch("x"));
         }
@@ -706,7 +708,8 @@ TEST_CASE("Parser parsePattern") {
 
             REQUIRE(pattern.getSynonym() == "a");
             REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
-            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            bool validDeclaration = 
+                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
             REQUIRE(validDeclaration);
             REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
         }

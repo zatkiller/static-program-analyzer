@@ -47,7 +47,7 @@ bool checkChildrenEquality(
     return isEqual;
 }
 
-bool CFGNode::operator==(CFGNode const& o) const{
+bool CFGNode::operator==(CFGNode const& o) const {
     std::unordered_set<const CFGNode*> reached;
     return this->stmt == o.stmt && checkChildrenEquality(this, &o, reached);
 }

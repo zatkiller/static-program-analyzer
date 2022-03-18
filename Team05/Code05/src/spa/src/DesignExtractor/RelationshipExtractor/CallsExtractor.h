@@ -16,8 +16,8 @@ struct CallsExtractor : public Extractor<const ast::ASTNode*> {
  */
 struct CallsExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    CallsExtractorModule(PKBStrategy *pkb) : 
-        ExtractorModule(std::make_unique<CallsExtractor>(), pkb) {};
+    explicit CallsExtractorModule(PKBStrategy *pkb) : 
+        ExtractorModule(std::make_unique<CallsExtractor>(), pkb) {}
 };
 
 }  // namespace design_extractor

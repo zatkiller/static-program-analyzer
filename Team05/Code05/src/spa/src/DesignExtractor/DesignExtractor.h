@@ -16,6 +16,7 @@ private:
     std::list<std::shared_ptr<ExtractorModule<const ast::ASTNode*>>> astExtractors;
     std::list<std::shared_ptr<ExtractorModule<const cfg::PROC_CFG_MAP*>>> cfgExtractors;
     PKBStrategy* pkbStrategy;
+
 public:
     explicit DesignExtractor(PKBStrategy* pkbStrategy) : pkbStrategy(pkbStrategy) {
         astExtractors.push_back(std::make_shared<StatementExtractorModule>(pkbStrategy));
@@ -38,7 +39,7 @@ public:
         }
         for (auto extractor : cfgExtractors) {
             extractor->extract(&cfgs);
-        };
+        }
     }
 };
 }  // namespace design_extractor
