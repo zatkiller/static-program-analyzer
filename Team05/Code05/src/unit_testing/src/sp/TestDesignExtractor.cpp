@@ -556,6 +556,65 @@ namespace ast {
 
             REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
         }
+    
+        /**
+         * procedure a {
+         *      read x;
+         * }
+         * procedure b {
+         *      call a;
+         * }
+         * procedure c {
+         *      read y;
+         * }
+         * procedure d {
+         *      call c;
+         * }
+         */
+        SECTION("Regression test for #292") {
+            auto program = makeProgram(
+                make<ast::Procedure>(
+                    "a", 
+                    ast::makeStmts(
+                        make<ast::Read>(1, make<ast::Var>("x"))
+                    )
+                ),
+                make<ast::Procedure>(
+                    "b", 
+                    ast::makeStmts(
+                        make<ast::Call>(2, "a")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "c", 
+                    ast::makeStmts(
+                        make<ast::Read>(3,  make<ast::Var>("y"))
+                    )
+                ),
+                make<ast::Procedure>(
+                    "d", 
+                    ast::makeStmts(
+                        make<ast::Call>(4, "c")
+                    )
+                )
+            );
+            std::set<std::pair<Content, Content>> expected;
+
+            ModifiesExtractorModule me(&pkbStrategy);
+            me.extract(program.get());
+            expected = {
+                p(PROC_NAME{"a"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"b"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"c"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"d"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"d"}, VAR_NAME{"y"}),
+                p(STMT_LO{1, StatementType::Read}, VAR_NAME{"x"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{3, StatementType::Read}, VAR_NAME{"y"}),
+                p(STMT_LO{4, StatementType::Call}, VAR_NAME{"y"})
+            };
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
+        }
     }
 
     TEST_CASE("Pattern matcher test") {
