@@ -155,6 +155,7 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
         break;
     case PKBRelationship::NEXT:
         nextTable->insert(field1, field2);
+        break;
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
         break;
