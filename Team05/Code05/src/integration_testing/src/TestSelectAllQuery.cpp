@@ -25,51 +25,60 @@ TEST_CASE("Test get statements") {
     PKBField i2 = PKBField::createConcrete(STMT_LO{ 6, StatementType::If });
     PKBField p1 = PKBField::createConcrete(STMT_LO{ 7, StatementType::Print });
 
-    std::unordered_set<PKBField, PKBFieldHash> expectedSelectAll{a1, a2, a3, w1, i1, i2, p1};
-    std::unordered_set<PKBField, PKBFieldHash> expectedSelectAssign {a1, a2, a3};
-    std::unordered_set<PKBField, PKBFieldHash> expectedSelectWhile{w1};
-    std::unordered_set<PKBField, PKBFieldHash> expectedSelectIf{i1, i2};
-    std::unordered_set<PKBField, PKBFieldHash> expectedSelectPrint{p1};
-    std::unordered_set<PKBField, PKBFieldHash> expectedSelectRead{};
+    qps::query::Query query1;
+    query1.addVariable("s");
+    query1.addDeclaration("s", qps::query::DesignEntity::STMT);
+    std::list<std::string> resAll = evaluator.evaluate(query1);
+    resAll.sort();
+    REQUIRE(resAll == std::list<std::string>{"2", "3", "4", "5", "6", "7", "8"});
 
-    PKBResponse resAll = evaluator.getAll(qps::query::DesignEntity::STMT);
-    PKBResponse resAss = evaluator.getAll(qps::query::DesignEntity::ASSIGN);
-    PKBResponse resWhile = evaluator.getAll(qps::query::DesignEntity::WHILE);
-    PKBResponse resIf = evaluator.getAll(qps::query::DesignEntity::IF);
-    PKBResponse resPrint = evaluator.getAll(qps::query::DesignEntity::PRINT);
-    PKBResponse resRead = evaluator.getAll(qps::query::DesignEntity::READ);
+    qps::query::Query query2;
+    query2.addVariable("a");
+    query2.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    std::list<std::string> resAss = evaluator.evaluate(query2);
+    resAss.sort();
+    REQUIRE(resAss == std::list<std::string>{"2", "5","8"});
 
-    std::unordered_set<PKBField, PKBFieldHash> setAll =
-        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resAll.res));
-    std::unordered_set<PKBField, PKBFieldHash> setAss =
-        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resAss.res));
-    std::unordered_set<PKBField, PKBFieldHash> setWhile =
-        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resWhile.res));
-    std::unordered_set<PKBField, PKBFieldHash> setIf =
-        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resIf.res));
-    std::unordered_set<PKBField, PKBFieldHash> setPrint =
-        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resPrint.res));
-    std::unordered_set<PKBField, PKBFieldHash> setRead =
-        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resRead.res));
+    qps::query::Query query3;
+    query3.addVariable("w");
+    query3.addDeclaration("w", qps::query::DesignEntity::WHILE);
+    std::list<std::string> resWhile = evaluator.evaluate(query3);
+    resWhile.sort();
+    REQUIRE(resWhile == std::list<std::string>{"3"});
 
-    int countAssign = setAss.size();
-    REQUIRE(countAssign == 3);
+    qps::query::Query query4;
+    query4.addVariable("ifs");
+    query4.addDeclaration("ifs", qps::query::DesignEntity::IF);
+    std::list<std::string> resIf = evaluator.evaluate(query4);
+    resIf.sort();
+    REQUIRE(resIf == std::list<std::string>{"4", "6"});
 
-    REQUIRE(setAll == expectedSelectAll);
-    REQUIRE(setAss == expectedSelectAssign);
-    REQUIRE(setWhile == expectedSelectWhile);
-    REQUIRE(setIf == expectedSelectIf);
-    REQUIRE(setPrint == expectedSelectPrint);
-    REQUIRE(resRead.hasResult == false);
-    REQUIRE(setRead == expectedSelectRead);
+    qps::query::Query query5;
+    query5.addVariable("pr");
+    query5.addDeclaration("pr", qps::query::DesignEntity::PRINT);
+    std::list<std::string> resPrint = evaluator.evaluate(query5);
+    resPrint.sort();
+    REQUIRE(resPrint == std::list<std::string>{"7"});
+
+    qps::query::Query query6;
+    query6.addVariable("r");
+    query6.addDeclaration("r", qps::query::DesignEntity::READ);
+    std::list<std::string> resRead = evaluator.evaluate(query6);
+    resRead.sort();
+    REQUIRE(resRead.empty());
+
 }
+
 
 TEST_CASE("Test get variables") {
     PKB pkb = PKB();
     PKB* ptr = &pkb;
     qps::evaluator::Evaluator evaluator = qps::evaluator::Evaluator(ptr);
 
-    REQUIRE(evaluator.getAll(qps::query::DesignEntity::VARIABLE).hasResult == false);
+    qps::query::Query query1;
+    query1.addVariable("v");
+    query1.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    REQUIRE(evaluator.evaluate(query1).empty());
 
     pkb.insertEntity(VAR_NAME{ "x" });
     pkb.insertEntity(VAR_NAME{ "y" });
@@ -79,12 +88,10 @@ TEST_CASE("Test get variables") {
     PKBField v2 = PKBField::createConcrete(VAR_NAME{ "y" });
     PKBField v3 = PKBField::createConcrete(VAR_NAME{ "cur" });
 
-    std::unordered_set<PKBField, PKBFieldHash> expectedSelectVar{v1, v2, v3};
-
-    PKBResponse resVar = evaluator.getAll(qps::query::DesignEntity::VARIABLE);
-    std::unordered_set<PKBField, PKBFieldHash> setVar =
-        *(std::get_if<std::unordered_set<PKBField, PKBFieldHash>>(&resVar.res));
-    REQUIRE(setVar == expectedSelectVar);
+    qps::evaluator::Evaluator evaluator2 = qps::evaluator::Evaluator(ptr);
+    std::list<std::string> resVar = evaluator2.evaluate(query1);
+    resVar.sort();
+    REQUIRE(resVar == std::list<std::string>{"cur", "x", "y"});
 }
 
 TEST_CASE("Test evaluate select s") {

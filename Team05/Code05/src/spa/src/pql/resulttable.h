@@ -10,7 +10,7 @@
 
 namespace qps::evaluator {
 using VectorResponse = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
-using SingleResonse = std::unordered_set<PKBField, PKBFieldHash>;
+using SingleResponse = std::unordered_set<PKBField, PKBFieldHash>;
 using Table = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
 /**
@@ -83,7 +83,7 @@ public:
      * @param response the PKBResponse in set<PKBField> format
      * @return the transferred PKBResponse in set<vector<PKBField>> format
      */
-    VectorResponse transToVectorResponse(SingleResonse response);
+    VectorResponse transToVectorResponse(SingleResponse response);
 
     /**
      * Inserts the PKBResponse to the result table when the table is empty.

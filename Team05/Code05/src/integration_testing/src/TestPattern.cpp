@@ -92,8 +92,6 @@ TEST_CASE("test simple source code") {
     result2.sort();
     printEvaluatorResult(result2);
     REQUIRE(result2 == std::list<std::string>{"2", "3", "4"});
-
-
 }
 
 TEST_CASE("test evaluate pattern") {
@@ -243,4 +241,29 @@ TEST_CASE("test evaluate pattern") {
     result9.sort();
     printEvaluatorResult(result9);
     REQUIRE(result9 == std::list<std::string>{"4", "5"});
+
+    TEST_LOG << "stmt a; print pr; Select a pattern a(v, _) with pr.varName = v.varName";
+    qps::evaluator::Evaluator evaluator10 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query10{};
+    query10.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query10.addDeclaration("pr", qps::query::DesignEntity::PRINT);
+    query10.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    query10.addVariable("a");
+
+    query10.addPattern(qps::query::Pattern::ofAssignPattern(
+            "a",
+            qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE),
+            qps::query::ExpSpec::ofWildcard()));
+    qps::query::AttrRef attrl = qps::query::AttrRef{qps::query::AttrName::VARNAME,
+                                                     qps::query::DesignEntity::PRINT, "pr"};
+    qps::query::AttrRef attrr = qps::query::AttrRef{qps::query::AttrName::VARNAME,
+                                                    qps::query::DesignEntity::VARIABLE, "v"};
+    qps::query::AttrCompareRef lhs = qps::query::AttrCompareRef::ofAttrRef(attrl);
+    qps::query::AttrCompareRef rhs = qps::query::AttrCompareRef::ofAttrRef(attrr);
+    qps::query::AttrCompare with = qps::query::AttrCompare{lhs, rhs};
+    query10.addWith(with);
+    std::list<std::string> result10 = evaluator10.evaluate(query10);
+    result10.sort();
+    printEvaluatorResult(result10);
+    REQUIRE(result10 == std::list<std::string>{"2", "5"});
 }

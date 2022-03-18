@@ -22,6 +22,14 @@ public:
     ClauseHandler(PKB *pkb, ResultTable &tableRef, query::Query &query) : pkb(pkb), tableRef(tableRef), query(query) {}
 
     /**
+     * Retrieves all the results of a certain design entity from PKB database.
+     *
+     * @param type the design entity type to retrieve
+     * @return PKBResponse contains all results of the design entity type
+     */
+    PKBResponse getAll(query::DesignEntity type);
+
+    /**
      * Processes statement declarations, create PKBField with StatementType.
      *
      * @param fields PKBFields returned from RelRef
@@ -60,7 +68,7 @@ public:
      *
      * @param noSynClauses a group of relationship clauses without synonyms
      */
-    bool handleNoSynClauses(std::vector<std::shared_ptr<query::RelRef>> noSynClauses);
+    bool handleNoSynClauses(const std::vector<std::shared_ptr<query::RelRef>>& noSynClauses);
 
     /**
      * Handles pattern clauses
@@ -68,5 +76,55 @@ public:
      * @param patterns a group of pattern clauses
      */
     void handlePatterns(std::vector<query::Pattern> patterns);
+
+    bool handleNoAttrRefWith(const std::vector<query::AttrCompare>& noAttrClauses);
+
+    void handleAttrRefWith(std::vector<query::AttrCompare> attrClauses);
+
+    void handleTwoAttrRef(query::AttrRef lhs, query::AttrRef rhs);
+
+    void handleOneAttrRef(query::AttrRef attr, query::AttrCompareRef concrete);
+
+    template<typename T>
+    T getPKBFieldAttr(PKBField field) {
+        T value;
+        if constexpr(std::is_same_v<T, std::string>) {
+            if (auto pptr = field.getContent<PROC_NAME>()) value = pptr->name;
+            else if (auto vptr = field.getContent<VAR_NAME>()) value = vptr->name;
+            else if (auto sptr = field.getContent<STMT_LO>()) value = sptr->attribute.value();
+        } else {
+            if (auto cptr = field.getContent<CONST>()) value = *cptr;
+            if (auto sptr = field.getContent<STMT_LO>()) value = sptr->statementNum;
+        }
+        return value;
+    }
+
+    template<typename T>
+    PKBResponse filterAttrValue(PKBResponse response, T value) {
+        PKBResponse newResponse;
+        std::unordered_set<PKBField, PKBFieldHash> res;
+        auto *ptr = std::get_if<SingleResponse>(&response.res);
+
+        for (auto v : *ptr) {
+            T checkValue = getPKBFieldAttr<T>(v);
+            if (checkValue == value) res.insert(v);
+        }
+        newResponse = PKBResponse{response.hasResult, Response {res}};
+        return newResponse;
+    }
+
+    template<typename T>
+    PKBResponse twoAttrMerge(SingleResponse &lhsResponse, SingleResponse &rhsResponse) {
+        VectorResponse res;
+        for (auto lhsRecord : lhsResponse) {
+            T lhsValue = getPKBFieldAttr<T>(lhsRecord);
+            for (auto rhsRecord : rhsResponse) {
+                T rhsValue = getPKBFieldAttr<T>(rhsRecord);
+                if (lhsValue == rhsValue) res.insert(std::vector<PKBField>{lhsRecord, rhsRecord});
+            }
+        }
+        bool hasResult = !res.empty();
+        return PKBResponse{hasResult, Response{res}};
+    }
 };
 }  // namespace qps::evaluator
