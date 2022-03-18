@@ -11,6 +11,7 @@
 #include "DesignExtractor/EntityExtractor/EntityExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/RelationshipExtractor.h"
 #include "DesignExtractor/PatternMatcher.h"
+#include "DesignExtractor/CFG/CFG.h"
 #include "PKB.h"
 #include "logging.h"
 
@@ -31,6 +32,7 @@ using de::UsesExtractorModule;
 using de::ModifiesExtractorModule;
 using de::ParentExtractorModule;
 using de::FollowsExtractorModule;
+using de::NextExtractorModule;
 
 class TestPKBStrategy : public de::PKBStrategy {
 public:
@@ -320,6 +322,27 @@ namespace ast {
                 };
                 REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENT] == expected);
             }
+
+            SECTION("Next extractor test") {
+                auto ne = std::make_unique<NextExtractorModule>(&pkbStrategy);
+                auto cfg = std::make_unique<cfg::CFGExtractor>()->extract(program.get());
+                ne->extract(&cfg);
+                std::set<std::pair<Content, Content>> expected = {
+                    p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
+                    p(STMT_LO{2, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{4, StatementType::Print}),
+                    p(STMT_LO{4, StatementType::Print}, STMT_LO{5, StatementType::Assignment}),
+                    p(STMT_LO{5, StatementType::Assignment}, STMT_LO{6, StatementType::Assignment}),
+                    p(STMT_LO{6, StatementType::Assignment}, STMT_LO{7, StatementType::If}),
+                    p(STMT_LO{7, StatementType::If}, STMT_LO{8, StatementType::Assignment}),
+                    p(STMT_LO{7, StatementType::If}, STMT_LO{9, StatementType::Print}),
+                    p(STMT_LO{8, StatementType::Assignment}, STMT_LO{10, StatementType::Assignment}),
+                    p(STMT_LO{9, StatementType::Print}, STMT_LO{10, StatementType::Assignment}),
+                    p(STMT_LO{10, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{11, StatementType::Print}),
+                };
+                REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
+            }
         }    
         
         /**
@@ -406,6 +429,19 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
 
+            // Regression test for #287.
+            FollowsExtractorModule fe(&pkbStrategy);
+            fe.extract(program.get());
+            expected = {
+                p(STMT_LO{1, StatementType::Call}, STMT_LO{2, StatementType::Call}),
+                p(STMT_LO{4, StatementType::Call}, STMT_LO{5, StatementType::Call}),
+                p(STMT_LO{6, StatementType::Read}, STMT_LO{7, StatementType::Print}),
+            };
+
+            auto diff = setDiff(pkbStrategy.relationships[PKBRelationship::FOLLOWS], expected);
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::FOLLOWS] == expected);
+
+
             de::CallsExtractorModule ce(&pkbStrategy);
             ce.extract(program.get());
             expected = {
@@ -417,6 +453,17 @@ namespace ast {
             };
 
             REQUIRE(pkbStrategy.relationships[PKBRelationship::CALLS] == expected);
+
+            NextExtractorModule ne(&pkbStrategy);
+            auto cfgs = cfg::CFGExtractor().extract(program.get());
+            ne.extract(&cfgs);
+            expected = {
+                p(STMT_LO{1, StatementType::Call}, STMT_LO{2, StatementType::Call}),
+                p(STMT_LO{4, StatementType::Call}, STMT_LO{5, StatementType::Call}),
+                p(STMT_LO{6, StatementType::Read}, STMT_LO{7, StatementType::Print}),
+            };
+
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
         }
 
         /**
@@ -497,6 +544,17 @@ namespace ast {
                 p(PROC_NAME{"main"}, VAR_NAME{"m3"})
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
+
+            NextExtractorModule ne(&pkbStrategy);
+            auto cfgs = cfg::CFGExtractor().extract(program.get());
+            ne.extract(&cfgs);
+            expected = {
+                p(STMT_LO{1, StatementType::While}, STMT_LO{2, StatementType::Call}),
+                p(STMT_LO{2, StatementType::Call}, STMT_LO{3, StatementType::Assignment}),
+                p(STMT_LO{3, StatementType::Assignment}, STMT_LO{1, StatementType::While}),
+            };
+
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
         }
     }
 
