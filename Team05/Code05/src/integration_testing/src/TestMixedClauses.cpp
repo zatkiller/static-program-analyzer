@@ -49,6 +49,7 @@ void printTable1(qps::evaluator::ResultTable table) {
         TEST_LOG << record;
     }
 }
+
 TEST_CASE("test simple source code") {
     PKB pkb;
     SourceProcessor sp;

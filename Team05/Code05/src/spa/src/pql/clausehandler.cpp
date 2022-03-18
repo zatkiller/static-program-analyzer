@@ -127,6 +127,10 @@ namespace qps::evaluator {
         PKBResponse newResponse;
         auto lhsPtr = std::get_if<SingleResponse>(&lhsResult.res);
         auto rhsPtr = std::get_if<SingleResponse>(&rhsResult.res);
+        if (lhs.declaration == rhs.declaration) {
+            tableRef.join(lhsResult, std::vector<std::string>{lhs.declaration});
+            return;
+        }
         if (lhs.attrName == query::AttrName::PROCNAME || lhs.attrName == query::AttrName::VARNAME) {
             newResponse = twoAttrMerge<std::string>(*lhsPtr, *rhsPtr);
         } else {
