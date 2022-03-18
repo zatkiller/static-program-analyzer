@@ -47,8 +47,6 @@ struct TestCode {
             print z;
 
             call b;
-            d = 3
-            e = d + 3
         }
     )";
 };
@@ -110,7 +108,7 @@ TEST_CASE("test source code 3") {
     std::list<std::string> result2 = evaluator2.evaluate(query2);
     result2.sort();
     printEvaluatorResult(result2);
-//    REQUIRE(result2 == std::list<std::string>{"2", "3", "4"});
+    REQUIRE(result2 == std::list<std::string>{ "1", "2", "3", "4", "5", "6", "7", "8"});
 }
 
 TEST_CASE("test simple source code") {
