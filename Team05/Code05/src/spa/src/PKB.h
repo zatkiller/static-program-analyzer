@@ -99,21 +99,23 @@ public:
     PKBResponse getConstants();
 
     /**
-    * @brief Retrieves all the statements of the provided type that satisfy the constraints given.
-
-    * Currently it does not support strict matching like pattern a(v, "x")
-    * Only partial matching like pattern a(v, _"x+1"_) is supported. Only assignments are supported.
+    * @brief Retrieves all the statements of the provided type that satisfy the constraints given
+    * Only assignments are supported.
     *
-    * For a(v, _"x+1_), use match(StatementType::Assignment, std::nullopt, "x+1")
+    * For a(v, _"x+1"_), use match(StatementType::Assignment, std::nullopt, "x+1")
+    * For a(v, "x+1"), use match(StatementType::Assignment, std::nullopt, "x+1", true)
     *
     * @param lhs The optional string constraint of LHS variable. Use std::nullopt if LHS is wildcard or synonym.
-    * @param rhs The optional string constraint of RHS expression. Use std::nullopt if RHS  is wildcard.
+    * @param rhs The optional string constraint of RHS expression. Use std::nullopt if RHS is wildcard.
+    * @param isStrict An optional boolean that indicates whether strict pattern matching should be used.
+    *   Defaults to false if no argument provided.
     * @return PKBResponse
     */
     PKBResponse match(
         StatementType type,
         sp::design_extractor::PatternParam lhs,
-        sp::design_extractor::PatternParam rhs
+        sp::design_extractor::PatternParam rhs,
+        bool isStrict = false
     );
 
 private:
