@@ -87,6 +87,13 @@ public:
         auto tokens = sp::parser::Lexer(rhs.value()).getTokens();
         auto expr = sp::parser::expr_parser::parse(tokens);
 
+        // If it is strict, RHS must be an exact match.
+        if (isStrict) {
+            return *node.getRHS() == *expr;
+        }
+
+        // If it is not strict, check sublist matching.
+
         // Flatten the trees to lists by walking it in preorder.
         auto assignList = flatten(node.getRHS());
         auto exprList = flatten(expr.get());
@@ -114,8 +121,8 @@ public:
     };
 };
 
-AssignPatternReturn extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs) {
-    auto ape = std::make_unique<AssignmentPatternExtractor>(lhs, rhs);
+AssignPatternReturn extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs, bool isStrict) {
+    auto ape = std::make_unique<AssignmentPatternExtractor>(lhs, rhs, isStrict);
     root->accept(ape.get());
     return ape->nodes;
 }
