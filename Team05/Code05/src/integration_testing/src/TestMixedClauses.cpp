@@ -30,25 +30,6 @@ struct TestCode {
             print y;
         }
     )";
-
-    std::string sourceCode3 = R"(
-        procedure a {
-            read x;
-            print x;
-        }
-        procedure b {
-            read y;
-            print y;
-
-            call a;
-        }
-        procedure c {
-            read z;
-            print z;
-
-            call b;
-        }
-    )";
 };
 
 void printEvaluatorResult(std::list<std::string> result) {
@@ -67,48 +48,6 @@ void printTable1(qps::evaluator::ResultTable table) {
         }
         TEST_LOG << record;
     }
-}
-
-TEST_CASE("test source code 3") {
-    PKB pkb;
-    SourceProcessor sp;
-    TestCode testcase{};
-    sp.processSimple(testcase.sourceCode3, &pkb);
-
-    TEST_LOG << "stmt s; variable v; Select s such that Uses(\"b\", v)";
-    qps::evaluator::Evaluator evaluator1 = qps::evaluator::Evaluator(&pkb);
-    qps::query::Query query1{};
-    query1.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
-    query1.addDeclaration("s", qps::query::DesignEntity::STMT);
-    query1.addVariable("s");
-    std::shared_ptr<qps::query::UsesP> ptr1 = std::make_shared<qps::query::UsesP>();
-    ptr1->useProc = qps::query::EntRef::ofVarName("b");
-    ptr1->used = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
-    query1.addSuchthat(ptr1);
-
-    std::list<std::string> result1 = evaluator1.evaluate(query1);
-    result1.sort();
-    printEvaluatorResult(result1);
-
-
-    TEST_LOG << "stmt s; call cl; Select s with cl.procName = cl.procName";
-    qps::evaluator::Evaluator evaluator2 = qps::evaluator::Evaluator(&pkb);
-    qps::query::Query query2{};
-    query2.addDeclaration("cl", qps::query::DesignEntity::CALL);
-    query2.addDeclaration("s", qps::query::DesignEntity::STMT);
-    query2.addVariable("s");
-    qps::query::AttrRef attrl = qps::query::AttrRef{qps::query::AttrName::PROCNAME,
-                                                    qps::query::DesignEntity::CALL, "cl"};
-    qps::query::AttrRef attrr = qps::query::AttrRef{qps::query::AttrName::PROCNAME,
-                                                    qps::query::DesignEntity::CALL, "cl"};
-    qps::query::AttrCompareRef lhs = qps::query::AttrCompareRef::ofAttrRef(attrl);
-    qps::query::AttrCompareRef rhs = qps::query::AttrCompareRef::ofAttrRef(attrr);
-    qps::query::AttrCompare with = qps::query::AttrCompare{lhs, rhs};
-    query2.addWith(with);
-    std::list<std::string> result2 = evaluator2.evaluate(query2);
-    result2.sort();
-    printEvaluatorResult(result2);
-    REQUIRE(result2 == std::list<std::string>{ "1", "2", "3", "4", "5", "6", "7", "8"});
 }
 
 TEST_CASE("test simple source code") {
