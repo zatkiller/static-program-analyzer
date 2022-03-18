@@ -12,8 +12,44 @@ void CFGNode::insert(std::shared_ptr<CFGNode> child) {
     children.push_back(child);
 }
 
-bool CFGNode::operator==(CFGNode const& o) const {
-    return this->stmt == o.stmt;
+bool checkChildrenEquality(
+    const CFGNode* curr, 
+    const CFGNode* other, 
+    std::unordered_set<const CFGNode*> reached) {
+    auto currChildren = curr->getChildren();
+    auto otherChildren = other->getChildren();
+    reached.insert(curr);
+    reached.insert(other);
+    if (currChildren.size() != otherChildren.size()) {
+        return false;
+    }
+    bool isEqual = true;
+    for (auto c : currChildren) {
+        // if the child has already been traversed, we ignore
+        if (reached.find(c.get()) == reached.end()) {
+            continue;
+        }
+        bool isMatch = false;
+        for (auto o : otherChildren) {
+            // if you find a matching statement, we can recurse down these two nodes
+            if (c.get()->stmt == o.get()->stmt) {
+                isMatch = checkChildrenEquality(c.get(), o.get(), reached);
+                break;
+            }
+        }
+        isEqual = isEqual && isMatch;
+        // if the previously checks nodes where not equal, terminate and return false
+        if (!isEqual) {
+            return isEqual;
+        }
+    }
+    // after successfully comparing and recursing down the children, return
+    return isEqual;
+}
+
+bool CFGNode::operator==(CFGNode const& o) const{
+    std::unordered_set<const CFGNode*> reached;
+    return this->stmt == o.stmt && checkChildrenEquality(this, &o, reached);
 }
 
 bool CFGNode::isParentOf(CFGNode* other) {
