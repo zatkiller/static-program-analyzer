@@ -201,6 +201,24 @@ TEST_CASE("test with clauses with two attrRefs") {
     result.sort();
     REQUIRE(result == std::list<std::string>{"7", "8"});
 
+    TEST_LOG << "select s with c.procName = c.procName";
+    qps::query::Query query1;
+    qps::query::AttrRef attrl1 = qps::query::AttrRef{qps::query::AttrName::PROCNAME,
+                                                    qps::query::DesignEntity::CALL, "c"};
+    qps::query::AttrRef attrr1 = qps::query::AttrRef{qps::query::AttrName::PROCNAME,
+                                                    qps::query::DesignEntity::CALL, "c"};
+    qps::query::AttrCompareRef lhs1 = qps::query::AttrCompareRef::ofAttrRef(attrl1);
+    qps::query::AttrCompareRef rhs1 = qps::query::AttrCompareRef::ofAttrRef(attrr1);
+    qps::query::AttrCompare with1 = qps::query::AttrCompare{lhs1, rhs1};
+    query1.addWith(with1);
+    query1.addDeclaration("c", qps::query::DesignEntity::CALL);
+    query1.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query1.addVariable("s");
+    qps::evaluator::Evaluator evaluator1 = qps::evaluator::Evaluator{&pkb};
+    std::list<std::string> result1 = evaluator.evaluate(query1);
+    result1.sort();
+    REQUIRE(result1 == std::list<std::string>{"1", "10", "2", "3", "4", "5", "6", "7", "8", "9"});
+
     TEST_LOG << "select v with pr.varName = v.varName";
     qps::query::Query query2;
     qps::query::AttrRef attrl2 = qps::query::AttrRef{qps::query::AttrName::VARNAME,
