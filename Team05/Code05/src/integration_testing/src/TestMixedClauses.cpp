@@ -288,7 +288,7 @@ TEST_CASE("test evaluate pattern") {
     qps::query::Query query11{};
     query11.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
     query11.addDeclaration("s", qps::query::DesignEntity::STMT);
-    query11.addVariable("a");
+    query11.addVariable("s");
 
     query11.addPattern(qps::query::Pattern::ofAssignPattern("a",qps::query::EntRef::ofWildcard(),
                                                             qps::query::ExpSpec::ofFullMatch("number % 10")));

@@ -54,7 +54,7 @@ public:
      * @param isSame bool checks whether two synonyms are the same
      * @return filtered PKBResponse
      */
-    PKBResponse filterPKBResponse(PKBResponse& response, bool isSame);
+    void filterPKBResponse(PKBResponse& response);
 
     /**
      * Handles all the clauses with synonyms.

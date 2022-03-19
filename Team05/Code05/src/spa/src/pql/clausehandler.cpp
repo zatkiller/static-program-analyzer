@@ -41,18 +41,19 @@ namespace qps::evaluator {
         return newResponse;
     }
 
-    PKBResponse ClauseHandler::filterPKBResponse(PKBResponse& response, bool isSame) {
-        if (!response.hasResult) return response;
-        PKBResponse newResponse;
-        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> res;
+    void ClauseHandler::filterPKBResponse(PKBResponse& response) {
+        if (!response.hasResult) return;
         auto *ptr =
-                std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&response.res);
-        for (auto v : *ptr) {
-            std::vector<PKBField> newrecord = v;
-            if ((newrecord[0] == newrecord[1]) == isSame) res.insert(newrecord);
+                std::get_if<VectorResponse>(&response.res);
+        VectorResponse copy = *ptr;
+        for (auto v : copy) {
+            if (v[0] == v[1]) {
+                auto newRecord = v;
+                newRecord.pop_back();
+                ptr->insert(newRecord);
+            }
+            ptr->erase(v);
         }
-        newResponse = PKBResponse{response.hasResult, Response {res}};
-        return newResponse;
     }
 
     void ClauseHandler::handleSynClauses(std::vector<std::shared_ptr<query::RelRef>> clauses) {
@@ -67,8 +68,9 @@ namespace qps::evaluator {
             bool isSecondSyn = fields[1].fieldType == PKBFieldType::DECLARATION;
             if (!isFirstSyn || !isSecondSyn) {
                 response = selectDeclaredValue(response, isFirstSyn);
-            } else {
-                response = filterPKBResponse(response, synonyms[0] == synonyms[1]);
+            } else if (synonyms[0] == synonyms[1]) {
+                synonyms.pop_back();
+                filterPKBResponse(response);
             }
             tableRef.join(response, synonyms);
         }
