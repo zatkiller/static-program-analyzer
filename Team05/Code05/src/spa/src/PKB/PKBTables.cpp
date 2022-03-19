@@ -75,10 +75,10 @@ std::optional<StatementType> StatementTable::getStmtTypeOfLine(int stmtNum) cons
         [stmtNum](EntityRow<STMT_LO> row) { return row.getVal().statementNum == stmtNum; });
 
     if (filtered.size() == 0) {
-        Logger(Level::ERROR) << "No statement exists with the provided statement number";
+        Logger(Level::INFO) << "No statement exists with the provided statement number";
         return std::nullopt;
     } else if (filtered.size() > 1) {
-        Logger(Level::ERROR) << "Statement table has rows with duplicate line numbers";
+        Logger(Level::INFO) << "Statement table has rows with duplicate line numbers";
         return std::nullopt;
     } else {
         STMT_LO stmt = filtered.at(0).getVal();
@@ -86,7 +86,7 @@ std::optional<StatementType> StatementTable::getStmtTypeOfLine(int stmtNum) cons
         if (stmt.type.has_value()) {
             return stmt.type.value();
         } else {
-            Logger(Level::ERROR) << "Statement does not have a type";
+            Logger(Level::INFO) << "Statement does not have a type";
             return std::nullopt;
         }
     }
