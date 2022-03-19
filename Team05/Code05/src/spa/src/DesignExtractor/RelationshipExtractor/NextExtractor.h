@@ -51,12 +51,15 @@ struct NextExtractor : public Extractor<const cfg::PROC_CFG_MAP*> {
 
                 // current node is not a dummy node.
 
-                // if this child is a dummy node,
-                // extract the dummy node's children instead.
-                if (!child->stmt.has_value()) {
-                    for (auto realChild : child->getChildren()) {
-                        collect(curNode, realChild.get());
+                // if this child is a dummy node, and since dummy node
+                // only can have 1 child. Walk the hierarchy until a 
+                // real node is found as child.
+                if (!child->stmt.has_value() && !child->getChildren().empty()) {
+                    auto realChild = child->getChildren()[0];
+                    while(!realChild->stmt.has_value()) {
+                        realChild = realChild->getChildren()[0];
                     }
+                    collect(curNode, realChild.get());
                 } else {
                     collect(curNode, child.get());
                 }

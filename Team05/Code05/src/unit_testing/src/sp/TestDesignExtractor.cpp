@@ -618,6 +618,62 @@ namespace ast {
 
         /**
          * procedure a {
+         *      if (x > 1)  then {
+         *          read x;
+         *      } else {
+         *          if (x > 1) then {
+         *              read x;
+         *          } else {
+         *              read x;
+         *          }
+         *      }
+         *      read x;
+         * }
+         */
+        SECTION("Regression test for #303") {
+            auto program = makeProgram(
+                make<ast::Procedure>(
+                    "a", 
+                    ast::makeStmts(
+                        make<ast::If>(1, make<ast::RelExpr>(RelOp::GT, make<ast::Var>("x"), make<ast::Const>(1)),
+                            makeStmts(
+                                make<ast::Read>(2, make<ast::Var>("x"))
+                            ),
+                            makeStmts(
+                                make<ast::If>(3, make<ast::RelExpr>(RelOp::GT, make<ast::Var>("x"), make<ast::Const>(1)),
+                                    makeStmts(
+                                        make<ast::Read>(4, make<ast::Var>("x"))
+                                    ),
+                                    makeStmts(
+                                        make<ast::Read>(5, make<ast::Var>("x"))
+                                    )
+                                )
+                            )
+                        ),
+                        make<ast::Read>(6, make<ast::Var>("x"))
+                    )
+                )
+            );
+            std::set<std::pair<Content, Content>> expected;
+
+            NextExtractorModule ne(&pkbStrategy);
+            auto cfgs = cfg::CFGExtractor().extract(program.get());
+            ne.extract(&cfgs);
+            
+            expected = {
+                p(STMT_LO{1, StatementType::If}, STMT_LO{2, StatementType::Read}),
+                p(STMT_LO{1, StatementType::If}, STMT_LO{3, StatementType::If}),
+                p(STMT_LO{2, StatementType::Read}, STMT_LO{6, StatementType::Read}),
+                p(STMT_LO{3, StatementType::If}, STMT_LO{4, StatementType::Read}),
+                p(STMT_LO{3, StatementType::If}, STMT_LO{5, StatementType::Read}),
+                p(STMT_LO{4, StatementType::Read}, STMT_LO{6, StatementType::Read}),
+                p(STMT_LO{5, StatementType::Read}, STMT_LO{6, StatementType::Read}),
+            };
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
+        }
+
+        /**
+         * procedure a {
          *     read x;
          * }
          * procedure b {
