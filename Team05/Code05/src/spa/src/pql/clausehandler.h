@@ -51,8 +51,6 @@ public:
      * only return the record when two PKBFields are the same.
      *
      * @param response PKBResponse
-     * @param isSame bool checks whether two synonyms are the same
-     * @return filtered PKBResponse
      */
     void filterPKBResponse(PKBResponse& response);
 
