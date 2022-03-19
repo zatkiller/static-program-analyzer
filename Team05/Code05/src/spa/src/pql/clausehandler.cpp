@@ -29,9 +29,8 @@ namespace qps::evaluator {
         int erasePos = isFirstSyn ? 1 : 0;
         if (!response.hasResult) return response;
         PKBResponse newResponse;
-        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> res;
-        auto *ptr =
-                std::get_if<std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>>(&response.res);
+        VectorResponse res;
+        auto *ptr = std::get_if<VectorResponse>(&response.res);
         for (auto v : *ptr) {
             std::vector<PKBField> newrecord = v;
             newrecord.erase(newrecord.begin() + erasePos);
