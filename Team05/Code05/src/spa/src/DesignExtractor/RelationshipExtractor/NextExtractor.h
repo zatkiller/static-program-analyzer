@@ -56,7 +56,7 @@ struct NextExtractor : public Extractor<const cfg::PROC_CFG_MAP*> {
                 // real node is found as child.
                 if (!child->stmt.has_value() && !child->getChildren().empty()) {
                     auto realChild = child->getChildren()[0];
-                    while(!realChild->stmt.has_value()) {
+                    while(!realChild->stmt.has_value() && !realChild->getChildren().empty()) {
                         realChild = realChild->getChildren()[0];
                     }
                     collect(curNode, realChild.get());

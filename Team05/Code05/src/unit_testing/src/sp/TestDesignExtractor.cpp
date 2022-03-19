@@ -627,10 +627,9 @@ namespace ast {
          *              read x;
          *          }
          *      }
-         *      read x;
          * }
          */
-        SECTION("Regression test for #303") {
+        SECTION("Regression test for #303 and #306") {
             auto program = makeProgram(
                 make<ast::Procedure>(
                     "a", 
@@ -649,8 +648,7 @@ namespace ast {
                                     )
                                 )
                             )
-                        ),
-                        make<ast::Read>(6, make<ast::Var>("x"))
+                        )
                     )
                 )
             );
@@ -663,11 +661,8 @@ namespace ast {
             expected = {
                 p(STMT_LO{1, StatementType::If}, STMT_LO{2, StatementType::Read}),
                 p(STMT_LO{1, StatementType::If}, STMT_LO{3, StatementType::If}),
-                p(STMT_LO{2, StatementType::Read}, STMT_LO{6, StatementType::Read}),
                 p(STMT_LO{3, StatementType::If}, STMT_LO{4, StatementType::Read}),
                 p(STMT_LO{3, StatementType::If}, STMT_LO{5, StatementType::Read}),
-                p(STMT_LO{4, StatementType::Read}, STMT_LO{6, StatementType::Read}),
-                p(STMT_LO{5, StatementType::Read}, STMT_LO{6, StatementType::Read}),
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
         }
