@@ -221,10 +221,10 @@ struct Node {
 };
 
 /**
-* A data structure that consists of Node, where each edge represents a valid relationship. For brevity, 
+* A data structure that consists of Node, where each edge represents a valid relationship. For brevity,
 * program design abstractions (Follows, Parent, Calls) will be denoted by rs(u, v),
 * where rs is the type of transitive relationship this graph holds.
-* 
+*
 * @tparam T the type each node in the graph stores
 * @see Node
 */
@@ -397,7 +397,7 @@ private:
     std::map<T, Node<T>*> nodes; /**< The list of nodes in this Graph */
 
     /**
-    * Add a node represented by program design entity to the list of nodes stored in the graph if it does not exist 
+    * Add a node represented by program design entity to the list of nodes stored in the graph if it does not exist
     * and is valid. Return a pointer to existing or newly created node. If val is invalid, return a nullptr.
     *
     * @param val a program design entity  representing the statement
@@ -508,9 +508,9 @@ private:
         if (nodes.count(start) != 0) {
             if constexpr (std::is_same_v<T, STMT_LO>) {
                 StatementType targetType = field2.statementType.value();
-                traverseStartT(&found, nodes.at(start), nodes.at(start), targetType);
+                traverseStartT(&found, nodes.at(start), targetType);
             } else {
-                traverseStartT(&found, nodes.at(start), nodes.at(start));
+                traverseStartT(&found, nodes.at(start));
             }
         }
 
@@ -529,34 +529,32 @@ private:
     * An overloaded helper function that traverses the graph forward starting at the provided node
     * until there are no next nodes left.
     *
-    * @param found a pointer to a set of program design entity  that stores the possible program design 
+    * @param found a pointer to a set of program design entity  that stores the possible program design
     * entity for the second field in a transitive relationship.
     * @param node a pointer to the node to begin traversal from
     * @param targetType an optional statement type if the graphs contains STMT_LOs
     *
     * @see PKBField
     */
-    void traverseStartT(std::set<T>* found, Node<T>* node, Node<T>* initial, 
-        StatementType targetType = StatementType::None) const {
+    void traverseStartT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) const {
         typename Node<T>::NodeSet nextNodes = node->next;
-        bool isTerminating = std::count(nextNodes.begin(), nextNodes.end(), initial) == 1;
 
         for (auto nextNode : nextNodes) {
             // targetType is specified for statements
             if constexpr (std::is_same_v<T, STMT_LO>) {
+                if (std::count(found->begin(), found->end(), nextNode->val) > 0) {
+                    continue;
+                }
+
                 bool typeMatch = nextNode->val.type.value() == targetType || targetType == StatementType::All;
                 if (typeMatch) {
                     found->insert(nextNode->val);
                 }
 
-                if (!isTerminating) {
-                    traverseStartT(found, nextNode, initial, targetType);
-                } else {
-                    return;
-                }
+                traverseStartT(found, nextNode, targetType);
             } else {
                 found->insert(nextNode->val);
-                traverseStartT(found, nextNode, initial);
+                traverseStartT(found, nextNode);
             }
         }
         return;
@@ -634,9 +632,9 @@ private:
         if (nodes.count(start) != 0) {
             if (std::is_same_v<T, STMT_LO>) {
                 StatementType targetType = field1.statementType.value();
-                traverseEndT(&found, nodes.at(start), nodes.at(start), targetType);
+                traverseEndT(&found, nodes.at(start), targetType);
             } else {
-                traverseEndT(&found, nodes.at(start), nodes.at(start));
+                traverseEndT(&found, nodes.at(start));
             }
         }
 
@@ -655,32 +653,32 @@ private:
     * An overloaded helper function that traverses the graph backwards starting at the provided node
     * until there are no prev nodes left.
     *
-    * @param found a pointer to a set of program design entity that stores the possible program design 
+    * @param found a pointer to a set of program design entity that stores the possible program design
     * entity for the first field in a transitive relationship.
     * @param node a pointer to the node to begin traversal from
     * @param targetType an optional statement type if the graphs contains STMT_LOs
     *
     * @see PKBField
     */
-    void traverseEndT(std::set<T>* found, Node<T>* node, Node<T>* initial, 
-        StatementType targetType = StatementType::None) const {
+    void traverseEndT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) const {
         typename Node<T>::NodeSet prevNodes = node->prev;
-        bool isTerminating = std::find(prevNodes.begin(), prevNodes.end(), initial) != prevNodes.end();
+
         for (auto prevNode : prevNodes) {
             // targetType is specified for statements
             if constexpr (std::is_same_v<T, STMT_LO>) {
+                if (std::count(found->begin(), found->end(), prevNode->val) > 0) {
+                    continue;
+                }
+
                 bool typeMatch = prevNode->val.type.value() == targetType || targetType == StatementType::All;
                 if (typeMatch) {
                     found->insert(prevNode->val);
                 }
-                if (!isTerminating) {
-                    traverseEndT(found, prevNode, initial, targetType);
-                } else {
-                    return;
-                }
+
+                traverseEndT(found, prevNode, targetType);
             } else {
                 found->insert(prevNode->val);
-                traverseEndT(found, prevNode, initial);
+                traverseEndT(found, prevNode);
             }
         }
         return;
@@ -767,9 +765,9 @@ private:
                     continue;
                 }
 
-                traverseStartT(&found, node, node, field2.statementType.value());
+                traverseStartT(&found, node, field2.statementType.value());
             } else {
-                traverseStartT(&found, node, node);
+                traverseStartT(&found, node);
             }
 
             std::transform(found.begin(), found.end(), std::insert_iterator<Result>(res, res.end()),
@@ -786,7 +784,7 @@ private:
 
 /**
 * A data structure to store program design abstractions as Graphs. Inherits RelationshipTable.
-* 
+*
 * @tparam T the type each node in the graph stores
 * @see Node
 */
@@ -943,7 +941,7 @@ private:
     /**
     * Checks if the two PKBFields provided can be inserted into the table (whether it can exist in the table).
     * Checks that the fields are concrete and valid.
-    * 
+    *
     * The two fields must be of the same program design entity type and must be concrete. Additionally, the value
     * stored in the graph must match the one stored in the PKBFields.
     *
@@ -1043,7 +1041,7 @@ public:
 /**
 * A data structure to store Calls and Calls* program design abstractions as Nodes<PROC_NAME> in a Graph<PROC_NAME>.
 * Inherits from TransitiveRelationshipTable
-* 
+*
 * @see Node, Graph, TransitiveRelationshipTable
 */
 class CallsRelationshipTable : public TransitiveRelationshipTable<PROC_NAME> {
@@ -1054,7 +1052,7 @@ public:
 /**
 * A data structure to store Next and Next* program design abstractions as Nodes<STMT_LO> in a Graph<STMT_LO>.
 * Inherits from TransitiveRelationshipTable
-* 
+*
 * @see Node, Graph, TransitiveRelationshipTable
 */
 class NextRelationshipTable : public TransitiveRelationshipTable<STMT_LO> {
