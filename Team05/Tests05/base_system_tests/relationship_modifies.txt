@@ -1,0 +1,90 @@
+1 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select v such that Modifies(p, "v1")
+<answer>
+5000
+2 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select v such that Modifies(p, "v2")
+<answer>
+5000
+3 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select v such that Modifies(p, "v3")
+<answer>
+5000
+4 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select v such that Modifies(p, "v4")
+<answer>
+5000
+5 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select v such that Modifies(p, "v5")
+<answer>
+5000
+6 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select v such that Modifies(p, "v6")
+<answer>
+5000
+7 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select v such that Modifies(p, "v7")
+<answer>
+5000
+8 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select v such that Modifies(p, "v8")
+<answer>
+5000
+9 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select v such that Modifies(p, "v9")
+<answer>
+5000
+10 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select v such that Modifies(s, "v1")
+<answer>
+5000
+11 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select v such that Modifies(s, "v2")
+<answer>
+5000
+12 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select v such that Modifies(s, "v3")
+<answer>
+5000
+13 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select v such that Modifies(s, "v4")
+<answer>
+5000
+14 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select v such that Modifies(s, "v5")
+<answer>
+5000
+15 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select v such that Modifies(s, "v6")
+<answer>
+5000
+16 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select v such that Modifies(s, "v7")
+<answer>
+5000
+17 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select v such that Modifies(s, "v8")
+<answer>
+5000
+18 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select v such that Modifies(s, "v9")
+<answer>
+5000

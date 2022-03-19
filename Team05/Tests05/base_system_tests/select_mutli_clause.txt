@@ -1,0 +1,115 @@
+1 - select assign synonym where first clause is such that and second clause is such that
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(s, 5) and Follows(s1, 5)
+<answer>
+5000
+2 - select assign synonym where first clause is such that and second clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(s, 5) with v.varName = "x"
+<answer>
+5000
+3 - select assign synonym where first clause is such that and second clause is pattern
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(s, 5) pattern a(_, _)
+<answer>
+5000
+4 - select assign synonym where first clause is with and second clause is such that
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 with v.varName = "x" such that Follows(s, 5)
+<answer>
+5000
+5 - select assign synonym where first clause is with and second clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 with v.varName = "x" and v1.varName = "x"
+<answer>
+5000
+6 - select assign synonym where first clause is with and second clause is pattern
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 with v.varName = "x" pattern a(_, _)
+<answer>
+5000
+7 - select assign synonym where first clause is pattern and second clause is such that
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) such that Follows(s, 5)
+<answer>
+5000
+8 - select assign synonym where first clause is pattern and second clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) with v.varName = "x"
+<answer>
+5000
+9 - select assign synonym where first clause is pattern and second clause is pattern
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _)
+<answer>
+5000
+10 - select assign synonym where first clause is such that and second clause is such that and third clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(s, 5) and Follows(s1, 5) with v.varName = "x"
+<answer>
+5000
+11 - select assign synonym where first clause is pattern and second clause is such that and third clause is such that
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) such that Follows(s, 5) and Follows(s1, 5)
+<answer>
+5000
+12 - select assign synonym where first clause is such that and second clause is with and third clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(s, 5) with v.varName = "x" and v1.varName = "x"
+<answer>
+5000
+13 - select assign synonym where first clause is pattern and second clause is such that and third clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) such that Follows(s, 5) with v.varName = "x"
+<answer>
+5000
+14 - select assign synonym where first clause is pattern and second clause is pattern and third clause is such that
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _) such that Follows(s, 5)
+<answer>
+5000
+15 - select assign synonym where first clause is pattern and second clause is with and third clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) with v.varName = "x" and v1.varName = "x"
+<answer>
+5000
+16 - select assign synonym where first clause is pattern and second clause is pattern and third clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _) with v.varName = "x"
+<answer>
+5000
+17 - select assign synonym where first clause is such that and second clause is such that (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Modifies(s, v) and Follows(s, 5)
+<answer>
+5000
+18 - select assign synonym where first clause is such that and second clause is with (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Modifies(s, v) with v.varName = "x"
+<answer>
+5000
+19 - select assign synonym where first clause is such that and second clause is pattern (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(a, 5) pattern a(_, _)
+<answer>
+5000
+20 - select assign synonym where first clause is with and second clause is with (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 with v.varName = "x" and v.varName = "x"
+<answer>
+5000
+21 - select assign synonym where first clause is with and second clause is pattern (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 with v.varName = "x" pattern a(v, _)
+<answer>
+5000
+22 - select assign synonym where first clause is pattern and second clause is pattern (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _)
+<answer>
+5000
+23 - select assign synonym where first clause is pattern and second clause is such that and third clause is with (shared synonym)
+variable v; assign a;
+Select a pattern a(v, _) such that Modifies(a, v) with v.varName = "x"
+<answer>
+5000

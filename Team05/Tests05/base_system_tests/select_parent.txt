@@ -1,0 +1,535 @@
+1 - select statement with Parent where Parent has 2 statement numbers
+stmt s;
+Select s such that Parent(1,3)
+<answer>
+5000
+2 - select statement with Parent, where synonym is parent and lineNo is child
+stmt s;
+Select s such that Parent(s,3)
+<answer>
+5000
+3 - select statement with Parent, where synonym is wildcard and synonym is child
+stmt s;
+Select s such that Parent(_, 3)
+<answer>
+5000
+4 - select statement with Parent, where synonym is lineNo and synonym is child
+stmt s;
+Select s such that Parent(3, s)
+<answer>
+5000
+5 - select statement with Parent, where parent and child is synonym (same synonyms)
+stmt s;
+Select s such that Parent(s, s)
+<answer>
+5000
+6 - select statement with Parent where wildcard is parent and synonym is child
+stmt s;
+Select s such that Parent(_, s)
+<answer>
+5000
+7 - select statement with Parent where parent is lineNo and child is wildcard
+stmt s;
+Select s such that Parent(1, _)
+<answer>
+5000
+8 - select statement with Parent where parent is synonym and child is wildcard
+stmt s;
+Select s such that Parent(s, _)
+<answer>
+5000
+9 - select statement with Parent where parent is wildcard and child is wildcard
+stmt s;
+Select s such that Parent(_, _)
+<answer>
+5000
+10 - select stmt synonym where synonym selected is 1st argument in Parent is stmt and 2nd argument is stmt
+stmt s, s1;
+Select s such that Parent(s, s1)
+<answer>
+5000
+11 - select stmt synonym where synonym selected is 2nd argument in Parent is stmt and 1st argument is stmt
+stmt s, s1;
+Select s1 such that Parent(s, s1)
+<answer>
+5000
+12 - select stmt synonym where synonym selected is 1st argument in Parent is stmt and 2nd argument is assign
+stmt s; assign a;
+Select s such that Parent(s, a)
+<answer>
+5000
+13 - select assign synonym where synonym selected is 2nd argument in Parent is assign and 1st argument is stmt
+stmt s; assign a;
+Select a such that Parent(s, a)
+<answer>
+5000
+14 - select stmt synonym where synonym selected is 1st argument in Parent is stmt and 2nd argument is read
+stmt s; read rd;
+Select s such that Parent(s, rd)
+<answer>
+5000
+15 - select read synonym where synonym selected is 2nd argument in Parent is read and 1st argument is stmt
+stmt s; read rd;
+Select rd such that Parent(s, rd)
+<answer>
+5000
+16 - select stmt synonym where synonym selected is 1st argument in Parent is stmt and 2nd argument is print
+stmt s; print pn;
+Select s such that Parent(s, pn)
+<answer>
+5000
+17 - select print synonym where synonym selected is 2nd argument in Parent is print and 1st argument is stmt
+stmt s; print pn;
+Select pn such that Parent(s, pn)
+<answer>
+5000
+18 - select stmt synonym where synonym selected is 1st argument in Parent is stmt and 2nd argument is if
+stmt s; if ifs;
+Select s such that Parent(s, ifs)
+<answer>
+5000
+19 - select if synonym where synonym selected is 2nd argument in Parent is if and 1st argument is stmt
+stmt s; if ifs;
+Select ifs such that Parent(s, ifs)
+<answer>
+5000
+20 - select stmt synonym where synonym selected is 1st argument in Parent is stmt and 2nd argument is while
+stmt s; while w;
+Select s such that Parent(s, w)
+<answer>
+5000
+21 - select while synonym where synonym selected is 2nd argument in Parent is while and 1st argument is stmt
+stmt s; while w;
+Select w such that Parent(s, w)
+<answer>
+5000
+22 - select stmt synonym where synonym selected is 1st argument in Parent is stmt and 2nd argument is call
+stmt s; call cl;
+Select s such that Parent(s, cl)
+<answer>
+5000
+23 - select call synonym where synonym selected is 2nd argument in Parent is call and 1st argument is stmt
+stmt s; call cl;
+Select cl such that Parent(s, cl)
+<answer>
+5000
+24 - select assign synonym where synonym selected is 1st argument in Parent is assign and 2nd argument is stmt
+assign a; stmt s;
+Select a such that Parent(a, s)
+<answer>
+5000
+25 - select stmt synonym where synonym selected is 2nd argument in Parent is stmt and 1st argument is assign
+assign a; stmt s;
+Select s such that Parent(a, s)
+<answer>
+5000
+26 - select assign synonym where synonym selected is 1st argument in Parent is assign and 2nd argument is assign
+assign a, a1;
+Select a such that Parent(a, a1)
+<answer>
+5000
+27 - select assign synonym where synonym selected is 2nd argument in Parent is assign and 1st argument is assign
+assign a, a1;
+Select a1 such that Parent(a, a1)
+<answer>
+5000
+28 - select assign synonym where synonym selected is 1st argument in Parent is assign and 2nd argument is read
+assign a; read rd;
+Select a such that Parent(a, rd)
+<answer>
+5000
+29 - select read synonym where synonym selected is 2nd argument in Parent is read and 1st argument is assign
+assign a; read rd;
+Select rd such that Parent(a, rd)
+<answer>
+5000
+30 - select assign synonym where synonym selected is 1st argument in Parent is assign and 2nd argument is print
+assign a; print pn;
+Select a such that Parent(a, pn)
+<answer>
+5000
+31 - select print synonym where synonym selected is 2nd argument in Parent is print and 1st argument is assign
+assign a; print pn;
+Select pn such that Parent(a, pn)
+<answer>
+5000
+32 - select assign synonym where synonym selected is 1st argument in Parent is assign and 2nd argument is if
+assign a; if ifs;
+Select a such that Parent(a, ifs)
+<answer>
+5000
+33 - select if synonym where synonym selected is 2nd argument in Parent is if and 1st argument is assign
+assign a; if ifs;
+Select ifs such that Parent(a, ifs)
+<answer>
+5000
+34 - select assign synonym where synonym selected is 1st argument in Parent is assign and 2nd argument is while
+assign a; while w;
+Select a such that Parent(a, w)
+<answer>
+5000
+35 - select while synonym where synonym selected is 2nd argument in Parent is while and 1st argument is assign
+assign a; while w;
+Select w such that Parent(a, w)
+<answer>
+5000
+36 - select assign synonym where synonym selected is 1st argument in Parent is assign and 2nd argument is call
+assign a; call cl;
+Select a such that Parent(a, cl)
+<answer>
+5000
+37 - select call synonym where synonym selected is 2nd argument in Parent is call and 1st argument is assign
+assign a; call cl;
+Select cl such that Parent(a, cl)
+<answer>
+5000
+38 - select read synonym where synonym selected is 1st argument in Parent is read and 2nd argument is stmt
+read rd; stmt s;
+Select rd such that Parent(rd, s)
+<answer>
+5000
+39 - select stmt synonym where synonym selected is 2nd argument in Parent is stmt and 1st argument is read
+read rd; stmt s;
+Select s such that Parent(rd, s)
+<answer>
+5000
+40 - select read synonym where synonym selected is 1st argument in Parent is read and 2nd argument is assign
+read rd; assign a;
+Select rd such that Parent(rd, a)
+<answer>
+5000
+41 - select assign synonym where synonym selected is 2nd argument in Parent is assign and 1st argument is read
+read rd; assign a;
+Select a such that Parent(rd, a)
+<answer>
+5000
+42 - select read synonym where synonym selected is 1st argument in Parent is read and 2nd argument is read
+read rd, rd1;
+Select rd such that Parent(rd, rd1)
+<answer>
+5000
+43 - select read synonym where synonym selected is 2nd argument in Parent is read and 1st argument is read
+read rd, rd1;
+Select rd1 such that Parent(rd, rd1)
+<answer>
+5000
+44 - select read synonym where synonym selected is 1st argument in Parent is read and 2nd argument is print
+read rd; print pn;
+Select rd such that Parent(rd, pn)
+<answer>
+5000
+45 - select print synonym where synonym selected is 2nd argument in Parent is print and 1st argument is read
+read rd; print pn;
+Select pn such that Parent(rd, pn)
+<answer>
+5000
+46 - select read synonym where synonym selected is 1st argument in Parent is read and 2nd argument is if
+read rd; if ifs;
+Select rd such that Parent(rd, ifs)
+<answer>
+5000
+47 - select if synonym where synonym selected is 2nd argument in Parent is if and 1st argument is read
+read rd; if ifs;
+Select ifs such that Parent(rd, ifs)
+<answer>
+5000
+48 - select read synonym where synonym selected is 1st argument in Parent is read and 2nd argument is while
+read rd; while w;
+Select rd such that Parent(rd, w)
+<answer>
+5000
+49 - select while synonym where synonym selected is 2nd argument in Parent is while and 1st argument is read
+read rd; while w;
+Select w such that Parent(rd, w)
+<answer>
+5000
+50 - select read synonym where synonym selected is 1st argument in Parent is read and 2nd argument is call
+read rd; call cl;
+Select rd such that Parent(rd, cl)
+<answer>
+5000
+51 - select call synonym where synonym selected is 2nd argument in Parent is call and 1st argument is read
+read rd; call cl;
+Select cl such that Parent(rd, cl)
+<answer>
+5000
+52 - select print synonym where synonym selected is 1st argument in Parent is print and 2nd argument is stmt
+print pn; stmt s;
+Select pn such that Parent(pn, s)
+<answer>
+5000
+53 - select stmt synonym where synonym selected is 2nd argument in Parent is stmt and 1st argument is print
+print pn; stmt s;
+Select s such that Parent(pn, s)
+<answer>
+5000
+54 - select print synonym where synonym selected is 1st argument in Parent is print and 2nd argument is assign
+print pn; assign a;
+Select pn such that Parent(pn, a)
+<answer>
+5000
+55 - select assign synonym where synonym selected is 2nd argument in Parent is assign and 1st argument is print
+print pn; assign a;
+Select a such that Parent(pn, a)
+<answer>
+5000
+56 - select print synonym where synonym selected is 1st argument in Parent is print and 2nd argument is read
+print pn; read rd;
+Select pn such that Parent(pn, rd)
+<answer>
+5000
+57 - select read synonym where synonym selected is 2nd argument in Parent is read and 1st argument is print
+print pn; read rd;
+Select rd such that Parent(pn, rd)
+<answer>
+5000
+58 - select print synonym where synonym selected is 1st argument in Parent is print and 2nd argument is print
+print pn, pn1;
+Select pn such that Parent(pn, pn1)
+<answer>
+5000
+59 - select print synonym where synonym selected is 2nd argument in Parent is print and 1st argument is print
+print pn, pn1;
+Select pn1 such that Parent(pn, pn1)
+<answer>
+5000
+60 - select print synonym where synonym selected is 1st argument in Parent is print and 2nd argument is if
+print pn; if ifs;
+Select pn such that Parent(pn, ifs)
+<answer>
+5000
+61 - select if synonym where synonym selected is 2nd argument in Parent is if and 1st argument is print
+print pn; if ifs;
+Select ifs such that Parent(pn, ifs)
+<answer>
+5000
+62 - select print synonym where synonym selected is 1st argument in Parent is print and 2nd argument is while
+print pn; while w;
+Select pn such that Parent(pn, w)
+<answer>
+5000
+63 - select while synonym where synonym selected is 2nd argument in Parent is while and 1st argument is print
+print pn; while w;
+Select w such that Parent(pn, w)
+<answer>
+5000
+64 - select print synonym where synonym selected is 1st argument in Parent is print and 2nd argument is call
+print pn; call cl;
+Select pn such that Parent(pn, cl)
+<answer>
+5000
+65 - select call synonym where synonym selected is 2nd argument in Parent is call and 1st argument is print
+print pn; call cl;
+Select cl such that Parent(pn, cl)
+<answer>
+5000
+66 - select if synonym where synonym selected is 1st argument in Parent is if and 2nd argument is stmt
+if ifs; stmt s;
+Select ifs such that Parent(ifs, s)
+<answer>
+5000
+67 - select stmt synonym where synonym selected is 2nd argument in Parent is stmt and 1st argument is if
+if ifs; stmt s;
+Select s such that Parent(ifs, s)
+<answer>
+5000
+68 - select if synonym where synonym selected is 1st argument in Parent is if and 2nd argument is assign
+if ifs; assign a;
+Select ifs such that Parent(ifs, a)
+<answer>
+5000
+69 - select assign synonym where synonym selected is 2nd argument in Parent is assign and 1st argument is if
+if ifs; assign a;
+Select a such that Parent(ifs, a)
+<answer>
+5000
+70 - select if synonym where synonym selected is 1st argument in Parent is if and 2nd argument is read
+if ifs; read rd;
+Select ifs such that Parent(ifs, rd)
+<answer>
+5000
+71 - select read synonym where synonym selected is 2nd argument in Parent is read and 1st argument is if
+if ifs; read rd;
+Select rd such that Parent(ifs, rd)
+<answer>
+5000
+72 - select if synonym where synonym selected is 1st argument in Parent is if and 2nd argument is print
+if ifs; print pn;
+Select ifs such that Parent(ifs, pn)
+<answer>
+5000
+73 - select print synonym where synonym selected is 2nd argument in Parent is print and 1st argument is if
+if ifs; print pn;
+Select pn such that Parent(ifs, pn)
+<answer>
+5000
+74 - select if synonym where synonym selected is 1st argument in Parent is if and 2nd argument is if
+if ifs, ifs1;
+Select ifs such that Parent(ifs, ifs1)
+<answer>
+5000
+75 - select if synonym where synonym selected is 2nd argument in Parent is if and 1st argument is if
+if ifs, ifs1;
+Select ifs1 such that Parent(ifs, ifs1)
+<answer>
+5000
+76 - select if synonym where synonym selected is 1st argument in Parent is if and 2nd argument is while
+if ifs; while w;
+Select ifs such that Parent(ifs, w)
+<answer>
+5000
+77 - select while synonym where synonym selected is 2nd argument in Parent is while and 1st argument is if
+if ifs; while w;
+Select w such that Parent(ifs, w)
+<answer>
+5000
+78 - select if synonym where synonym selected is 1st argument in Parent is if and 2nd argument is call
+if ifs; call cl;
+Select ifs such that Parent(ifs, cl)
+<answer>
+5000
+79 - select call synonym where synonym selected is 2nd argument in Parent is call and 1st argument is if
+if ifs; call cl;
+Select cl such that Parent(ifs, cl)
+<answer>
+5000
+80 - select while synonym where synonym selected is 1st argument in Parent is while and 2nd argument is stmt
+while w; stmt s;
+Select w such that Parent(w, s)
+<answer>
+5000
+81 - select stmt synonym where synonym selected is 2nd argument in Parent is stmt and 1st argument is while
+while w; stmt s;
+Select s such that Parent(w, s)
+<answer>
+5000
+82 - select while synonym where synonym selected is 1st argument in Parent is while and 2nd argument is assign
+while w; assign a;
+Select w such that Parent(w, a)
+<answer>
+5000
+83 - select assign synonym where synonym selected is 2nd argument in Parent is assign and 1st argument is while
+while w; assign a;
+Select a such that Parent(w, a)
+<answer>
+5000
+84 - select while synonym where synonym selected is 1st argument in Parent is while and 2nd argument is read
+while w; read rd;
+Select w such that Parent(w, rd)
+<answer>
+5000
+85 - select read synonym where synonym selected is 2nd argument in Parent is read and 1st argument is while
+while w; read rd;
+Select rd such that Parent(w, rd)
+<answer>
+5000
+86 - select while synonym where synonym selected is 1st argument in Parent is while and 2nd argument is print
+while w; print pn;
+Select w such that Parent(w, pn)
+<answer>
+5000
+87 - select print synonym where synonym selected is 2nd argument in Parent is print and 1st argument is while
+while w; print pn;
+Select pn such that Parent(w, pn)
+<answer>
+5000
+88 - select while synonym where synonym selected is 1st argument in Parent is while and 2nd argument is if
+while w; if ifs;
+Select w such that Parent(w, ifs)
+<answer>
+5000
+89 - select if synonym where synonym selected is 2nd argument in Parent is if and 1st argument is while
+while w; if ifs;
+Select ifs such that Parent(w, ifs)
+<answer>
+5000
+90 - select while synonym where synonym selected is 1st argument in Parent is while and 2nd argument is while
+while w, w1;
+Select w such that Parent(w, w1)
+<answer>
+5000
+91 - select while synonym where synonym selected is 2nd argument in Parent is while and 1st argument is while
+while w, w1;
+Select w1 such that Parent(w, w1)
+<answer>
+5000
+92 - select while synonym where synonym selected is 1st argument in Parent is while and 2nd argument is call
+while w; call cl;
+Select w such that Parent(w, cl)
+<answer>
+5000
+93 - select call synonym where synonym selected is 2nd argument in Parent is call and 1st argument is while
+while w; call cl;
+Select cl such that Parent(w, cl)
+<answer>
+5000
+94 - select call synonym where synonym selected is 1st argument in Parent is call and 2nd argument is stmt
+call cl; stmt s;
+Select cl such that Parent(cl, s)
+<answer>
+5000
+95 - select stmt synonym where synonym selected is 2nd argument in Parent is stmt and 1st argument is call
+call cl; stmt s;
+Select s such that Parent(cl, s)
+<answer>
+5000
+96 - select call synonym where synonym selected is 1st argument in Parent is call and 2nd argument is assign
+call cl; assign a;
+Select cl such that Parent(cl, a)
+<answer>
+5000
+97 - select assign synonym where synonym selected is 2nd argument in Parent is assign and 1st argument is call
+call cl; assign a;
+Select a such that Parent(cl, a)
+<answer>
+5000
+98 - select call synonym where synonym selected is 1st argument in Parent is call and 2nd argument is read
+call cl; read rd;
+Select cl such that Parent(cl, rd)
+<answer>
+5000
+99 - select read synonym where synonym selected is 2nd argument in Parent is read and 1st argument is call
+call cl; read rd;
+Select rd such that Parent(cl, rd)
+<answer>
+5000
+100 - select call synonym where synonym selected is 1st argument in Parent is call and 2nd argument is print
+call cl; print pn;
+Select cl such that Parent(cl, pn)
+<answer>
+5000
+101 - select print synonym where synonym selected is 2nd argument in Parent is print and 1st argument is call
+call cl; print pn;
+Select pn such that Parent(cl, pn)
+<answer>
+5000
+102 - select call synonym where synonym selected is 1st argument in Parent is call and 2nd argument is if
+call cl; if ifs;
+Select cl such that Parent(cl, ifs)
+<answer>
+5000
+103 - select if synonym where synonym selected is 2nd argument in Parent is if and 1st argument is call
+call cl; if ifs;
+Select ifs such that Parent(cl, ifs)
+<answer>
+5000
+104 - select call synonym where synonym selected is 1st argument in Parent is call and 2nd argument is while
+call cl; while w;
+Select cl such that Parent(cl, w)
+<answer>
+5000
+105 - select while synonym where synonym selected is 2nd argument in Parent is while and 1st argument is call
+call cl; while w;
+Select w such that Parent(cl, w)
+<answer>
+5000
+106 - select call synonym where synonym selected is 1st argument in Parent is call and 2nd argument is call
+call cl, cl1;
+Select cl such that Parent(cl, cl1)
+<answer>
+5000
+107 - select call synonym where synonym selected is 2nd argument in Parent is call and 1st argument is call
+call cl, cl1;
+Select cl1 such that Parent(cl, cl1)
+<answer>
+5000

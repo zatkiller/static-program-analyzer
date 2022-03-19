@@ -1,0 +1,55 @@
+1 - select statement with Calls where caller is procedure name and callee is procedure name
+stmt s;
+Select s such that Calls("Monke", "Monkey")
+<answer>
+5000
+2 - select statement with Calls where caller is procedure name and callee is procedure synonym
+stmt s; procedure p;
+Select s such that Calls("Monke", p)
+<answer>
+5000
+3 - select statement with Calls where caller is procedure name and callee is wildcard
+stmt s;
+Select s such that Calls("Monke", _)
+<answer>
+5000
+4 - select statement with Calls where caller is procedure synonym and callee is procedure name
+stmt s; procedure p;
+Select s such that Calls(p, "Monkey")
+<answer>
+5000
+5 - select statement with Calls where caller is procedure synonym and callee is procedure synonym
+stmt s; procedure p, p1;
+Select s such that Calls(p, p1)
+<answer>
+5000
+6 - select statement with Calls where caller is procedure synonym and callee is wildcard
+stmt s; procedure p;
+Select s such that Calls(p, _)
+<answer>
+5000
+7 - select statement with Calls where caller is wildcard and callee is procedure name
+stmt s;
+Select s such that Calls(_, "Monke")
+<answer>
+5000
+8 - select statement with Calls where caller is wildcard and callee is procedure synonym
+stmt s; procedure p;
+Select s such that Calls(_, p)
+<answer>
+5000
+9 - select statement with Calls where caller is wildcard and callee is wildcard
+stmt s;
+Select s such that Calls(_, _)
+<answer>
+5000
+10 - select procedure synonym where synonym selected is 1st argument in Calls is procedure and 2nd argument is procedure
+procedure p, p1;
+Select p such that Calls(p, p1)
+<answer>
+5000
+11 - select procedure synonym where synonym selected is 2nd argument in Calls is procedure and 1st argument is procedure
+procedure p, p1;
+Select p1 such that Calls(p, p1)
+<answer>
+5000

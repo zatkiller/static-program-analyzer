@@ -1,0 +1,95 @@
+1 - Invalid syntax query - ; at end of query
+stmt s;
+Select s;
+none
+5000
+2 - Invalid syntax query - No such declaration
+stmt s;
+Select v
+none
+5000
+3 - Invalid syntax query - No such relationship
+stmt s;
+Select s such that Hello(s, 1)
+none
+5000
+4 - Invalid syntax query - No such assignment declaration for Pattern
+stmt s;
+Select s pattern a("x", "x")
+none
+5000
+5 - Invalid syntax query - No such design entity
+hello s;
+Select s
+none
+5000
+6 - Invalid syntax query - Pattern expression has invalid grammar (Missing leading operand)
+stmt s; assign a;
+Select s pattern a(s, _"+test"_)
+none
+5000
+7 - Invalid syntax query - Pattern expression has invalid grammar (Incomplete expression)
+stmt s; assign a;
+Select s pattern a(s, _"test+"_)
+none
+5000
+8 - Invalid syntax query - Leading 0 digit
+stmt s;
+Select s such that Follows(003, s)
+none
+5000
+9 - Invalid syntax query - Expected EntRef instead of StmtRef
+stmt s;
+Select s such that Calls(3, 3)
+none
+5000
+10 - Invalid syntax query - Expected StmtRf instead of StmtRef
+stmt s;
+Select s such that Follows("x", "x")
+none
+5000
+11 - Invalid semantic query - Follows cannot take in variable synonym
+stmt s; variable v, v1;
+Select s such that Follows(v, v1)
+none
+5000
+12 - Invalid semantic query - Parent cannot take in variable synonym
+stmt s; variable v, v1;
+Select s such that Parent(v, v1)
+none
+5000
+13 - Invalid semantic query - Uses first argument cannot be wildcard
+stmt s; variable v;
+Select s such that Uses(_, v)
+none
+5000
+14 - Invalid semantic query - Modifies first argument cannot be wildcard
+stmt s; variable v;
+Select s such that Modifies(_, v)
+none
+5000
+15 - Invalid semantic query - Uses second argument if synonym has to be variable
+stmt s;
+Select s such that Uses("x", s)
+none
+5000
+16 - Invalid semantic query - Modifies second argument if synonym has to be variable
+stmt s;
+Select s such that Modifies("x", s)
+none
+5000
+17 - Invalid semantic query - Assign pattern LHS if synonym has to be variable
+stmt s; assign a;
+Select s pattern a(s, "x")
+none
+5000
+18 - Invalid semantic query - While pattern LHS if synonym has to be variable
+stmt s; while w;
+Select s pattern w(s, "_")
+none
+5000
+19 - Invalid semantic query - If pattern LHS if synonym has to be variable
+stmt s; if ifs;
+Select s pattern ifs(s, "_")
+none
+5000

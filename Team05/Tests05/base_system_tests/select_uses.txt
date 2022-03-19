@@ -1,0 +1,140 @@
+1 - select statement with Uses where user is line# and used is variable
+stmt s;
+Select s such that Uses(1, "x")
+<answer>
+5000
+2 - select statement with Uses where user is stmt synonym and used is variable
+stmt s;
+Select s such that Uses(s, "x")
+<answer>
+5000
+3 - select variable synonym with Uses where user is line# and used is variable synonym
+variable v;
+Select v such that Uses(1, v)
+<answer>
+5000
+4 - select variable synonym with Uses where user is statement synonym and used is variable synonym
+stmt s; variable v;
+Select s such that Uses(s, v)
+<answer>
+5000
+5 - select statement with Uses where user is line# and used is wildcard
+stmt s;
+Select s such that Uses(1, _)
+<answer>
+5000
+6 - select statement with Uses where user is stmt synonym and used is wildcard
+stmt s;
+Select s such that Uses(s, _)
+<answer>
+5000
+7 - select statement with Uses where user is procedure name and used is variable name
+stmt s;
+Select s such that Uses("Monke", "x")
+<answer>
+5000
+8 - select statement with Uses where user and used is variable name
+stmt s; variable v;
+Select s such that Uses(p, "x")
+<answer>
+5000
+9 - select stmt ynonym with Uses where user is procedure name and used is variable synonym
+stmt s; variable v;
+Select s such that Uses("Monke", v)
+<answer>
+5000
+10 - select variable synonym with Uses where user is procedure synonym and used is variable synonym
+stmt s; procedure p; variable v;
+Select s such that Uses(p, v)
+<answer>
+5000
+11 - select statement with Uses where user is procedure name and used is wildcard
+stmt s;
+Select s such that Uses("Monke", _)
+<answer>
+5000
+12 - select statement with Uses where user is procedure synonym and used is wildcard
+stmt s; procedure p;
+Select s such that Uses(p, _)
+<answer>
+5000
+13 - select stmt synonym where synonym selected is 1st argument in Uses is stmt and 2nd argument is variable
+stmt s; variable v;
+Select s such that Uses(s, v)
+<answer>
+5000
+14 - select variable synonym where synonym selected is 2nd argument in Uses is variable and 1st argument is stmt
+stmt s; variable v;
+Select v such that Uses(s, v)
+<answer>
+5000
+15 - select procedure synonym where synonym selected is 1st argument in Uses is procedure and 2nd argument is variable
+procedure p; variable v;
+Select p such that Uses(p, v)
+<answer>
+5000
+16 - select variable synonym where synonym selected is 2nd argument in Uses is variable and 1st argument is procedure
+procedure p; variable v;
+Select v such that Uses(p, v)
+<answer>
+5000
+17 - select assign synonym where synonym selected is 1st argument in Uses is assign and 2nd argument is variable
+assign a; variable v;
+Select a such that Uses(a, v)
+<answer>
+5000
+18 - select variable synonym where synonym selected is 2nd argument in Uses is variable and 1st argument is assign
+assign a; variable v;
+Select v such that Uses(a, v)
+<answer>
+5000
+19 - select read synonym where synonym selected is 1st argument in Uses is read and 2nd argument is variable
+read rd; variable v;
+Select rd such that Uses(rd, v)
+<answer>
+5000
+20 - select variable synonym where synonym selected is 2nd argument in Uses is variable and 1st argument is read
+read rd; variable v;
+Select v such that Uses(rd, v)
+<answer>
+5000
+21 - select print synonym where synonym selected is 1st argument in Uses is print and 2nd argument is variable
+print pn; variable v;
+Select pn such that Uses(pn, v)
+<answer>
+5000
+22 - select variable synonym where synonym selected is 2nd argument in Uses is variable and 1st argument is print
+print pn; variable v;
+Select v such that Uses(pn, v)
+<answer>
+5000
+23 - select if synonym where synonym selected is 1st argument in Uses is if and 2nd argument is variable
+if ifs; variable v;
+Select ifs such that Uses(ifs, v)
+<answer>
+5000
+24 - select variable synonym where synonym selected is 2nd argument in Uses is variable and 1st argument is if
+if ifs; variable v;
+Select v such that Uses(ifs, v)
+<answer>
+5000
+25 - select while synonym where synonym selected is 1st argument in Uses is while and 2nd argument is variable
+while w; variable v;
+Select w such that Uses(w, v)
+<answer>
+5000
+26 - select variable synonym where synonym selected is 2nd argument in Uses is variable and 1st argument is while
+while w; variable v;
+Select v such that Uses(w, v)
+<answer>
+5000
+27 - select call synonym where synonym selected is 1st argument in Uses is call and 2nd argument is variable
+call cl; variable v;
+Select cl such that Uses(cl, v)
+<answer>
+5000
+28 - select variable synonym where synonym selected is 2nd argument in Uses is variable and 1st argument is call
+call cl; variable v;
+Select v such that Uses(cl, v)
+<answer>
+5000

@@ -1,0 +1,126 @@
+@@ -0,0 +1,125 @@
+1 - select stmt synonym where with clause that has lhs argument of procName and rhs argument of procName
+stmt s; call cl;
+Select s with cl.procName = cl.procName
+<answer>
+5000
+2 - select stmt synonym where with clause that has lhs argument of procName and rhs argument of varName
+stmt s; call cl; variable v;
+Select s with cl.procName = v.varName
+<answer>
+5000
+3 - select stmt synonym where with clause that has lhs argument of procName and rhs argument of string
+stmt s; call cl;
+Select s with cl.procName = "Monke"
+<answer>
+5000
+4 - select stmt synonym where with clause that has lhs argument of varName and rhs argument of varName
+stmt s; variable v;
+Select s with v.varName = v.varName
+<answer>
+5000
+5 - select stmt synonym where with clause that has lhs argument of varName and rhs argument of string
+stmt s; variable v;
+Select s with v.varName = "Monke"
+<answer>
+5000
+6 - select stmt synonym where with clause that has lhs argument of string and rhs argument of string
+stmt s;
+Select s with "Monke" = "Monke"
+<answer>
+5000
+7 - select stmt synonym where with clause that has lhs argument of value and rhs argument of value
+stmt s; constant c;
+Select s with c.value = c.value
+<answer>
+5000
+8 - select stmt synonym where with clause that has lhs argument of value and rhs argument of stmt#
+stmt s; constant c;
+Select s with c.value = s.stmt#
+<answer>
+5000
+9 - select stmt synonym where with clause that has lhs argument of value and rhs argument of string
+stmt s; constant c;
+Select s with c.value = 3
+<answer>
+5000
+10 - select stmt synonym where with clause that has lhs argument of stmt# and rhs argument of stmt#
+stmt s;
+Select s with s.stmt# = s.stmt#
+<answer>
+5000
+11 - select stmt synonym where with clause that has lhs argument of stmt# and rhs argument of string
+stmt s;
+Select s with s.stmt# = 3
+<answer>
+5000
+12 - select stmt synonym where with clause that has lhs argument of string and rhs argument of string
+stmt s;
+Select s with 3 = 3
+<answer>
+5000
+13 - select stmt where lhs of with clause contains attrRef stmt#of design entity synonym
+stmt s;
+Select s with s.stmt# = 3
+<answer>
+5000
+14 - select assign where lhs of with clause contains attrRef stmt#of design entity synonym
+assign a;
+Select a with a.stmt# = 3
+<answer>
+5000
+15 - select read where lhs of with clause contains attrRef stmt#of design entity synonym
+read rd;
+Select rd with rd.stmt# = 3
+<answer>
+5000
+16 - select print where lhs of with clause contains attrRef stmt#of design entity synonym
+print pn;
+Select pn with pn.stmt# = 3
+<answer>
+5000
+17 - select if where lhs of with clause contains attrRef stmt#of design entity synonym
+if ifs;
+Select ifs with ifs.stmt# = 3
+<answer>
+5000
+18 - select while where lhs of with clause contains attrRef stmt#of design entity synonym
+while w;
+Select w with w.stmt# = 3
+<answer>
+5000
+19 - select call where lhs of with clause contains attrRef stmt#of design entity synonym
+call cl;
+Select cl with cl.stmt# = 3
+<answer>
+5000
+20 - select call where lhs of with clause contains attrRef procNameof design entity synonym
+call cl;
+Select cl with cl.procName = "Monke"
+<answer>
+5000
+21 - select procedure where lhs of with clause contains attrRef procNameof design entity synonym
+procedure p;
+Select p with p.procName = "Monke"
+<answer>
+5000
+22 - select constant where lhs of with clause contains attrRef valueof design entity synonym
+constant c;
+Select c with c.value = 3
+<answer>
+5000
+23 - select variable where lhs of with clause contains attrRef varNameof design entity synonym
+variable v;
+Select v with v.varName = "Monke"
+<answer>
+5000
+24 - select read where lhs of with clause contains attrRef varNameof design entity synonym
+read rd;
+Select rd with rd.varName = "Monke"
+<answer>
+5000
+25 - select print where lhs of with clause contains attrRef varNameof design entity synonym
+print pn;
+Select pn with pn.varName = "Monke"
+<answer>
+5000

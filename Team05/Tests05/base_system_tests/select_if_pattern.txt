@@ -1,0 +1,25 @@
+1 - Select statement with pattern with LHS being variable name and RHS being a wildcard
+if ifs; stmt s;
+Select s pattern ifs("x", _ , _)
+<answer>
+5000
+2 - Select statement with pattern with LHS being synonym and RHS being a wildcard
+if ifs; variable v; stmt s;
+Select s pattern ifs(v, _ , _)
+<answer>
+5000
+3 - Select statement with pattern with LHS being wildcard and RHS being a wildcard
+if ifs; stmt s;
+Select s pattern ifs(_, _ , _)
+<answer>
+5000
+4 - Select variable synonym which is also LHS argument
+if ifs; variable v;
+Select v pattern ifs(v, _ , _)
+<answer>
+5000
+5 - Select if statement statememt with pattern with selected if statement the LHS of the while pattern
+if ifs; variable v;
+Select ifs pattern ifs(v, _ , _)
+<answer>
+5000

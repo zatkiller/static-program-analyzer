@@ -43,6 +43,8 @@ procedure p;
 Select p
 none
 5000
-
-
-
+10 - select all call
+call c;
+Select c
+none
+5000

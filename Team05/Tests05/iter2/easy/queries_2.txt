@@ -1,0 +1,710 @@
+1 - select all procedure
+procedure p;
+Select p
+a,b,c
+5000
+2 - select all call
+call c;
+Select c
+5,8
+5000
+3 - select statement with Uses where user is procedure name and used is variable name
+stmt s;
+Select s such that Uses("a", "x")
+1,2,3,4,5,6,7,8,9,10,11
+5000
+4 - select statement with Uses where user and used is variable name
+stmt s; procedure p;
+Select s such that Uses(p, "x")
+1,2,3,4,5,6,7,8,9,10,11
+5000
+5 - select variable synonym with Uses where user is procedure name and used is variable synonym
+stmt s; variable v;
+Select s such that Uses("b", v)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+6 - select variable synonym with Uses where user is procedure synonym and used is variable synonym
+stmt s; procedure p; variable v;
+Select s such that Uses(p, v)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+7 - select statement with Uses where user is procedure name and used is wildcard
+stmt s;
+Select s such that Uses("c", _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+8 - select statement with Uses where user is procedure synonym and used is wildcard
+stmt s; procedure p;
+Select s such that Uses(p, _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+9 - select procedure synonym where synonym selected is 1st argument in Uses is procedure and 2nd argument is variable
+procedure p; variable v;
+Select p such that Uses(p, v)
+a,b,c
+5000
+10 - select variable synonym where synonym selected is 2nd argument in Uses is variable and 1st argument is procedure
+procedure p; variable v;
+Select v such that Uses(p, v)
+d,e,x,y,z
+5000
+11 - select call synonym where synonym selected is 1st argument in Uses is call and 2nd argument is variable
+call cl; variable v;
+Select cl such that Uses(cl, v)
+5,8
+5000
+12 - select variable synonym where synonym selected is 2nd argument in Uses is variable and 1st argument is call
+call cl; variable v;
+Select v such that Uses(cl, v)
+x,y
+5000
+13 - select statement with Modifies where modifier is procedure name and modified is variable name
+stmt s;
+Select s such that Modifies("c", "x")
+1,2,3,4,5,6,7,8,9,10,11
+5000
+14 - select statement with Modifies where modifier and modified is variable name
+stmt s; procedure p;
+Select s such that Modifies(p, "x")
+1,2,3,4,5,6,7,8,9,10,11
+5000
+15 - select variable synonym with Modifies where modifier is procedure name and modified is variable synonym
+stmt s; procedure p; variable v;
+Select s such that Modifies("c", v)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+16 - select variable synonym with Modifies where modifier is procedure synonym and modified is variable synonym
+stmt s; procedure p; variable v;
+Select s such that Modifies(p, v)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+17 - select statement with Modifies where modifier is procedure name and modified is wildcard
+stmt s;
+Select s such that Modifies("b", _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+18 - select statement with Modifies where modifier is procedure synonym and modified is wildcard
+stmt s; procedure p;
+Select s such that Modifies(p, _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+19 - select procedure synonym where synonym selected is 1st argument in Modifies is procedure and 2nd argument is variable
+procedure p; variable v;
+Select p such that Modifies(p, v)
+a,b,c
+5000
+20 - select variable synonym where synonym selected is 2nd argument in Modifies is variable and 1st argument is procedure
+procedure p; variable v;
+Select v such that Modifies(p, v)
+d,e,f,x,y,z
+5000
+21 - select call synonym where synonym selected is 1st argument in Modifies is call and 2nd argument is variable
+call cl; variable v;
+Select cl such that Modifies(cl, v)
+5,8
+5000
+22 - select variable synonym where synonym selected is 2nd argument in Modifies is variable and 1st argument is call
+call cl; variable v;
+Select v such that Modifies(cl, v)
+x,y
+5000
+23 - select statement with Calls where caller is procedure name and callee is procedure name
+stmt s;
+Select s such that Calls("b", "a")
+1,2,3,4,5,6,7,8,9,10,11
+5000
+24 - select statement with Calls where caller is procedure name and callee is procedure synonym
+stmt s; procedure p;
+Select s such that Calls("b", p)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+25 - select statement with Calls where caller is procedure name and callee is wildcard
+stmt s;
+Select s such that Calls("c", _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+26 - select statement with Calls where caller is procedure synonym and callee is procedure name
+stmt s; procedure p;
+Select s such that Calls(p, "b")
+1,2,3,4,5,6,7,8,9,10,11
+5000
+27 - select statement with Calls where caller is procedure synonym and callee is procedure synonym
+stmt s; procedure p, p1;
+Select s such that Calls(p, p1)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+28 - select statement with Calls where caller is procedure synonym and callee is wildcard
+stmt s; procedure p;
+Select s such that Calls(p, _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+29 - select statement with Calls where caller is wildcard and callee is procedure name
+stmt s;
+Select s such that Calls(_, "a")
+1,2,3,4,5,6,7,8,9,10,11
+5000
+30 - select statement with Calls where caller is wildcard and callee is procedure synonym
+stmt s; procedure p;
+Select s such that Calls(_, p)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+31 - select statement with Calls where caller is wildcard and callee is wildcard
+stmt s;
+Select s such that Calls(_, _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+32 - select procedure synonym where synonym selected is 1st argument in Calls is procedure and 2nd argument is procedure
+procedure p, p1;
+Select p such that Calls(p, p1)
+b,c
+5000
+33 - select procedure synonym where synonym selected is 2nd argument in Calls is procedure and 1st argument is procedure
+procedure p, p1;
+Select p1 such that Calls(p, p1)
+a,b
+5000
+34 - select statement with Calls* where caller is procedure name and callee is procedure name
+stmt s;
+Select s such that Calls*("c", "a")
+1,2,3,4,5,6,7,8,9,10,11
+5000
+35 - select statement with Calls* where caller is procedure name and callee is procedure synonym
+stmt s; procedure p;
+Select s such that Calls*("Monke", p)
+none
+5000
+36 - select statement with Calls* where caller is procedure name and callee is wildcard
+stmt s;
+Select s such that Calls*("Monke", _)
+none
+5000
+37 - select statement with Calls* where caller is procedure synonym and callee is procedure name
+stmt s; procedure p;
+Select s such that Calls*(p, "Monkey")
+none
+5000
+38 - select statement with Calls* where caller is procedure synonym and callee is procedure synonym
+stmt s; procedure p, p1;
+Select s such that Calls*(p, p1)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+39 - select statement with Calls* where caller is procedure synonym and callee is wildcard
+stmt s; procedure p;
+Select s such that Calls*(p, _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+40 - select statement with Calls* where caller is wildcard and callee is procedure name
+stmt s;
+Select s such that Calls*(_, "Monke")
+none
+5000
+41 - select statement with Calls* where caller is wildcard and callee is procedure synonym
+stmt s; procedure p;
+Select s such that Calls*(_, p)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+42 - select statement with Calls* where caller is wildcard and callee is wildcard
+stmt s;
+Select s such that Calls*(_, _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+43 - select procedure synonym where synonym selected is 1st argument in Calls* is procedure and 2nd argument is procedure
+procedure p, p1;
+Select p such that Calls*(p, p1)
+b,c
+5000
+44 - select procedure synonym where synonym selected is 2nd argument in Calls* is procedure and 1st argument is procedure
+procedure p, p1;
+Select p1 such that Calls*(p, p1)
+a,b
+5000
+45 - Invalid syntax query - Pattern expression has invalid grammar (Missing leading operand)
+stmt s; assign a;
+Select s pattern a(s, _"+test"_)
+none
+5000
+46 - Invalid syntax query - Pattern expression has invalid grammar (Incomplete expression)
+stmt s; assign a;
+Select s pattern a(s, _"test+"_)
+none
+5000
+47 - Invalid syntax query - Leading 0 digit
+stmt s;
+Select s such that Follows(003, s)
+none
+5000
+48 - Invalid syntax query - Expected EntRef instead of StmtRef
+stmt s;
+Select s such that Calls(3, 3)
+none
+5000
+49 - Invalid syntax query - Expected StmtRf instead of StmtRef
+stmt s;
+Select s such that Follows("x", "x")
+none
+5000
+50 - Invalid semantic query - Assign pattern LHS if synonym has to be variable
+stmt s; assign a;
+Select s pattern a(s, "x")
+none
+5000
+51 - select statement with Next where Next has 2 statement numbers
+stmt s;
+Select s such that Next(1,3)
+none
+5000
+52 - select statement with Next, where synonym is before and lineNo is after
+stmt s;
+Select s such that Next(s,3)
+none
+5000
+53 - select statement with Next, where before is wildcard and synonym is after
+stmt s;
+Select s such that Next(_, 3)
+none
+5000
+54 - select statement with Next, where before is lineNo and synonym is after
+stmt s;
+Select s such that Next(3, s)
+4
+5000
+55 - select statement with Next where wildcard is before and synonym is after
+stmt s;
+Select s such that Next(_, s)
+2,4,5,7,8,9,10,11
+5000
+56 - select statement with Next where before is lineNo and after is wildcard
+stmt s;
+Select s such that Next(1, _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+57 - select statement with Next where before is synonym and after is wildcard
+stmt s;
+Select s such that Next(s, _)
+1,3,4,6,7,8,9,10
+5000
+58 - select statement with Next where before is wildcard and after is wildcard
+stmt s;
+Select s such that Next(_, _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+59 - select stmt synonym where synonym selected is 1st argument in Next is stmt and 2nd argument is stmt
+stmt s, s1;
+Select s such that Next(s, s1)
+1,3,4,6,7,8,9,10
+5000
+60 - select stmt synonym where synonym selected is 2nd argument in Next is stmt and 1st argument is stmt
+stmt s, s1;
+Select s1 such that Next(s, s1)
+2,4,5,7,8,9,10,11
+5000
+61 - select stmt synonym where synonym selected is 1st argument in Next is stmt and 2nd argument is print
+stmt s; print pn;
+Select s such that Next(s, pn)
+1,3,6
+5000
+62 - select print synonym where synonym selected is 2nd argument in Next is print and 1st argument is stmt
+stmt s; print pn;
+Select pn such that Next(s, pn)
+2,4,7
+5000
+63 - select stmt synonym where synonym selected is 1st argument in Next is stmt and 2nd argument is call
+stmt s; call cl;
+Select s such that Next(s, cl)
+4,7
+5000
+64 - select call synonym where synonym selected is 2nd argument in Next is call and 1st argument is stmt
+stmt s; call cl;
+Select cl such that Next(s, cl)
+5,8
+5000
+65 - select read synonym where synonym selected is 1st argument in Next is read and 2nd argument is stmt
+read rd; stmt s;
+Select rd such that Next(rd, s)
+1,3,6
+5000
+66 - select stmt synonym where synonym selected is 2nd argument in Next is stmt and 1st argument is read
+read rd; stmt s;
+Select s such that Next(rd, s)
+2,4,7
+5000
+67 - select read synonym where synonym selected is 1st argument in Next is read and 2nd argument is print
+read rd; print pn;
+Select rd such that Next(rd, pn)
+1,3,6
+5000
+68 - select print synonym where synonym selected is 2nd argument in Next is print and 1st argument is read
+read rd; print pn;
+Select pn such that Next(rd, pn)
+2,4,7
+5000
+69 - select print synonym where synonym selected is 1st argument in Next is print and 2nd argument is stmt
+print pn; stmt s;
+Select pn such that Next(pn, s)
+4,7
+5000
+70 - select stmt synonym where synonym selected is 2nd argument in Next is stmt and 1st argument is print
+print pn; stmt s;
+Select s such that Next(pn, s)
+5,8
+5000
+71 - select print synonym where synonym selected is 1st argument in Next is print and 2nd argument is call
+print pn; call cl;
+Select pn such that Next(pn, cl)
+4,7
+5000
+72 - select call synonym where synonym selected is 2nd argument in Next is call and 1st argument is print
+print pn; call cl;
+Select cl such that Next(pn, cl)
+5,8
+5000
+73 - select statement with Next* where Next* has 2 statement numbers
+stmt s;
+Select s such that Next*(1,3)
+none
+5000
+74 - select statement with Next*, where synonym is before and lineNo is after
+stmt s;
+Select s such that Next*(s,3)
+none
+5000
+75 - select statement with Next*, where before is wildcard and synonym is after
+stmt s;
+Select s such that Next*(_, 3)
+none
+5000
+76 - select statement with Next*, where before is lineNo and synonym is after
+stmt s;
+Select s such that Next*(3, s)
+4,5
+5000
+77 - select statement with Next*, where before and after is synonym
+stmt s;
+Select s such that Next*(s, s)
+none
+5000
+78 - select statement with Next* where wildcard is before and synonym is after
+stmt s;
+Select s such that Next*(_, s)
+2,4,5,7,8,9,10,11
+5000
+79 - select statement with Next* where before is lineNo and after is wildcard
+stmt s;
+Select s such that Next*(1, _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+80 - select statement with Next* where before is synonym and after is wildcard
+stmt s;
+Select s such that Next*(s, _)
+1,3,4,6,7,8,9,10
+5000
+81 - select statement with Next* where before is wildcard and after is wildcard
+stmt s;
+Select s such that Next*(_, _)
+1,2,3,4,5,6,7,8,9,10,11
+5000
+82 - select stmt synonym where synonym selected is 1st argument in Next* is stmt and 2nd argument is stmt
+stmt s, s1;
+Select s such that Next*(s, s1)
+1,3,4,6,7,8,9,10
+5000
+83 - select stmt synonym where synonym selected is 2nd argument in Next* is stmt and 1st argument is stmt
+stmt s, s1;
+Select s1 such that Next*(s, s1)
+2,4,5,7,8,9,10,11
+5000
+84 - select stmt synonym where synonym selected is 1st argument in Next* is stmt and 2nd argument is print
+stmt s; print pn;
+Select s such that Next*(s, pn)
+1,3,6
+5000
+85 - select print synonym where synonym selected is 2nd argument in Next* is print and 1st argument is stmt
+stmt s; print pn;
+Select pn such that Next*(s, pn)
+2,4,7
+5000
+86 - select stmt synonym where synonym selected is 1st argument in Next* is stmt and 2nd argument is call
+stmt s; call cl;
+Select s such that Next*(s, cl)
+3,4,6,7
+5000
+87 - select call synonym where synonym selected is 2nd argument in Next* is call and 1st argument is stmt
+stmt s; call cl;
+Select cl such that Next*(s, cl)
+5,8
+5000
+88 - select read synonym where synonym selected is 1st argument in Next* is read and 2nd argument is stmt
+read rd; stmt s;
+Select rd such that Next*(rd, s)
+1,3,6
+5000
+89 - select stmt synonym where synonym selected is 2nd argument in Next* is stmt and 1st argument is read
+read rd; stmt s;
+Select s such that Next*(rd, s)
+2,4,5,7,8,9,10,11
+5000
+90 - select read synonym where synonym selected is 1st argument in Next* is read and 2nd argument is print
+read rd; print pn;
+Select rd such that Next*(rd, pn)
+1,3,6
+5000
+91 - select print synonym where synonym selected is 2nd argument in Next* is print and 1st argument is read
+read rd; print pn;
+Select pn such that Next*(rd, pn)
+2,4,7
+5000
+92 - select read synonym where synonym selected is 1st argument in Next* is read and 2nd argument is call
+read rd; call cl;
+Select rd such that Next*(rd, cl)
+3,6
+5000
+93 - select call synonym where synonym selected is 2nd argument in Next* is call and 1st argument is read
+read rd; call cl;
+Select cl such that Next*(rd, cl)
+5,8
+5000
+94 - select print synonym where synonym selected is 1st argument in Next* is print and 2nd argument is stmt
+print pn; stmt s;
+Select pn such that Next*(pn, s)
+4,7
+5000
+95 - select stmt synonym where synonym selected is 2nd argument in Next* is stmt and 1st argument is print
+print pn; stmt s;
+Select s such that Next*(pn, s)
+5,8,9,10,11
+5000
+96 - select print synonym where synonym selected is 1st argument in Next* is print and 2nd argument is call
+print pn; call cl;
+Select pn such that Next*(pn, cl)
+4,7
+5000
+97 - select call synonym where synonym selected is 2nd argument in Next* is call and 1st argument is print
+print pn; call cl;
+Select cl such that Next*(pn, cl)
+5,8
+5000
+98 - select stmt synonym where with clause that has lhs argument of procName and rhs argument of procName
+stmt s; call cl;
+Select s with cl.procName = cl.procName
+1,2,3,4,5,6,7,8,9,10,11
+5000
+99 - select stmt synonym where with clause that has lhs argument of procName and rhs argument of varName
+stmt s; call cl; variable v;
+Select s with cl.procName = v.varName
+none
+5000
+100 - select stmt synonym where with clause that has lhs argument of procName and rhs argument of string
+stmt s; call cl;
+Select s with cl.procName = "a"
+1,2,3,4,5,6,7,8,9,10,11
+5000
+101 - select stmt synonym where with clause that has lhs argument of varName and rhs argument of varName
+stmt s; variable v;
+Select s with v.varName = v.varName
+1,2,3,4,5,6,7,8,9,10,11
+5000
+102 - select stmt synonym where with clause that has lhs argument of varName and rhs argument of string
+stmt s; variable v;
+Select s with v.varName = "x"
+1,2,3,4,5,6,7,8,9,10,11
+5000
+103 - select stmt synonym where with clause that has lhs argument of string and rhs argument of string
+stmt s;
+Select s with "a" = "b"
+none
+5000
+104 - select stmt synonym where with clause that has lhs argument of value and rhs argument of value
+stmt s; constant c;
+Select s with c.value = c.value
+1,2,3,4,5,6,7,8,9,10,11
+5000
+105 - select stmt synonym where with clause that has lhs argument of value and rhs argument of stmt#
+stmt s; constant c;
+Select s with c.value = s.stmt#
+3
+5000
+106 - select stmt synonym where with clause that has lhs argument of value and rhs argument of string
+stmt s; constant c;
+Select s with c.value = 3
+1,2,3,4,5,6,7,8,9,10,11
+5000
+107 - select stmt synonym where with clause that has lhs argument of stmt# and rhs argument of stmt#
+stmt s;
+Select s with s.stmt# = s.stmt#
+1,2,3,4,5,6,7,8,9,10,11
+5000
+108 - select stmt synonym where with clause that has lhs argument of stmt# and rhs argument of string
+stmt s;
+Select s with s.stmt# = 3
+3
+5000
+109 - select stmt synonym where with clause that has lhs argument of string and rhs argument of string
+stmt s;
+Select s with 3 = 3
+1,2,3,4,5,6,7,8,9,10,11
+5000
+110 - select stmt where lhs of with clause contains attrRef stmt#of design entity synonym
+stmt s;
+Select s with s.stmt# = 3
+3
+5000
+111 - select read where lhs of with clause contains attrRef stmt#of design entity synonym
+read rd;
+Select rd with rd.stmt# = 3
+3
+5000
+112 - select call where lhs of with clause contains attrRef stmt#of design entity synonym
+call cl;
+Select cl with cl.stmt# = 5
+5
+5000
+113 - select call where lhs of with clause contains attrRef procNameof design entity synonym
+call cl;
+Select cl with cl.procName = "a"
+5
+5000
+114 - select procedure where lhs of with clause contains attrRef procNameof design entity synonym
+procedure p;
+Select p with p.procName = "b"
+b
+5000
+115 - select variable where lhs of with clause contains attrRef varNameof design entity synonym
+variable v;
+Select v with v.varName = "y"
+y
+5000
+116 - select read where lhs of with clause contains attrRef varNameof design entity synonym
+read rd;
+Select rd with rd.varName = "z"
+6
+5000
+117 - select print where lhs of with clause contains attrRef varNameof design entity synonym
+print pn;
+Select pn with pn.varName = "x"
+2
+5000
+118 - Select statement with pattern with LHS being synonym and RHS being a full match of a string
+assign a; variable v;
+Select a pattern a(v, "d + 3")
+10
+5000
+119 - Select statement with pattern with LHS being synonym and RHS being a full match of a string (number)
+assign a; variable v;
+Select a pattern a(v, "e + (e * 3)")
+11
+5000
+120 - select assign synonym where first clause is such that and second clause is such that
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(s, 5) and Follows(s1, 8)
+9,10,11
+5000
+121 - select assign synonym where first clause is such that and second clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(s, 5) with v.varName = "x"
+9,10,11
+5000
+122 - select assign synonym where first clause is such that and second clause is pattern
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(s, 5) pattern a(_, _)
+9,10,11
+5000
+123 - select assign synonym where first clause is with and second clause is such that
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 with v.varName = "x" such that Follows(s, 5)
+9,10,11
+5000
+124 - select assign synonym where first clause is with and second clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 with v.varName = "x" and v1.varName = "z"
+9,10,11
+5000
+125 - select assign synonym where first clause is with and second clause is pattern
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 with v.varName = "z" pattern a(_, _)
+9,10,11
+5000
+126 - select assign synonym where first clause is pattern and second clause is such that
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) such that Follows(s, 10)
+9,10,11
+5000
+127 - select assign synonym where first clause is pattern and second clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) with v.varName = "x"
+9,10,11
+5000
+128 - select assign synonym where first clause is pattern and second clause is pattern
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _)
+9,10,11
+5000
+129 - select assign synonym where first clause is such that and second clause is such that and third clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(s, 5) and Follows(s1, 9) with v.varName = "x"
+9,10,11
+5000
+130 - select assign synonym where first clause is pattern and second clause is such that and third clause is such that
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) such that Follows(s, 5) and Follows(s1, 5)
+9,10,11
+5000
+131 - select assign synonym where first clause is such that and second clause is with and third clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(s, 5) with v.varName = "x" and v1.varName = "x"
+9,10,11
+5000
+132 - select assign synonym where first clause is pattern and second clause is such that and third clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) such that Follows(s, 5) with v.varName = "x"
+9,10,11
+5000
+133 - select assign synonym where first clause is pattern and second clause is pattern and third clause is such that
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _) such that Follows(s, 10)
+9,10,11
+5000
+134 - select assign synonym where first clause is pattern and second clause is with and third clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) with v.varName = "x" and v1.varName = "x"
+9,10,11
+5000
+135 - select assign synonym where first clause is pattern and second clause is pattern and third clause is with
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _) with v.varName = "x"
+9,10,11
+5000
+136 - select assign synonym where first clause is such that and second clause is such that (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Modifies(s, v) and Follows(s, 10)
+9,10,11
+5000
+137 - select assign synonym where first clause is such that and second clause is with (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Modifies(s, v) with v.varName = "e"
+9,10,11
+5000
+138 - select assign synonym where first clause is such that and second clause is pattern (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 such that Follows(a, 11) pattern a(_, _)
+9,10,11
+5000
+139 - select assign synonym where first clause is with and second clause is with (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 with v.varName = "x" and v.varName = "x"
+9,10,11
+5000
+140 - select assign synonym where first clause is with and second clause is pattern (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 with v.varName = "f" pattern a(v, _)
+9,10,11
+5000
+141 - select assign synonym where first clause is pattern and second clause is pattern (shared synonym)
+stmt s, s1; variable v, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _)
+9,10,11
+5000
+142 - select assign synonym where first clause is pattern and second clause is such that and third clause is with (shared synonym)
+variable v; assign a;
+Select a pattern a(v, _) such that Modifies(a, v) with v.varName = "f"
+11
+5000

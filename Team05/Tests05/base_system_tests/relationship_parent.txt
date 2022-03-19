@@ -1,0 +1,390 @@
+1 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(1, s)
+<answer>
+5000
+2 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(2, s)
+<answer>
+5000
+3 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(3, s)
+<answer>
+5000
+4 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(4, s)
+<answer>
+5000
+5 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(5, s)
+<answer>
+5000
+6 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(6, s)
+<answer>
+5000
+7 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(7, s)
+<answer>
+5000
+8 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(8, s)
+<answer>
+5000
+9 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(9, s)
+<answer>
+5000
+10 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(10, s)
+<answer>
+5000
+11 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(11, s)
+<answer>
+5000
+12 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(12, s)
+<answer>
+5000
+13 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(13, s)
+<answer>
+5000
+14 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(14, s)
+<answer>
+5000
+15 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(15, s)
+<answer>
+5000
+16 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(16, s)
+<answer>
+5000
+17 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(17, s)
+<answer>
+5000
+18 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(18, s)
+<answer>
+5000
+19 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(19, s)
+<answer>
+5000
+20 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(20, s)
+<answer>
+5000
+21 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(21, s)
+<answer>
+5000
+22 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(22, s)
+<answer>
+5000
+23 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(23, s)
+<answer>
+5000
+24 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(24, s)
+<answer>
+5000
+25 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(25, s)
+<answer>
+5000
+26 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(26, s)
+<answer>
+5000
+27 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(27, s)
+<answer>
+5000
+28 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(28, s)
+<answer>
+5000
+29 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(29, s)
+<answer>
+5000
+30 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(30, s)
+<answer>
+5000
+31 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(31, s)
+<answer>
+5000
+32 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(32, s)
+<answer>
+5000
+33 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(33, s)
+<answer>
+5000
+34 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(34, s)
+<answer>
+5000
+35 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(35, s)
+<answer>
+5000
+36 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(36, s)
+<answer>
+5000
+37 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(37, s)
+<answer>
+5000
+38 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(38, s)
+<answer>
+5000
+39 - Testing Parent(s, s) relationship
+stmt s;
+Select s such that Parent(39, s)
+<answer>
+5000
+40 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(1, s)
+<answer>
+5000
+41 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(2, s)
+<answer>
+5000
+42 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(3, s)
+<answer>
+5000
+43 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(4, s)
+<answer>
+5000
+44 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(5, s)
+<answer>
+5000
+45 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(6, s)
+<answer>
+5000
+46 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(7, s)
+<answer>
+5000
+47 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(8, s)
+<answer>
+5000
+48 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(9, s)
+<answer>
+5000
+49 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(10, s)
+<answer>
+5000
+50 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(11, s)
+<answer>
+5000
+51 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(12, s)
+<answer>
+5000
+52 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(13, s)
+<answer>
+5000
+53 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(14, s)
+<answer>
+5000
+54 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(15, s)
+<answer>
+5000
+55 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(16, s)
+<answer>
+5000
+56 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(17, s)
+<answer>
+5000
+57 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(18, s)
+<answer>
+5000
+58 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(19, s)
+<answer>
+5000
+59 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(20, s)
+<answer>
+5000
+60 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(21, s)
+<answer>
+5000
+61 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(22, s)
+<answer>
+5000
+62 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(23, s)
+<answer>
+5000
+63 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(24, s)
+<answer>
+5000
+64 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(25, s)
+<answer>
+5000
+65 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(26, s)
+<answer>
+5000
+66 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(27, s)
+<answer>
+5000
+67 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(28, s)
+<answer>
+5000
+68 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(29, s)
+<answer>
+5000
+69 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(30, s)
+<answer>
+5000
+70 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(31, s)
+<answer>
+5000
+71 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(32, s)
+<answer>
+5000
+72 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(33, s)
+<answer>
+5000
+73 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(34, s)
+<answer>
+5000
+74 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(35, s)
+<answer>
+5000
+75 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(36, s)
+<answer>
+5000
+76 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(37, s)
+<answer>
+5000
+77 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(38, s)
+<answer>
+5000
+78 - Testing Parent*(p, v) relationship
+stmt s;
+Select s such that Parent*(39, s)
+<answer>
+5000

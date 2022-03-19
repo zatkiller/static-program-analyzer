@@ -1,0 +1,90 @@
+1 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p1", p)
+<answer>
+5000
+2 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p2", p)
+<answer>
+5000
+3 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p3", p)
+<answer>
+5000
+4 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p4", p)
+<answer>
+5000
+5 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p5", p)
+<answer>
+5000
+6 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p6", p)
+<answer>
+5000
+7 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p7", p)
+<answer>
+5000
+8 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p8", p)
+<answer>
+5000
+9 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p9", p)
+<answer>
+5000
+10 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p1", p)
+<answer>
+5000
+11 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p2", p)
+<answer>
+5000
+12 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p3", p)
+<answer>
+5000
+13 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p4", p)
+<answer>
+5000
+14 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p5", p)
+<answer>
+5000
+15 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p6", p)
+<answer>
+5000
+16 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p7", p)
+<answer>
+5000
+17 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p8", p)
+<answer>
+5000
+18 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p9", p)
+<answer>
+5000

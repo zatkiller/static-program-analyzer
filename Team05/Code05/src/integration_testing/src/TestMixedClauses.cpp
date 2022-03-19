@@ -30,6 +30,16 @@ struct TestCode {
             print y;
         }
     )";
+
+
+    std::string sourceCode3 = R"(
+        procedure a {
+            read x;
+            x = x + 1;
+            y = x * 2 - 3 % 1;
+            print y;
+        }
+    )";
 };
 
 void printEvaluatorResult(std::list<std::string> result) {

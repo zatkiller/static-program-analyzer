@@ -1,0 +1,390 @@
+1 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(1, s)
+<answer>
+5000
+2 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(2, s)
+<answer>
+5000
+3 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(3, s)
+<answer>
+5000
+4 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(4, s)
+<answer>
+5000
+5 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(5, s)
+<answer>
+5000
+6 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(6, s)
+<answer>
+5000
+7 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(7, s)
+<answer>
+5000
+8 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(8, s)
+<answer>
+5000
+9 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(9, s)
+<answer>
+5000
+10 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(10, s)
+<answer>
+5000
+11 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(11, s)
+<answer>
+5000
+12 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(12, s)
+<answer>
+5000
+13 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(13, s)
+<answer>
+5000
+14 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(14, s)
+<answer>
+5000
+15 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(15, s)
+<answer>
+5000
+16 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(16, s)
+<answer>
+5000
+17 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(17, s)
+<answer>
+5000
+18 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(18, s)
+<answer>
+5000
+19 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(19, s)
+<answer>
+5000
+20 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(20, s)
+<answer>
+5000
+21 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(21, s)
+<answer>
+5000
+22 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(22, s)
+<answer>
+5000
+23 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(23, s)
+<answer>
+5000
+24 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(24, s)
+<answer>
+5000
+25 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(25, s)
+<answer>
+5000
+26 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(26, s)
+<answer>
+5000
+27 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(27, s)
+<answer>
+5000
+28 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(28, s)
+<answer>
+5000
+29 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(29, s)
+<answer>
+5000
+30 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(30, s)
+<answer>
+5000
+31 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(31, s)
+<answer>
+5000
+32 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(32, s)
+<answer>
+5000
+33 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(33, s)
+<answer>
+5000
+34 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(34, s)
+<answer>
+5000
+35 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(35, s)
+<answer>
+5000
+36 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(36, s)
+<answer>
+5000
+37 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(37, s)
+<answer>
+5000
+38 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(38, s)
+<answer>
+5000
+39 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(39, s)
+<answer>
+5000
+40 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(1, s)
+<answer>
+5000
+41 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(2, s)
+<answer>
+5000
+42 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(3, s)
+<answer>
+5000
+43 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(4, s)
+<answer>
+5000
+44 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(5, s)
+<answer>
+5000
+45 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(6, s)
+<answer>
+5000
+46 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(7, s)
+<answer>
+5000
+47 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(8, s)
+<answer>
+5000
+48 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(9, s)
+<answer>
+5000
+49 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(10, s)
+<answer>
+5000
+50 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(11, s)
+<answer>
+5000
+51 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(12, s)
+<answer>
+5000
+52 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(13, s)
+<answer>
+5000
+53 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(14, s)
+<answer>
+5000
+54 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(15, s)
+<answer>
+5000
+55 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(16, s)
+<answer>
+5000
+56 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(17, s)
+<answer>
+5000
+57 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(18, s)
+<answer>
+5000
+58 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(19, s)
+<answer>
+5000
+59 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(20, s)
+<answer>
+5000
+60 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(21, s)
+<answer>
+5000
+61 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(22, s)
+<answer>
+5000
+62 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(23, s)
+<answer>
+5000
+63 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(24, s)
+<answer>
+5000
+64 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(25, s)
+<answer>
+5000
+65 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(26, s)
+<answer>
+5000
+66 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(27, s)
+<answer>
+5000
+67 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(28, s)
+<answer>
+5000
+68 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(29, s)
+<answer>
+5000
+69 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(30, s)
+<answer>
+5000
+70 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(31, s)
+<answer>
+5000
+71 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(32, s)
+<answer>
+5000
+72 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(33, s)
+<answer>
+5000
+73 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(34, s)
+<answer>
+5000
+74 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(35, s)
+<answer>
+5000
+75 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(36, s)
+<answer>
+5000
+76 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(37, s)
+<answer>
+5000
+77 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(38, s)
+<answer>
+5000
+78 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(39, s)
+<answer>
+5000
