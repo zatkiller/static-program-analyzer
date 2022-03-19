@@ -28,10 +28,8 @@ struct CallGraphPreProcessor {
         std::map<std::string, const ast::Procedure*> procMap;
 
         void visit(const ast::Procedure& node) {
-            if (currentProc == "") {
-                // virtual starting point "1"
-                callGraph["1"].push_back(node.getName());
-            }
+            // unified starting point 1 which is a procedure name that cannot exist.
+            callGraph["1"].push_back(node.getName());
             currentProc = node.getName();
             procMap[currentProc] = &node;
         }

@@ -25,7 +25,7 @@ std::set<Entry> UsesExtractor::extract(const ast::ASTNode* node) {
     UsesCollector extractor;
     extractor.extract(node);
     return extractor.relationships;
-};
+}
 
 void UsesCollector::visit(const ast::Print& node) {
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::Print}, &node);

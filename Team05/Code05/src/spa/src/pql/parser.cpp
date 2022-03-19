@@ -430,11 +430,7 @@ namespace qps::parser {
         std::string declaration = identifier.getText();
         DesignEntity de = query.getDeclarationDesignEntity(declaration);
 
-        Parser* p = this;
-        auto f = [p]() {
-            p->getAndCheckNextToken(TokenType::PERIOD);
-        };
-        checkSurroundingWhitespace(f);
+        getAndCheckNextToken(TokenType::PERIOD);
 
         Token attrRefToken = getNextReservedToken();
         auto pos = tokenTypeToAttrName.find(attrRefToken.getTokenType());

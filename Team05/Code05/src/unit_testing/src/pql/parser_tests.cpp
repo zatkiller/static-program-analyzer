@@ -662,7 +662,8 @@ TEST_CASE("Parser parsePattern") {
 
             REQUIRE(pattern.getSynonym() == "a");
             REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
-            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            bool validDeclaration = 
+                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
             REQUIRE(validDeclaration);
             REQUIRE(pattern.getExpression() == ExpSpec::ofWildcard());
         }
@@ -684,7 +685,8 @@ TEST_CASE("Parser parsePattern") {
 
             REQUIRE(pattern.getSynonym() == "a");
             REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
-            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            bool validDeclaration = 
+                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
             REQUIRE(validDeclaration);
             REQUIRE(pattern.getExpression() == ExpSpec::ofFullMatch("x"));
         }
@@ -706,7 +708,8 @@ TEST_CASE("Parser parsePattern") {
 
             REQUIRE(pattern.getSynonym() == "a");
             REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
-            bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+            bool validDeclaration = 
+                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
             REQUIRE(validDeclaration);
             REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
         }
@@ -1276,14 +1279,15 @@ TEST_CASE("Parser parseAttrRef") {
         REQUIRE(ar.attrName == AttrName::VALUE);
     }
 
-    SECTION ("Invalid - whitespace before and after .") {
+    SECTION ("Valid - whitespace before and after .") {
+        Query query {};
+        query.addDeclaration("c", DesignEntity::CONSTANT);
+
         parser.lexer.text = "c .value";
-        REQUIRE_THROWS_MATCHES(parser.parseAttrRef(query), exceptions::PqlSyntaxException,
-                               Catch::Message(messages::qps::parser::unexpectedWhitespaceMessage));
+        REQUIRE_NOTHROW(parser.parseAttrRef(query));
 
         parser.lexer.text = "c. value";
-        REQUIRE_THROWS_MATCHES(parser.parseAttrRef(query), exceptions::PqlSyntaxException,
-                               Catch::Message(messages::qps::parser::unexpectedWhitespaceMessage));
+        REQUIRE_NOTHROW(parser.parseAttrRef(query));
     }
 
     SECTION ("Invalid - Design Entity does not have the specified AttrRef") {

@@ -496,6 +496,7 @@ TEST_CASE("Testing Parser") {
             lineCount = 1;
             callStmts.clear();
             procedures.clear();
+            // testing a program with 2 procedures
             tokens = Lexer(R"(
             procedure main {
                 read v1;
@@ -526,6 +527,241 @@ TEST_CASE("Testing Parser") {
                     ast::makeStmts(
                         make<ast::Read>(5, make<ast::Var>("v3")),
                         make<ast::Assign>(6, make<ast::Var>("v2"), make<ast::Var>("v3"))
+                    )
+                )
+            );
+
+            REQUIRE(*ast == *expected);
+
+            // reset state.
+            lineCount = 1;
+            callStmts.clear();
+            procedures.clear();
+            // testing a simple program with >2 procedures
+            tokens = Lexer(R"(
+            procedure main {
+                read v1;
+                print v1;
+                call banana;
+                v2 = v1;
+                call monke;
+            }
+            procedure monke {
+                read v3;
+                v2 = v3;
+            }
+            procedure banana {
+                read v2;
+                print v2;
+            }
+            )").getTokens();
+
+            ast = parseProgram(tokens);
+
+            expected = makeProgram(
+                make<ast::Procedure>(
+                    "main", 
+                    ast::makeStmts(
+                        make<ast::Read>(1, make<ast::Var>("v1")),
+                        make<ast::Print>(2, make<ast::Var>("v1")),
+                        make<ast::Call>(3, "banana"),
+                        make<ast::Assign>(4, make<ast::Var>("v2"), make<ast::Var>("v1")),
+                        make<ast::Call>(5, "monke")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "monke", 
+                    ast::makeStmts(
+                        make<ast::Read>(6, make<ast::Var>("v3")),
+                        make<ast::Assign>(7, make<ast::Var>("v2"), make<ast::Var>("v3"))
+                    )
+                ),
+                make<ast::Procedure>(
+                    "banana", 
+                    ast::makeStmts(
+                        make<ast::Read>(8, make<ast::Var>("v2")),
+                        make<ast::Print>(9, make<ast::Var>("v2"))
+                    )
+                )
+            );
+
+            REQUIRE(*ast == *expected);
+
+            // reset state.
+            lineCount = 1;
+            callStmts.clear();
+            procedures.clear();
+            // testing a heavily-nested program with >2 procedures
+            tokens = Lexer(R"(
+            procedure monke {
+                read v1;
+                print v1;
+                call banana;
+                while (v1 != v2 * v1) {
+                    v2 = v1;
+                    if (v2 != v3) then {
+                        while (v3 != v1) {
+                            read v3;
+                            read v2;
+                            read v1;
+                            while (v2 != v1) {
+                                call eat;
+                            }
+                        }
+                        call banana;
+                    } else {
+                        print v3;
+                        print v2;
+                        print v1;
+                    }
+                    call eat;
+                }
+            }
+            procedure eat {
+                v4 = 69;
+                while (v4 < 420) {
+                    v4 = v4 * 2;
+                }
+                read v3;
+                v2 = v3;
+            }
+            procedure banana {
+                while (v5 < 420) {
+                    v5 = v5 * 2;
+                }
+                read v5;
+                print v5;
+            }
+            )").getTokens();
+
+            ast = parseProgram(tokens);
+
+            expected = makeProgram(
+                make<ast::Procedure>(
+                    "monke", 
+                    ast::makeStmts(
+                        make<ast::Read>(1, make<ast::Var>("v1")),
+                        make<ast::Print>(2, make<ast::Var>("v1")),
+                        make<ast::Call>(3, "banana"),
+                        make<ast::While>(4, 
+                            make<ast::RelExpr>(
+                                ast::RelOp::NE,
+                                make<ast::Var>("v1"),
+                                make<ast::BinExpr>(
+                                    ast::BinOp::MULT,
+                                    make<ast::Var>("v2"),
+                                    make<ast::Var>("v1")
+                                )
+                            ),
+                            ast::makeStmts(
+                                make<ast::Assign>(
+                                    5, 
+                                    make<ast::Var>("v2"),
+                                    make<ast::Var>("v1")
+                                ),
+                                make<ast::If>(
+                                    6,
+                                    make<ast::RelExpr>(
+                                        ast::RelOp::NE,
+                                        make<ast::Var>("v2"),
+                                        make<ast::Var>("v3")
+                                    ),
+                                    ast::makeStmts(
+                                        make<ast::While>(
+                                            7,
+                                            make<ast::RelExpr>(
+                                                ast::RelOp::NE,
+                                                make<ast::Var>("v3"),
+                                                make<ast::Var>("v1")
+                                            ),
+                                            ast::makeStmts(
+                                                make<ast::Read>(8, make<ast::Var>("v3")),
+                                                make<ast::Read>(9, make<ast::Var>("v2")),
+                                                make<ast::Read>(10, make<ast::Var>("v1")),
+                                                make<ast::While>(
+                                                    11, 
+                                                    make<ast::RelExpr>(
+                                                        ast::RelOp::NE,
+                                                        make<ast::Var>("v2"),
+                                                        make<ast::Var>("v1")
+                                                    ),
+                                                    ast::makeStmts(
+                                                        make<ast::Call>(12, "eat")
+                                                    )
+                                                )
+                                            )
+                                        ),
+                                        make<ast::Call>(13, "banana")
+                                    ),
+                                    ast::makeStmts(
+                                        make<ast::Print>(14, make<ast::Var>("v3")),
+                                        make<ast::Print>(15, make<ast::Var>("v2")),
+                                        make<ast::Print>(16, make<ast::Var>("v1"))
+                                    )
+                                ),
+                                make<ast::Call>(17, "eat")
+                            )
+                        )
+                    )
+                ),
+                make<ast::Procedure>(
+                    "eat", 
+                    ast::makeStmts(
+                        make<ast::Assign>(18, make<ast::Var>("v4"), make<ast::Const>(69)),
+                        make<ast::While>(
+                            19, 
+                            make<ast::RelExpr>(
+                                ast::RelOp::LT, 
+                                make<ast::Var>("v4"), 
+                                make<ast::Const>(420)
+                            ),
+                            ast::makeStmts(
+                                make<ast::Assign>(
+                                    20,
+                                    make<ast::Var>("v4"),
+                                    make<ast::BinExpr>(
+                                        ast::BinOp::MULT,
+                                        make<ast::Var>("v4"),
+                                        make<ast::Const>(2)
+                                    )
+                                )
+                            )
+                        ),
+                        make<ast::Read>(
+                            21, 
+                            make<ast::Var>("v3")
+                        ),
+                        make<ast::Assign>(
+                            22, 
+                            make<ast::Var>("v2"), 
+                            make<ast::Var>("v3")
+                        )
+                    )
+                ),
+                make<ast::Procedure>(
+                    "banana", 
+                    ast::makeStmts(
+                        make<ast::While>(
+                            23, 
+                            make<ast::RelExpr>(
+                                ast::RelOp::LT, 
+                                make<ast::Var>("v5"), 
+                                make<ast::Const>(420)
+                            ),
+                            ast::makeStmts(
+                                make<ast::Assign>(
+                                    24,
+                                    make<ast::Var>("v5"),
+                                    make<ast::BinExpr>(
+                                        ast::BinOp::MULT,
+                                        make<ast::Var>("v5"),
+                                        make<ast::Const>(2)
+                                    )
+                                )
+                            )
+                        ),
+                        make<ast::Read>(25, make<ast::Var>("v5")),
+                        make<ast::Print>(26, make<ast::Var>("v5"))
                     )
                 )
             );

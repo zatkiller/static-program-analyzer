@@ -14,22 +14,7 @@ auto p = [](auto first, auto second) {
     return std::make_pair<>(first, second);
 };
 
-struct TestParseAndStorePackage1 {
-    std::string sourceCode = R"(
-        procedure sumDigits {
-            read number;
-            sum = 0;
-
-            while (number > 0) {
-                digit = number % 10;
-                sum = sum + digit;
-                number = number / 10;
-            }
-
-            print sum;
-        }
-    )";
-
+struct DesignExtractionTestTemplate {
     std::map<PKBEntityType, std::set<Content>> expectedEntities;
     std::map<PKBRelationship, std::set<std::pair<Content, Content>>> expectedRelationships;
 
@@ -62,6 +47,28 @@ struct TestParseAndStorePackage1 {
 
         return result == expected;
     }
+};
+
+struct TestParseAndStorePackage1 : public DesignExtractionTestTemplate {
+    std::string sourceCode = R"(
+        procedure sumDigits {
+            read number;
+            sum = 0;
+
+            while (number > 0) {
+                digit = number % 10;
+                sum = sum + digit;
+                number = number / 10;
+            }
+
+            print sum;
+        }
+    )";
+
+    TestParseAndStorePackage1() {
+        initEntities();
+        initRelationships();
+    }
 
     void initEntities() {
         expectedEntities.emplace(
@@ -75,13 +82,13 @@ struct TestParseAndStorePackage1 {
         expectedEntities.emplace(
             PKBEntityType::STATEMENT,
             std::set<Content>({
-                STMT_LO{1, StatementType::Read},
+                STMT_LO{1, StatementType::Read, "number"},
                 STMT_LO{2, StatementType::Assignment},
                 STMT_LO{3, StatementType::While},
                 STMT_LO{4, StatementType::Assignment},
                 STMT_LO{5, StatementType::Assignment},
                 STMT_LO{6, StatementType::Assignment},
-                STMT_LO{7, StatementType::Print}
+                STMT_LO{7, StatementType::Print, "sum"}
             })
         );
         expectedEntities.emplace(
@@ -102,7 +109,7 @@ struct TestParseAndStorePackage1 {
         expectedRelationships.emplace(
             PKBRelationship::MODIFIES,
             std::set<std::pair<Content, Content>> {
-                p(STMT_LO{ 1, StatementType::Read }, VAR_NAME{ "number" }),
+                p(STMT_LO{ 1, StatementType::Read, "number" }, VAR_NAME{ "number" }),
                 p(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{ "sum" }),
                 p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "digit" }),
                 p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "sum" }),
@@ -129,16 +136,16 @@ struct TestParseAndStorePackage1 {
                 p(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{ "sum" }),
                 p(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{ "digit" }),
                 p(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{ "number" }),
-                p(STMT_LO{ 7, StatementType::Print }, VAR_NAME{ "sum" }),
+                p(STMT_LO{ 7, StatementType::Print, "sum"}, VAR_NAME{ "sum" }),
             }
         );
 
         expectedRelationships.emplace(
             PKBRelationship::FOLLOWS,
             std::set<std::pair<Content, Content>> {
-                p(STMT_LO{ 1, StatementType::Read }, STMT_LO{ 2, StatementType::Assignment }),
+                p(STMT_LO{ 1, StatementType::Read, "number" }, STMT_LO{ 2, StatementType::Assignment }),
                 p(STMT_LO{ 2, StatementType::Assignment }, STMT_LO{ 3, StatementType::While }),
-                p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 7, StatementType::Print }),
+                p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 7, StatementType::Print, "sum" }),
                 p(STMT_LO{ 4, StatementType::Assignment }, STMT_LO{ 5, StatementType::Assignment }),
                 p(STMT_LO{ 5, StatementType::Assignment }, STMT_LO{ 6, StatementType::Assignment }),
             }
@@ -153,13 +160,120 @@ struct TestParseAndStorePackage1 {
             }
         );
     }
-    TestParseAndStorePackage1() {
+};
+
+struct TestParseAndStorePackage2 : public DesignExtractionTestTemplate {
+    std::string sourceCode = R"(
+        procedure main {
+            while (x > 1) {
+                call p1;
+            }
+            if (x < 1) then {
+                y = x + 1;
+                call p3;
+            } else {
+                x = y + 1;
+                while (z == y) {
+                    read z;
+                    print y;
+                }
+            }
+        }
+
+        procedure p1 {
+            read y1;
+            print x1;
+            call p2;
+        }
+
+        procedure p2 {
+            call p3;
+            y2 = z2 + 1;
+            while (x2 < 1) {
+                call p3;
+            }
+        }
+
+        procedure p3 {
+            read x3;
+        }
+    )";
+
+    TestParseAndStorePackage2() {
         initEntities();
         initRelationships();
     }
+
+    void initEntities() {}
+
+    void initRelationships() {
+        auto s1 = STMT_LO{1, StatementType::While};
+        auto s2 = STMT_LO{2, StatementType::Call, "p1"};
+        auto s3 = STMT_LO{3, StatementType::If};
+        auto s4 = STMT_LO{4, StatementType::Assignment};
+        auto s5 = STMT_LO{5, StatementType::Call, "p3"};
+        auto s6 = STMT_LO{6, StatementType::Assignment};
+        auto s7 = STMT_LO{7, StatementType::While};
+        auto s8 = STMT_LO{8, StatementType::Read, "z"};
+        auto s9 = STMT_LO{9, StatementType::Print, "y"};
+        auto s10 = STMT_LO{10, StatementType::Read, "y1"};
+        auto s11 = STMT_LO{11, StatementType::Print, "x1"};
+        auto s12 = STMT_LO{12, StatementType::Call, "p2"};
+        auto s13 = STMT_LO{13, StatementType::Call, "p3"};
+        auto s14 = STMT_LO{14, StatementType::Assignment};
+        auto s15 = STMT_LO{15, StatementType::While};
+        auto s16 = STMT_LO{16, StatementType::Call, "p3"};
+        auto s17 = STMT_LO{17, StatementType::Read, "x3"};
+
+
+        expectedRelationships.emplace(
+            PKBRelationship::FOLLOWS,
+            std::set<std::pair<Content, Content>> {
+                p(s1, s3),
+                p(s4, s5),
+                p(s6, s7),
+                p(s8, s9),
+                p(s10, s11),
+                p(s11, s12),
+                p(s13, s14),
+                p(s14, s15)
+            }
+        );
+        
+        expectedRelationships.emplace(
+            PKBRelationship::CALLS,
+            std::set<std::pair<Content, Content>> {
+                p(PROC_NAME{"main"}, PROC_NAME{"p1"}),
+                p(PROC_NAME{"main"}, PROC_NAME{"p3"}),
+                p(PROC_NAME{"p1"}, PROC_NAME{"p2"}),
+                p(PROC_NAME{"p2"}, PROC_NAME{"p3"}),
+            }
+        );
+        expectedRelationships.emplace(
+            PKBRelationship::NEXT,
+            std::set<std::pair<Content, Content>> {
+                p(s1, s2),
+                p(s2, s1),
+                p(s1, s3),
+                p(s3, s4),
+                p(s4, s5),
+                p(s3, s6),
+                p(s6, s7),
+                p(s7, s8),
+                p(s8, s9),
+                p(s9, s7),
+                p(s10, s11),
+                p(s11, s12),
+                p(s13, s14),
+                p(s14, s15),
+                p(s15, s16),
+                p(s16, s15),
+            }
+        );
+    }
 };
 
-TEST_CASE("Test parse and store") {
+TEST_CASE("Test parse and store for basic package 1") {
     PKB pkb;
     SourceProcessor sp;
     TestParseAndStorePackage1 test1;
@@ -175,6 +289,9 @@ TEST_CASE("Test parse and store") {
     auto expectedResponse = [](auto rows) {
         return PKBResponse{ true, rows };
     };
+
+    using Rows = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
+
 
     REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, "digit") ==
         expectedResponse(FieldRowResponse{
@@ -192,7 +309,6 @@ TEST_CASE("Test parse and store") {
             row(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{"digit"}),
             row(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{"number"})}));
 
-    using Rows = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
     TEST_LOG << "Variable extraction from PKB";
     {
@@ -368,5 +484,84 @@ TEST_CASE("Test parse and store") {
             ));
         }
         REQUIRE(test1.isCorrect(followsPairs, PKBRelationship::PARENT));
+    }
+}
+
+TEST_CASE("Test parse and store for multi procedure package 2") {
+    // Declarations and extractions
+    PKB pkb;
+    SourceProcessor sp;
+    TestParseAndStorePackage2 test;
+    sp.processSimple(test.sourceCode, &pkb);
+
+    auto row = [](auto a, auto b) {
+        return std::vector<PKBField>({
+            PKBField::createConcrete(a),
+            PKBField::createConcrete(b),
+        });
+    };
+
+    auto expectedResponse = [](auto rows) {
+        return PKBResponse{ true, rows };
+    };
+
+    using Rows = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
+
+    // Testing for results
+    TEST_LOG << "Next extractions from PKB";
+    {
+        auto response = pkb.getRelationship(
+            PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(StatementType::All),
+            PKBRelationship::NEXT
+        );
+        REQUIRE(response.hasResult);
+        auto resultSet = std::get<Rows>(response.res);
+        std::set<std::pair<STMT_LO, STMT_LO>> results;
+        for (auto& row : resultSet) {
+            results.insert(p(
+                std::get<STMT_LO>(row[0].content),
+                std::get<STMT_LO>(row[1].content)
+            ));
+        }
+        REQUIRE(test.isCorrect(results, PKBRelationship::NEXT));
+    }
+
+    TEST_LOG << "Calls extractions from PKB";
+    {
+        auto response = pkb.getRelationship(
+            PKBField::createDeclaration(PKBEntityType::PROCEDURE),
+            PKBField::createDeclaration(PKBEntityType::PROCEDURE),
+            PKBRelationship::CALLS
+        );
+        REQUIRE(response.hasResult);
+        auto resultSet = std::get<Rows>(response.res);
+        std::set<std::pair<PROC_NAME, PROC_NAME>> results;
+        for (auto& row : resultSet) {
+            results.insert(p(
+                std::get<PROC_NAME>(row[0].content),
+                std::get<PROC_NAME>(row[1].content)
+            ));
+        }
+        REQUIRE(test.isCorrect(results, PKBRelationship::CALLS));
+    }
+
+    TEST_LOG << "Follows extractions from PKB";
+    {
+        auto response = pkb.getRelationship(
+            PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(StatementType::All),
+            PKBRelationship::FOLLOWS
+        );
+        REQUIRE(response.hasResult);
+        auto resultSet = std::get<Rows>(response.res);
+        std::set<std::pair<STMT_LO, STMT_LO>> results;
+        for (auto& row : resultSet) {
+            results.insert(p(
+                std::get<STMT_LO>(row[0].content),
+                std::get<STMT_LO>(row[1].content)
+            ));
+        }
+        REQUIRE(test.isCorrect(results, PKBRelationship::FOLLOWS));
     }
 }

@@ -11,6 +11,7 @@
 #include "DesignExtractor/EntityExtractor/EntityExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/RelationshipExtractor.h"
 #include "DesignExtractor/PatternMatcher.h"
+#include "DesignExtractor/CFG/CFG.h"
 #include "PKB.h"
 #include "logging.h"
 
@@ -31,6 +32,7 @@ using de::UsesExtractorModule;
 using de::ModifiesExtractorModule;
 using de::ParentExtractorModule;
 using de::FollowsExtractorModule;
+using de::NextExtractorModule;
 
 class TestPKBStrategy : public de::PKBStrategy {
 public:
@@ -202,8 +204,8 @@ namespace ast {
                 auto ce = std::make_unique<ConstExtractorModule>(&pkbStrategy);
                 ce->extract(program.get());
 
-                std::set<Content> expectedVars = { CONST{0}, CONST{2}, CONST{10} };
-                REQUIRE(pkbStrategy.entities[PKBEntityType::CONST] == expectedVars);
+                std::set<Content> expectedConsts = { CONST{0}, CONST{2}, CONST{10} };
+                REQUIRE(pkbStrategy.entities[PKBEntityType::CONST] == expectedConsts);
             }
 
             SECTION("Procedure extractor test") {
@@ -212,6 +214,25 @@ namespace ast {
                 
                 std::set<Content> expectedProcs = { PROC_NAME{"main"} };
                 REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedProcs);
+            }
+
+            SECTION("Statement extractor test") {
+                auto se = std::make_unique<StatementExtractorModule>(&pkbStrategy);
+                se->extract(program.get());
+
+                std::set<Content> expectedStatements = {
+                    STMT_LO{1, StatementType::Read, "x"},
+                    STMT_LO{2, StatementType::Assignment},
+                    STMT_LO{3, StatementType::While},
+                    STMT_LO{4, StatementType::Print, "x"},
+                    STMT_LO{5, StatementType::Assignment},
+                    STMT_LO{6, StatementType::Assignment},
+                    STMT_LO{7, StatementType::If},
+                    STMT_LO{8, StatementType::Assignment},
+                    STMT_LO{9, StatementType::Print, "x"},
+                    STMT_LO{10, StatementType::Assignment},
+                    STMT_LO{11, StatementType::Print, "sum"},
+                };
             }
 
             SECTION("Modifies extractor test") {
@@ -301,6 +322,27 @@ namespace ast {
                 };
                 REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENT] == expected);
             }
+
+            SECTION("Next extractor test") {
+                auto ne = std::make_unique<NextExtractorModule>(&pkbStrategy);
+                auto cfg = std::make_unique<cfg::CFGExtractor>()->extract(program.get());
+                ne->extract(&cfg);
+                std::set<std::pair<Content, Content>> expected = {
+                    p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
+                    p(STMT_LO{2, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{4, StatementType::Print}),
+                    p(STMT_LO{4, StatementType::Print}, STMT_LO{5, StatementType::Assignment}),
+                    p(STMT_LO{5, StatementType::Assignment}, STMT_LO{6, StatementType::Assignment}),
+                    p(STMT_LO{6, StatementType::Assignment}, STMT_LO{7, StatementType::If}),
+                    p(STMT_LO{7, StatementType::If}, STMT_LO{8, StatementType::Assignment}),
+                    p(STMT_LO{7, StatementType::If}, STMT_LO{9, StatementType::Print}),
+                    p(STMT_LO{8, StatementType::Assignment}, STMT_LO{10, StatementType::Assignment}),
+                    p(STMT_LO{9, StatementType::Print}, STMT_LO{10, StatementType::Assignment}),
+                    p(STMT_LO{10, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
+                    p(STMT_LO{3, StatementType::While}, STMT_LO{11, StatementType::Print}),
+                };
+                REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
+            }
         }    
         
         /**
@@ -387,6 +429,19 @@ namespace ast {
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
 
+            // Regression test for #287.
+            FollowsExtractorModule fe(&pkbStrategy);
+            fe.extract(program.get());
+            expected = {
+                p(STMT_LO{1, StatementType::Call}, STMT_LO{2, StatementType::Call}),
+                p(STMT_LO{4, StatementType::Call}, STMT_LO{5, StatementType::Call}),
+                p(STMT_LO{6, StatementType::Read}, STMT_LO{7, StatementType::Print}),
+            };
+
+            auto diff = setDiff(pkbStrategy.relationships[PKBRelationship::FOLLOWS], expected);
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::FOLLOWS] == expected);
+
+
             de::CallsExtractorModule ce(&pkbStrategy);
             ce.extract(program.get());
             expected = {
@@ -398,6 +453,17 @@ namespace ast {
             };
 
             REQUIRE(pkbStrategy.relationships[PKBRelationship::CALLS] == expected);
+
+            NextExtractorModule ne(&pkbStrategy);
+            auto cfgs = cfg::CFGExtractor().extract(program.get());
+            ne.extract(&cfgs);
+            expected = {
+                p(STMT_LO{1, StatementType::Call}, STMT_LO{2, StatementType::Call}),
+                p(STMT_LO{4, StatementType::Call}, STMT_LO{5, StatementType::Call}),
+                p(STMT_LO{6, StatementType::Read}, STMT_LO{7, StatementType::Print}),
+            };
+
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
         }
 
         /**
@@ -426,6 +492,26 @@ namespace ast {
                     make<Assign>(4, make<Var>("f1"), make<Var>("f2"))
                 ))
             );
+
+            std::set<Content> expectedProcs = {
+                PROC_NAME{"main"},
+                PROC_NAME{"foo"}
+            };
+            ProcedureExtractorModule(&pkbStrategy).extract(program.get());
+            REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedProcs);
+
+            std::set<Content> expectedStatements = {
+                STMT_LO{1, StatementType::While},
+                STMT_LO{2, StatementType::Call, "foo"},
+                STMT_LO{3, StatementType::Assignment},
+                STMT_LO{4, StatementType::Assignment},
+            };
+            StatementExtractorModule(&pkbStrategy).extract(program.get());
+            auto extractedStatements = pkbStrategy.entities[PKBEntityType::STATEMENT];
+            REQUIRE(extractedStatements == expectedStatements);
+            // If call statement without attribute, it's wrong.
+            REQUIRE(extractedStatements.find(STMT_LO{2, StatementType::Call}) == extractedStatements.end());
+            REQUIRE(extractedStatements.find(STMT_LO{2, StatementType::Call, "foo"}) != extractedStatements.end());
 
             std::set<std::pair<Content, Content>> expected;
             ModifiesExtractorModule me(&pkbStrategy);
@@ -458,6 +544,209 @@ namespace ast {
                 p(PROC_NAME{"main"}, VAR_NAME{"m3"})
             };
             REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
+
+            NextExtractorModule ne(&pkbStrategy);
+            auto cfgs = cfg::CFGExtractor().extract(program.get());
+            ne.extract(&cfgs);
+            expected = {
+                p(STMT_LO{1, StatementType::While}, STMT_LO{2, StatementType::Call}),
+                p(STMT_LO{2, StatementType::Call}, STMT_LO{3, StatementType::Assignment}),
+                p(STMT_LO{3, StatementType::Assignment}, STMT_LO{1, StatementType::While}),
+            };
+
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
+        }
+    
+        /**
+         * procedure a {
+         *      read x;
+         * }
+         * procedure b {
+         *      call a;
+         * }
+         * procedure c {
+         *      read y;
+         * }
+         * procedure d {
+         *      call c;
+         * }
+         */
+        SECTION("Regression test for #292") {
+            auto program = makeProgram(
+                make<ast::Procedure>(
+                    "a", 
+                    ast::makeStmts(
+                        make<ast::Read>(1, make<ast::Var>("x"))
+                    )
+                ),
+                make<ast::Procedure>(
+                    "b", 
+                    ast::makeStmts(
+                        make<ast::Call>(2, "a")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "c", 
+                    ast::makeStmts(
+                        make<ast::Read>(3,  make<ast::Var>("y"))
+                    )
+                ),
+                make<ast::Procedure>(
+                    "d", 
+                    ast::makeStmts(
+                        make<ast::Call>(4, "c")
+                    )
+                )
+            );
+            std::set<std::pair<Content, Content>> expected;
+
+            ModifiesExtractorModule me(&pkbStrategy);
+            me.extract(program.get());
+            expected = {
+                p(PROC_NAME{"a"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"b"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"c"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"d"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"d"}, VAR_NAME{"y"}),
+                p(STMT_LO{1, StatementType::Read}, VAR_NAME{"x"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{3, StatementType::Read}, VAR_NAME{"y"}),
+                p(STMT_LO{4, StatementType::Call}, VAR_NAME{"y"})
+            };
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
+        }
+
+        /**
+         * procedure a {
+         *     read x;
+         * }
+         * procedure b {
+         *     call a;
+         * }
+         * procedure h {
+         *     call b;
+         * }
+         * procedure g {
+         *     call a;
+         * }
+         * 
+         * 
+         * procedure c {
+         *     read y;
+         * }
+         * procedure d {
+         *     call c;
+         * }
+         * 
+         * 
+         * procedure e {
+         *     read z;
+         * }
+         * procedure f {
+         *     call e;
+         * }
+         * procedure i {
+         *     call f
+         * }
+         * 
+         * 
+         * procedure j {
+         *     read w;
+         * }
+         */
+        SECTION("Test >= 3 disjoint call graphs") {
+            auto program = makeProgram(
+                // first disjoint graph
+                make<ast::Procedure>(
+                    "a", 
+                    ast::makeStmts(
+                        make<ast::Read>(1, make<ast::Var>("x"))
+                    )
+                ),
+                make<ast::Procedure>(
+                    "b", 
+                    ast::makeStmts(
+                        make<ast::Call>(2, "a")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "h", 
+                    ast::makeStmts(
+                        make<ast::Call>(3, "b")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "g", 
+                    ast::makeStmts(
+                        make<ast::Call>(4, "a")
+                    )
+                ),
+                // second disjoint graph
+                make<ast::Procedure>(
+                    "c", 
+                    ast::makeStmts(
+                        make<ast::Read>(5, make<ast::Var>("y"))
+                    )
+                ),
+                make<ast::Procedure>(
+                    "d", 
+                    ast::makeStmts(
+                        make<ast::Call>(6, "c")
+                    )
+                ),
+                // third disjoint graph
+                make<ast::Procedure>(
+                    "e", 
+                    ast::makeStmts(
+                        make<ast::Read>(7, make<ast::Var>("z"))
+                    )
+                ),
+                make<ast::Procedure>(
+                    "f", 
+                    ast::makeStmts(
+                        make<ast::Call>(8, "e")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "i", 
+                    ast::makeStmts(
+                        make<ast::Call>(9, "f")
+                    )
+                ),
+                make<ast::Procedure>(
+                    "j", 
+                    ast::makeStmts(
+                        make<ast::Read>(10, make<ast::Var>("w"))
+                    )
+                )
+            );
+            std::set<std::pair<Content, Content>> expected;
+
+            ModifiesExtractorModule me(&pkbStrategy);
+            me.extract(program.get());
+            expected = {
+                p(PROC_NAME{"a"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"b"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"g"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"h"}, VAR_NAME{"x"}),
+                p(PROC_NAME{"c"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"d"}, VAR_NAME{"y"}),
+                p(PROC_NAME{"e"}, VAR_NAME{"z"}),
+                p(PROC_NAME{"f"}, VAR_NAME{"z"}),
+                p(PROC_NAME{"i"}, VAR_NAME{"z"}),
+                p(PROC_NAME{"j"}, VAR_NAME{"w"}),
+                p(STMT_LO{1, StatementType::Read}, VAR_NAME{"x"}),
+                p(STMT_LO{2, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{3, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{4, StatementType::Call}, VAR_NAME{"x"}),
+                p(STMT_LO{5, StatementType::Read}, VAR_NAME{"y"}),
+                p(STMT_LO{6, StatementType::Call}, VAR_NAME{"y"}),
+                p(STMT_LO{7, StatementType::Read}, VAR_NAME{"z"}),
+                p(STMT_LO{8, StatementType::Call}, VAR_NAME{"z"}),
+                p(STMT_LO{9, StatementType::Call}, VAR_NAME{"z"}),
+                p(STMT_LO{10, StatementType::Read}, VAR_NAME{"w"})
+            };
+            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
         }
     }
 
@@ -465,10 +754,10 @@ namespace ast {
         TEST_LOG << "Testing Assign Pattern matcher";
 
         // only support _ or string, treat synonyms as _.
-        auto extractAssignHelper = [](sp::ast::ASTNode *ast, std::string s1, std::string s2){
+        auto extractAssignHelper = [](sp::ast::ASTNode *ast, std::string s1, std::string s2, bool isStrict = false){
             auto field1 = s1 == "_" ? std::nullopt : std::make_optional<>(s1);
             auto field2 = s2 == "_" ? std::nullopt : std::make_optional<>(s2);
-            return de::extractAssign(ast, field1, field2);
+            return de::extractAssign(ast, field1, field2, isStrict);
         };
 
         // assignment: z = 1 + x - 2 + y
@@ -494,6 +783,18 @@ namespace ast {
             REQUIRE(extractAssignHelper(ast.get(), "_", "1 +   x - 2 + y").size() == 1);
             REQUIRE(extractAssignHelper(ast.get(), "_", "(1 + x) - 2 + y").size() == 1);
             REQUIRE(extractAssignHelper(ast.get(), "_", "(1 + x) - 2 + y + 1").size() == 0);
+
+            
+            REQUIRE(extractAssignHelper(ast.get(), "_", "1 + x - 2 + y", true).size() == 1);
+            // bracket should not affect equality if it doesn't change order of opeartion
+            REQUIRE(extractAssignHelper(ast.get(), "_", "(1 + x) - 2 + y", true).size() == 1);
+            // this changes order of operation, thus no longer equal.
+            REQUIRE(extractAssignHelper(ast.get(), "_", "1 + (x - 2) + y", true).size() == 0);
+
+            // strict partial match fails
+            REQUIRE(extractAssignHelper(ast.get(), "_", "1 + x - 2", true).size() == 0);
+            // non strict partial match pass
+            REQUIRE(extractAssignHelper(ast.get(), "_", "1 + x - 2", false).size() == 1);
         }
 
         // assignment: x = v + x * (y + z) * t
@@ -528,6 +829,8 @@ namespace ast {
             REQUIRE(extractAssignHelper(ast.get(), "_", "y + z").size() == 1);
             REQUIRE(extractAssignHelper(ast.get(), "_", "(y + z) * t").size() == 0);
             REQUIRE(extractAssignHelper(ast.get(), "_", "x * (y + z)").size() == 1);
+
+            REQUIRE(extractAssignHelper(ast.get(), "_", "v + x * (y + z) * t", true).size() == 1);
         }
     }
 

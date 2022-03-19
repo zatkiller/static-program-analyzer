@@ -39,8 +39,8 @@ public:
  */
 class FollowsExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    FollowsExtractorModule(PKBStrategy *pkb) : 
-        ExtractorModule(std::make_unique<FollowsExtractor>(), pkb) {};
+    explicit FollowsExtractorModule(PKBStrategy *pkb) : 
+        ExtractorModule(std::make_unique<FollowsExtractor>(), pkb) {}
 };
 }  // namespace design_extractor
 }  // namespace sp
