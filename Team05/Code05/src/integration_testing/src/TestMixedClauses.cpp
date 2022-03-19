@@ -93,6 +93,21 @@ TEST_CASE("test simple source code") {
     result2.sort();
     printEvaluatorResult(result2);
     REQUIRE(result2 == std::list<std::string>{"2", "3", "4"});
+
+    TEST_LOG << "assign a; Select a such that pattern a (v, 'x + 1')";
+    qps::evaluator::Evaluator evaluator3 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query3{};
+    query3.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query3.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    query3.addVariable("a");
+    query3.addPattern(qps::query::Pattern::ofAssignPattern(
+            "a",
+            qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE),
+            qps::query::ExpSpec::ofFullMatch("x + 1")));
+    std::list<std::string> result3 = evaluator3.evaluate(query3);
+    result3.sort();
+    printEvaluatorResult(result3);
+    REQUIRE(result3 == std::list<std::string>{"2"});
 }
 
 TEST_CASE("test evaluate pattern") {
@@ -267,4 +282,25 @@ TEST_CASE("test evaluate pattern") {
     result10.sort();
     printEvaluatorResult(result10);
     REQUIRE(result10 == std::list<std::string>{"2", "5"});
+
+    TEST_LOG << "assign a; stmt s; Select s pattern a(_, 'number % 10') and a('digit',_) such that Next*(a, s)";
+    qps::evaluator::Evaluator evaluator11 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query11{};
+    query11.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query11.addDeclaration("s", qps::query::DesignEntity::STMT);
+    query11.addVariable("a");
+
+    query11.addPattern(qps::query::Pattern::ofAssignPattern("a",qps::query::EntRef::ofWildcard(),
+                                                            qps::query::ExpSpec::ofFullMatch("number % 10")));
+    query11.addPattern(qps::query::Pattern::ofAssignPattern("a",
+                                                            qps::query::EntRef::ofVarName("digit"),
+                                                            qps::query::ExpSpec::ofWildcard()));
+    std::shared_ptr<qps::query::NextT> ptr11 = std::make_shared<qps::query::NextT>();
+    ptr11->before = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    ptr11->transitiveAfter = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
+    query11.addSuchthat(ptr11);
+    std::list<std::string> result11 = evaluator11.evaluate(query11);
+    result11.sort();
+    printEvaluatorResult(result11);
+    REQUIRE(result11 == std::list<std::string>{"3", "4", "5", "6", "7"});
 }

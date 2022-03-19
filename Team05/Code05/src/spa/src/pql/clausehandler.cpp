@@ -100,7 +100,8 @@ namespace qps::evaluator {
             std::optional<std::string> rhsParam = {};
             if (exp.isPartialMatch()) rhsParam = exp.getPattern();
 
-            PKBResponse response = pkb->match(statementType, lhsParam, rhsParam);
+            bool isStrict = exp.isFullMatch();
+            PKBResponse response = pkb->match(statementType, lhsParam, rhsParam, isStrict);
             if (!lhs.isDeclaration()) {
                 response = selectDeclaredValue(response, true);
             }
