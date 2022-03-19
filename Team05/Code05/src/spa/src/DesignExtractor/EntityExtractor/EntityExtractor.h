@@ -24,15 +24,14 @@ public:
         T collector;
         node->accept(&collector);
         return collector.entities;
-    }
-    
+    }    
 };
 
 template<typename T>
 class EntityExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    EntityExtractorModule(PKBStrategy *pkb) :
-        ExtractorModule(std::make_unique<EntityExtractor<T>>(), pkb) {};
+    explicit EntityExtractorModule(PKBStrategy *pkb) :
+        ExtractorModule(std::make_unique<EntityExtractor<T>>(), pkb) {}
 };
 
 struct VariableCollector : public EntityCollector {
@@ -42,8 +41,8 @@ struct VariableCollector : public EntityCollector {
 };
 
 struct VariableExtractorModule : public EntityExtractorModule<VariableCollector> {
-    VariableExtractorModule(PKBStrategy *pkb) : 
-        EntityExtractorModule(pkb) {};
+    explicit VariableExtractorModule(PKBStrategy *pkb) : 
+        EntityExtractorModule(pkb) {}
 };
 
 struct ConstCollector : public EntityCollector {
@@ -53,8 +52,8 @@ struct ConstCollector : public EntityCollector {
 };
 
 struct ConstExtractorModule : public EntityExtractorModule<ConstCollector> {
-    ConstExtractorModule(PKBStrategy *pkb) :
-        EntityExtractorModule(pkb) {};
+    explicit ConstExtractorModule(PKBStrategy *pkb) :
+        EntityExtractorModule(pkb) {}
 };
 
 
@@ -65,8 +64,8 @@ struct ProcedureCollector : public EntityCollector {
 };
 
 struct ProcedureExtractorModule : public EntityExtractorModule<ProcedureCollector> {
-    ProcedureExtractorModule(PKBStrategy *pkb) :
-        EntityExtractorModule(pkb) {};
+    explicit ProcedureExtractorModule(PKBStrategy *pkb) :
+        EntityExtractorModule(pkb) {}
 };
 
 struct StatementCollector : public EntityCollector {
@@ -96,10 +95,10 @@ struct StatementCollector : public EntityCollector {
 };
 
 struct StatementExtractorModule : public EntityExtractorModule<StatementCollector> {
-    StatementExtractorModule(PKBStrategy *pkb) :
-        EntityExtractorModule(pkb) {};
+    explicit StatementExtractorModule(PKBStrategy *pkb) :
+        EntityExtractorModule(pkb) {}
 };
 
 
-}  // namepsace design_extractor
+}  // namespace design_extractor
 }  // namespace sp

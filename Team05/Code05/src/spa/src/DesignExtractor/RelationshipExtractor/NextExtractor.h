@@ -14,7 +14,6 @@ namespace design_extractor {
  * Extracts all Next relationship from the CFG and return them as a set of entries
  */
 struct NextExtractor : public Extractor<const cfg::PROC_CFG_MAP*> {
-
     std::set<Entry> extractOne(cfg::CFGNode *node) {
         // a little helper to check if a node has been visited before.
         std::unordered_set<cfg::CFGNode*> visited;
@@ -39,7 +38,6 @@ struct NextExtractor : public Extractor<const cfg::PROC_CFG_MAP*> {
             queue.pop();
 
             for (auto child : curNode->getChildren()) {
-
                 // standard bfs stuff
                 if (!hasVisited(child.get())) {
                     visited.insert(child.get());
@@ -85,8 +83,8 @@ struct NextExtractor : public Extractor<const cfg::PROC_CFG_MAP*> {
  */
 struct NextExtractorModule : public ExtractorModule<const cfg::PROC_CFG_MAP*> {
 public:
-    NextExtractorModule(PKBStrategy *pkb) : 
-        ExtractorModule(std::make_unique<NextExtractor>(), pkb) {};
+    explicit NextExtractorModule(PKBStrategy *pkb) : 
+        ExtractorModule(std::make_unique<NextExtractor>(), pkb) {}
 };
 
 }  // namespace design_extractor

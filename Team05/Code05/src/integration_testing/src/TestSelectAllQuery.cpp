@@ -37,7 +37,7 @@ TEST_CASE("Test get statements") {
     query2.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
     std::list<std::string> resAss = evaluator.evaluate(query2);
     resAss.sort();
-    REQUIRE(resAss == std::list<std::string>{"2", "5","8"});
+    REQUIRE(resAss == std::list<std::string>{"2", "5", "8"});
 
     qps::query::Query query3;
     query3.addVariable("w");
@@ -66,7 +66,6 @@ TEST_CASE("Test get statements") {
     std::list<std::string> resRead = evaluator.evaluate(query6);
     resRead.sort();
     REQUIRE(resRead.empty());
-
 }
 
 

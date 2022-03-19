@@ -47,13 +47,9 @@ struct DesignExtractionTestTemplate {
 
         return result == expected;
     }
-
-
-
 };
 
 struct TestParseAndStorePackage1 : public DesignExtractionTestTemplate {
-
     std::string sourceCode = R"(
         procedure sumDigits {
             read number;
@@ -167,7 +163,6 @@ struct TestParseAndStorePackage1 : public DesignExtractionTestTemplate {
 };
 
 struct TestParseAndStorePackage2 : public DesignExtractionTestTemplate {
-
     std::string sourceCode = R"(
         procedure main {
             while (x > 1) {
@@ -212,8 +207,6 @@ struct TestParseAndStorePackage2 : public DesignExtractionTestTemplate {
     void initEntities() {}
 
     void initRelationships() {
-
-        
         auto s1 = STMT_LO{1, StatementType::While};
         auto s2 = STMT_LO{2, StatementType::Call, "p1"};
         auto s3 = STMT_LO{3, StatementType::If};
@@ -495,9 +488,7 @@ TEST_CASE("Test parse and store for basic package 1") {
 }
 
 TEST_CASE("Test parse and store for multi procedure package 2") {
-
     // Declarations and extractions
-
     PKB pkb;
     SourceProcessor sp;
     TestParseAndStorePackage2 test;

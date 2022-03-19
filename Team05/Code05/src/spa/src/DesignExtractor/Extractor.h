@@ -25,8 +25,8 @@ template<typename T>
 struct Extractor {
     virtual std::set<Entry> extract(T) { 
         return std::set<Entry>(); 
-    };
-    virtual inline ~Extractor() {};
+    }
+    virtual inline ~Extractor() {}
 };
 
 /**
@@ -36,7 +36,7 @@ class PKBInserter {
 private:
     PKBStrategy *pkb;
 public:
-    PKBInserter(PKBStrategy *pkb) : pkb(pkb) {};
+    explicit PKBInserter(PKBStrategy *pkb) : pkb(pkb) {}
     void insert(Entry entry);
 };
 
@@ -51,7 +51,8 @@ private:
     std::unique_ptr<Extractor<T>> extractor;
     PKBInserter inserter;
 public:
-    ExtractorModule(std::unique_ptr<Extractor<T>> extractor, PKBStrategy *pkb) : extractor(std::move(extractor)), inserter(pkb) {};
+    ExtractorModule(std::unique_ptr<Extractor<T>> extractor, PKBStrategy *pkb) : 
+        extractor(std::move(extractor)), inserter(pkb) {}
     void extract(T info) {
         auto entries = extractor->extract(info);
         for (auto &entry : entries) {

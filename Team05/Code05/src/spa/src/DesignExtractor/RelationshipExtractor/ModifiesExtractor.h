@@ -24,8 +24,8 @@ public:
  */
 class ModifiesExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    ModifiesExtractorModule(PKBStrategy *pkb) : 
-        ExtractorModule(std::make_unique<ModifiesExtractor>(), pkb) {};
+    explicit ModifiesExtractorModule(PKBStrategy *pkb) : 
+        ExtractorModule(std::make_unique<ModifiesExtractor>(), pkb) {}
 };
 }  // namespace design_extractor
 }  // namespace sp

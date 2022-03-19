@@ -73,5 +73,4 @@ TEST_CASE("SP Stability test") {
         sp.processSimple(source2, &tempPKB);
         SUCCEED("pass source 2");
     }
-
 }

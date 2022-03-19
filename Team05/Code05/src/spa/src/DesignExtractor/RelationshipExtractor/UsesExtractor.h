@@ -26,8 +26,8 @@ public:
  */
 class UsesExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    UsesExtractorModule(PKBStrategy *pkb) : 
-        ExtractorModule(std::make_unique<UsesExtractor>(), pkb) {};
+    explicit UsesExtractorModule(PKBStrategy *pkb) : 
+        ExtractorModule(std::make_unique<UsesExtractor>(), pkb) {}
 };
 
 }  // namespace design_extractor

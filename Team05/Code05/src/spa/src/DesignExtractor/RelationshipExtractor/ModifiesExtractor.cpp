@@ -23,7 +23,7 @@ std::set<Entry> ModifiesExtractor::extract(const ast::ASTNode* node) {
     ModifiesCollector extractor;
     extractor.extract(node);
     return extractor.relationships;
-};
+}
 
 void ModifiesCollector::visit(const ast::Read& node) {
     extractAndInsert(STMT_LO{node.getStmtNo(), StatementType::Read}, &node);

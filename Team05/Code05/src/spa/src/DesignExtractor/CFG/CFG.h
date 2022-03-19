@@ -34,7 +34,7 @@ public:
     
     bool operator==(CFGNode const& o) const;
 
-    std::vector<std::shared_ptr<CFGNode>> getChildren() { return children; }
+    std::vector<std::shared_ptr<CFGNode>> getChildren() const { return children; }
 };
 
 using Depth = int;
