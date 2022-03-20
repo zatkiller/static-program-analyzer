@@ -7,13 +7,13 @@ run_test_suites = argv[1].lower() == "true"
 keep_output_files = argv[2].lower() == "true"
 
 # Switch to top level directory
+main_path = os.getcwd()
 os.chdir(os.path.dirname(__file__) + "/Team05/Tests05")
 f = open("results.txt", "w")
-main_path = os.getcwd()
 
 dic = defaultdict(list)
 
-def getFailedTC(text, dir_path, source, quries):
+def getFailedTC(text, dir_path, source, queries):
     text = text.splitlines()
     count = 0
     failed_tcs = []
@@ -43,41 +43,37 @@ def getFailedTC(text, dir_path, source, quries):
 for dirpath, dirnames, filenames in os.walk(os.getcwd()):
     filenames.sort()
     for file in filenames:
-        if file.startswith("source_"):
-            suffix = file[len("source_"):]
-            prefix = "queries_"
-            queries_matching_file = prefix + suffix
-            if queries_matching_file not in filenames:
-                print("Unable to find matching queries")
-                break
+        if file.startswith("iter") and file.endswith("_source.txt"):
+            print(file)
+            prefix = file[:-len("_source.txt")]
+            queries_match_file = prefix + "_queries.txt"
+            if queries_match_file not in filenames:
+                print("Unable to find matching queries for:", file)
+                continue
 
             shortened_path = dirpath
             if shortened_path.startswith(main_path):
                 shortened_path = shortened_path[len(main_path):]
 
-            dic["/Team05/Tests05" + shortened_path].append((file, queries_matching_file, suffix))
+            dic[shortened_path].append((file, queries_match_file, prefix))
 
-# Switch back to top level directory
 os.chdir(os.path.dirname(__file__))
 
 output_files = []
 
 if run_test_suites:
     for k in dic:
-        files = dic[k]
-        for source, queries, suffix in files:
-            prefix = k + "/"
-
-            source_input, queries_input, file_input = prefix + source, prefix + queries, prefix + "out_" + suffix
-
-            source_path, queries_path, output_path = "source=" + prefix + source, "query=" + prefix + queries, "out=" + prefix + "out_" + suffix
-            os.system(" ".join(["make", "autotester", source_path, queries_path, output_path]))
-
-            f2 = open(file_input[1:], "r")
+        for source, queries, prefix in dic[k]:
+            dirpath = k + "/"
+            source_input, queries_input, output_input = dirpath + source, dirpath + queries, dirpath + prefix + "_out.txt"
+            source_flag, queries_flag, output_flag = "source=" + source_input, "query=" + queries_input, "out=" + output_input
+            print(source, queries, prefix)
+            os.system(" ".join(["make", "autotester", source_flag, queries_flag, output_flag]))
+            f2 = open(output_input[1:], "r")
             text = f2.read()
             f2.close()
             getFailedTC(text, k, source_input, queries_input)
-            output_files.append(file_input)
+            output_files.append(output_input)
 
 if not keep_output_files:
     for file_input in output_files:
