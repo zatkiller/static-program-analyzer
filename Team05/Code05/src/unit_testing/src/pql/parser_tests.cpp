@@ -585,7 +585,6 @@ TEST_CASE("Parser parseSuchThatClause") {
 }
 
 TEST_CASE("Parser parseExpSpec") {
-
     std::string testQuery = "_";
 
     Parser parser;

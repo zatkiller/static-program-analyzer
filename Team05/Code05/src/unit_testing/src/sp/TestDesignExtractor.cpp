@@ -639,7 +639,13 @@ namespace ast {
                                 make<ast::Read>(2, make<ast::Var>("x"))
                             ),
                             makeStmts(
-                                make<ast::If>(3, make<ast::RelExpr>(RelOp::GT, make<ast::Var>("x"), make<ast::Const>(1)),
+                                make<ast::If>(
+                                    3, 
+                                    make<ast::RelExpr>(
+                                        RelOp::GT,
+                                        make<ast::Var>("x"),
+                                        make<ast::Const>(1)
+                                    ),
                                     makeStmts(
                                         make<ast::Read>(4, make<ast::Var>("x"))
                                     ),
