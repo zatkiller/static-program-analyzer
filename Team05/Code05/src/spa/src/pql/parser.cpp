@@ -262,35 +262,34 @@ namespace qps::parser {
     }
 
     ExpSpec Parser::parseExpSpec() {
-        bool isPartialMatch = false;
-        bool isWildcard = false;
+        bool hasString = false;
+        bool hasWildcard = false;
         std::string value = "";
 
         if (peekNextToken().getTokenType() == TokenType::UNDERSCORE) {
-            isWildcard = true;
+            hasWildcard = true;
             getNextToken();
         }
 
         if (peekNextToken().getTokenType() == TokenType::STRING) {
-            if (isWildcard) {
-                isPartialMatch = true;
-                isWildcard = false;
-            }
+            hasString = true;
             Token token = getAndCheckNextToken(TokenType::STRING);
             value = token.getText();
             validateExpr(value);
         }
 
-        if (isPartialMatch) {
-            Token t = peekNextToken();
+        if (hasString && hasWildcard) {
             getAndCheckNextToken(TokenType::UNDERSCORE);
             return ExpSpec::ofPartialMatch(value);
         }
 
-        if (isWildcard)
+        if (hasWildcard)
             return ExpSpec::ofWildcard();
 
-        return ExpSpec::ofFullMatch(value);
+        if (hasString)
+            return ExpSpec::ofFullMatch(value);
+
+        throw exceptions::PqlSyntaxException("Unable to parse pattern");
     }
 
     void Parser::validateExpr(std::string expr) {

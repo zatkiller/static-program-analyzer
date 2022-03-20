@@ -585,22 +585,37 @@ TEST_CASE("Parser parseSuchThatClause") {
 }
 
 TEST_CASE("Parser parseExpSpec") {
+
     std::string testQuery = "_";
 
     Parser parser;
     parser.addInput(testQuery);
+    ExpSpec e = parser.parseExpSpec();
 
-    REQUIRE(parser.parseExpSpec() == ExpSpec::ofWildcard());
+    REQUIRE(e.isWildcard());
+    REQUIRE(!e.isPartialMatch());
+    REQUIRE(!e.isFullMatch());
 
     testQuery = "_\"x\"_";
     parser.addInput(testQuery);
 
-    REQUIRE(parser.parseExpSpec() == ExpSpec::ofPartialMatch("x"));
+    e = parser.parseExpSpec();
+    REQUIRE(e.isPartialMatch());
+    REQUIRE(!e.isWildcard());
+    REQUIRE(!e.isFullMatch());
 
-    testQuery = "\"x\"";
+    REQUIRE(e.getPattern() == "x");
+
+
+    testQuery = "\"y\"";
     parser.addInput(testQuery);
 
-    REQUIRE(parser.parseExpSpec() == ExpSpec::ofFullMatch("x"));
+    e = parser.parseExpSpec();
+    REQUIRE(!e.isPartialMatch());
+    REQUIRE(!e.isWildcard());
+    REQUIRE(e.isFullMatch());
+
+    REQUIRE(e.getPattern() == "y");
 
     testQuery = "_\"x\"";
     parser.addInput(testQuery);
