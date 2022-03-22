@@ -2,6 +2,8 @@
 
 #include "CFG.h"
 #include "logging.h"
+#include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
+#include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
 
 #define DEBUG_LOG Logger(Level::DEBUG) << "CFGExtractor.cpp Extracted "
 
@@ -175,7 +177,30 @@ void CFGExtractor::exitContainer() {
     }
 }
 
+using EntrySet = std::set<sp::design_extractor::Entry>;
+
+ContentVarMap createContentVarMap(EntrySet &entrySet) {
+    ContentVarMap result;
+    for (auto entry : entrySet) {
+        auto relationship = std::get<design_extractor::Relationship>(entry);
+        Content key, val;
+        std::tie (std::ignore, key, val) = relationship;
+        if (result.find(key) != result.end()) {
+            result.at(key).insert(std::get<VAR_NAME>(val));
+        } else {
+            std::set<VAR_NAME> newSet;
+            newSet.insert(std::get<VAR_NAME>(val));
+            result[key] = newSet;
+        }
+    }
+    return result;
+}
+
 std::map<std::string, std::shared_ptr<CFGNode>> CFGExtractor::extract(ast::ASTNode* node) {
+    auto modifiesEntrySet = design_extractor::ModifiesExtractor().extract(node);
+    modifiesMap = createContentVarMap(modifiesEntrySet);
+    auto usesEntrySet = design_extractor::UsesExtractor().extract(node);
+    usesMap = createContentVarMap(usesEntrySet);
     node->accept(this);
     return procNameAndRoot;
 }

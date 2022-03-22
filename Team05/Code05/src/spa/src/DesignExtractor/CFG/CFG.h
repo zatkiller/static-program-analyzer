@@ -39,7 +39,8 @@ public:
 
 using Depth = int;
 using Bucket = std::unordered_map<Depth, std::shared_ptr<CFGNode>>;
-
+using VarName = std::string;
+using ContentVarMap = std::map<Content, std::set<VAR_NAME>>;
 /**
  * @brief Class that extracts a CFG (CFGNode) from AST (ASTNode).
  * @details The extractor does a pre-order walk of the tree. 
@@ -62,6 +63,8 @@ private:
     Bucket bucket;
     Bucket exitReference;
     Depth currentDepth = 0;
+    ContentVarMap modifiesMap;
+    ContentVarMap usesMap;
     void enterBucket(std::shared_ptr<CFGNode> node) {
         bucket.insert_or_assign(currentDepth, node);
     }
