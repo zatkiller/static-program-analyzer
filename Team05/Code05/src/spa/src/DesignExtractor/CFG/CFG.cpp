@@ -93,6 +93,34 @@ bool CFGNode::isAncestorOf(CFGNode* other) {
     return false;
 }
 
+using EntrySet = std::set<sp::design_extractor::Entry>;
+
+ContentToVarMap createContentVarMap(EntrySet &entrySet) {
+    ContentToVarMap result;
+    for (auto entry : entrySet) {
+        auto relationship = std::get<design_extractor::Relationship>(entry);
+        Content key, val;
+        std::tie (std::ignore, key, val) = relationship;
+        if (result.find(key) != result.end()) {
+            result.at(key).insert(std::get<VAR_NAME>(val));
+        } else {
+            std::unordered_set<VAR_NAME> newSet;
+            newSet.insert(std::get<VAR_NAME>(val));
+            result[key] = newSet;
+        }
+    }
+    return result;
+}
+
+ContentToVarMap filterContentVarMap(ContentToVarMap &contentToVarMap, Content &content) {
+    ContentToVarMap result;
+    auto entry = contentToVarMap.find(content);
+    if (entry != contentToVarMap.end()) {
+        result.insert(*entry);
+    }
+    return result;
+}
+
 void CFGExtractor::visit(const ast::Procedure& node) {
     // create a dummy node as a start node for each procedure
     auto startNode = std::make_shared<CFGNode>();
@@ -175,25 +203,6 @@ void CFGExtractor::exitContainer() {
         lastVisited->insert(exitReference.at(currentDepth));
         lastVisited = exitReference.at(currentDepth);
     }
-}
-
-using EntrySet = std::set<sp::design_extractor::Entry>;
-
-ContentVarMap createContentVarMap(EntrySet &entrySet) {
-    ContentVarMap result;
-    for (auto entry : entrySet) {
-        auto relationship = std::get<design_extractor::Relationship>(entry);
-        Content key, val;
-        std::tie (std::ignore, key, val) = relationship;
-        if (result.find(key) != result.end()) {
-            result.at(key).insert(std::get<VAR_NAME>(val));
-        } else {
-            std::unordered_set<VAR_NAME> newSet;
-            newSet.insert(std::get<VAR_NAME>(val));
-            result[key] = newSet;
-        }
-    }
-    return result;
 }
 
 std::map<std::string, std::shared_ptr<CFGNode>> CFGExtractor::extract(ast::ASTNode* node) {

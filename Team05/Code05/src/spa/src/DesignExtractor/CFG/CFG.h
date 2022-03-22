@@ -15,6 +15,7 @@ namespace cfg {
 
 class CFGNode;
 using PROC_CFG_MAP = std::map<std::string, std::shared_ptr<cfg::CFGNode>>;
+using ContentToVarMap = std::unordered_map<Content, std::unordered_set<VAR_NAME>>;
 
 /**
  * @brief Class to encapsulate a single CFGNode.
@@ -26,8 +27,17 @@ private:
     std::vector<std::shared_ptr<CFGNode>> children;
 public:
     std::optional<STMT_LO> stmt;
+    ContentToVarMap modifies, uses;  // information on modifies or uses relationship for curr node
     CFGNode () : stmt(std::nullopt) {}
-    CFGNode(int stmtNo, StatementType stmtType) : stmt(STMT_LO(stmtNo, stmtType)) {}
+    CFGNode(int stmtNo, StatementType stmtType) : stmt(STMT_LO(stmtNo, stmtType)) {}  // to be deleted
+    CFGNode(
+        int stmtNo, 
+        StatementType stmtType, 
+        ContentToVarMap modifies, 
+        ContentToVarMap uses) : 
+        stmt(STMT_LO(stmtNo, stmtType)),
+        modifies(modifies), 
+        uses(uses) {}
 
     void insert(std::shared_ptr<CFGNode> child);
     bool isParentOf(CFGNode* other);
@@ -41,13 +51,12 @@ public:
 using Depth = int;
 using Bucket = std::unordered_map<Depth, std::shared_ptr<CFGNode>>;
 using VarName = std::string;
-using ContentVarMap = std::unordered_map<Content, std::unordered_set<VAR_NAME>>;
 /**
  * @brief Class that extracts a CFG (CFGNode) from AST (ASTNode).
  * @details The extractor does a pre-order walk of the tree. 
  * The root of the CFG for each procedure is always a dummy node.
  * Entrance and exit nodes for if and while statements at different nesting levels are kept track of 
- * with two buckets, bucket and exitReference.
+ * with two "buckets", bucket and exitReference.
  * bucket keeps track of the starting node of each stmtLst.
  * exitReference keeps track of the exit node of each stmtLst.
  * The If node will always split into two different paths of execution and converge into a dummy node,
@@ -61,11 +70,9 @@ private:
     std::map<std::string, std::shared_ptr<CFGNode>> procNameAndRoot;
     std::shared_ptr<CFGNode> lastVisited;
     int containerCount = 0;  // keeps track of # of containers/stmtLst to enter for if or while stmts
-    Bucket bucket;
-    Bucket exitReference;
-    Depth currentDepth = 0;
-    ContentVarMap modifiesMap;
-    ContentVarMap usesMap;
+    Bucket bucket, exitReference;  // keeps track parent and exit CFGnodes at different nesting levels
+    Depth currentDepth = 0;  // keeps track of the depth of the current statement in the stmtLst
+    ContentToVarMap modifiesMap, usesMap;  // reference for adding modifies and uses information to the CFG
     void enterBucket(std::shared_ptr<CFGNode> node) {
         bucket.insert_or_assign(currentDepth, node);
     }
