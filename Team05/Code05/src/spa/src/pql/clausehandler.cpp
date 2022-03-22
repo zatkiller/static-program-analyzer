@@ -71,7 +71,7 @@ namespace qps::evaluator {
                 synonyms.pop_back();
                 filterPKBResponse(response);
             }
-            tableRef.join(response, synonyms);
+            tableRef.insert(response, synonyms);
         }
     }
 
@@ -106,7 +106,7 @@ namespace qps::evaluator {
             if (!lhs.isDeclaration()) {
                 response = selectDeclaredValue(response, true);
             }
-            tableRef.join(response, synonyms);
+            tableRef.insert(response, synonyms);
         }
     }
 
@@ -130,7 +130,7 @@ namespace qps::evaluator {
         auto lhsPtr = std::get_if<SingleResponse>(&lhsResult.res);
         auto rhsPtr = std::get_if<SingleResponse>(&rhsResult.res);
         if (lhs.declaration == rhs.declaration) {
-            tableRef.join(lhsResult, std::vector<std::string>{lhs.declaration});
+            tableRef.insert(lhsResult, std::vector<std::string>{lhs.declaration});
             return;
         }
         if (lhs.attrName == query::AttrName::PROCNAME || lhs.attrName == query::AttrName::VARNAME) {
@@ -138,14 +138,14 @@ namespace qps::evaluator {
         } else {
             newResponse = twoAttrMerge<int>(*lhsPtr, *rhsPtr);
         }
-        tableRef.join(newResponse, std::vector<std::string>{lhs.declaration, rhs.declaration});
+        tableRef.insert(newResponse, std::vector<std::string>{lhs.declaration, rhs.declaration});
     }
 
     void ClauseHandler::handleOneAttrRef(query::AttrRef attr, query::AttrCompareRef concrete) {
         PKBResponse attrResult = getAll(attr.declarationType);
         if (concrete.isString()) attrResult = filterAttrValue<std::string>(attrResult, concrete.getString());
         if (concrete.isNumber()) attrResult = filterAttrValue<int>(attrResult, concrete.getNumber());
-        tableRef.join(attrResult, std::vector<std::string>{attr.declaration});
+        tableRef.insert(attrResult, std::vector<std::string>{attr.declaration});
     }
 
     void ClauseHandler::handleAttrRefWith(std::vector<query::AttrCompare> attrClauses) {

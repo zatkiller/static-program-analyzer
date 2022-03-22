@@ -98,7 +98,7 @@ namespace qps::evaluator {
         if ((suchthat.empty() && patterns.empty()) || !resultTable.synExists(variable[0])) {
             PKBResponse queryResult = handler.getAll(returnType);
             std::vector<std::string> synonyms{variable[0]};
-            resultTable.join(queryResult, synonyms);
+            resultTable.insert(queryResult, synonyms);
         }
 
         return getListOfResult(resultTable, variable[0]);
