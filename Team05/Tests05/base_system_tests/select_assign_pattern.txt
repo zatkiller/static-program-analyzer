@@ -133,3 +133,8 @@ assign a; variable v;
 Select a pattern a(v, "(3 + x) * (y * 5 / (z / 2))")
 <answer>
 5000
+28 - select assign synonym where full pattern does not exist but partial pattern does
+variable v; assign a;
+Select a pattern a(v, "x")
+none
+5000

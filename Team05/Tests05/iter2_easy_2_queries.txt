@@ -708,3 +708,8 @@ variable v; assign a;
 Select a pattern a(v, _) such that Modifies(a, v) with v.varName = "f"
 11
 5000
+143 - select assign synonym where full pattern does not exist but partial pattern does
+variable v; assign a;
+Select a pattern a(v, "d")
+none
+5000

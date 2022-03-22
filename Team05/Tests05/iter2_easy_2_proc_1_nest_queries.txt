@@ -1,0 +1,1555 @@
+1 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p1", p)
+none
+5000
+2 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p2", p)
+p1
+5000
+3 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p3", p)
+none
+5000
+4 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p4", p)
+none
+5000
+5 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p5", p)
+none
+5000
+6 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p6", p)
+none
+5000
+7 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p7", p)
+none
+5000
+8 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p8", p)
+none
+5000
+9 - Testing Calls(p, p2) relationship
+procedure p;
+Select p such that Calls("p9", p)
+none
+5000
+10 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p1", p)
+none
+5000
+11 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p2", p)
+p1
+5000
+12 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p3", p)
+none
+5000
+13 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p4", p)
+none
+5000
+14 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p5", p)
+none
+5000
+15 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p6", p)
+none
+5000
+16 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p7", p)
+none
+5000
+17 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p8", p)
+none
+5000
+18 - Testing Calls*(p, p2) relationship
+procedure p;
+Select p such that Calls*("p9", p)
+none
+5000
+19 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(1, s)
+2
+5000
+20 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(2, s)
+none
+5000
+21 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(3, s)
+4
+5000
+22 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(4, s)
+5
+5000
+23 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(5, s)
+none
+5000
+24 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(6, s)
+7
+5000
+25 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(7, s)
+none
+5000
+26 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(8, s)
+none
+5000
+27 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(9, s)
+none
+5000
+28 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(10, s)
+none
+5000
+29 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(11, s)
+none
+5000
+30 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(12, s)
+none
+5000
+31 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(13, s)
+none
+5000
+32 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(14, s)
+none
+5000
+33 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(15, s)
+none
+5000
+34 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(16, s)
+none
+5000
+35 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(17, s)
+none
+5000
+36 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(18, s)
+none
+5000
+37 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(19, s)
+none
+5000
+38 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(20, s)
+none
+5000
+39 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(21, s)
+none
+5000
+40 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(22, s)
+none
+5000
+41 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(23, s)
+none
+5000
+42 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(24, s)
+none
+5000
+43 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(25, s)
+none
+5000
+44 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(26, s)
+none
+5000
+45 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(27, s)
+none
+5000
+46 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(28, s)
+none
+5000
+47 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(29, s)
+none
+5000
+48 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(30, s)
+none
+5000
+49 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(31, s)
+none
+5000
+50 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(32, s)
+none
+5000
+51 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(33, s)
+none
+5000
+52 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(34, s)
+none
+5000
+53 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(35, s)
+none
+5000
+54 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(36, s)
+none
+5000
+55 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(37, s)
+none
+5000
+56 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(38, s)
+none
+5000
+57 - Testing Follows(s, s2) relationship
+stmt s;
+Select s such that Follows(39, s)
+none
+5000
+58 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(1, s)
+2
+5000
+59 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(2, s)
+none
+5000
+60 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(3, s)
+4,5
+5000
+61 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(4, s)
+5
+5000
+62 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(5, s)
+none
+5000
+63 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(6, s)
+7
+5000
+64 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(7, s)
+none
+5000
+65 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(8, s)
+none
+5000
+66 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(9, s)
+none
+5000
+67 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(10, s)
+none
+5000
+68 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(11, s)
+none
+5000
+69 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(12, s)
+none
+5000
+70 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(13, s)
+none
+5000
+71 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(14, s)
+none
+5000
+72 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(15, s)
+none
+5000
+73 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(16, s)
+none
+5000
+74 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(17, s)
+none
+5000
+75 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(18, s)
+none
+5000
+76 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(19, s)
+none
+5000
+77 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(20, s)
+none
+5000
+78 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(21, s)
+none
+5000
+79 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(22, s)
+none
+5000
+80 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(23, s)
+none
+5000
+81 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(24, s)
+none
+5000
+82 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(25, s)
+none
+5000
+83 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(26, s)
+none
+5000
+84 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(27, s)
+none
+5000
+85 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(28, s)
+none
+5000
+86 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(29, s)
+none
+5000
+87 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(30, s)
+none
+5000
+88 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(31, s)
+none
+5000
+89 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(32, s)
+none
+5000
+90 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(33, s)
+none
+5000
+91 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(34, s)
+none
+5000
+92 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(35, s)
+none
+5000
+93 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(36, s)
+none
+5000
+94 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(37, s)
+none
+5000
+95 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(38, s)
+none
+5000
+96 - Testing Follows*(s, s2) relationship
+stmt s;
+Select s such that Follows*(39, s)
+none
+5000
+97 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select p such that Modifies(p, "v1")
+p1,p2
+5000
+98 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select p such that Modifies(p, "v2")
+none
+5000
+99 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select p such that Modifies(p, "v3")
+none
+5000
+100 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select p such that Modifies(p, "v4")
+p2
+5000
+101 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select p such that Modifies(p, "v5")
+none
+5000
+102 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select p such that Modifies(p, "v6")
+none
+5000
+103 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select p such that Modifies(p, "v7")
+none
+5000
+104 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select p such that Modifies(p, "v8")
+none
+5000
+105 - Testing Modifies(p, v) relationship
+variable v; procedure p;
+Select p such that Modifies(p, "v9")
+none
+5000
+106 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select s such that Modifies(s, "v1")
+1,4,5,7
+5000
+107 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select s such that Modifies(s, "v2")
+none
+5000
+108 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select s such that Modifies(s, "v3")
+none
+5000
+109 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select s such that Modifies(s, "v4")
+5,6
+5000
+110 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select s such that Modifies(s, "v5")
+none
+5000
+111 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select s such that Modifies(s, "v6")
+none
+5000
+112 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select s such that Modifies(s, "v7")
+none
+5000
+113 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select s such that Modifies(s, "v8")
+none
+5000
+114 - Testing Modifies(s, v) relationship
+variable v; stmt s;
+Select s such that Modifies(s, "v9")
+none
+5000
+115 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(1, s)
+2
+5000
+116 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(2, s)
+none
+5000
+117 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(3, s)
+4
+5000
+118 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(4, s)
+5
+5000
+119 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(5, s)
+6
+5000
+120 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(6, s)
+7
+5000
+121 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(7, s)
+5
+5000
+122 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(8, s)
+none
+5000
+123 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(9, s)
+none
+5000
+124 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(10, s)
+none
+5000
+125 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(11, s)
+none
+5000
+126 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(12, s)
+none
+5000
+127 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(13, s)
+none
+5000
+128 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(14, s)
+none
+5000
+129 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(15, s)
+none
+5000
+130 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(16, s)
+none
+5000
+131 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(17, s)
+none
+5000
+132 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(18, s)
+none
+5000
+133 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(19, s)
+none
+5000
+134 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(20, s)
+none
+5000
+135 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(21, s)
+none
+5000
+136 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(22, s)
+none
+5000
+137 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(23, s)
+none
+5000
+138 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(24, s)
+none
+5000
+139 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(25, s)
+none
+5000
+140 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(26, s)
+none
+5000
+141 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(27, s)
+none
+5000
+142 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(28, s)
+none
+5000
+143 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(29, s)
+none
+5000
+144 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(30, s)
+none
+5000
+145 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(31, s)
+none
+5000
+146 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(32, s)
+none
+5000
+147 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(33, s)
+none
+5000
+148 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(34, s)
+none
+5000
+149 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(35, s)
+none
+5000
+150 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(36, s)
+none
+5000
+151 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(37, s)
+none
+5000
+152 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(38, s)
+none
+5000
+153 - Testing Next(s, s) relationship
+stmt s;
+Select s such that Next(39, s)
+none
+5000
+154 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(1, s)
+2
+5000
+155 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(2, s)
+none
+5000
+156 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(3, s)
+4,5,6,7
+5000
+157 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(4, s)
+5,6,7
+5000
+158 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(5, s)
+5,6,7
+5000
+159 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(6, s)
+5,6,7
+5000
+160 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(7, s)
+5,6,7
+5000
+161 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(8, s)
+none
+5000
+162 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(9, s)
+none
+5000
+163 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(10, s)
+none
+5000
+164 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(11, s)
+none
+5000
+165 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(12, s)
+none
+5000
+166 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(13, s)
+none
+5000
+167 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(14, s)
+none
+5000
+168 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(15, s)
+none
+5000
+169 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(16, s)
+none
+5000
+170 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(17, s)
+none
+5000
+171 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(18, s)
+none
+5000
+172 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(19, s)
+none
+5000
+173 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(20, s)
+none
+5000
+174 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(21, s)
+none
+5000
+175 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(22, s)
+none
+5000
+176 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(23, s)
+none
+5000
+177 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(24, s)
+none
+5000
+178 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(25, s)
+none
+5000
+179 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(26, s)
+none
+5000
+180 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(27, s)
+none
+5000
+181 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(28, s)
+none
+5000
+182 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(29, s)
+none
+5000
+183 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(30, s)
+none
+5000
+184 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(31, s)
+none
+5000
+185 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(32, s)
+none
+5000
+186 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(33, s)
+none
+5000
+187 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(34, s)
+none
+5000
+188 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(35, s)
+none
+5000
+189 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(36, s)
+none
+5000
+190 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(37, s)
+none
+5000
+191 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(38, s)
+none
+5000
+192 - Testing Next*(p, v) relationship
+stmt s;
+Select s such that Next*(39, s)
+none
+5000
+193 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(1, s)
+none
+5000
+194 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(2, s)
+none
+5000
+195 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(3, s)
+none
+5000
+196 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(4, s)
+none
+5000
+197 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(5, s)
+6,7
+5000
+198 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(6, s)
+none
+5000
+199 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(7, s)
+none
+5000
+200 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(8, s)
+none
+5000
+201 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(9, s)
+none
+5000
+202 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(10, s)
+none
+5000
+203 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(11, s)
+none
+5000
+204 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(12, s)
+none
+5000
+205 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(13, s)
+none
+5000
+206 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(14, s)
+none
+5000
+207 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(15, s)
+none
+5000
+208 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(16, s)
+none
+5000
+209 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(17, s)
+none
+5000
+210 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(18, s)
+none
+5000
+211 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(19, s)
+none
+5000
+212 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(20, s)
+none
+5000
+213 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(21, s)
+none
+5000
+214 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(22, s)
+none
+5000
+215 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(23, s)
+none
+5000
+216 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(24, s)
+none
+5000
+217 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(25, s)
+none
+5000
+218 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(26, s)
+none
+5000
+219 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(27, s)
+none
+5000
+220 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(28, s)
+none
+5000
+221 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(29, s)
+none
+5000
+222 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(30, s)
+none
+5000
+223 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(31, s)
+none
+5000
+224 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(32, s)
+none
+5000
+225 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(33, s)
+none
+5000
+226 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(34, s)
+none
+5000
+227 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(35, s)
+none
+5000
+228 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(36, s)
+none
+5000
+229 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(37, s)
+none
+5000
+230 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(38, s)
+none
+5000
+231 - Testing Parent(s, s2) relationship
+stmt s;
+Select s such that Parent(39, s)
+none
+5000
+232 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(1, s)
+none
+5000
+233 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(2, s)
+none
+5000
+234 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(3, s)
+none
+5000
+235 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(4, s)
+none
+5000
+236 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(5, s)
+6,7
+5000
+237 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(6, s)
+none
+5000
+238 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(7, s)
+none
+5000
+239 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(8, s)
+none
+5000
+240 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(9, s)
+none
+5000
+241 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(10, s)
+none
+5000
+242 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(11, s)
+none
+5000
+243 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(12, s)
+none
+5000
+244 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(13, s)
+none
+5000
+245 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(14, s)
+none
+5000
+246 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(15, s)
+none
+5000
+247 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(16, s)
+none
+5000
+248 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(17, s)
+none
+5000
+249 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(18, s)
+none
+5000
+250 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(19, s)
+none
+5000
+251 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(20, s)
+none
+5000
+252 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(21, s)
+none
+5000
+253 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(22, s)
+none
+5000
+254 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(23, s)
+none
+5000
+255 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(24, s)
+none
+5000
+256 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(25, s)
+none
+5000
+257 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(26, s)
+none
+5000
+258 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(27, s)
+none
+5000
+259 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(28, s)
+none
+5000
+260 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(29, s)
+none
+5000
+261 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(30, s)
+none
+5000
+262 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(31, s)
+none
+5000
+263 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(32, s)
+none
+5000
+264 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(33, s)
+none
+5000
+265 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(34, s)
+none
+5000
+266 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(35, s)
+none
+5000
+267 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(36, s)
+none
+5000
+268 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(37, s)
+none
+5000
+269 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(38, s)
+none
+5000
+270 - Testing Parent*(s, s2) relationship
+stmt s;
+Select s such that Parent*(39, s)
+none
+5000
+271 - Testing Uses(p, v) relationship
+variable v; procedure p;
+Select p such that Uses(p, "v1")
+p2
+5000
+272 - Testing Uses(p, v) relationship
+variable v; procedure p;
+Select p such that Uses(p, "v2")
+p1,p2
+5000
+273 - Testing Uses(p, v) relationship
+variable v; procedure p;
+Select p such that Uses(p, "v3")
+p2
+5000
+274 - Testing Uses(p, v) relationship
+variable v; procedure p;
+Select p such that Uses(p, "v4")
+none
+5000
+275 - Testing Uses(p, v) relationship
+variable v; procedure p;
+Select p such that Uses(p, "v5")
+none
+5000
+276 - Testing Uses(p, v) relationship
+variable v; procedure p;
+Select p such that Uses(p, "v6")
+none
+5000
+277 - Testing Uses(p, v) relationship
+variable v; procedure p;
+Select p such that Uses(p, "v7")
+none
+5000
+278 - Testing Uses(p, v) relationship
+variable v; procedure p;
+Select p such that Uses(p, "v8")
+none
+5000
+279 - Testing Uses(p, v) relationship
+variable v; procedure p;
+Select p such that Uses(p, "v9")
+none
+5000
+280 - Testing Uses(s, v) relationship
+variable v; stmt s;
+Select s such that Uses(s, "v1")
+5
+5000
+281 - Testing Uses(s, v) relationship
+variable v; stmt s;
+Select s such that Uses(s, "v2")
+2,4,5,7
+5000
+282 - Testing Uses(s, v) relationship
+variable v; stmt s;
+Select s such that Uses(s, "v3")
+3,5
+5000
+283 - Testing Uses(s, v) relationship
+variable v; stmt s;
+Select s such that Uses(s, "v4")
+none
+5000
+284 - Testing Uses(s, v) relationship
+variable v; stmt s;
+Select s such that Uses(s, "v5")
+none
+5000
+285 - Testing Uses(s, v) relationship
+variable v; stmt s;
+Select s such that Uses(s, "v6")
+none
+5000
+286 - Testing Uses(s, v) relationship
+variable v; stmt s;
+Select s such that Uses(s, "v7")
+none
+5000
+287 - Testing Uses(s, v) relationship
+variable v; stmt s;
+Select s such that Uses(s, "v8")
+none
+5000
+288 - Testing Uses(s, v) relationship
+variable v; stmt s;
+Select s such that Uses(s, "v9")
+none
+5000
+289 - select assign synonym where first clause is such that and second clause is such that
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 such that Follows(s, 5) and Follows(s1, 5)
+none
+5000
+290 - select assign synonym where first clause is such that and second clause is with
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 such that Follows(s, 5) with v2.varName = "v1"
+none
+5000
+291 - select assign synonym where first clause is such that and second clause is pattern
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 such that Follows(s, 5) pattern a(_, _)
+none
+5000
+292 - select assign synonym where first clause is with and second clause is such that
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 with v2.varName = "x" such that Follows(s, 5)
+none
+5000
+293 - select assign synonym where first clause is with and second clause is with
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 with v2.varName = "v4" and v1.varName = "v3"
+none
+5000
+294 - select assign synonym where first clause is with and second clause is pattern
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 with v2.varName = "x" pattern a(_, _)
+none
+5000
+295 - select assign synonym where first clause is pattern and second clause is such that
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 pattern a(_, _) such that Follows(s, 5)
+none
+5000
+296 - select assign synonym where first clause is pattern and second clause is with
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 pattern a(_, _) with v2.varName = "v1"
+none
+5000
+297 - select assign synonym where first clause is pattern and second clause is pattern
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _)
+none
+5000
+298 - select assign synonym where first clause is such that and second clause is such that and third clause is with
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 such that Follows(s, 5) and Follows(s1, 5) with v2.varName = "v4"
+none
+5000
+299 - select assign synonym where first clause is pattern and second clause is such that and third clause is such that
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 pattern a(_, _) such that Follows(s, 5) and Follows(s1, 5)
+none
+5000
+300 - select assign synonym where first clause is such that and second clause is with and third clause is with
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 such that Follows(s, 5) with v2.varName = "v3" and v1.varName = "v4"
+none
+5000
+301 - select assign synonym where first clause is pattern and second clause is such that and third clause is with
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 pattern a(_, _) such that Follows(s, 5) with v2.varName = "v4"
+none
+5000
+302 - select assign synonym where first clause is pattern and second clause is pattern and third clause is such that
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _) such that Follows(s, 5)
+none
+5000
+303 - select assign synonym where first clause is pattern and second clause is with and third clause is with
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 pattern a(_, _) with v2.varName = "v3" and v1.varName = "v4"
+none
+5000
+304 - select assign synonym where first clause is pattern and second clause is pattern and third clause is with
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _) with v2.varName = "v5"
+none
+5000
+305 - select assign synonym where first clause is such that and second clause is such that (shared synonym)
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 such that Modifies(s, v2) and Follows(s, 5)
+none
+5000
+306 - select assign synonym where first clause is such that and second clause is with (shared synonym)
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 such that Modifies(s, v2) with v2.varName = "v3"
+none
+5000
+307 - select assign synonym where first clause is such that and second clause is pattern (shared synonym)
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 such that Follows(a, 5) pattern a(_, _)
+none
+5000
+308 - select assign synonym where first clause is with and second clause is with (shared synonym)
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 with v2.varName = "v5" and v2.varName = "v4"
+none
+5000
+309 - select assign synonym where first clause is with and second clause is pattern (shared synonym)
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 with v2.varName = "v6" pattern a(v2, _)
+none
+5000
+310 - select assign synonym where first clause is pattern and second clause is pattern (shared synonym)
+stmt s, s1; variable v2, v1; assign a, a1;
+Select a1 pattern a(_, _) and a1(_, _)
+none
+5000
+311 - select assign synonym where first clause is pattern and second clause is such that and third clause is with (shared synonym)
+variable v2; assign a;
+Select a pattern a(v2, _) such that Modifies(a, v2) with v2.varName = "v7"
+none
+5000

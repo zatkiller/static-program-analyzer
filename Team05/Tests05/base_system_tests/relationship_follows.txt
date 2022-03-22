@@ -1,389 +1,389 @@
-1 - Testing Follows(s, s) relationship
+1 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(1, s)
 <answer>
 5000
-2 - Testing Follows(s, s) relationship
+2 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(2, s)
 <answer>
 5000
-3 - Testing Follows(s, s) relationship
+3 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(3, s)
 <answer>
 5000
-4 - Testing Follows(s, s) relationship
+4 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(4, s)
 <answer>
 5000
-5 - Testing Follows(s, s) relationship
+5 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(5, s)
 <answer>
 5000
-6 - Testing Follows(s, s) relationship
+6 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(6, s)
 <answer>
 5000
-7 - Testing Follows(s, s) relationship
+7 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(7, s)
 <answer>
 5000
-8 - Testing Follows(s, s) relationship
+8 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(8, s)
 <answer>
 5000
-9 - Testing Follows(s, s) relationship
+9 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(9, s)
 <answer>
 5000
-10 - Testing Follows(s, s) relationship
+10 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(10, s)
 <answer>
 5000
-11 - Testing Follows(s, s) relationship
+11 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(11, s)
 <answer>
 5000
-12 - Testing Follows(s, s) relationship
+12 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(12, s)
 <answer>
 5000
-13 - Testing Follows(s, s) relationship
+13 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(13, s)
 <answer>
 5000
-14 - Testing Follows(s, s) relationship
+14 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(14, s)
 <answer>
 5000
-15 - Testing Follows(s, s) relationship
+15 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(15, s)
 <answer>
 5000
-16 - Testing Follows(s, s) relationship
+16 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(16, s)
 <answer>
 5000
-17 - Testing Follows(s, s) relationship
+17 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(17, s)
 <answer>
 5000
-18 - Testing Follows(s, s) relationship
+18 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(18, s)
 <answer>
 5000
-19 - Testing Follows(s, s) relationship
+19 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(19, s)
 <answer>
 5000
-20 - Testing Follows(s, s) relationship
+20 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(20, s)
 <answer>
 5000
-21 - Testing Follows(s, s) relationship
+21 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(21, s)
 <answer>
 5000
-22 - Testing Follows(s, s) relationship
+22 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(22, s)
 <answer>
 5000
-23 - Testing Follows(s, s) relationship
+23 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(23, s)
 <answer>
 5000
-24 - Testing Follows(s, s) relationship
+24 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(24, s)
 <answer>
 5000
-25 - Testing Follows(s, s) relationship
+25 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(25, s)
 <answer>
 5000
-26 - Testing Follows(s, s) relationship
+26 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(26, s)
 <answer>
 5000
-27 - Testing Follows(s, s) relationship
+27 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(27, s)
 <answer>
 5000
-28 - Testing Follows(s, s) relationship
+28 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(28, s)
 <answer>
 5000
-29 - Testing Follows(s, s) relationship
+29 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(29, s)
 <answer>
 5000
-30 - Testing Follows(s, s) relationship
+30 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(30, s)
 <answer>
 5000
-31 - Testing Follows(s, s) relationship
+31 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(31, s)
 <answer>
 5000
-32 - Testing Follows(s, s) relationship
+32 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(32, s)
 <answer>
 5000
-33 - Testing Follows(s, s) relationship
+33 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(33, s)
 <answer>
 5000
-34 - Testing Follows(s, s) relationship
+34 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(34, s)
 <answer>
 5000
-35 - Testing Follows(s, s) relationship
+35 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(35, s)
 <answer>
 5000
-36 - Testing Follows(s, s) relationship
+36 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(36, s)
 <answer>
 5000
-37 - Testing Follows(s, s) relationship
+37 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(37, s)
 <answer>
 5000
-38 - Testing Follows(s, s) relationship
+38 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(38, s)
 <answer>
 5000
-39 - Testing Follows(s, s) relationship
+39 - Testing Follows(s, s2) relationship
 stmt s;
 Select s such that Follows(39, s)
 <answer>
 5000
-40 - Testing Follows*(p, v) relationship
+40 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(1, s)
 <answer>
 5000
-41 - Testing Follows*(p, v) relationship
+41 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(2, s)
 <answer>
 5000
-42 - Testing Follows*(p, v) relationship
+42 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(3, s)
 <answer>
 5000
-43 - Testing Follows*(p, v) relationship
+43 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(4, s)
 <answer>
 5000
-44 - Testing Follows*(p, v) relationship
+44 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(5, s)
 <answer>
 5000
-45 - Testing Follows*(p, v) relationship
+45 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(6, s)
 <answer>
 5000
-46 - Testing Follows*(p, v) relationship
+46 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(7, s)
 <answer>
 5000
-47 - Testing Follows*(p, v) relationship
+47 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(8, s)
 <answer>
 5000
-48 - Testing Follows*(p, v) relationship
+48 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(9, s)
 <answer>
 5000
-49 - Testing Follows*(p, v) relationship
+49 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(10, s)
 <answer>
 5000
-50 - Testing Follows*(p, v) relationship
+50 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(11, s)
 <answer>
 5000
-51 - Testing Follows*(p, v) relationship
+51 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(12, s)
 <answer>
 5000
-52 - Testing Follows*(p, v) relationship
+52 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(13, s)
 <answer>
 5000
-53 - Testing Follows*(p, v) relationship
+53 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(14, s)
 <answer>
 5000
-54 - Testing Follows*(p, v) relationship
+54 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(15, s)
 <answer>
 5000
-55 - Testing Follows*(p, v) relationship
+55 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(16, s)
 <answer>
 5000
-56 - Testing Follows*(p, v) relationship
+56 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(17, s)
 <answer>
 5000
-57 - Testing Follows*(p, v) relationship
+57 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(18, s)
 <answer>
 5000
-58 - Testing Follows*(p, v) relationship
+58 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(19, s)
 <answer>
 5000
-59 - Testing Follows*(p, v) relationship
+59 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(20, s)
 <answer>
 5000
-60 - Testing Follows*(p, v) relationship
+60 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(21, s)
 <answer>
 5000
-61 - Testing Follows*(p, v) relationship
+61 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(22, s)
 <answer>
 5000
-62 - Testing Follows*(p, v) relationship
+62 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(23, s)
 <answer>
 5000
-63 - Testing Follows*(p, v) relationship
+63 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(24, s)
 <answer>
 5000
-64 - Testing Follows*(p, v) relationship
+64 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(25, s)
 <answer>
 5000
-65 - Testing Follows*(p, v) relationship
+65 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(26, s)
 <answer>
 5000
-66 - Testing Follows*(p, v) relationship
+66 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(27, s)
 <answer>
 5000
-67 - Testing Follows*(p, v) relationship
+67 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(28, s)
 <answer>
 5000
-68 - Testing Follows*(p, v) relationship
+68 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(29, s)
 <answer>
 5000
-69 - Testing Follows*(p, v) relationship
+69 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(30, s)
 <answer>
 5000
-70 - Testing Follows*(p, v) relationship
+70 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(31, s)
 <answer>
 5000
-71 - Testing Follows*(p, v) relationship
+71 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(32, s)
 <answer>
 5000
-72 - Testing Follows*(p, v) relationship
+72 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(33, s)
 <answer>
 5000
-73 - Testing Follows*(p, v) relationship
+73 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(34, s)
 <answer>
 5000
-74 - Testing Follows*(p, v) relationship
+74 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(35, s)
 <answer>
 5000
-75 - Testing Follows*(p, v) relationship
+75 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(36, s)
 <answer>
 5000
-76 - Testing Follows*(p, v) relationship
+76 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(37, s)
 <answer>
 5000
-77 - Testing Follows*(p, v) relationship
+77 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(38, s)
 <answer>
 5000
-78 - Testing Follows*(p, v) relationship
+78 - Testing Follows*(s, s2) relationship
 stmt s;
 Select s such that Follows*(39, s)
 <answer>

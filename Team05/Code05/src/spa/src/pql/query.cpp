@@ -203,7 +203,7 @@ namespace qps::query {
     }
 
     ExpSpec ExpSpec::ofFullMatch(std::string str) {
-        return ExpSpec { false, true, str };
+        return ExpSpec { false, false, str };
     }
 
     bool ExpSpec::isPartialMatch() {
@@ -215,7 +215,7 @@ namespace qps::query {
     }
 
     bool ExpSpec::isWildcard() {
-        return wildCard && (pattern.length() < 0) && !partialMatch;
+        return wildCard && (pattern.length() == 0) && !partialMatch;
     }
 
     std::string ExpSpec::getPattern() {
