@@ -188,7 +188,7 @@ ContentVarMap createContentVarMap(EntrySet &entrySet) {
         if (result.find(key) != result.end()) {
             result.at(key).insert(std::get<VAR_NAME>(val));
         } else {
-            std::set<VAR_NAME> newSet;
+            std::unordered_set<VAR_NAME> newSet;
             newSet.insert(std::get<VAR_NAME>(val));
             result[key] = newSet;
         }

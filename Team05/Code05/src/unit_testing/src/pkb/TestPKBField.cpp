@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unordered_set>
 
 #include "logging.h"
 #include "PKB/PKBField.h"
@@ -106,4 +107,61 @@ TEST_CASE("PKBField isValidConcrete") {
 
     field = PKBField::createConcrete(STMT_LO{ 1 });
     REQUIRE_FALSE(field.isValidConcrete(PKBEntityType::STATEMENT));
+}
+
+TEST_CASE("Hashing Test") {
+    std::hash<STMT_LO> stmtLOHasher;
+    std::hash<CONST> constHasher;
+    std::hash<VAR_NAME> varNameHasher;
+    std::hash<PROC_NAME> procNameHasher;
+    
+    // STMT_LO
+    STMT_LO s1 = STMT_LO{ 1, StatementType::Call};
+    STMT_LO s2 = STMT_LO{ 1, StatementType::Call};
+    STMT_LO s3 = STMT_LO{ 2, StatementType::Call};
+    REQUIRE(stmtLOHasher(s1) == stmtLOHasher(s1));
+    REQUIRE(stmtLOHasher(s1) == stmtLOHasher(s2));
+    REQUIRE_FALSE(stmtLOHasher(s1) == stmtLOHasher(s3));
+    
+    // Hashing CONST is just std::hash<int> and was not overloaded
+    // Ensure no collision between hashes of the same statement number and const values
+    CONST test = 1;
+    REQUIRE_FALSE(constHasher(test) == stmtLOHasher(s1));
+    
+    // VAR_NAME
+    VAR_NAME var1 = VAR_NAME("monke");
+    VAR_NAME var2 = VAR_NAME("monke");
+    VAR_NAME var3 = VAR_NAME("ape");
+    REQUIRE(varNameHasher(var1) == varNameHasher(var1));
+    REQUIRE(varNameHasher(var1) == varNameHasher(var2));
+    REQUIRE_FALSE(varNameHasher(var1) == varNameHasher(var3));
+    
+    // PROC_NAME
+    PROC_NAME proc1 = PROC_NAME("monke");
+    PROC_NAME proc2 = PROC_NAME("monke");
+    PROC_NAME proc3 = PROC_NAME("ape");
+    REQUIRE(procNameHasher(proc1) == procNameHasher(proc1));
+    REQUIRE(procNameHasher(proc1) == procNameHasher(proc2));
+    REQUIRE_FALSE(procNameHasher(proc1) == procNameHasher(proc3));
+    // Ensure no collision between hashes of the same VAR_NAME and PROC_NAME
+    REQUIRE_FALSE(procNameHasher(proc1) == varNameHasher(var1));
+
+    // Testing each of them again inside an unordered_set (hashtable)
+    std::unordered_set<STMT_LO> stmtSet;
+    stmtSet.insert(s1);
+    REQUIRE(stmtSet.find(s1) != stmtSet.end());
+    REQUIRE(stmtSet.find(s2) != stmtSet.end());
+    REQUIRE(stmtSet.find(s3) == stmtSet.end());   
+    
+    std::unordered_set<VAR_NAME> varSet;
+    varSet.insert(var1);
+    REQUIRE(varSet.find(var1) != varSet.end());
+    REQUIRE(varSet.find(var2) != varSet.end());
+    REQUIRE(varSet.find(var3) == varSet.end());   
+    
+    std::unordered_set<PROC_NAME> procSet;
+    procSet.insert(proc1);
+    REQUIRE(procSet.find(proc1) != procSet.end());
+    REQUIRE(procSet.find(proc2) != procSet.end());
+    REQUIRE(procSet.find(proc3) == procSet.end()); 
 }
