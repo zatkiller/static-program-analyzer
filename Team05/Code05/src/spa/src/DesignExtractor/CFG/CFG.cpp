@@ -155,6 +155,12 @@ void CFGExtractor::visit(const ast::While& node) {
 
 void CFGExtractor::visit(const ast::Read& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Read);
+    // inserting Modifies relationship info for Read stmt CFGNode
+    STMT_LO stmt = STMT_LO(node.getStmtNo(), StatementType::Read);
+    if (modifiesMap.find(stmt) != modifiesMap.end()) {
+        newNode->modifies.insert(*modifiesMap.find(stmt));
+    }
+
     lastVisited->insert(newNode);
     lastVisited = newNode;
     enterBucket(newNode);
@@ -169,6 +175,16 @@ void CFGExtractor::visit(const ast::Print& node) {
 
 void CFGExtractor::visit(const ast::Assign& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Assignment);
+    // inserting Modifies relationship info for Assign stmt CFGNode
+    STMT_LO stmt = STMT_LO(node.getStmtNo(), StatementType::Assignment);
+    if (modifiesMap.find(stmt) != modifiesMap.end()) {
+        newNode->modifies.insert(*modifiesMap.find(stmt));
+    }
+
+    if (usesMap.find(stmt) != usesMap.end()) {
+        newNode->uses.insert(*usesMap.find(stmt));
+    }
+
     lastVisited->insert(newNode);
     lastVisited = newNode;
     enterBucket(newNode);
@@ -176,6 +192,12 @@ void CFGExtractor::visit(const ast::Assign& node) {
 
 void CFGExtractor::visit(const ast::Call& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Call);
+    // inserting Modifies relationship info for Call stmt CFGNode
+    STMT_LO stmt = STMT_LO(node.getStmtNo(), StatementType::Call);
+    if (modifiesMap.find(stmt) != modifiesMap.end()) {
+        newNode->modifies.insert(*modifiesMap.find(stmt));
+    }
+
     lastVisited->insert(newNode);
     lastVisited = newNode;
     enterBucket(newNode);

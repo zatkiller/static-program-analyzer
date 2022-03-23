@@ -27,17 +27,10 @@ private:
     std::vector<std::shared_ptr<CFGNode>> children;
 public:
     std::optional<STMT_LO> stmt;
-    ContentToVarMap modifies, uses;  // information on modifies or uses relationship for curr node
+    ContentToVarMap modifies;  // information on modifies relationship for current node
+    ContentToVarMap uses;  // information on uses relationship relationship for current node
     CFGNode () : stmt(std::nullopt) {}
-    CFGNode(int stmtNo, StatementType stmtType) : stmt(STMT_LO(stmtNo, stmtType)) {}  // to be deleted
-    CFGNode(
-        int stmtNo, 
-        StatementType stmtType, 
-        ContentToVarMap modifies, 
-        ContentToVarMap uses) : 
-        stmt(STMT_LO(stmtNo, stmtType)),
-        modifies(modifies), 
-        uses(uses) {}
+    CFGNode(int stmtNo, StatementType stmtType) : stmt(STMT_LO(stmtNo, stmtType)) {}
 
     void insert(std::shared_ptr<CFGNode> child);
     bool isParentOf(CFGNode* other);
