@@ -17,6 +17,8 @@ namespace qps::parser {
     using qps::query::NextT;
     using qps::query::Calls;
     using qps::query::CallsT;
+    using qps::query::Affects;
+    using qps::query::AffectsT;
     using qps::query::Pattern;
     using qps::query::ExpSpec;
     using qps::query::AttrName;
@@ -229,6 +231,10 @@ namespace qps::parser {
             ptr =  parseRelRefVariables<Calls>(queryObj, &Calls::caller, &Calls::callee);
         } else if (tokenType == TokenType::CALLS_T) {
             ptr =  parseRelRefVariables<CallsT>(queryObj, &CallsT::caller, &CallsT::transitiveCallee);
+        } else if (tokenType == TokenType::AFFECTS) {
+            ptr =  parseRelRefVariables<Affects>(queryObj, &Affects::affectingStmt, &Affects::affected);
+        } else if (tokenType == TokenType::AFFECTS_T) {
+            ptr =  parseRelRefVariables<AffectsT>(queryObj, &AffectsT::affectingStmt, &AffectsT::transitiveAffected);
         } else {
             throw exceptions::PqlSyntaxException(messages::qps::parser::invalidRelRefMessage);
         }

@@ -28,6 +28,8 @@ using qps::query::Next;
 using qps::query::NextT;
 using qps::query::Calls;
 using qps::query::CallsT;
+using qps::query::Affects;
+using qps::query::AffectsT;
 using qps::query::Pattern;
 using qps::query::ExpSpec;
 using qps::query::AttrRef;
@@ -493,6 +495,86 @@ TEST_CASE("Parser parseRelRef - Calls*") {
 
         REQUIRE_THROWS_MATCHES(parser.parseRelRef(queryObj), exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::notProcedureSynonymMessage));
+    }
+}
+
+TEST_CASE("Parser parseRelRef - Affects") {
+    SECTION ("Valid query with Affects relationship") {
+        std::string testQuery = "Affects(a1, a2)";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("a1", DesignEntity::ASSIGN);
+        queryObj.addDeclaration("a2", DesignEntity::ASSIGN);
+
+        parser.parseRelRef(queryObj);
+
+        std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
+        REQUIRE(relRefPtr->getType() == RelRefType::AFFECTS);
+
+        std::shared_ptr<Affects> aPtr = std::dynamic_pointer_cast<Affects>(relRefPtr);
+        REQUIRE(aPtr->affectingStmt.isDeclaration());
+        REQUIRE(aPtr->affectingStmt.getDeclaration() == "a1");
+        REQUIRE(aPtr->affected.isDeclaration());
+        REQUIRE(aPtr->affected.getDeclaration() == "a2");
+    }
+
+    SECTION ("Invalid query with Affects relationship - synonym is not assign") {
+        std::string testQuery = "Affects(a, s)";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+        queryObj.addDeclaration("s", DesignEntity::STMT);
+
+        REQUIRE_THROWS_MATCHES(parser.parseRelRef(queryObj), exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::notAssignSynonymMessage));
+    }
+}
+
+TEST_CASE("Parser parseRelRef - Affects*") {
+    SECTION ("Valid query with Affects* relationship") {
+        std::string testQuery = "Affects*(a1, a2)";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("a1", DesignEntity::ASSIGN);
+        queryObj.addDeclaration("a2", DesignEntity::ASSIGN);
+
+        parser.parseRelRef(queryObj);
+
+        std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
+        REQUIRE(relRefPtr->getType() == RelRefType::AFFECTST);
+
+        std::shared_ptr<AffectsT> aPtr = std::dynamic_pointer_cast<AffectsT>(relRefPtr);
+        REQUIRE(aPtr->affectingStmt.isDeclaration());
+        REQUIRE(aPtr->affectingStmt.getDeclaration() == "a1");
+        REQUIRE(aPtr->transitiveAffected.isDeclaration());
+        REQUIRE(aPtr->transitiveAffected.getDeclaration() == "a2");
+    }
+
+    SECTION ("Invalid query with Affects* relationship - synonym is not assign") {
+        std::string testQuery = "Affects*(a, cl)";
+
+        Parser parser;
+        parser.addInput(testQuery);
+
+        Query queryObj;
+
+        queryObj.addDeclaration("a", DesignEntity::ASSIGN);
+        queryObj.addDeclaration("cl", DesignEntity::CALL);
+
+        REQUIRE_THROWS_MATCHES(parser.parseRelRef(queryObj), exceptions::PqlSemanticException,
+                               Catch::Message(messages::qps::parser::notAssignSynonymMessage));
     }
 }
 

@@ -410,6 +410,32 @@ struct NextT : RelRef {
     std::vector<std::string> getSyns() override;
 };
 
+struct Affects : RelRef {
+    Affects() : RelRef(RelRefType::AFFECTS) {}
+
+    StmtRef affectingStmt;
+    StmtRef affected;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override;
+    void checkSecondArg() override;
+};
+
+struct AffectsT : RelRef {
+    AffectsT() : RelRef(RelRefType::AFFECTST) {}
+
+    StmtRef affectingStmt;
+    StmtRef transitiveAffected;
+
+    std::vector<PKBField> getField() override;
+    std::vector<std::string> getSyns() override;
+
+    void checkFirstArg() override;
+    void checkSecondArg() override;
+};
+
 /*
 * Struct used to represent a Expression-Spec
 */
