@@ -4,6 +4,7 @@
 #include <optional>
 #include <type_traits>
 #include "PKBField.h"
+#include <map>
 #include "PKBRelationshipTables.h"
 
 /**
@@ -214,5 +215,8 @@ public:
     * @param statementNumber the provided statement number to look up
     * @return std::vector<STMT_LO> a vector of STMT_LOs that matches the provided statement number
     */
-    std::vector<STMT_LO> getStmts(int statementNumber) const;
+    std::optional<STMT_LO> getStmt(int statementNumber) const;
+
+private:
+    std::map<int, STMT_LO> stmts; 
 };

@@ -94,13 +94,13 @@ bool PKB::validateStatement(const PKBField field) const {
         auto statementNum = content->statementNum;
         auto statementType = content->type;
         auto attribute = content->attribute;
-        auto stmts = statementTable->getStmts(statementNum);
+        auto stmtQuery = statementTable->getStmt(statementNum);
 
-        if (stmts.size() != 1) {
+        if (!stmtQuery.has_value()) {
             return false;
         }
 
-        auto stmt = stmts.at(0);
+        auto stmt = stmtQuery.value();
 
         // If provided STMT_LO has a type, check if it is equivalent to the one in the table
         // StatementTypes of All or None will be updated to the correct one in the table by appendStatementInformation
@@ -117,9 +117,10 @@ void PKB::appendStatementInformation(PKBField* field) {
     if (field->fieldType == PKBFieldType::CONCRETE && field->entityType == PKBEntityType::STATEMENT) {
         auto content = field->getContent<STMT_LO>();
         auto statementNum = content->statementNum;
-        auto stmts = statementTable->getStmts(statementNum);
-        auto stmt = stmts.at(0);
-        field->content = stmt;
+
+        // This function is only called when validate is true, i.e. there exists a STMT_LO matching the one provided 
+        // Hence, there is no need to check whether the returned optional has a value
+        field->content = statementTable->getStmt(statementNum).value();
     }
 }
 

@@ -33,7 +33,7 @@ void VariableTable::insert(VAR_NAME var) {
 /* ---------------------------------StatementTable Methods ----------------------------------------*/
 
 bool StatementTable::contains(int stmtNum) const {
-    return this->getStmtTypeOfLine(stmtNum).has_value();
+    return stmts.count(stmtNum) != 0;
 }
 
 bool StatementTable::contains(StatementType stmtType, int stmtNum) const {
@@ -41,20 +41,20 @@ bool StatementTable::contains(StatementType stmtType, int stmtNum) const {
 }
 
 void StatementTable::insert(STMT_LO stmt) {
-    if (!contains(stmt.statementNum)) {
+    int statementNum = stmt.statementNum;
+    if (stmts.count(statementNum) == 0) {
         insertVal(stmt);
+        stmts.emplace(statementNum, stmt);
     }
 }
 
-std::vector<STMT_LO> StatementTable::getStmts(int statementNumber) const {
-    std::vector<STMT_LO> res;
-
-    for (const auto& row : rows) {
-        if (row.getVal().statementNum == statementNumber) {
-            res.push_back(row.getVal());
-        }
+std::optional<STMT_LO> StatementTable::getStmt(int statementNumber) const {
+    auto search = stmts.find(statementNumber);
+    if (search != stmts.end()) {
+        return search->second;
     }
-    return res;
+
+    return std::nullopt;
 }
 
 std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType stmtType) const {
@@ -70,24 +70,12 @@ std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType stmtType) const
 }
 
 std::optional<StatementType> StatementTable::getStmtTypeOfLine(int stmtNum) const {
-    std::vector<EntityRow<STMT_LO>> filtered;
-    std::copy_if(begin(rows), end(rows), std::back_inserter(filtered),
-        [stmtNum](EntityRow<STMT_LO> row) { return row.getVal().statementNum == stmtNum; });
+    auto stmt = getStmt(stmtNum);
 
-    if (filtered.size() == 0) {
+    if (stmt.has_value()) {
+        return stmt.value().type;
+    } else {
         Logger(Level::INFO) << "No statement exists with the provided statement number";
         return std::nullopt;
-    } else if (filtered.size() > 1) {
-        Logger(Level::INFO) << "Statement table has rows with duplicate line numbers";
-        return std::nullopt;
-    } else {
-        STMT_LO stmt = filtered.at(0).getVal();
-
-        if (stmt.type.has_value()) {
-            return stmt.type.value();
-        } else {
-            Logger(Level::INFO) << "Statement does not have a type";
-            return std::nullopt;
-        }
     }
 }
