@@ -459,6 +459,46 @@ namespace qps::query {
         return getFieldHelper(&NextT::before, &NextT::transitiveAfter);
     }
 
+    std::vector<std::string> Affects::getSyns() {
+        return getSynsHelper(&Affects::affectingStmt, &Affects::affected);
+    }
+
+    std::vector<PKBField> Affects::getField() {
+        return getFieldHelper(&Affects::affectingStmt, &Affects::affected);
+    }
+
+    void Affects::checkFirstArg() {
+        if (affectingStmt.isDeclaration() && affectingStmt.getDeclarationType() != DesignEntity::ASSIGN) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notAssignSynonymMessage);
+        }
+    }
+
+    void Affects::checkSecondArg() {
+        if (affected.isDeclaration() && affected.getDeclarationType() != DesignEntity::ASSIGN) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notAssignSynonymMessage);
+        }
+    }
+
+    std::vector<std::string> AffectsT::getSyns() {
+        return getSynsHelper(&AffectsT::affectingStmt, &AffectsT::transitiveAffected);
+    }
+
+    std::vector<PKBField> AffectsT::getField() {
+        return getFieldHelper(&AffectsT::affectingStmt, &AffectsT::transitiveAffected);
+    }
+
+    void AffectsT::checkFirstArg() {
+        if (affectingStmt.isDeclaration() && affectingStmt.getDeclarationType() != DesignEntity::ASSIGN) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notAssignSynonymMessage);
+        }
+    }
+
+    void AffectsT::checkSecondArg() {
+        if (transitiveAffected.isDeclaration() && transitiveAffected.getDeclarationType() != DesignEntity::ASSIGN) {
+            throw exceptions::PqlSemanticException(messages::qps::parser::notAssignSynonymMessage);
+        }
+    }
+
     AttrCompareRef AttrCompareRef::ofString(std::string str) {
         AttrCompareRef acr;
         acr.type = AttrCompareRefType::STRING;

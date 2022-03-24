@@ -25,8 +25,9 @@ namespace qps::parser {
     std::vector<std::string> keywords = {
             "Select", "Modifies", "Uses", "Parent*",
             "Parent", "Follows*", "Follows", "Next*",
-            "Next", "Calls*", "Calls", "pattern", "such that",
-            "with", "procName", "varName", "value", "stmt#", "and"
+            "Next", "Calls*", "Calls", "Affects*", "Affects",
+            "pattern", "such that", "with", "procName", "varName",
+            "value", "stmt#", "and"
     };
 
     std::unordered_map<std::string, TokenType> keywordsToTokenTypeMap {
@@ -41,6 +42,8 @@ namespace qps::parser {
             { "Next", TokenType::NEXT },
             { "Calls*", TokenType::CALLS_T },
             { "Calls", TokenType::CALLS },
+            { "Affects*", TokenType::AFFECTS_T },
+            { "Affects", TokenType::AFFECTS },
             { "and", TokenType::AND },
             { "pattern", TokenType::PATTERN },
             { "such that", TokenType::SUCH_THAT },

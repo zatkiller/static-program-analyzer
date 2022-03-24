@@ -33,6 +33,8 @@ enum class TokenType {
     NEXT_T,
     CALLS,
     CALLS_T,
+    AFFECTS,
+    AFFECTS_T,
 
     // Reserved Keywords
     SELECT,
