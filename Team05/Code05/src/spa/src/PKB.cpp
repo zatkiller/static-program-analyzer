@@ -72,7 +72,7 @@ bool PKB::validateVariable(const PKBField field) const {
     if (field.fieldType == PKBFieldType::CONCRETE) {
         auto content = field.getContent<VAR_NAME>();
         auto varName = content->name;
-        return variableTable->contains(varName);
+        return variableTable->contains(VAR_NAME{ varName });
     }
 
     return true;
@@ -82,7 +82,7 @@ bool PKB::validateProcedure(const PKBField field) const {
     if (field.fieldType == PKBFieldType::CONCRETE) {
         auto content = field.getContent<PROC_NAME>();
         auto varName = content->name;
-        return procedureTable->contains(varName);
+        return procedureTable->contains(PROC_NAME{ varName });
     }
 
     return true;
