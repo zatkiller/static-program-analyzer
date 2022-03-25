@@ -95,7 +95,7 @@ bool CFGNode::isAncestorOf(CFGNode* other) {
 
 using EntrySet = std::set<sp::design_extractor::Entry>;
 
-ContentToVarMap createContentVarMap(EntrySet &entrySet) {
+ContentToVarMap createContentVarMap(const EntrySet &entrySet) {
     ContentToVarMap result;
     for (auto entry : entrySet) {
         auto relationship = std::get<design_extractor::Relationship>(entry);
@@ -112,7 +112,7 @@ ContentToVarMap createContentVarMap(EntrySet &entrySet) {
     return result;
 }
 
-ContentToVarMap filterContentVarMap(ContentToVarMap &contentToVarMap, Content &content) {
+ContentToVarMap filterContentVarMap(const ContentToVarMap &contentToVarMap, const Content &content) {
     ContentToVarMap result;
     auto entry = contentToVarMap.find(content);
     if (entry != contentToVarMap.end()) {
@@ -157,9 +157,7 @@ void CFGExtractor::visit(const ast::Read& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Read);
     // inserting Modifies relationship info for Read stmt CFGNode
     STMT_LO stmt = STMT_LO(node.getStmtNo(), StatementType::Read);
-    if (modifiesMap.find(stmt) != modifiesMap.end()) {
-        newNode->modifies.insert(*modifiesMap.find(stmt));
-    }
+    newNode->modifies = filterContentVarMap(modifiesMap, stmt);
 
     lastVisited->insert(newNode);
     lastVisited = newNode;
@@ -177,13 +175,8 @@ void CFGExtractor::visit(const ast::Assign& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Assignment);
     // inserting Modifies relationship info for Assign stmt CFGNode
     STMT_LO stmt = STMT_LO(node.getStmtNo(), StatementType::Assignment);
-    if (modifiesMap.find(stmt) != modifiesMap.end()) {
-        newNode->modifies.insert(*modifiesMap.find(stmt));
-    }
-
-    if (usesMap.find(stmt) != usesMap.end()) {
-        newNode->uses.insert(*usesMap.find(stmt));
-    }
+    newNode->modifies = filterContentVarMap(modifiesMap, stmt);
+    newNode->uses = filterContentVarMap(usesMap, stmt);
 
     lastVisited->insert(newNode);
     lastVisited = newNode;
@@ -194,9 +187,7 @@ void CFGExtractor::visit(const ast::Call& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Call);
     // inserting Modifies relationship info for Call stmt CFGNode
     STMT_LO stmt = STMT_LO(node.getStmtNo(), StatementType::Call);
-    if (modifiesMap.find(stmt) != modifiesMap.end()) {
-        newNode->modifies.insert(*modifiesMap.find(stmt));
-    }
+    newNode->modifies = filterContentVarMap(modifiesMap, stmt);
 
     lastVisited->insert(newNode);
     lastVisited = newNode;
