@@ -225,59 +225,34 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
     : PKBResponse{ false, Response{extracted} };
 }
 
-PKBResponse PKB::getStatements() {
+template <typename T>
+PKBResponse createResponseFromTable(std::vector<T> extracted) {
     std::unordered_set<PKBField, PKBFieldHash> res;
-
-    std::vector<STMT_LO> extracted = statementTable->getAllEntity();
     for (auto row : extracted) {
         res.insert(PKBField::createConcrete(row));
     }
 
     return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
+}
+
+PKBResponse PKB::getStatements() {
+    return createResponseFromTable<STMT_LO>(statementTable->getAllEntity());
 }
 
 PKBResponse PKB::getStatements(StatementType stmtType) {
-    std::unordered_set<PKBField, PKBFieldHash> res;
-
-    std::vector<STMT_LO> extracted = statementTable->getStmtOfType(stmtType);
-    for (auto row : extracted) {
-        res.insert(PKBField::createConcrete(row));
-    }
-
-    return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
+    return createResponseFromTable<STMT_LO>(statementTable->getStmtOfType(stmtType));
 }
 
 PKBResponse PKB::getVariables() {
-    std::unordered_set<PKBField, PKBFieldHash> res;
-
-    std::vector<VAR_NAME> extracted = variableTable->getAllEntity();
-    for (auto row : extracted) {
-        res.insert(PKBField::createConcrete(row));
-    }
-
-    return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
+    return createResponseFromTable<VAR_NAME>(variableTable->getAllEntity());
 }
 
 PKBResponse PKB::getProcedures() {
-    std::unordered_set<PKBField, PKBFieldHash> res;
-
-    std::vector<PROC_NAME> extracted = procedureTable->getAllEntity();
-    for (auto row : extracted) {
-        res.insert(PKBField::createConcrete(row));
-    }
-
-    return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
+    return createResponseFromTable<PROC_NAME>(procedureTable->getAllEntity());
 }
 
 PKBResponse PKB::getConstants() {
-    std::unordered_set<PKBField, PKBFieldHash> res;
-
-    std::vector<CONST> extracted = constantTable->getAllEntity();
-    for (auto row : extracted) {
-        res.insert(PKBField::createConcrete(row));
-    }
-
-    return res.size() != 0 ? PKBResponse{ true, Response{res} } : PKBResponse{ false, Response{res} };
+    return createResponseFromTable<CONST>(constantTable->getAllEntity());
 }
 
 PKBResponse PKB::match(
