@@ -276,7 +276,7 @@ PKBResponse PKB::match(
         stmtRes.emplace_back(stmt);
 
         auto varName = node.get().getLHS()->getVarName();
-        stmtRes.emplace_back(PKBField::createConcrete(VAR_NAME{ varname }));
+        stmtRes.emplace_back(PKBField::createConcrete(VAR_NAME{ varName }));
 
         res.insert(stmtRes);
     }
