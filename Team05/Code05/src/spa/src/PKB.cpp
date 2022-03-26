@@ -275,7 +275,7 @@ PKBResponse PKB::match(
             STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() });
         stmtRes.emplace_back(stmt);
 
-        auto varname = node.get().getLHS()->getVarName();
+        auto varName = node.get().getLHS()->getVarName();
         stmtRes.emplace_back(PKBField::createConcrete(VAR_NAME{ varname }));
 
         res.insert(stmtRes);
