@@ -11,16 +11,17 @@ template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template<class... Ts> overloaded(Ts...)->overloaded<Ts...>;
 
 PKB::PKB() {
+    relationshipTables.emplace(PKBRelationship::FOLLOWS, std::make_shared<FollowsRelationshipTable>());
+    relationshipTables.emplace(PKBRelationship::MODIFIES, std::make_shared<ModifiesRelationshipTable>());
+    relationshipTables.emplace(PKBRelationship::CALLS, std::make_shared<CallsRelationshipTable>());
+    relationshipTables.emplace(PKBRelationship::NEXT, std::make_shared<NextRelationshipTable>());
+    relationshipTables.emplace(PKBRelationship::PARENT, std::make_shared<ParentRelationshipTable>());
+    relationshipTables.emplace(PKBRelationship::USES, std::make_shared<UsesRelationshipTable>());
+
     statementTable = std::make_unique<StatementTable>();
     variableTable = std::make_unique<VariableTable>();
     constantTable = std::make_unique<ConstantTable>();
     procedureTable = std::make_unique<ProcedureTable>();
-    modifiesTable = std::make_unique<ModifiesRelationshipTable>();
-    followsTable = std::make_unique<FollowsRelationshipTable>();
-    parentTable = std::make_unique<ParentRelationshipTable>();
-    usesTable = std::make_unique<UsesRelationshipTable>();
-    callsTable = std::make_unique<CallsRelationshipTable>();
-    nextTable = std::make_unique<NextRelationshipTable>();
 }
 
 // INSERT API
@@ -138,28 +139,37 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
     appendStatementInformation(&field1);
     appendStatementInformation(&field2);
 
-    switch (type) {
-    case PKBRelationship::MODIFIES:
-        modifiesTable->insert(field1, field2);
-        break;
-    case PKBRelationship::FOLLOWS:
-        followsTable->insert(field1, field2);
-        break;
-    case PKBRelationship::PARENT:
-        parentTable->insert(field1, field2);
-        break;
-    case PKBRelationship::USES:
-        usesTable->insert(field1, field2);
-        break;
-    case PKBRelationship::CALLS:
-        callsTable->insert(field1, field2);
-        break;
-    case PKBRelationship::NEXT:
-        nextTable->insert(field1, field2);
-        break;
-    default:
-        Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
-        break;
+    getRelationshipTable(type)->insert(field1, field2);
+}
+
+bool isTransitiveRelationship(PKBRelationship relationship) {
+    return relationship == PKBRelationship::FOLLOWST ||
+        relationship == PKBRelationship::PARENTT ||
+        relationship == PKBRelationship::CALLST ||
+        relationship == PKBRelationship::NEXTT;
+}
+
+PKBRelationship getNonTransitiveRelationship(PKBRelationship relationship) {
+    if (relationship == PKBRelationship::FOLLOWST) {
+        return PKBRelationship::FOLLOWS;
+    } else if (relationship == PKBRelationship::PARENTT) {
+        return PKBRelationship::PARENT;
+    } else if (relationship == PKBRelationship::CALLST) {
+        return PKBRelationship::CALLS;
+    } else if (relationship == PKBRelationship::NEXTT) {
+        return PKBRelationship::NEXT;
+    } else {
+        return relationship;
+    }
+}
+
+std::shared_ptr<RelationshipTable> PKB::getRelationshipTable(PKBRelationship relationship) const {
+    auto search = relationshipTables.find(getNonTransitiveRelationship(relationship));
+    if (search != relationshipTables.end()) {
+        return search->second;
+    } else {
+        Logger(Level::ERROR) << "No RelationshipTable for the given PKBRelationship";
+        throw std::invalid_argument("No RelationshipTable for the given PKBRelationship");
     }
 }
 
@@ -175,30 +185,15 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
     appendStatementInformation(&field1);
     appendStatementInformation(&field2);
 
-    switch (rs) {
-    case PKBRelationship::MODIFIES:
-        return modifiesTable->contains(field1, field2);
-    case PKBRelationship::FOLLOWS:
-        return followsTable->contains(field1, field2);
-    case PKBRelationship::PARENT:
-        return parentTable->contains(field1, field2);
-    case PKBRelationship::USES:
-        return usesTable->contains(field1, field2);
-    case PKBRelationship::FOLLOWST:
-        return followsTable->containsT(field1, field2);
-    case PKBRelationship::PARENTT:
-        return parentTable->containsT(field1, field2);
-    case PKBRelationship::CALLS:
-        return callsTable->contains(field1, field2);
-    case PKBRelationship::CALLST:
-        return callsTable->containsT(field1, field2);
-    case PKBRelationship::NEXT:
-        return nextTable->contains(field1, field2);
-    case PKBRelationship::NEXTT:
-        return nextTable->containsT(field1, field2);
-    default:
-        Logger(Level::INFO) << "Checking for an invalid relationship table\n";
-        return false;
+    auto relationshipTablePtr = getRelationshipTable(rs);
+    if (isTransitiveRelationship(rs)) {
+        if (rs == PKBRelationship::CALLST) {
+            return std::dynamic_pointer_cast<TransitiveRelationshipTable<PROC_NAME>>(relationshipTablePtr)->containsT(field1, field2);
+        } else {
+            return std::dynamic_pointer_cast<TransitiveRelationshipTable<STMT_LO>>(relationshipTablePtr)->containsT(field1, field2);
+        }
+    } else {
+        return relationshipTablePtr->contains(field1, field2);
     }
 }
 
@@ -214,40 +209,15 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
 
     FieldRowResponse extracted;
 
-    switch (rs) {
-    case PKBRelationship::MODIFIES:
-        extracted = modifiesTable->retrieve(field1, field2);
-        break;
-    case PKBRelationship::FOLLOWS:
-        extracted = followsTable->retrieve(field1, field2);
-        break;
-    case PKBRelationship::PARENT:
-        extracted = parentTable->retrieve(field1, field2);
-        break;
-    case PKBRelationship::USES:
-        extracted = usesTable->retrieve(field1, field2);
-        break;
-    case PKBRelationship::FOLLOWST:
-        extracted = followsTable->retrieveT(field1, field2);
-        break;
-    case PKBRelationship::PARENTT:
-        extracted = parentTable->retrieveT(field1, field2);
-        break;
-    case PKBRelationship::CALLS:
-        extracted = callsTable->retrieve(field1, field2);
-        break;
-    case PKBRelationship::CALLST:
-        extracted = callsTable->retrieveT(field1, field2);
-        break;
-    case PKBRelationship::NEXT:
-        extracted = nextTable->retrieve(field1, field2);
-        break;
-    case PKBRelationship::NEXTT:
-        extracted = nextTable->retrieveT(field1, field2);
-        break;
-    default:
-        throw "Invalid relationship type used!";
-        break;
+    auto relationshipTablePtr = getRelationshipTable(rs);
+    if (isTransitiveRelationship(rs)) {
+        if (rs == PKBRelationship::CALLST) {
+            extracted = std::dynamic_pointer_cast<TransitiveRelationshipTable<PROC_NAME>>(relationshipTablePtr)->retrieveT(field1, field2);
+        } else {
+            extracted = std::dynamic_pointer_cast<TransitiveRelationshipTable<STMT_LO>>(relationshipTablePtr)->retrieveT(field1, field2);
+        }
+    } else {
+        extracted = relationshipTablePtr->retrieve(field1, field2);
     }
 
     return extracted.size() != 0

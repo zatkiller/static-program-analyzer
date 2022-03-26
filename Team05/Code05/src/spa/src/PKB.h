@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 #include "logging.h"
 
 #include "PKB/PKBTables.h"
@@ -18,7 +19,7 @@ public:
 
     /**
     * Inserts a program design entity into its respective table
-    * 
+    *
     * @param entity a STMT_LO, PROC_NAME, VAR_NAME, or CONST
     */
     void insertEntity(Content entity);
@@ -130,7 +131,9 @@ private:
     std::unique_ptr<CallsRelationshipTable> callsTable;
     std::unique_ptr<NextRelationshipTable> nextTable;
     std::unique_ptr<sp::ast::ASTNode> root;
+    std::unordered_map<PKBRelationship, std::shared_ptr<RelationshipTable>> relationshipTables;
 
+    std::shared_ptr<RelationshipTable> getRelationshipTable(PKBRelationship relationship) const;
     /**
    * Inserts an assignment, if, or while statement information into the PKB.
    *
@@ -196,7 +199,7 @@ private:
     /**
     * For concrete statement fields, replace its STMT_LO content with the one in the StatementTable. This function will
     * only run after PKB::validate and PKB::validateStatement return true.
-    * 
+    *
     * @param field
     */
     void appendStatementInformation(PKBField* field);
