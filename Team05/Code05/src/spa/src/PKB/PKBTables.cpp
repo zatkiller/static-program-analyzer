@@ -1,93 +1,110 @@
 #include "PKBTables.h"
 #include "logging.h"
 
-/* ---------------------------------ProcedureTable Methods ----------------------------------------*/
-bool ProcedureTable::contains(std::string procName) const {
-    return this->containsVal(PROC_NAME(procName));
+/* --------------------------------- StatementMap Methods ----------------------------------------*/
+bool StatementMap::contains(STMT_LO val) const {
+    auto search = entities.find(val.statementNum);
+    if (search != entities.end() && search->second == val) {
+        return true;
+    } 
+
+    return false;
 }
 
-void ProcedureTable::insert(PROC_NAME proc) {
-    insertVal(proc);
+void StatementMap::insert(STMT_LO val) {
+    entities.emplace(val.statementNum, val);
 }
 
-/* ---------------------------------ConstantTable Methods ----------------------------------------*/
-
-bool ConstantTable::contains(CONST value) const {
-    return this->containsVal(value);
+int StatementMap::getSize() const {
+    return entities.size();
 }
 
-void ConstantTable::insert(CONST value) {
-    insertVal(value);
-}
-
-/* ---------------------------------VariableTable Methods ----------------------------------------*/
-
-bool VariableTable::contains(std::string varName) const {
-    return this->containsVal(VAR_NAME(varName));
-}
-
-void VariableTable::insert(VAR_NAME var) {
-    insertVal(var);
-}
-
-/* ---------------------------------StatementTable Methods ----------------------------------------*/
-
-bool StatementTable::contains(int stmtNum) const {
-    return this->getStmtTypeOfLine(stmtNum).has_value();
-}
-
-bool StatementTable::contains(StatementType stmtType, int stmtNum) const {
-    return this->containsVal(STMT_LO(stmtNum, stmtType));
-}
-
-void StatementTable::insert(STMT_LO stmt) {
-    if (!contains(stmt.statementNum)) {
-        insertVal(stmt);
-    }
-}
-
-std::vector<STMT_LO> StatementTable::getStmts(int statementNumber) const {
+std::vector<STMT_LO> StatementMap::getAllEntities() const {
     std::vector<STMT_LO> res;
-
-    for (const auto& row : rows) {
-        if (row.getVal().statementNum == statementNumber) {
-            res.push_back(row.getVal());
-        }
+    for (auto it = entities.begin(); it != entities.end(); ++it) {
+        res.push_back(it->second);
     }
     return res;
 }
 
-std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType stmtType) const {
+bool StatementMap::contains(int statementNumber) const {
+    return entities.count(statementNumber) != 0;
+}
+
+bool StatementMap::contains(StatementType type, int statementNumber) const {
+    auto stmt = getStmt(statementNumber);
+    if (stmt.has_value()) {
+        return stmt.value().type.value() == type;
+    }
+    
+    return false;
+}
+
+std::optional<STMT_LO> StatementMap::getStmt(int statementNumber) const {
+    auto search = entities.find(statementNumber);
+    if (search != entities.end()) {
+        return search->second;
+    }
+
+    return std::nullopt;
+}
+
+std::vector<STMT_LO> StatementMap::getStmtsOfType(StatementType type) const {
     std::vector<STMT_LO> res;
 
-    for (const auto& row : rows) {
-        if (row.getVal().type.value() == stmtType) {
-            res.push_back(row.getVal());
+    for (auto it = entities.begin(); it != entities.end(); ++it) {
+        if (it->second.type.value() == type) {
+            res.push_back(it->second);
         }
     }
 
     return res;
 }
 
-std::optional<StatementType> StatementTable::getStmtTypeOfLine(int stmtNum) const {
-    std::vector<EntityRow<STMT_LO>> filtered;
-    std::copy_if(begin(rows), end(rows), std::back_inserter(filtered),
-        [stmtNum](EntityRow<STMT_LO> row) { return row.getVal().statementNum == stmtNum; });
+/* --------------------------------- ProcedureTable Methods ----------------------------------------*/
+ProcedureTable::ProcedureTable() : EntityTable(EntitySet<PROC_NAME>{}) {}
 
-    if (filtered.size() == 0) {
-        Logger(Level::INFO) << "No statement exists with the provided statement number";
-        return std::nullopt;
-    } else if (filtered.size() > 1) {
-        Logger(Level::INFO) << "Statement table has rows with duplicate line numbers";
-        return std::nullopt;
-    } else {
-        STMT_LO stmt = filtered.at(0).getVal();
+/* --------------------------------- ConstantTable Methods ----------------------------------------*/
+ConstantTable::ConstantTable() : EntityTable(EntitySet<CONST>{}) {}
 
-        if (stmt.type.has_value()) {
-            return stmt.type.value();
-        } else {
-            Logger(Level::INFO) << "Statement does not have a type";
-            return std::nullopt;
-        }
+/* --------------------------------- VariableTable Methods ----------------------------------------*/
+VariableTable::VariableTable() : EntityTable(EntitySet<VAR_NAME>{}) {}
+
+/* --------------------------------- StatementTable Methods ----------------------------------------*/
+StatementTable::StatementTable() : EntityTable(StatementMap{}) {}
+
+bool StatementTable::contains(int statementNumber) const {
+    auto statementMap = std::get<StatementMap>(entities);
+    return statementMap.contains(statementNumber);
+}
+
+bool StatementTable::contains(StatementType type, int statementNumber) const {
+    auto statementMap = std::get<StatementMap>(entities);
+    auto stmt = statementMap.getStmt(statementNumber);
+    if (stmt.has_value()) {
+        return stmt.value().type.value() == type;
     }
+
+    return false;
+}
+
+std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType type) const {
+    auto statementMap = std::get<StatementMap>(entities);
+    return statementMap.getStmtsOfType(type);
+}
+
+std::optional<StatementType> StatementTable::getStmtTypeOfLine(int statementNumber) const {
+    auto stmt = getStmt(statementNumber);
+
+    if (stmt.has_value()) {
+        // no need to check if type has value because only STMT_LO with StatementType can be added to StatementTable
+        return stmt.value().type.value();
+    }
+
+    return std::nullopt;
+}
+
+std::optional<STMT_LO> StatementTable::getStmt(int statementNumber) const {
+    auto statementMap = std::get<StatementMap>(entities);
+    return statementMap.getStmt(statementNumber);
 }
