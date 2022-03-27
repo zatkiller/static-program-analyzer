@@ -36,6 +36,7 @@ using qps::query::AttrRef;
 using qps::query::AttrName;
 using qps::query::AttrCompareRef;
 using qps::query::AttrCompare;
+using qps::query::Declaration;
 
 TEST_CASE("Parser checkType") {
     Parser parser;
@@ -194,7 +195,7 @@ TEST_CASE("Parser parseRelRef - Uses") {
         REQUIRE(relRefPtr->getType() == RelRefType::USESS);
 
         std::shared_ptr<UsesS> usesPtr = std::dynamic_pointer_cast<UsesS>(relRefPtr);
-        REQUIRE(usesPtr->useStmt.getDeclaration() == "a");
+        REQUIRE(usesPtr->useStmt.getDeclarationSynonym() == "a");
         REQUIRE(usesPtr->useStmt.isDeclaration());
         REQUIRE(usesPtr->used.isWildcard());
     }
@@ -240,7 +241,7 @@ TEST_CASE("Parser parseRelRef - Modifies") {
         REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
 
         std::shared_ptr<ModifiesS> modifiesPtr = std::dynamic_pointer_cast<ModifiesS>(relRefPtr);
-        REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
+        REQUIRE(modifiesPtr->modifiesStmt.getDeclarationSynonym() == "a");
         REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
         REQUIRE(modifiesPtr->modified.isWildcard());
     }
@@ -288,7 +289,7 @@ TEST_CASE("Parser parseRelRef - Follows") {
 
         std::shared_ptr<Follows> followsPtr = std::dynamic_pointer_cast<Follows>(relRefPtr);
         REQUIRE(followsPtr->follower.isDeclaration());
-        REQUIRE(followsPtr->follower.getDeclaration() == "s1");
+        REQUIRE(followsPtr->follower.getDeclarationSynonym() == "s1");
         REQUIRE(followsPtr->followed.isLineNo());
         REQUIRE(followsPtr->followed.getLineNo() == 20);
     }
@@ -312,7 +313,7 @@ TEST_CASE("Parser parseRelRef - Follows*") {
 
         std::shared_ptr<FollowsT> followsPtr = std::dynamic_pointer_cast<FollowsT>(relRefPtr);
         REQUIRE(followsPtr->follower.isDeclaration());
-        REQUIRE(followsPtr->follower.getDeclaration() == "s2");
+        REQUIRE(followsPtr->follower.getDeclarationSynonym() == "s2");
         REQUIRE(followsPtr->transitiveFollowed.isLineNo());
         REQUIRE(followsPtr->transitiveFollowed.getLineNo() == 20);
     }
@@ -339,7 +340,7 @@ TEST_CASE("Parser parseRelRef - Parent") {
         REQUIRE(parentPtr->parent.isLineNo());
         REQUIRE(parentPtr->parent.getLineNo() == 20);
         REQUIRE(parentPtr->child.isDeclaration());
-        REQUIRE(parentPtr->child.getDeclaration() == "s2");
+        REQUIRE(parentPtr->child.getDeclarationSynonym() == "s2");
     }
 }
 
@@ -364,7 +365,7 @@ TEST_CASE("Parser parseRelRef - Parent*") {
         REQUIRE(parentPtr->parent.isLineNo());
         REQUIRE(parentPtr->parent.getLineNo() == 20);
         REQUIRE(parentPtr->transitiveChild.isDeclaration());
-        REQUIRE(parentPtr->transitiveChild.getDeclaration() == "s2");
+        REQUIRE(parentPtr->transitiveChild.getDeclarationSynonym() == "s2");
     }
 }
 
@@ -387,9 +388,9 @@ TEST_CASE("Parser parseRelRef - Next") {
 
         std::shared_ptr<Next> nPtr = std::dynamic_pointer_cast<Next>(relRefPtr);
         REQUIRE(nPtr->before.isDeclaration());
-        REQUIRE(nPtr->before.getDeclaration() == "s1");
+        REQUIRE(nPtr->before.getDeclarationSynonym() == "s1");
         REQUIRE(nPtr->after.isDeclaration());
-        REQUIRE(nPtr->after.getDeclaration() == "s2");
+        REQUIRE(nPtr->after.getDeclarationSynonym() == "s2");
     }
 }
 
@@ -412,9 +413,9 @@ TEST_CASE("Parser parseRelRef - Next*") {
 
         std::shared_ptr<NextT> nPtr = std::dynamic_pointer_cast<NextT>(relRefPtr);
         REQUIRE(nPtr->before.isDeclaration());
-        REQUIRE(nPtr->before.getDeclaration() == "s1");
+        REQUIRE(nPtr->before.getDeclarationSynonym() == "s1");
         REQUIRE(nPtr->transitiveAfter.isDeclaration());
-        REQUIRE(nPtr->transitiveAfter.getDeclaration() == "s2");
+        REQUIRE(nPtr->transitiveAfter.getDeclarationSynonym() == "s2");
     }
 }
 
@@ -437,9 +438,9 @@ TEST_CASE("Parser parseRelRef - Calls") {
 
         std::shared_ptr<Calls> cPtr = std::dynamic_pointer_cast<Calls>(relRefPtr);
         REQUIRE(cPtr->caller.isDeclaration());
-        REQUIRE(cPtr->caller.getDeclaration() == "p1");
+        REQUIRE(cPtr->caller.getDeclarationSynonym() == "p1");
         REQUIRE(cPtr->callee.isDeclaration());
-        REQUIRE(cPtr->callee.getDeclaration() == "p2");
+        REQUIRE(cPtr->callee.getDeclarationSynonym() == "p2");
     }
 
     SECTION ("Invalid query with Calls relationship - synonym is not procedure") {
@@ -477,9 +478,9 @@ TEST_CASE("Parser parseRelRef - Calls*") {
 
         std::shared_ptr<CallsT> cPtr = std::dynamic_pointer_cast<CallsT>(relRefPtr);
         REQUIRE(cPtr->caller.isDeclaration());
-        REQUIRE(cPtr->caller.getDeclaration() == "p1");
+        REQUIRE(cPtr->caller.getDeclarationSynonym() == "p1");
         REQUIRE(cPtr->transitiveCallee.isDeclaration());
-        REQUIRE(cPtr->transitiveCallee.getDeclaration() == "p2");
+        REQUIRE(cPtr->transitiveCallee.getDeclarationSynonym() == "p2");
     }
 
     SECTION ("Invalid query with Calls* relationship - synonym is not procedure") {
@@ -517,9 +518,9 @@ TEST_CASE("Parser parseRelRef - Affects") {
 
         std::shared_ptr<Affects> aPtr = std::dynamic_pointer_cast<Affects>(relRefPtr);
         REQUIRE(aPtr->affectingStmt.isDeclaration());
-        REQUIRE(aPtr->affectingStmt.getDeclaration() == "a1");
+        REQUIRE(aPtr->affectingStmt.getDeclarationSynonym() == "a1");
         REQUIRE(aPtr->affected.isDeclaration());
-        REQUIRE(aPtr->affected.getDeclaration() == "a2");
+        REQUIRE(aPtr->affected.getDeclarationSynonym() == "a2");
     }
 
     SECTION ("Invalid query with Affects relationship - synonym is not assign") {
@@ -557,9 +558,9 @@ TEST_CASE("Parser parseRelRef - Affects*") {
 
         std::shared_ptr<AffectsT> aPtr = std::dynamic_pointer_cast<AffectsT>(relRefPtr);
         REQUIRE(aPtr->affectingStmt.isDeclaration());
-        REQUIRE(aPtr->affectingStmt.getDeclaration() == "a1");
+        REQUIRE(aPtr->affectingStmt.getDeclarationSynonym() == "a1");
         REQUIRE(aPtr->transitiveAffected.isDeclaration());
-        REQUIRE(aPtr->transitiveAffected.getDeclaration() == "a2");
+        REQUIRE(aPtr->transitiveAffected.getDeclarationSynonym() == "a2");
     }
 
     SECTION ("Invalid query with Affects* relationship - synonym is not assign") {
@@ -603,9 +604,9 @@ TEST_CASE("Parser parseSuchThatClause") {
 
             std::shared_ptr<CallsT> cPtr = std::dynamic_pointer_cast<CallsT>(relRefPtr);
             REQUIRE(cPtr->caller.isDeclaration());
-            REQUIRE(cPtr->caller.getDeclaration() == "p1");
+            REQUIRE(cPtr->caller.getDeclarationSynonym() == "p1");
             REQUIRE(cPtr->transitiveCallee.isDeclaration());
-            REQUIRE(cPtr->transitiveCallee.getDeclaration() == "p2");
+            REQUIRE(cPtr->transitiveCallee.getDeclarationSynonym() == "p2");
     }
 
     SECTION ("Multiple such that clause") {
@@ -633,18 +634,18 @@ TEST_CASE("Parser parseSuchThatClause") {
 
             std::shared_ptr<CallsT> cPtr = std::dynamic_pointer_cast<CallsT>(relRefPtr);
             REQUIRE(cPtr->caller.isDeclaration());
-            REQUIRE(cPtr->caller.getDeclaration() == "p1");
+            REQUIRE(cPtr->caller.getDeclarationSynonym() == "p1");
             REQUIRE(cPtr->transitiveCallee.isDeclaration());
-            REQUIRE(cPtr->transitiveCallee.getDeclaration() == "p2");
+            REQUIRE(cPtr->transitiveCallee.getDeclarationSynonym() == "p2");
 
             std::shared_ptr<RelRef> relRefPtr2 = suchThat[1];
             REQUIRE(relRefPtr2->getType() == RelRefType::NEXTT);
 
             std::shared_ptr<NextT> nPtr = std::dynamic_pointer_cast<NextT>(relRefPtr2);
             REQUIRE(nPtr->before.isDeclaration());
-            REQUIRE(nPtr->before.getDeclaration() == "s1");
+            REQUIRE(nPtr->before.getDeclarationSynonym() == "s1");
             REQUIRE(nPtr->transitiveAfter.isDeclaration());
-            REQUIRE(nPtr->transitiveAfter.getDeclaration() == "s2");
+            REQUIRE(nPtr->transitiveAfter.getDeclarationSynonym() == "s2");
         }
 
         SECTION ("Invalid Multiple such that clause") {
@@ -759,7 +760,7 @@ TEST_CASE("Parser parsePattern") {
             REQUIRE(pattern.getSynonym() == "a");
             REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
             bool validDeclaration = 
-                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
             REQUIRE(validDeclaration);
             REQUIRE(pattern.getExpression() == ExpSpec::ofWildcard());
         }
@@ -782,7 +783,7 @@ TEST_CASE("Parser parsePattern") {
             REQUIRE(pattern.getSynonym() == "a");
             REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
             bool validDeclaration = 
-                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
             REQUIRE(validDeclaration);
             REQUIRE(pattern.getExpression() == ExpSpec::ofFullMatch("x"));
         }
@@ -805,7 +806,7 @@ TEST_CASE("Parser parsePattern") {
             REQUIRE(pattern.getSynonym() == "a");
             REQUIRE(pattern.getSynonymType() == DesignEntity::ASSIGN);
             bool validDeclaration = 
-                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+                (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
             REQUIRE(validDeclaration);
             REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
         }
@@ -829,7 +830,7 @@ TEST_CASE("Parser parsePattern") {
 
         REQUIRE(pattern.getSynonym() == "ifs");
         REQUIRE(pattern.getSynonymType() == DesignEntity::IF);
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE_THROWS_MATCHES(pattern.getExpression(),
                                exceptions::PqlSyntaxException,
@@ -854,7 +855,7 @@ TEST_CASE("Parser parsePattern") {
 
         REQUIRE(pattern.getSynonym() == "w");
         REQUIRE(pattern.getSynonymType() == DesignEntity::WHILE);
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE_THROWS_MATCHES(pattern.getExpression(),
                                exceptions::PqlSyntaxException,
@@ -899,7 +900,7 @@ TEST_CASE("Parser parsePatternClause") {
 
         REQUIRE(pattern1.getSynonym() == "a");
         bool validDeclaration = (pattern1.getEntRef().isDeclaration()) &&
-                (pattern1.getEntRef().getDeclaration() == "v");
+                (pattern1.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE(pattern1.getExpression() == ExpSpec::ofWildcard());
     }
@@ -926,7 +927,7 @@ TEST_CASE("Parser parsePatternClause") {
 
             REQUIRE(pattern1.getSynonym() == "a");
             bool validDeclaration = (pattern1.getEntRef().isDeclaration()) &&
-                                    (pattern1.getEntRef().getDeclaration() == "v");
+                                    (pattern1.getEntRef().getDeclarationSynonym() == "v");
             REQUIRE(validDeclaration);
             REQUIRE(pattern1.getExpression() == ExpSpec::ofWildcard());
 
@@ -1113,9 +1114,9 @@ TEST_CASE("Parser parseRelRefVariables") {
 
         NextT *nPtr = std::dynamic_pointer_cast<NextT>(ptr).get();
         REQUIRE(nPtr->before.isDeclaration());
-        REQUIRE(nPtr->before.getDeclaration() == "s1");
+        REQUIRE(nPtr->before.getDeclarationSynonym() == "s1");
         REQUIRE(nPtr->transitiveAfter.isDeclaration());
-        REQUIRE(nPtr->transitiveAfter.getDeclaration() == "s2");
+        REQUIRE(nPtr->transitiveAfter.getDeclarationSynonym() == "s2");
     }
 
     SECTION("parseRelRefVariables - Calls") {
@@ -1131,15 +1132,15 @@ TEST_CASE("Parser parseRelRefVariables") {
 
         Calls *cPtr = std::dynamic_pointer_cast<Calls>(ptr).get();
         REQUIRE(cPtr->caller.isDeclaration());
-        REQUIRE(cPtr->caller.getDeclaration() == "p1");
+        REQUIRE(cPtr->caller.getDeclarationSynonym() == "p1");
         REQUIRE(cPtr->callee.isDeclaration());
-        REQUIRE(cPtr->callee.getDeclaration() == "p2");
+        REQUIRE(cPtr->callee.getDeclarationSynonym() == "p2");
     }
 
     SECTION("parseRelRefVariables - Calls*") {
         Query queryObj;
         Parser parser;
-        parser.lexer.text = "\"first\", \"second\"";
+        parser.lexer.text = R"("first", "second")";
 
         std::shared_ptr<RelRef> ptr = parser.parseRelRefVariables<CallsT>(queryObj, &CallsT::caller,
                                                                          &CallsT::transitiveCallee);
@@ -1197,7 +1198,7 @@ TEST_CASE("Parser parseModifiesOrUsesVariables") {
         std::shared_ptr<ModifiesP> sharedPtr = std::dynamic_pointer_cast<ModifiesP>(ptr);
         ModifiesP *mPtr = sharedPtr.get();
         REQUIRE(mPtr->modifiesProc.isDeclaration());
-        REQUIRE(mPtr->modifiesProc.getDeclaration() == "p");
+        REQUIRE(mPtr->modifiesProc.getDeclarationSynonym() == "p");
         REQUIRE(mPtr->modified.isWildcard());
     }
 
@@ -1256,7 +1257,7 @@ TEST_CASE("Parser parseModifiesOrUsesVariables") {
         std::shared_ptr<UsesP> sharedPtr = std::dynamic_pointer_cast<UsesP>(ptr);
         UsesP *uPtr = sharedPtr.get();
         REQUIRE(uPtr->useProc.isDeclaration());
-        REQUIRE(uPtr->useProc.getDeclaration() == "p");
+        REQUIRE(uPtr->useProc.getDeclarationSynonym() == "p");
         REQUIRE(uPtr->used.isWildcard());
     }
 
@@ -1346,39 +1347,32 @@ TEST_CASE("Parser parseAttrRef") {
     SECTION("stmt#") {
         parser.lexer.text = "s.stmt#";
         ar = parser.parseAttrRef(query);
-        REQUIRE(ar.declaration == "s");
-        REQUIRE(ar.declarationType == DesignEntity::STMT);
-        REQUIRE(ar.attrName == AttrName::STMTNUM);
+        REQUIRE(ar.getDeclaration()  == Declaration { "s", DesignEntity::STMT} );
+        REQUIRE(ar.getAttrName() == AttrName::STMTNUM);
     }
 
     SECTION ("varName") {
         parser.lexer.text = "v.varName";
         ar = parser.parseAttrRef(query);
-        REQUIRE(ar.declaration == "v");
-        REQUIRE(ar.declarationType == DesignEntity::VARIABLE);
-        REQUIRE(ar.attrName == AttrName::VARNAME);
+        REQUIRE(ar.getDeclaration() == Declaration { "v", DesignEntity::VARIABLE } );
+        REQUIRE(ar.getAttrName() == AttrName::VARNAME);
     }
 
     SECTION ("procName") {
         parser.lexer.text = "p.procName";
         ar = parser.parseAttrRef(query);
-        REQUIRE(ar.declaration == "p");
-        REQUIRE(ar.declarationType == DesignEntity::PROCEDURE);
-        REQUIRE(ar.attrName == AttrName::PROCNAME);
+        REQUIRE(ar.getDeclaration() == Declaration { "p", DesignEntity::PROCEDURE });
+        REQUIRE(ar.getAttrName() == AttrName::PROCNAME);
     }
 
     SECTION ("value") {
         parser.lexer.text = "c.value";
         ar = parser.parseAttrRef(query);
-        REQUIRE(ar.declaration == "c");
-        REQUIRE(ar.declarationType == DesignEntity::CONSTANT);
-        REQUIRE(ar.attrName == AttrName::VALUE);
+        REQUIRE(ar.getDeclaration()  == Declaration { "c", DesignEntity::CONSTANT });
+        REQUIRE(ar.getAttrName() == AttrName::VALUE);
     }
 
     SECTION ("Valid - whitespace before and after .") {
-        Query query {};
-        query.addDeclaration("c", DesignEntity::CONSTANT);
-
         parser.lexer.text = "c .value";
         REQUIRE_NOTHROW(parser.parseAttrRef(query));
 
@@ -1405,9 +1399,8 @@ TEST_CASE("Parser parseAttrCompareRef") {
         acr = parser.parseAttrCompareRef(query);
         REQUIRE(acr.isAttrRef());
         AttrRef ar = acr.getAttrRef();
-        REQUIRE(ar.declaration == "s");
-        REQUIRE(ar.declarationType == DesignEntity::STMT);
-        REQUIRE(ar.attrName == AttrName::STMTNUM);
+        REQUIRE(ar.getDeclaration() == Declaration { "s", DesignEntity::STMT });
+        REQUIRE(ar.getAttrName() == AttrName::STMTNUM);
     }
 
     SECTION ("Number") {
@@ -1564,16 +1557,16 @@ TEST_CASE("Parser parseQuery") {
 
     std::shared_ptr<ModifiesS> modifiesPtr = std::dynamic_pointer_cast<ModifiesS>(relRefPtr);
     REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
-    REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
+    REQUIRE(modifiesPtr->modifiesStmt.getDeclarationSynonym() == "a");
     REQUIRE(modifiesPtr->modified.isDeclaration());
-    REQUIRE(modifiesPtr->modified.getDeclaration() == "v1");
+    REQUIRE(modifiesPtr->modified.getDeclarationSynonym() == "v1");
 
     // Check pattern
     std::vector<Pattern> patterns = query.getPattern();
     Pattern pattern = patterns[0];
 
     REQUIRE(pattern.getSynonym() == "a1");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
     REQUIRE(validDeclaration);
     REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 
@@ -1612,7 +1605,7 @@ TEST_CASE("Parser parsePql") {
         REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
 
         std::shared_ptr<ModifiesS> modifiesPtr = std::dynamic_pointer_cast<ModifiesS>(relRefPtr);
-        REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
+        REQUIRE(modifiesPtr->modifiesStmt.getDeclarationSynonym() == "a");
         REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
         REQUIRE(modifiesPtr->modified.isWildcard());
 
@@ -1621,7 +1614,7 @@ TEST_CASE("Parser parsePql") {
         Pattern pattern = patterns[0];
 
         REQUIRE(pattern.getSynonym() == "a");
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 
@@ -1658,7 +1651,7 @@ TEST_CASE("Parser parsePql") {
         Pattern pattern = patterns[0];
 
         REQUIRE(pattern.getSynonym() == "a");
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclaration() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 
@@ -1675,7 +1668,7 @@ TEST_CASE("Parser parsePql") {
         REQUIRE(relRefPtr->getType() == RelRefType::MODIFIESS);
 
         std::shared_ptr<ModifiesS> modifiesPtr = std::dynamic_pointer_cast<ModifiesS>(relRefPtr);
-        REQUIRE(modifiesPtr->modifiesStmt.getDeclaration() == "a");
+        REQUIRE(modifiesPtr->modifiesStmt.getDeclarationSynonym() == "a");
         REQUIRE(modifiesPtr->modifiesStmt.isDeclaration());
         REQUIRE(modifiesPtr->modified.isWildcard());
     }
@@ -1698,23 +1691,23 @@ TEST_CASE("Parser isValidStatement") {
     query.addDeclaration("c", DesignEntity::CONSTANT);
 
     // Valid declarations
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("s", DesignEntity::STMT)));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("a", DesignEntity::ASSIGN)));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("pn", DesignEntity::PRINT)));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("r", DesignEntity::READ)));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("ifs", DesignEntity::IF)));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("w", DesignEntity::WHILE)));
-    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration("cl", DesignEntity::CALL)));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration( Declaration { "s", DesignEntity::STMT })));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration( Declaration { "a", DesignEntity::ASSIGN })));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration( Declaration { "pn", DesignEntity::PRINT })));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration( Declaration {  "r", DesignEntity::READ })));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration( Declaration { "ifs", DesignEntity::IF })));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration( Declaration { "w", DesignEntity::WHILE })));
+    REQUIRE(p.isValidStatementType(query, StmtRef::ofDeclaration(  Declaration { "cl", DesignEntity::CALL })));
 
     // Invalid statement types
-    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("v", DesignEntity::VARIABLE))));
-    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("p", DesignEntity::PROCEDURE))));
-    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration("c", DesignEntity::CONSTANT))));
+    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration(  Declaration { "v", DesignEntity::VARIABLE }))));
+    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration(  Declaration { "p", DesignEntity::PROCEDURE }))));
+    REQUIRE(!(p.isValidStatementType(query, StmtRef::ofDeclaration(  Declaration { "c", DesignEntity::CONSTANT }))));
 
     // Declarations which do not exist
-    REQUIRE_THROWS_MATCHES(p.isValidStatementType(query, StmtRef::ofDeclaration("x", qps::query::DesignEntity::ASSIGN)),
-                           exceptions::PqlSyntaxException,
-                           Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
+    REQUIRE_THROWS_MATCHES(p.isValidStatementType(query, StmtRef::ofDeclaration( Declaration {
+        "x", DesignEntity::ASSIGN })), exceptions::PqlSyntaxException, Catch::Message(
+                messages::qps::parser::declarationDoesNotExistMessage));
 }
 
 

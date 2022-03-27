@@ -6,6 +6,8 @@
 
 #define TEST_LOG Logger() << "evaluator_tests.cpp"
 
+using qps::query::Declaration;
+
 TEST_CASE("Process such that") {
     std::shared_ptr<qps::query::Parent> ptr1 = std::make_shared<qps::query::Parent>();
     ptr1.get()->parent = qps::query::StmtRef::ofLineNo(3);
@@ -16,7 +18,7 @@ TEST_CASE("Process such that") {
     ptr2.get()->modified = qps::query::EntRef::ofWildcard();
 
     std::shared_ptr<qps::query::UsesS> ptr3 = std::make_shared<qps::query::UsesS>();
-    ptr3.get()->useStmt = qps::query::StmtRef::ofDeclaration("s1", qps::query::DesignEntity::STMT);
+    ptr3.get()->useStmt = qps::query::StmtRef::ofDeclaration( Declaration { "s1", qps::query::DesignEntity::STMT });
     ptr3.get()->used = qps::query::EntRef::ofWildcard();
 
     std::vector<std::shared_ptr<qps::query::RelRef>> suchThat1 = {ptr1};

@@ -25,6 +25,7 @@ namespace qps::parser {
     using qps::query::AttrRef;
     using qps::query::AttrCompareRef;
     using qps::query::AttrCompare;
+    using qps::query::Declaration;
 
     std::unordered_map<TokenType, AttrName> tokenTypeToAttrName = {
             { TokenType::PROCNAME, AttrName::PROCNAME },
@@ -143,7 +144,7 @@ namespace qps::parser {
         } else if (type == TokenType::UNDERSCORE) {
             stmtRef = StmtRef::ofWildcard();
         } else if (type == TokenType::IDENTIFIER) {
-            stmtRef = StmtRef::ofDeclaration(token.getText(), queryObj.getDeclarationDesignEntity(token.getText()));
+            stmtRef = StmtRef::ofDeclaration(Declaration {token.getText(), queryObj.getDeclarationDesignEntity(token.getText())});
 
             if (!isValidStatementType(queryObj, stmtRef))
                 throw exceptions::PqlSemanticException(messages::qps::parser::synonymNotStatementTypeMessage);
@@ -164,7 +165,7 @@ namespace qps::parser {
         } else if (type == TokenType::UNDERSCORE) {
             entRef = EntRef::ofWildcard();
         } else if (type == TokenType::IDENTIFIER) {
-            entRef = EntRef::ofDeclaration(token.getText(), queryObj.getDeclarationDesignEntity(token.getText()));
+            entRef = EntRef::ofDeclaration(Declaration {token.getText(), queryObj.getDeclarationDesignEntity(token.getText())});
 
             if (!isValidEntityType(queryObj, entRef))
                 throw exceptions::PqlSemanticException(messages::qps::parser::synonymNotEntityTypeMessage);
@@ -250,7 +251,7 @@ namespace qps::parser {
             DesignEntity::PRINT, DesignEntity::READ, DesignEntity::CALL
         };
         if (s.isDeclaration()) {
-            DesignEntity d = query.getDeclarationDesignEntity(s.getDeclaration());
+            DesignEntity d = query.getDeclarationDesignEntity(s.getDeclarationSynonym());
             return statementsType.find(d) != statementsType.end();
         }
         return false;
@@ -432,8 +433,8 @@ namespace qps::parser {
     AttrRef Parser::parseAttrRef(Query &query) {
         Token identifier = getAndCheckNextToken(TokenType::IDENTIFIER);
 
-        std::string declaration = identifier.getText();
-        DesignEntity de = query.getDeclarationDesignEntity(declaration);
+        std::string synonym = identifier.getText();
+        DesignEntity de = query.getDeclarationDesignEntity(synonym);
 
         getAndCheckNextToken(TokenType::PERIOD);
 
@@ -442,7 +443,9 @@ namespace qps::parser {
         AttrName attrName = pos->second;
         checkDesignEntityAndAttrNameMatch(de, attrName);
 
-        return AttrRef { attrName, de, declaration };
+        Declaration declaration(synonym, de);
+
+        return AttrRef { attrName, declaration };
     }
 
     AttrCompareRef Parser::parseAttrCompareRef(Query &query) {

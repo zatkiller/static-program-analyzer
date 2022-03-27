@@ -24,16 +24,17 @@ using qps::query::AttrRef;
 using qps::query::AttrCompare;
 using qps::query::AttrCompareRef;
 using qps::query::AttrCompareRefType;
+using qps::query::Declaration;
 
 TEST_CASE("AttrRef") {
-    AttrRef ar = AttrRef { AttrName::PROCNAME, DesignEntity::PROCEDURE, "p" };
-    REQUIRE(ar.attrName == AttrName::PROCNAME);
-    REQUIRE(ar.declarationType == DesignEntity::PROCEDURE);
-    REQUIRE(ar.declaration == "p");
+    Declaration d("p", DesignEntity::PROCEDURE);
+    AttrRef ar = AttrRef { AttrName::PROCNAME, Declaration {"p", DesignEntity::PROCEDURE} };
+    REQUIRE(ar.getAttrName() == AttrName::PROCNAME);
+    REQUIRE(ar.getDeclaration() == d);
 
-    AttrRef ar2 = AttrRef { AttrName::VARNAME, DesignEntity::VARIABLE, "v" };
-    AttrRef ar3 = AttrRef { AttrName::STMTNUM, DesignEntity::STMT, "s" };
-    AttrRef ar4 = AttrRef { AttrName::VALUE, DesignEntity::CONSTANT, "c" };
+    AttrRef ar2 = AttrRef { AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE } };
+    AttrRef ar3 = AttrRef { AttrName::STMTNUM, Declaration { "s", DesignEntity::STMT} };
+    AttrRef ar4 = AttrRef { AttrName::VALUE, Declaration {"c", DesignEntity::CONSTANT} };
 
     REQUIRE(ar.compatbileComparison(ar2));
     REQUIRE(ar3.compatbileComparison(ar4));
@@ -54,17 +55,18 @@ TEST_CASE("AttrCompareRef") {
     REQUIRE(acr.isNumber());
     REQUIRE(acr.getNumber() == 1);
 
-    acr = AttrCompareRef::ofAttrRef(AttrRef { AttrName::PROCNAME, DesignEntity::PROCEDURE, "p" });
+    Declaration d("p", DesignEntity::PROCEDURE);
+    acr = AttrCompareRef::ofAttrRef(AttrRef { AttrName::PROCNAME, d });
     REQUIRE(acr.isAttrRef());
     AttrRef ar = acr.getAttrRef();
-    REQUIRE(ar.attrName == AttrName::PROCNAME);
-    REQUIRE(ar.declarationType == DesignEntity::PROCEDURE);
-    REQUIRE(ar.declaration == "p");
+    REQUIRE(ar.getAttrName() == AttrName::PROCNAME);
+    REQUIRE(ar.getDeclaration() == d);
 }
 
 TEST_CASE("AttrCompare") {
     SECTION ("AttrCompare with compatible AttrCompareRef types") {
-        AttrCompare ac(AttrCompareRef::ofAttrRef( AttrRef {AttrName::VARNAME, DesignEntity::VARIABLE, "v" }),
+        Declaration d ("v", DesignEntity::VARIABLE);
+        AttrCompare ac(AttrCompareRef::ofAttrRef( AttrRef { AttrName::VARNAME, d }),
                        AttrCompareRef::ofString("v"));
 
         REQUIRE_NOTHROW(ac.validateComparingTypes());
@@ -74,9 +76,8 @@ TEST_CASE("AttrCompare") {
         REQUIRE(lhs.isAttrRef());
         AttrRef ar = lhs.getAttrRef();
 
-        REQUIRE(ar.declaration == "v");
-        REQUIRE(ar.declarationType == DesignEntity::VARIABLE);
-        REQUIRE(ar.attrName == AttrName::VARNAME);
+        REQUIRE(ar.getDeclaration()  == d);
+        REQUIRE(ar.getAttrName() == AttrName::VARNAME);
 
         REQUIRE(rhs.isString());
         REQUIRE(rhs.getString() == "v");
@@ -84,14 +85,14 @@ TEST_CASE("AttrCompare") {
 
     SECTION ("AttrCompare validateComparingTypes") {
         SECTION ("Incompatible type matches") {
-            AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, DesignEntity::READ, "rd" }),
-                            AttrCompareRef::ofString("v"));
+            AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, Declaration {
+                "rd", DesignEntity::READ } }), AttrCompareRef::ofString("v"));
 
             REQUIRE_THROWS_MATCHES(ac1.validateComparingTypes(), exceptions::PqlSemanticException,
                                    Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
 
             AttrCompare ac2(AttrCompareRef::ofNumber(1), AttrCompareRef::ofAttrRef(
-                    AttrRef {AttrName::VARNAME, DesignEntity::VARIABLE, "v" }));
+                    AttrRef {AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE }}));
 
             REQUIRE_THROWS_MATCHES(ac2.validateComparingTypes(), exceptions::PqlSemanticException,
                                    Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
@@ -103,29 +104,33 @@ TEST_CASE("AttrCompare") {
         }
 
         SECTION ("Compatible type matches") {
-            AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::PROCNAME, DesignEntity::PROCEDURE, "p" }),
-                            AttrCompareRef::ofString("v"));
+            AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::PROCNAME, Declaration {
+                "p", DesignEntity::PROCEDURE }}), AttrCompareRef::ofString("v"));
             REQUIRE_NOTHROW(ac1.validateComparingTypes());
 
             AttrCompare ac2(AttrCompareRef::ofString("v"), AttrCompareRef::ofAttrRef(
-                    AttrRef {AttrName::VARNAME, DesignEntity::VARIABLE, "v" }));
+                    AttrRef {AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE, }}));
             REQUIRE_NOTHROW(ac2.validateComparingTypes());
 
 
-            AttrCompare ac3(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, DesignEntity::CALL, "cl" }),
-                            AttrCompareRef::ofNumber(200));
+            AttrCompare ac3(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM,  Declaration {
+                "cl", DesignEntity::CALL}}), AttrCompareRef::ofNumber(200));
             REQUIRE_NOTHROW(ac3.validateComparingTypes());
 
             AttrCompare ac4(AttrCompareRef::ofNumber(99), AttrCompareRef::ofAttrRef(
-                    AttrRef {AttrName::VALUE, DesignEntity::CONSTANT, "c" }));
+                    AttrRef {AttrName::VALUE, Declaration { "c", DesignEntity::CONSTANT }}));
             REQUIRE_NOTHROW(ac4.validateComparingTypes());
 
-            AttrCompare ac5(AttrCompareRef::ofAttrRef( AttrRef {AttrName::PROCNAME, DesignEntity::PROCEDURE, "p" }),
-                            AttrCompareRef::ofAttrRef( AttrRef {AttrName::VARNAME, DesignEntity::VARIABLE, "v" }));
+            AttrCompare ac5(AttrCompareRef::ofAttrRef( AttrRef {AttrName::PROCNAME, Declaration {
+                "p", DesignEntity::PROCEDURE }}), AttrCompareRef::ofAttrRef( AttrRef {
+                    AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE }}));
+
             REQUIRE_NOTHROW(ac5.validateComparingTypes());
 
-            AttrCompare ac6(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, DesignEntity::CALL, "cl" }),
-                            AttrCompareRef::ofAttrRef(AttrRef {AttrName::VALUE, DesignEntity::CONSTANT, "c" }));
+            AttrCompare ac6(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, Declaration {
+                "cl", DesignEntity::CALL }}), AttrCompareRef::ofAttrRef(AttrRef {
+                    AttrName::VALUE, Declaration { "c", DesignEntity::CONSTANT }}));
+
             REQUIRE_NOTHROW(ac6.validateComparingTypes());
         }
     }
@@ -143,9 +148,10 @@ TEST_CASE("StmtRef") {
     StmtRef stmtRef2 = StmtRef::ofWildcard();
     REQUIRE(stmtRef2.isWildcard());
 
-    StmtRef stmtRef3 = StmtRef::ofDeclaration("a", DesignEntity::ASSIGN);
+    StmtRef stmtRef3 = StmtRef::ofDeclaration(Declaration { "a", DesignEntity::ASSIGN });
     REQUIRE(stmtRef3.isDeclaration());
-    REQUIRE(stmtRef3.getDeclaration() == "a");
+    REQUIRE(stmtRef3.getDeclaration() == Declaration { "a", DesignEntity::ASSIGN });
+    REQUIRE(stmtRef3.getDeclarationSynonym() == "a");
     REQUIRE(stmtRef3.getDeclarationType() == DesignEntity::ASSIGN);
 
 
@@ -164,9 +170,10 @@ TEST_CASE("EntRef") {
     EntRef entRef2 = EntRef::ofWildcard();
     REQUIRE(entRef2.isWildcard());
 
-    EntRef entRef3 = EntRef::ofDeclaration("a", DesignEntity::ASSIGN);
+    EntRef entRef3 = EntRef::ofDeclaration( Declaration { "a", DesignEntity::ASSIGN } );
     REQUIRE(entRef3.isDeclaration());
-    REQUIRE(entRef3.getDeclaration() == "a");
+    REQUIRE(entRef3.getDeclaration() ==  Declaration { "a", DesignEntity::ASSIGN });
+    REQUIRE(entRef3.getDeclarationSynonym() == "a");
     REQUIRE(entRef3.getDeclarationType() == DesignEntity::ASSIGN);
 
     REQUIRE(entRef1 == entRef1);
@@ -234,8 +241,8 @@ TEST_CASE("Query") {
     REQUIRE(query.hasVariable("a"));
 
     std::shared_ptr<ModifiesS> ptr = std::make_shared<ModifiesS>();
-    ptr.get()->modifiesStmt = StmtRef::ofLineNo(4);
-    ptr.get()->modified = EntRef::ofDeclaration("v", DesignEntity::VARIABLE);
+    ptr->modifiesStmt = StmtRef::ofLineNo(4);
+    ptr->modified = EntRef::ofDeclaration( Declaration { "v", DesignEntity::VARIABLE });
     query.addSuchthat(ptr);
     REQUIRE(!query.getSuchthat().empty());
     REQUIRE(query.getSuchthat()[0] == ptr);

@@ -5,6 +5,8 @@
 
 #define TEST_LOG Logger() << "TestWithClauses.cpp "
 
+using qps::query::Declaration;
+
 PKB createPKBForWith() {
     PKB pkb = PKB();
     pkb.insertEntity(PROC_NAME{ "proc1" });
@@ -92,7 +94,7 @@ TEST_CASE("Test with clause with one attrRef") {
     TEST_LOG << "select c with c.procName = 'proc2'";
     qps::query::Query query;
     qps::query::AttrRef attr = qps::query::AttrRef{qps::query::AttrName::PROCNAME,
-                                                   qps::query::DesignEntity::CALL, "c"};
+                                                   Declaration { "c", qps::query::DesignEntity::CALL }};
     qps::query::AttrCompareRef lhs = qps::query::AttrCompareRef::ofAttrRef(attr);
     qps::query::AttrCompareRef rhs = qps::query::AttrCompareRef::ofString("proc2");
     qps::query::AttrCompare with = qps::query::AttrCompare{lhs, rhs};
@@ -107,7 +109,7 @@ TEST_CASE("Test with clause with one attrRef") {
     TEST_LOG << "select pr with pr.varName = 'y'";
     qps::query::Query query2;
     qps::query::AttrRef attr2 = qps::query::AttrRef{qps::query::AttrName::VARNAME,
-                                                   qps::query::DesignEntity::PRINT, "pr"};
+                                                    Declaration { "pr", qps::query::DesignEntity::PRINT }};
     qps::query::AttrCompareRef lhs2 = qps::query::AttrCompareRef::ofAttrRef(attr2);
     qps::query::AttrCompareRef rhs2 = qps::query::AttrCompareRef::ofString("y");
     qps::query::AttrCompare with2 = qps::query::AttrCompare{lhs2, rhs2};
@@ -122,7 +124,7 @@ TEST_CASE("Test with clause with one attrRef") {
     TEST_LOG << "select r with r.varName = 'variable'";
     qps::query::Query query3;
     qps::query::AttrRef attr3 = qps::query::AttrRef{qps::query::AttrName::VARNAME,
-                                                    qps::query::DesignEntity::READ, "r"};
+                                                    Declaration { "r", qps::query::DesignEntity::READ }};
     qps::query::AttrCompareRef lhs3 = qps::query::AttrCompareRef::ofAttrRef(attr3);
     qps::query::AttrCompareRef rhs3 = qps::query::AttrCompareRef::ofString("variable");
     qps::query::AttrCompare with3 = qps::query::AttrCompare{lhs3, rhs3};
@@ -137,7 +139,7 @@ TEST_CASE("Test with clause with one attrRef") {
     TEST_LOG << "select p with p.procName = 'proc2'";
     qps::query::Query query4;
     qps::query::AttrRef attr4 = qps::query::AttrRef{qps::query::AttrName::PROCNAME,
-                                                   qps::query::DesignEntity::PROCEDURE, "p"};
+                                                    Declaration { "p", qps::query::DesignEntity::PROCEDURE }};
     qps::query::AttrCompareRef lhs4 = qps::query::AttrCompareRef::ofAttrRef(attr4);
     qps::query::AttrCompareRef rhs4 = qps::query::AttrCompareRef::ofString("proc2");
     qps::query::AttrCompare with4 = qps::query::AttrCompare{lhs4, rhs4};
@@ -152,7 +154,7 @@ TEST_CASE("Test with clause with one attrRef") {
     TEST_LOG << "select a with a.Stmt# = 4";
     qps::query::Query query5;
     qps::query::AttrRef attr5 = qps::query::AttrRef{qps::query::AttrName::STMTNUM,
-                                                    qps::query::DesignEntity::ASSIGN, "a"};
+                                                    Declaration { "a", qps::query::DesignEntity::ASSIGN }};
     qps::query::AttrCompareRef lhs5 = qps::query::AttrCompareRef::ofAttrRef(attr5);
     qps::query::AttrCompareRef rhs5 = qps::query::AttrCompareRef::ofNumber(4);
     qps::query::AttrCompare with5 = qps::query::AttrCompare{lhs5, rhs5};
@@ -167,7 +169,7 @@ TEST_CASE("Test with clause with one attrRef") {
     TEST_LOG << "select w with w.Stmt# = 4";
     qps::query::Query query6;
     qps::query::AttrRef attr6 = qps::query::AttrRef{qps::query::AttrName::STMTNUM,
-                                                    qps::query::DesignEntity::WHILE, "w"};
+                                                    Declaration { "w", qps::query::DesignEntity::WHILE }};
     qps::query::AttrCompareRef lhs6 = qps::query::AttrCompareRef::ofAttrRef(attr6);
     qps::query::AttrCompareRef rhs6 = qps::query::AttrCompareRef::ofNumber(4);
     qps::query::AttrCompare with6 = qps::query::AttrCompare{rhs6, lhs6};
@@ -186,9 +188,9 @@ TEST_CASE("test with clauses with two attrRefs") {
     TEST_LOG << "select p with c.procName = p.procName";
     qps::query::Query query;
     qps::query::AttrRef attrl = qps::query::AttrRef{qps::query::AttrName::PROCNAME,
-                                                   qps::query::DesignEntity::CALL, "c"};
-    qps::query::AttrRef attrr = qps::query::AttrRef{qps::query::AttrName::PROCNAME,
-                                                   qps::query::DesignEntity::PROCEDURE, "p"};
+                                                    Declaration { "c", qps::query::DesignEntity::CALL }};
+    qps::query::AttrRef attrr = qps::query::AttrRef{ qps::query::AttrName::PROCNAME,
+                                                     Declaration { "p", qps::query::DesignEntity::PROCEDURE }};
     qps::query::AttrCompareRef lhs = qps::query::AttrCompareRef::ofAttrRef(attrl);
     qps::query::AttrCompareRef rhs = qps::query::AttrCompareRef::ofAttrRef(attrr);
     qps::query::AttrCompare with = qps::query::AttrCompare{lhs, rhs};
@@ -204,9 +206,9 @@ TEST_CASE("test with clauses with two attrRefs") {
     TEST_LOG << "select s with c.procName = c.procName";
     qps::query::Query query1;
     qps::query::AttrRef attrl1 = qps::query::AttrRef{qps::query::AttrName::PROCNAME,
-                                                    qps::query::DesignEntity::CALL, "c"};
+                                                     Declaration { "c", qps::query::DesignEntity::CALL }};
     qps::query::AttrRef attrr1 = qps::query::AttrRef{qps::query::AttrName::PROCNAME,
-                                                    qps::query::DesignEntity::CALL, "c"};
+                                                     Declaration { "c", qps::query::DesignEntity::CALL }};
     qps::query::AttrCompareRef lhs1 = qps::query::AttrCompareRef::ofAttrRef(attrl1);
     qps::query::AttrCompareRef rhs1 = qps::query::AttrCompareRef::ofAttrRef(attrr1);
     qps::query::AttrCompare with1 = qps::query::AttrCompare{lhs1, rhs1};
@@ -222,9 +224,9 @@ TEST_CASE("test with clauses with two attrRefs") {
     TEST_LOG << "select v with pr.varName = v.varName";
     qps::query::Query query2;
     qps::query::AttrRef attrl2 = qps::query::AttrRef{qps::query::AttrName::VARNAME,
-                                                    qps::query::DesignEntity::PRINT, "pr"};
+                                                     Declaration { "pr", qps::query::DesignEntity::PRINT }};
     qps::query::AttrRef attrr2 = qps::query::AttrRef{qps::query::AttrName::VARNAME,
-                                                     qps::query::DesignEntity::VARIABLE, "v"};
+                                                     Declaration { "v", qps::query::DesignEntity::VARIABLE }};
     qps::query::AttrCompareRef lhs2 = qps::query::AttrCompareRef::ofAttrRef(attrl2);
     qps::query::AttrCompareRef rhs2 = qps::query::AttrCompareRef::ofAttrRef(attrr2);
     qps::query::AttrCompare with2 = qps::query::AttrCompare{lhs2, rhs2};
@@ -240,9 +242,9 @@ TEST_CASE("test with clauses with two attrRefs") {
     TEST_LOG << "select r with r.varName = pr.varName";
     qps::query::Query query3;
     qps::query::AttrRef attrl3 = qps::query::AttrRef{qps::query::AttrName::VARNAME,
-                                                    qps::query::DesignEntity::READ, "r"};
+                                                     Declaration { "r", qps::query::DesignEntity::READ }};
     qps::query::AttrRef attrr3 = qps::query::AttrRef{qps::query::AttrName::VARNAME,
-                                                    qps::query::DesignEntity::PRINT, "pr"};
+                                                     Declaration { "pr", qps::query::DesignEntity::PRINT }};
     qps::query::AttrCompareRef lhs3 = qps::query::AttrCompareRef::ofAttrRef(attrl3);
     qps::query::AttrCompareRef rhs3 = qps::query::AttrCompareRef::ofAttrRef(attrr3);
     qps::query::AttrCompare with3 = qps::query::AttrCompare{lhs3, rhs3};
@@ -258,9 +260,9 @@ TEST_CASE("test with clauses with two attrRefs") {
     TEST_LOG << "select c with a.stmt# = c.value";
     qps::query::Query query4;
     qps::query::AttrRef attrl4 = qps::query::AttrRef{qps::query::AttrName::STMTNUM,
-                                                    qps::query::DesignEntity::ASSIGN, "a"};
+                                                     Declaration { "a", qps::query::DesignEntity::ASSIGN }};
     qps::query::AttrRef attrr4 = qps::query::AttrRef{qps::query::AttrName::VALUE,
-                                                    qps::query::DesignEntity::CONSTANT, "c"};
+                                                     Declaration { "c", qps::query::DesignEntity::CONSTANT }};
     qps::query::AttrCompareRef lhs4 = qps::query::AttrCompareRef::ofAttrRef(attrl4);
     qps::query::AttrCompareRef rhs4 = qps::query::AttrCompareRef::ofAttrRef(attrr4);
     qps::query::AttrCompare with4 = qps::query::AttrCompare{lhs4, rhs4};

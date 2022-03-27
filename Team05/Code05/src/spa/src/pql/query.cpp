@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <unordered_set>
+#include <utility>
 
 #include "exceptions.h"
 #include "pql/query.h"
@@ -27,7 +28,7 @@ namespace qps::query {
                                    DesignEntity::WHILE, DesignEntity::IF, DesignEntity::ASSIGN} }
     };
 
-    bool Query::isValid() {
+    bool Query::isValid() const {
         return valid;
     }
 
@@ -35,43 +36,43 @@ namespace qps::query {
         this->valid = valid;
     }
 
-    bool Query::hasDeclaration(std::string name) {
+    bool Query::hasDeclaration(const std::string &name) const {
         return declarations.count(name) > 0;
     }
 
-    bool Query::hasVariable(std::string var) {
+    bool Query::hasVariable(const std::string& var) const {
         return std::find(variable.begin(), variable.end(), var) != variable.end();
     }
 
-    DesignEntity Query::getDeclarationDesignEntity(std::string name) {
+    DesignEntity Query::getDeclarationDesignEntity(const std::string& name) const {
         if (declarations.count(name) == 0)
             throw exceptions::PqlSyntaxException(messages::qps::parser::declarationDoesNotExistMessage);
 
         return declarations.find(name)->second;
     }
 
-    std::unordered_map<std::string, DesignEntity> Query::getDeclarations() {
+    std::unordered_map<std::string, DesignEntity> Query::getDeclarations() const {
         return declarations;
     }
 
-    std::vector<std::string> Query::getVariable() {
+    std::vector<std::string> Query::getVariable() const {
         return variable;
     }
 
-    std::vector<std::shared_ptr<RelRef>> Query::getSuchthat() {
+    std::vector<std::shared_ptr<RelRef>> Query::getSuchthat() const {
         return suchthat;
     }
 
-    std::vector<Pattern> Query::getPattern() {
+    std::vector<Pattern> Query::getPattern() const {
         return pattern;
     }
 
-    std::vector<AttrCompare> Query::getWith() {
+    std::vector<AttrCompare> Query::getWith() const {
         return with;
     }
 
 
-    void Query::addDeclaration(std::string var, DesignEntity de) {
+    void Query::addDeclaration(const std::string& var, DesignEntity de) {
         if (declarations.find(var) != declarations.end())
             throw exceptions::PqlSyntaxException("Declaration already exists!");
 
@@ -79,35 +80,34 @@ namespace qps::query {
     }
 
 
-    void Query::addVariable(std::string var) {
+    void Query::addVariable(const std::string& var) {
         variable.push_back(var);
     }
 
-    void Query::addSuchthat(std::shared_ptr<RelRef> rel) {
+    void Query::addSuchthat(const std::shared_ptr<RelRef>& rel) {
         suchthat.push_back(rel);
     }
 
-    void Query::addPattern(Pattern p) {
+    void Query::addPattern(const Pattern& p) {
         pattern.push_back(p);
     }
 
-    void Query::addWith(AttrCompare ac) {
+    void Query::addWith(const AttrCompare& ac) {
         with.push_back(ac);
     }
 
 
     EntRef EntRef::ofVarName(std::string name) {
         EntRef e;
-        e.variable = name;
+        e.variable = std::move(name);
         e.type = EntRefType::VARIABLE_NAME;
         return e;
     }
 
-    EntRef EntRef::ofDeclaration(std::string d, DesignEntity de) {
+    EntRef EntRef::ofDeclaration(Declaration d) {
         EntRef e;
-        e.declaration = d;
+        e.declaration = std::move(d);
         e.type = EntRefType::DECLARATION;
-        e.declarationType = de;
         return e;
     }
 
@@ -121,12 +121,16 @@ namespace qps::query {
         return type;
     }
 
-    std::string EntRef::getDeclaration() const {
+    Declaration EntRef::getDeclaration() const {
         return declaration;
     }
 
+    std::string EntRef::getDeclarationSynonym() const {
+        return declaration.getSynonym();
+    }
+
     DesignEntity EntRef::getDeclarationType() const {
-        return declarationType;
+        return declaration.type;
     }
 
     std::string EntRef::getVariableName() {
@@ -145,11 +149,10 @@ namespace qps::query {
         return type == EntRefType::WILDCARD;
     }
 
-    StmtRef StmtRef::ofDeclaration(std::string d, DesignEntity de) {
+    StmtRef StmtRef::ofDeclaration(Declaration d) {
         StmtRef s;
         s.type = StmtRefType::DECLARATION;
-        s.declaration = d;
-        s.declarationType = de;
+        s.declaration = std::move(d);
         return s;
     }
 
@@ -166,19 +169,23 @@ namespace qps::query {
         return s;
     }
 
-    StmtRefType StmtRef::getType() {
+    StmtRefType StmtRef::getType() const {
         return type;
     }
 
-    DesignEntity StmtRef::getDeclarationType() const {
-        return declarationType;
-    }
-
-    std::string StmtRef::getDeclaration() const {
+    Declaration StmtRef::getDeclaration() const {
         return declaration;
     }
 
-    int StmtRef::getLineNo() {
+    DesignEntity StmtRef::getDeclarationType() const {
+        return declaration.getType();
+    }
+
+    std::string StmtRef::getDeclarationSynonym() const {
+        return declaration.getSynonym();
+    }
+
+    int StmtRef::getLineNo() const {
         return lineNo;
     }
 
@@ -186,11 +193,11 @@ namespace qps::query {
         return type == StmtRefType::DECLARATION;
     }
 
-    bool StmtRef::isLineNo() {
+    bool StmtRef::isLineNo() const {
         return type == StmtRefType::LINE_NO;
     }
 
-    bool StmtRef::isWildcard() {
+    bool StmtRef::isWildcard() const {
         return type == StmtRefType::WILDCARD;
     }
 
@@ -199,30 +206,30 @@ namespace qps::query {
     }
 
     ExpSpec ExpSpec::ofPartialMatch(std::string str) {
-        return ExpSpec { false, true, str };
+        return ExpSpec { false, true, std::move(str) };
     }
 
     ExpSpec ExpSpec::ofFullMatch(std::string str) {
-        return ExpSpec { false, false, str };
+        return ExpSpec { false, false, std::move(str) };
     }
 
-    bool ExpSpec::isPartialMatch() {
+    bool ExpSpec::isPartialMatch() const {
         return partialMatch && (pattern.length() > 0) && !wildCard;
     }
 
-    bool ExpSpec::isFullMatch() {
+    bool ExpSpec::isFullMatch() const {
         return !partialMatch && (pattern.length() > 0) && !wildCard;
     }
 
-    bool ExpSpec::isWildcard() {
+    bool ExpSpec::isWildcard() const {
         return wildCard && (pattern.length() == 0) && !partialMatch;
     }
 
-    std::string ExpSpec::getPattern() {
+    std::string ExpSpec::getPattern() const {
         return pattern;
     }
 
-    PKBField PKBFieldTransformer::transformStmtRef(StmtRef s) {
+    PKBField PKBFieldTransformer::transformStmtRef(const StmtRef& s) {
         PKBField stmtField;
         if (s.isLineNo()) {
             stmtField = PKBField::createConcrete(STMT_LO{s.getLineNo()});
@@ -258,8 +265,8 @@ namespace qps::query {
         return entField;
     }
 
-    ExpSpec Pattern::getExpression() {
-        if (synonymType != DesignEntity::ASSIGN)
+    ExpSpec Pattern::getExpression() const {
+        if (declaration.getType() != DesignEntity::ASSIGN)
             throw exceptions::PqlSyntaxException(messages::qps::parser::notAnAssignPatternMessage);
 
         return expression;
@@ -267,26 +274,23 @@ namespace qps::query {
 
     Pattern Pattern::ofAssignPattern(std::string synonym, EntRef er, ExpSpec exp) {
         Pattern p;
-        p.synonym = synonym;
-        p.synonymType = DesignEntity::ASSIGN;
-        p.lhs = er;
-        p.expression = exp;
+        p.declaration = Declaration { std::move(synonym), DesignEntity::ASSIGN };
+        p.lhs = std::move(er);
+        p.expression = std::move(exp);
         return p;
     }
 
     Pattern Pattern::ofWhilePattern(std::string synonym, EntRef er) {
         Pattern p;
-        p.synonym = synonym;
-        p.synonymType = DesignEntity::WHILE;
-        p.lhs = er;
+        p.declaration = Declaration { std::move(synonym), DesignEntity::WHILE };
+        p.lhs = std::move(er);
         return p;
     }
 
     Pattern Pattern::ofIfPattern(std::string synonym, EntRef er) {
         Pattern p;
-        p.synonym = synonym;
-        p.synonymType = DesignEntity::IF;
-        p.lhs = er;
+        p.declaration = Declaration { std::move(synonym), DesignEntity::IF };
+        p.lhs = std::move(er);
         return p;
     }
 
@@ -502,7 +506,7 @@ namespace qps::query {
     AttrCompareRef AttrCompareRef::ofString(std::string str) {
         AttrCompareRef acr;
         acr.type = AttrCompareRefType::STRING;
-        acr.str_value = str;
+        acr.str_value = std::move(str);
         return acr;
     }
 
@@ -516,11 +520,11 @@ namespace qps::query {
     AttrCompareRef AttrCompareRef::ofAttrRef(AttrRef ar) {
         AttrCompareRef acr;
         acr.type = AttrCompareRefType::ATTRREF;
-        acr.ar = ar;
+        acr.ar = std::move(ar);
         return acr;
     }
 
-    bool AttrCompareRef::validComparison(AttrCompareRef o) const {
+    bool AttrCompareRef::validComparison(const AttrCompareRef& o) const {
         if ((isString() && o.isString()) || (isNumber() && o.isNumber())) {
             return true;
         } else if (isAttrRef() && o.isAttrRef()) {
@@ -533,7 +537,7 @@ namespace qps::query {
         return false;
     }
 
-    void AttrCompare::validateComparingTypes() {
+    void AttrCompare::validateComparingTypes() const {
         if (!lhs.validComparison(rhs))
             throw exceptions::PqlSemanticException(messages::qps::parser::incompatibleComparisonMessage);
     }

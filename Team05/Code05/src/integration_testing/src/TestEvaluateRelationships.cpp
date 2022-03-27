@@ -7,6 +7,8 @@
 
 #define TEST_LOG Logger() << "TestEvaluateRelationships.cpp "
 
+using qps::query::Declaration;
+
 void printResult(std::list<std::string> result) {
     for (auto s : result) {
         TEST_LOG << s;
@@ -99,7 +101,7 @@ TEST_CASE("Test get Modifies") {
     TEST_LOG << "select a such that Modifies(a, 'variable')";
     qps::query::Query query;
     std::shared_ptr<qps::query::ModifiesS> mPtr = std::make_shared<qps::query::ModifiesS>();
-    mPtr->modifiesStmt = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    mPtr->modifiesStmt = qps::query::StmtRef::ofDeclaration( Declaration { "a", qps::query::DesignEntity::ASSIGN });
     mPtr->modified = qps::query::EntRef::ofVarName("variable");
 
     query.addVariable("a");
@@ -115,7 +117,7 @@ TEST_CASE("Test get Modifies") {
     TEST_LOG << "stmt s; assign a; select s such that Modifies(a, 'variable')";
     qps::query::Query query1;
     std::shared_ptr<qps::query::ModifiesS> mPtr1 = std::make_shared<qps::query::ModifiesS>();
-    mPtr1->modifiesStmt = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    mPtr1->modifiesStmt = qps::query::StmtRef::ofDeclaration( Declaration { "a", qps::query::DesignEntity::ASSIGN });
     mPtr1->modified = qps::query::EntRef::ofVarName("variable");
     query1.addVariable("s");
     query1.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
@@ -133,7 +135,7 @@ TEST_CASE("Test get Modifies") {
     query2.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
     std::shared_ptr<qps::query::ModifiesS> mPtr2 = std::make_shared<qps::query::ModifiesS>();
     mPtr2->modifiesStmt = qps::query::StmtRef::ofLineNo(5);
-    mPtr2->modified = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    mPtr2->modified = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
     query2.addSuchthat(mPtr2);
     qps::evaluator::Evaluator evaluator2 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result2 = evaluator2.evaluate(query2);
@@ -146,7 +148,7 @@ TEST_CASE("Test get Modifies") {
     query3.addDeclaration("s", qps::query::DesignEntity::STMT);
     query3.addVariable("s");
     std::shared_ptr<qps::query::ModifiesS> mPtr3 = std::make_shared<qps::query::ModifiesS>();
-    mPtr3->modifiesStmt = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
+    mPtr3->modifiesStmt = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
     mPtr3->modified = qps::query::EntRef::ofWildcard();
     query3.addSuchthat(mPtr3);
     qps::evaluator::Evaluator evaluator3 = qps::evaluator::Evaluator{pkbPtr};
@@ -161,7 +163,7 @@ TEST_CASE("Test get Modifies") {
     query4.addVariable("v");
     std::shared_ptr<qps::query::ModifiesS> mPtr4 = std::make_shared<qps::query::ModifiesS>();
     mPtr4->modifiesStmt = qps::query::StmtRef::ofLineNo(3);
-    mPtr4->modified = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    mPtr4->modified = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
     query4.addSuchthat(mPtr4);
     qps::evaluator::Evaluator evaluator4 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result4 = evaluator4.evaluate(query4);
@@ -172,7 +174,7 @@ TEST_CASE("Test get Modifies") {
     TEST_LOG << "select p such that ModifiesP(p, 'variable')";
     qps::query::Query query5;
     std::shared_ptr<qps::query::ModifiesP> mPtr5 = std::make_shared<qps::query::ModifiesP>();
-    mPtr5->modifiesProc = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr5->modifiesProc = qps::query::EntRef::ofDeclaration( Declaration { "p", qps::query::DesignEntity::PROCEDURE });
     mPtr5->modified = qps::query::EntRef::ofVarName("variable");
 
     query5.addVariable("p");
@@ -189,7 +191,7 @@ TEST_CASE("Test get Modifies") {
     qps::query::Query query6;
     std::shared_ptr<qps::query::ModifiesP> mPtr6 = std::make_shared<qps::query::ModifiesP>();
     mPtr6->modifiesProc = qps::query::EntRef::ofVarName("proc1");
-    mPtr6->modified = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    mPtr6->modified = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
 
     query6.addVariable("v");
     query6.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
@@ -211,7 +213,7 @@ TEST_CASE("Test get Uses") {
     query1.addDeclaration("s", qps::query::DesignEntity::STMT);
     query1.addVariable("s");
     std::shared_ptr<qps::query::UsesS> mPtr1 = std::make_shared<qps::query::UsesS>();
-    mPtr1->useStmt = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
+    mPtr1->useStmt = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
     mPtr1->used = qps::query::EntRef::ofVarName("x");
     query1.addSuchthat(mPtr1);
     qps::evaluator::Evaluator e1 = qps::evaluator::Evaluator{pkbPtr};
@@ -225,7 +227,7 @@ TEST_CASE("Test get Uses") {
     query2.addDeclaration("p", qps::query::DesignEntity::PRINT);
     query2.addVariable("p");
     std::shared_ptr<qps::query::UsesS> mPtr2 = std::make_shared<qps::query::UsesS>();
-    mPtr2->useStmt = qps::query::StmtRef::ofDeclaration("p", qps::query::DesignEntity::PRINT);
+    mPtr2->useStmt = qps::query::StmtRef::ofDeclaration( Declaration { "p", qps::query::DesignEntity::PRINT });
     mPtr2->used = qps::query::EntRef::ofWildcard();
     query2.addSuchthat(mPtr2);
     qps::evaluator::Evaluator e2 = qps::evaluator::Evaluator{pkbPtr};
@@ -241,8 +243,8 @@ TEST_CASE("Test get Uses") {
     query3.addVariable("v");
     query3.addVariable("s");
     std::shared_ptr<qps::query::UsesS> mPtr3 = std::make_shared<qps::query::UsesS>();
-    mPtr3->useStmt = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
-    mPtr3->used = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    mPtr3->useStmt = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
+    mPtr3->used = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
     query3.addSuchthat(mPtr3);
     qps::evaluator::Evaluator e3 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result3 = e3.evaluate(query3);
@@ -256,7 +258,7 @@ TEST_CASE("Test get Uses") {
     query4.addVariable("v");
     std::shared_ptr<qps::query::UsesP> mPtr4 = std::make_shared<qps::query::UsesP>();
     mPtr4->useProc = qps::query::EntRef::ofVarName("proc1");
-    mPtr4->used = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    mPtr4->used = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
     query4.addSuchthat(mPtr4);
     qps::evaluator::Evaluator evaluator4 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result4 = evaluator4.evaluate(query4);
@@ -267,7 +269,7 @@ TEST_CASE("Test get Uses") {
     TEST_LOG << "select p such that UsesP(p, 'variable')";
     qps::query::Query query5;
     std::shared_ptr<qps::query::UsesP> mPtr5 = std::make_shared<qps::query::UsesP>();
-    mPtr5->useProc = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr5->useProc = qps::query::EntRef::ofDeclaration( Declaration { "p", qps::query::DesignEntity::PROCEDURE });
     mPtr5->used = qps::query::EntRef::ofVarName("variable");
 
     query5.addVariable("p");
@@ -283,7 +285,7 @@ TEST_CASE("Test get Uses") {
     TEST_LOG << "select p such that ModifiesP(p, _)";
     qps::query::Query query6;
     std::shared_ptr<qps::query::UsesP> mPtr6 = std::make_shared<qps::query::UsesP>();
-    mPtr6->useProc = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr6->useProc = qps::query::EntRef::ofDeclaration( Declaration { "p", qps::query::DesignEntity::PROCEDURE });
     mPtr6->used = qps::query::EntRef::ofWildcard();
 
     query6.addVariable("p");
@@ -306,7 +308,7 @@ TEST_CASE("Test get Follows FollowsT") {
     query1.addDeclaration("s", qps::query::DesignEntity::STMT);
     query1.addVariable("s");
     std::shared_ptr<qps::query::Follows> mPtr1 = std::make_shared<qps::query::Follows>();
-    mPtr1->follower = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
+    mPtr1->follower = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
     mPtr1->followed = qps::query::StmtRef::ofLineNo(3);
     query1.addSuchthat(mPtr1);
     qps::evaluator::Evaluator e1 = qps::evaluator::Evaluator{pkbPtr};
@@ -321,7 +323,8 @@ TEST_CASE("Test get Follows FollowsT") {
     query2.addVariable("s");
     std::shared_ptr<qps::query::FollowsT> mPtr2 = std::make_shared<qps::query::FollowsT>();
     mPtr2->follower = qps::query::StmtRef::ofLineNo(3);
-    mPtr2->transitiveFollowed = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
+    mPtr2->transitiveFollowed = qps::query::StmtRef::ofDeclaration( Declaration { "s",
+                                                                                  qps::query::DesignEntity::STMT });
     query2.addSuchthat(mPtr2);
     qps::evaluator::Evaluator e2 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result2 = e2.evaluate(query2);
@@ -335,7 +338,7 @@ TEST_CASE("Test get Follows FollowsT") {
     query3.addVariable("s");
     std::shared_ptr<qps::query::FollowsT> mPtr3 = std::make_shared<qps::query::FollowsT>();
     mPtr3->follower = qps::query::StmtRef::ofWildcard();
-    mPtr3->transitiveFollowed = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
+    mPtr3->transitiveFollowed = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
     query3.addSuchthat(mPtr3);
     qps::evaluator::Evaluator e3 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result3 = e3.evaluate(query3);
@@ -348,8 +351,8 @@ TEST_CASE("Test get Follows FollowsT") {
     query4.addDeclaration("s", qps::query::DesignEntity::STMT);
     query4.addVariable("s");
     std::shared_ptr<qps::query::Follows> mPtr4 = std::make_shared<qps::query::Follows>();
-    mPtr4->follower = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
-    mPtr4->followed = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
+    mPtr4->follower = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
+    mPtr4->followed = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
     query4.addSuchthat(mPtr4);
     qps::evaluator::Evaluator e4 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result4 = e3.evaluate(query4);
@@ -368,7 +371,7 @@ TEST_CASE("Test Parent") {
     query1.addVariable("a");
     std::shared_ptr<qps::query::Parent> mPtr1 = std::make_shared<qps::query::Parent>();
     mPtr1->parent = qps::query::StmtRef::ofLineNo(3);
-    mPtr1->child = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    mPtr1->child = qps::query::StmtRef::ofDeclaration( Declaration { "a", qps::query::DesignEntity::ASSIGN });
     query1.addSuchthat(mPtr1);
     qps::evaluator::Evaluator e1 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result1 = e1.evaluate(query1);
@@ -381,8 +384,8 @@ TEST_CASE("Test Parent") {
     query2.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
     query2.addVariable("a");
     std::shared_ptr<qps::query::Parent> mPtr2 = std::make_shared<qps::query::Parent>();
-    mPtr2->parent = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
-    mPtr2->child = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    mPtr2->parent = qps::query::StmtRef::ofDeclaration( Declaration { "a", qps::query::DesignEntity::ASSIGN });
+    mPtr2->child = qps::query::StmtRef::ofDeclaration( Declaration { "a", qps::query::DesignEntity::ASSIGN });
     query2.addSuchthat(mPtr2);
     qps::evaluator::Evaluator e2 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result2 = e2.evaluate(query2);
@@ -400,7 +403,7 @@ TEST_CASE("Test Next and NextT") {
     query1.addVariable("s");
     std::shared_ptr<qps::query::Next> mPtr1 = std::make_shared<qps::query::Next>();
     mPtr1->before = qps::query::StmtRef::ofLineNo(1);
-    mPtr1->after = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
+    mPtr1->after = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
     query1.addSuchthat(mPtr1);
     qps::evaluator::Evaluator e1 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result1 = e1.evaluate(query1);
@@ -414,7 +417,7 @@ TEST_CASE("Test Next and NextT") {
     query2.addVariable("s");
     std::shared_ptr<qps::query::NextT> mPtr2 = std::make_shared<qps::query::NextT>();
     mPtr2->before = qps::query::StmtRef::ofLineNo(2);
-    mPtr2->transitiveAfter = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::STMT);
+    mPtr2->transitiveAfter = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
     query2.addSuchthat(mPtr2);
     qps::evaluator::Evaluator e2 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result2 = e2.evaluate(query2);
@@ -427,7 +430,7 @@ TEST_CASE("Test Next and NextT") {
     query3.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
     query3.addVariable("a");
     std::shared_ptr<qps::query::NextT> mPtr3 = std::make_shared<qps::query::NextT>();
-    mPtr3->before = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    mPtr3->before = qps::query::StmtRef::ofDeclaration( Declaration { "a", qps::query::DesignEntity::ASSIGN });
     mPtr3->transitiveAfter = qps::query::StmtRef::ofWildcard();
     query3.addSuchthat(mPtr3);
     qps::evaluator::Evaluator e3 = qps::evaluator::Evaluator{pkbPtr};
@@ -446,7 +449,7 @@ TEST_CASE("Test get Calls and CallsT") {
     query1.addDeclaration("p", qps::query::DesignEntity::PROCEDURE);
     query1.addVariable("p");
     std::shared_ptr<qps::query::Calls> mPtr1 = std::make_shared<qps::query::Calls>();
-    mPtr1->caller = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr1->caller = qps::query::EntRef::ofDeclaration( Declaration { "p", qps::query::DesignEntity::PROCEDURE });
     mPtr1->callee = qps::query::EntRef::ofVarName("proc2");
     query1.addSuchthat(mPtr1);
     qps::evaluator::Evaluator e1 = qps::evaluator::Evaluator{pkbPtr};
@@ -461,7 +464,8 @@ TEST_CASE("Test get Calls and CallsT") {
     query2.addVariable("p");
     std::shared_ptr<qps::query::CallsT> mPtr2 = std::make_shared<qps::query::CallsT>();
     mPtr2->caller = qps::query::EntRef::ofVarName("proc1");
-    mPtr2->transitiveCallee = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr2->transitiveCallee = qps::query::EntRef::ofDeclaration( Declaration { "p",
+                                                                               qps::query::DesignEntity::PROCEDURE });
     query2.addSuchthat(mPtr2);
     qps::evaluator::Evaluator e2 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result2 = e2.evaluate(query2);
@@ -474,7 +478,7 @@ TEST_CASE("Test get Calls and CallsT") {
     query3.addDeclaration("p", qps::query::DesignEntity::PROCEDURE);
     query3.addVariable("p");
     std::shared_ptr<qps::query::CallsT> mPtr3 = std::make_shared<qps::query::CallsT>();
-    mPtr3->caller = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr3->caller = qps::query::EntRef::ofDeclaration( Declaration { "p", qps::query::DesignEntity::PROCEDURE });
     mPtr3->transitiveCallee = qps::query::EntRef::ofWildcard();
     query3.addSuchthat(mPtr3);
     qps::evaluator::Evaluator e3 = qps::evaluator::Evaluator{pkbPtr};
@@ -569,11 +573,11 @@ TEST_CASE("multiple relationship clauses") {
     query1.addVariable("v");
     std::shared_ptr<qps::query::Parent> mPtr11 = std::make_shared<qps::query::Parent>();
     mPtr11->parent = qps::query::StmtRef::ofLineNo(3);
-    mPtr11->child = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    mPtr11->child = qps::query::StmtRef::ofDeclaration( Declaration { "a", qps::query::DesignEntity::ASSIGN });
     query1.addSuchthat(mPtr11);
     std::shared_ptr<qps::query::ModifiesS> mPtr12 = std::make_shared<qps::query::ModifiesS>();
-    mPtr12->modifiesStmt = qps::query::StmtRef::ofDeclaration("a", qps::query::DesignEntity::ASSIGN);
-    mPtr12->modified = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    mPtr12->modifiesStmt = qps::query::StmtRef::ofDeclaration( Declaration { "a", qps::query::DesignEntity::ASSIGN });
+    mPtr12->modified = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
     query1.addSuchthat(mPtr12);
     qps::evaluator::Evaluator e1 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result1 = e1.evaluate(query1);
@@ -589,15 +593,16 @@ TEST_CASE("multiple relationship clauses") {
     query2.addVariable("s");
     std::shared_ptr<qps::query::CallsT> mPtr21 = std::make_shared<qps::query::CallsT>();
     mPtr21->caller = qps::query::EntRef::ofVarName("proc1");
-    mPtr21->transitiveCallee = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
+    mPtr21->transitiveCallee = qps::query::EntRef::ofDeclaration( Declaration { "p",
+                                                                                qps::query::DesignEntity::PROCEDURE });
     query2.addSuchthat(mPtr21);
     std::shared_ptr<qps::query::UsesP> mPtr22 = std::make_shared<qps::query::UsesP>();
-    mPtr22->useProc = qps::query::EntRef::ofDeclaration("p", qps::query::DesignEntity::PROCEDURE);
-    mPtr22->used = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    mPtr22->useProc = qps::query::EntRef::ofDeclaration( Declaration { "p", qps::query::DesignEntity::PROCEDURE });
+    mPtr22->used = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
     query2.addSuchthat(mPtr22);
     std::shared_ptr<qps::query::UsesS> mPtr23 = std::make_shared<qps::query::UsesS>();
-    mPtr23->useStmt = qps::query::StmtRef::ofDeclaration("s", qps::query::DesignEntity::VARIABLE);
-    mPtr23->used = qps::query::EntRef::ofDeclaration("v", qps::query::DesignEntity::VARIABLE);
+    mPtr23->useStmt = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::VARIABLE });
+    mPtr23->used = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
     query2.addSuchthat(mPtr23);
     qps::evaluator::Evaluator e2 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result2 = e2.evaluate(query2);
