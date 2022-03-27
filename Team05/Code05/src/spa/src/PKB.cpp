@@ -142,6 +142,12 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
     getRelationshipTable(type)->insert(field1, field2);
 }
 
+/**
+* Helper method to check whether the given relationship is transitive.
+* 
+* @param relationship the type of program design abstraction
+* @return bool
+*/
 bool isTransitiveRelationship(PKBRelationship relationship) {
     return relationship == PKBRelationship::FOLLOWST ||
         relationship == PKBRelationship::PARENTT ||
@@ -149,6 +155,13 @@ bool isTransitiveRelationship(PKBRelationship relationship) {
         relationship == PKBRelationship::NEXTT;
 }
 
+/**
+* Helper method to retrieve the non-transitive counterpart of a relationship, if any. For relationships without
+* any transitive counterparts, return itself.
+*
+* @param relationship the type of program design abstraction
+* @return PKBRelationship
+*/
 PKBRelationship getNonTransitiveRelationship(PKBRelationship relationship) {
     if (relationship == PKBRelationship::FOLLOWST) {
         return PKBRelationship::FOLLOWS;
@@ -188,9 +201,11 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
     auto relationshipTablePtr = getRelationshipTable(rs);
     if (isTransitiveRelationship(rs)) {
         if (rs == PKBRelationship::CALLST) {
-            return std::dynamic_pointer_cast<TransitiveRelationshipTable<PROC_NAME>>(relationshipTablePtr)->containsT(field1, field2);
+            return std::dynamic_pointer_cast<TransitiveRelationshipTable<PROC_NAME>>(relationshipTablePtr)->
+                containsT(field1, field2);
         } else {
-            return std::dynamic_pointer_cast<TransitiveRelationshipTable<STMT_LO>>(relationshipTablePtr)->containsT(field1, field2);
+            return std::dynamic_pointer_cast<TransitiveRelationshipTable<STMT_LO>>(relationshipTablePtr)->
+                containsT(field1, field2);
         }
     } else {
         return relationshipTablePtr->contains(field1, field2);
@@ -212,9 +227,11 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
     auto relationshipTablePtr = getRelationshipTable(rs);
     if (isTransitiveRelationship(rs)) {
         if (rs == PKBRelationship::CALLST) {
-            extracted = std::dynamic_pointer_cast<TransitiveRelationshipTable<PROC_NAME>>(relationshipTablePtr)->retrieveT(field1, field2);
+            extracted = std::dynamic_pointer_cast<TransitiveRelationshipTable<PROC_NAME>>(relationshipTablePtr)->
+                retrieveT(field1, field2);
         } else {
-            extracted = std::dynamic_pointer_cast<TransitiveRelationshipTable<STMT_LO>>(relationshipTablePtr)->retrieveT(field1, field2);
+            extracted = std::dynamic_pointer_cast<TransitiveRelationshipTable<STMT_LO>>(relationshipTablePtr)->
+                retrieveT(field1, field2);
         }
     } else {
         extracted = relationshipTablePtr->retrieve(field1, field2);
@@ -225,6 +242,12 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
     : PKBResponse{ false, Response{extracted} };
 }
 
+/**
+* Helper method to convert a vector of PKBDataTypes into a PKBResponse.
+*
+* @param extracted a vector of PKBDataTypes (STMT_LO, VAR_NAME, PROC_NAME, or CONST)
+* @return PKBResponse
+*/
 template <typename T>
 PKBResponse createResponseFromTable(std::vector<T> extracted) {
     std::unordered_set<PKBField, PKBFieldHash> res;
