@@ -36,7 +36,7 @@ std::string PKBFieldToString(PKBField pkbField) {
 }
 
 void printTable(qps::evaluator::ResultTable table) {
-    for (auto r : table.getResult()) {
+    for (auto r : table.getTable()) {
         std::string record;
         for (auto f : r) {
             record = record + PKBFieldToString(f) + " ";
@@ -96,7 +96,7 @@ TEST_CASE("Test insert single synonym") {
     table.insert(response, std::vector<std::string>{"v"});
 
     REQUIRE(table.getSynLocation("v") == 0);
-    auto result = table.getResult();
+    auto result = table.getTable();
     REQUIRE(result.size() == 3);
     REQUIRE(result.find(std::vector<PKBField>{field1}) != result.end());
     REQUIRE(result.find(std::vector<PKBField>{field2}) != result.end());
@@ -117,7 +117,7 @@ TEST_CASE("Test insert vector") {
     table.insert(response, std::vector<std::string>{"v", "s"});
 
     REQUIRE(table.getSynLocation("v") == 0);
-    auto result = table.getResult();
+    auto result = table.getTable();
     REQUIRE(result.size() == 3);
     REQUIRE(result.find(std::vector<PKBField>{field1, field4}) != result.end());
     REQUIRE(result.find(std::vector<PKBField>{field2, field5}) != result.end());
@@ -134,7 +134,7 @@ TEST_CASE("Test Empty table cross join and empty table insert") {
 
     REQUIRE(table.getSynLocation("s") == 0);
     REQUIRE(table.getSynLocation("v") == 1);
-    auto result = table.getResult();
+    auto result = table.getTable();
     REQUIRE(result.size() == 0);
 
     qps::evaluator::ResultTable table1{};
@@ -147,7 +147,7 @@ TEST_CASE("Test Empty table cross join and empty table insert") {
     table1.insert(response1, std::vector<std::string>{"v", "s"});
     REQUIRE(table1.getSynLocation("v") == 0);
     REQUIRE(table1.getSynLocation("s") == 1);
-    auto result1 = table1.getResult();
+    auto result1 = table1.getTable();
     REQUIRE(result1.size() == 3);
     REQUIRE(result1.find(std::vector<PKBField>{field1, field4}) != result1.end());
     REQUIRE(result1.find(std::vector<PKBField>{field2, field5}) != result1.end());
@@ -167,7 +167,7 @@ TEST_CASE("Test crossJoin with records inside") {
     PKBResponse response1{true, Response{r1}};
     table.insert(response1, std::vector<std::string>{"a"});
 
-    auto result = table.getResult();
+    auto result = table.getTable();
     REQUIRE(result.size() == 6);
     REQUIRE(result.find(std::vector<PKBField>{field1, field4, newField1}) != result.end());
     REQUIRE(result.find(std::vector<PKBField>{field1, field4, newField2}) != result.end());
@@ -187,7 +187,7 @@ TEST_CASE("Test crossJoin with records inside") {
     table2.insert(response2, std::vector<std::string>{"a", "c"});
     REQUIRE(table2.getSynLocation("a") == 2);
     REQUIRE(table2.getSynLocation("c") == 3);
-    auto result2 = table2.getResult();
+    auto result2 = table2.getTable();
     REQUIRE(result2.find(std::vector<PKBField>{field1, field4, newField1, newField3}) != result2.end());
     REQUIRE(result2.find(std::vector<PKBField>{field1, field4, newField1, newField4}) != result2.end());
     REQUIRE(result2.find(std::vector<PKBField>{field1, field4, newField2, newField3}) != result2.end());
@@ -209,7 +209,7 @@ TEST_CASE("Test innerJoin with empty table") {
     table.insert(response, std::vector<std::string>{"v"});
 
     REQUIRE(table.getSynLocation("v") == 0);
-    REQUIRE(table.getResult().size() == 0);
+    REQUIRE(table.getTable().size() == 0);
 
     qps::evaluator::ResultTable table1{};
     table1.insertSynLocationToLast("v");
@@ -224,7 +224,7 @@ TEST_CASE("Test innerJoin with empty table") {
     table1.insert(response1, std::vector<std::string>{"v", "s"});
     REQUIRE(table1.getSynLocation("v") == 0);
     REQUIRE(table1.getSynLocation("s") == 1);
-    REQUIRE(table1.getResult().size() == 0);
+    REQUIRE(table1.getTable().size() == 0);
 }
 
 TEST_CASE("Test innerJoin with records in table") {
@@ -236,7 +236,7 @@ TEST_CASE("Test innerJoin with records in table") {
     qps::evaluator::ResultTable table = createNonEmptyTable();
     table.insert(response1, std::vector<std::string>{"s"});
     printTable(table);
-    REQUIRE(table.getResult().size() == 2);
+    REQUIRE(table.getTable().size() == 2);
     //  table: main 1 / b 6
 
     //  when PKBResponse = set<vector<PKBField>> main 1/ a 3/ b 6
@@ -250,14 +250,14 @@ TEST_CASE("Test innerJoin with records in table") {
     TEST_LOG << "========== Join s and v";
     qps::evaluator::ResultTable table2 = createNonEmptyTable();
     table2.insert(response3, std::vector<std::string>{"s", "v"});
-    REQUIRE(table2.getResult().size() == 1);
+    REQUIRE(table2.getTable().size() == 1);
     printTable(table2);
     // table: main 1
 
     TEST_LOG << "========== Join s only";
     qps::evaluator::ResultTable table3 = createNonEmptyTable();
     table3.insert(response3, std::vector<std::string>{"s", "v1"});
-    REQUIRE(table3.getResult().size() == 3);
+    REQUIRE(table3.getTable().size() == 3);
     printTable(table3);
     // table: main 1 main / main 1 cur / b 6 main
 
@@ -266,7 +266,7 @@ TEST_CASE("Test innerJoin with records in table") {
     table4.insert(response3, std::vector<std::string>{"s1", "v"});
     printTable(table4);
     REQUIRE(table4.getSynLocation("s1") == 2);
-    REQUIRE(table4.getResult().size() == 3);
+    REQUIRE(table4.getTable().size() == 3);
     //  table: main 1 1 / main 1 6 / b 6 5
 }
 
@@ -292,7 +292,7 @@ TEST_CASE("Test join method") {
 
     table1.insert(response1, synonyms1);
     REQUIRE(table1.getSynLocation("v") == 0);
-    REQUIRE(table1.getResult().size() == 3);
+    REQUIRE(table1.getTable().size() == 3);
     printTable(table1);
 
     TEST_LOG << "========== 1 syn join (cross join 2)";
@@ -306,7 +306,7 @@ TEST_CASE("Test join method") {
     PKBResponse response2{true, Response{testR2}};
     table2.insert(response2, synonyms2);
     REQUIRE(table2.getSynLocation("v1") == 2);
-    REQUIRE(table2.getResult().size() == 9);
+    REQUIRE(table2.getTable().size() == 9);
     printTable(table2);
 
     TEST_LOG << "========== 1 syn join (empty result cross join 3)";
@@ -316,7 +316,7 @@ TEST_CASE("Test join method") {
     PKBResponse response3{true, Response{testR3}};
     table3.insert(response3, synonyms3);
     REQUIRE(table3.getSynLocation("v1") == 2);
-    REQUIRE(table3.getResult().size() == 0);
+    REQUIRE(table3.getTable().size() == 0);
     printTable(table3);
 
     TEST_LOG << "========== 1 syn join (inner join 1)";
@@ -328,7 +328,7 @@ TEST_CASE("Test join method") {
     PKBResponse response4{true, Response{testR4}};
     table4.insert(response4, synonyms4);
     REQUIRE(table4.getSynLocation("s") == 1);
-    REQUIRE(table4.getResult().size() == 2);
+    REQUIRE(table4.getTable().size() == 2);
     printTable(table4);
 
     TEST_LOG << "========== 2 syns join (cross join)";
@@ -337,7 +337,7 @@ TEST_CASE("Test join method") {
     table5.insert(responseVector, synonyms5);
     REQUIRE(table5.getSynLocation("s1") == 2);
     REQUIRE(table5.getSynLocation("v1") == 3);
-    REQUIRE(table5.getResult().size() == 15);
+    REQUIRE(table5.getTable().size() == 15);
     printTable(table5);
 
     TEST_LOG << "========== 2 syns join (inner join 1)";
@@ -348,7 +348,7 @@ TEST_CASE("Test join method") {
     table6.insert(responseVector, synonyms6);
     REQUIRE(table6.getSynLocation("v") == 0);
     REQUIRE(table6.getSynLocation("s") == 1);
-    REQUIRE(table6.getResult().size() == 0);
+    REQUIRE(table6.getTable().size() == 0);
     printTable(table6);
 
     TEST_LOG << "========== 2 syns join (inner join 2)";
@@ -357,7 +357,7 @@ TEST_CASE("Test join method") {
     table7.insert(responseVector, synonyms7);
     REQUIRE(table7.getSynLocation("v") == 0);
     REQUIRE(table7.getSynLocation("s") == 1);
-    REQUIRE(table7.getResult().size() == 2);
+    REQUIRE(table7.getTable().size() == 2);
     printTable(table7);
 
     TEST_LOG << "========== 2 syns join (inner join 3)";
@@ -366,7 +366,7 @@ TEST_CASE("Test join method") {
     table8.insert(responseVector, synonyms8);
     REQUIRE(table8.getSynLocation("v1") == 2);
     REQUIRE(table8.getSynLocation("s") == 1);
-    REQUIRE(table8.getResult().size() == 3);
+    REQUIRE(table8.getTable().size() == 3);
     printTable(table8);
 
     TEST_LOG << "========== 2 syns join (inner join 4)";
@@ -375,7 +375,7 @@ TEST_CASE("Test join method") {
     table9.insert(responseVector, synonyms9);
     REQUIRE(table9.getSynLocation("v") == 0);
     REQUIRE(table9.getSynLocation("s1") == 2);
-    REQUIRE(table9.getResult().size() == 4);
+    REQUIRE(table9.getTable().size() == 4);
     printTable(table9);
 
     TEST_LOG << "========== 1 syn join (empty response inner join 5)";
@@ -385,7 +385,7 @@ TEST_CASE("Test join method") {
     PKBResponse response10{false, Response{testR10}};
     table10.insert(response10, synonyms10);
     REQUIRE(table10.getSynLocation("v") == 0);
-    REQUIRE(table10.getResult().size() == 0);
+    REQUIRE(table10.getTable().size() == 0);
     printTable(table10);
 
     TEST_LOG << "========== 2 syn join (empty response inner join 6)";
@@ -395,7 +395,7 @@ TEST_CASE("Test join method") {
     PKBResponse response11{false, Response{testR11}};
     table11.insert(response11, synonyms11);
     REQUIRE(table11.getSynLocation("v") == 0);
-    REQUIRE(table11.getResult().size() == 0);
+    REQUIRE(table11.getTable().size() == 0);
     printTable(table11);
 
     TEST_LOG << "========== 2 syn join (empty response cross join 2)";
@@ -406,6 +406,6 @@ TEST_CASE("Test join method") {
     table12.insert(response12, synonyms12);
     REQUIRE(table12.getSynLocation("v1") == 2);
     REQUIRE(table12.getSynLocation("s1") == 3);
-    REQUIRE(table12.getResult().size() == 0);
+    REQUIRE(table12.getTable().size() == 0);
     printTable(table12);
 }

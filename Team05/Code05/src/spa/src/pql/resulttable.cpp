@@ -1,5 +1,7 @@
 #include "resulttable.h"
 
+#include <utility>
+
 namespace qps::evaluator {
     bool ResultTable::synExists(std::string name) {
         return synSequenceMap.find(name) != synSequenceMap.end();
@@ -23,8 +25,12 @@ namespace qps::evaluator {
         columns.push_back(name);
     }
 
-    Table ResultTable::getResult() {
+    Table ResultTable::getTable() {
         return this->table;
+    }
+
+    void ResultTable::setTable(Table table) {
+        this->table = table;
     }
 
     bool ResultTable::isEmpty() {
@@ -33,7 +39,7 @@ namespace qps::evaluator {
 
     VectorResponse ResultTable::transToVectorResponse(SingleResponse response) {
         VectorResponse newVectorRes;
-        for (auto r : response) {
+        for (const auto& r : response) {
             newVectorRes.insert(std::vector<PKBField>{r});
         }
         return newVectorRes;
@@ -41,25 +47,25 @@ namespace qps::evaluator {
 
     ResultTable ResultTable::transToResultTable(PKBResponse response, std::vector<std::string> synonyms) {
         ResultTable resTable = ResultTable();
-        for (int i = 0; i < synonyms.size(); i++) {
-            resTable.insertSynLocationToLast(synonyms[i]);
+        for (auto & synonym : synonyms) {
+            resTable.insertSynLocationToLast(synonym);
         }
         VectorResponse vResponse;
         if (auto *ptr = std::get_if<SingleResponse>(&response.res)) {
-            vResponse = transToVectorResponse(*ptr);
+            vResponse = ResultTable::transToVectorResponse(*ptr);
         } else if (auto *ptr = std::get_if<VectorResponse>(&response.res)) {
             vResponse = *ptr;
         }
-        Table newTable{};
+        Table t = Table{};
         for (auto r : vResponse) {
-            newTable.insert(r);
+            t.insert(r);
         }
-        resTable.table = newTable;
+        resTable.setTable(t);
         return resTable;
     }
 
     void ResultTable::insert(PKBResponse r, std::vector<std::string> synonyms) {
-        ResultTable resTable = transToResultTable(r, synonyms);
+        ResultTable resTable = ResultTable::transToResultTable(std::move(r), std::move(synonyms));
         join(resTable);
     }
 
@@ -72,8 +78,8 @@ namespace qps::evaluator {
             return;
         }
         Table newTable;
-        for (auto row : other.table) {
-            for (auto thisRow : table) {
+        for (const auto& row : other.table) {
+            for (const auto& thisRow : table) {
                 auto newRow = thisRow;
                 auto rowCopy = row;
                 std::move(rowCopy.begin(), rowCopy.end(), std::back_inserter(newRow));

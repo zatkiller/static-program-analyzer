@@ -41,7 +41,7 @@ void printEvaluatorResult(std::list<std::string> result) {
 }
 
 void printTable1(qps::evaluator::ResultTable table) {
-    for (auto r : table.getResult()) {
+    for (auto r : table.getTable()) {
         std::string record;
         for (auto f : r) {
             record = record + qps::evaluator::Evaluator::PKBFieldToString(f) + " ";
@@ -73,7 +73,7 @@ TEST_CASE("test simple source code") {
     std::list<std::string> result1 = evaluator1.evaluate(query1);
     result1.sort();
     printEvaluatorResult(result1);
-    REQUIRE(result1 == std::list<std::string>{});
+    REQUIRE(result1.empty());
 
     TEST_LOG << "assign a; stmt s; variable v; Select s such that Uses(s,v) pattern a (v, _)";
     qps::evaluator::Evaluator evaluator2 = qps::evaluator::Evaluator(&pkb);

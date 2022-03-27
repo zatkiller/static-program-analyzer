@@ -64,7 +64,14 @@ public:
      *
      * @return the result table
      */
-    Table getResult();
+    Table getTable();
+
+    /**
+     * Sets the table in the resultTable.
+     *
+     * @param table
+     */
+    void setTable(Table table);
 
     /**
      * @return whether the result table is empty.
@@ -77,7 +84,7 @@ public:
      * @param response the PKBResponse in set<PKBField> format
      * @return the transferred PKBResponse in set<vector<PKBField>> format
      */
-    VectorResponse transToVectorResponse(SingleResponse response);
+    static VectorResponse transToVectorResponse(SingleResponse response);
 
     /**
      * Transforms the PKBResponse into a resultTable
@@ -86,7 +93,7 @@ public:
      * @param synonyms the list of all synonyms from the query
      * @return a new resultTable with the content in PKBResponse.
      */
-    ResultTable transToResultTable(PKBResponse response, std::vector<std::string> synonyms);
+    static ResultTable transToResultTable(PKBResponse response, std::vector<std::string> synonyms);
 
     /**
      * Inserts the PKBResponse to the result table and join the response to the table.
