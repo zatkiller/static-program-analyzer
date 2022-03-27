@@ -46,11 +46,11 @@ namespace qps::evaluator {
 
     std::list<std::string> Evaluator::getListOfResult(ResultTable &table, std::string variable) {
         std::list<std::string> listResult{};
-        if (table.getResult().empty()) {
+        if (table.getTable().empty()) {
             return listResult;
         }
         int synPos = table.getSynLocation(variable);
-        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> resultTable = table.getResult();
+        Table resultTable = table.getTable();
         std::unordered_set<std::string> resultSet;
         for (auto field : resultTable) {
             if (resultSet.find(PKBFieldToString(field[synPos])) == resultSet.end()) {
@@ -98,7 +98,7 @@ namespace qps::evaluator {
         if ((suchthat.empty() && patterns.empty()) || !resultTable.synExists(variable[0])) {
             PKBResponse queryResult = handler.getAll(returnType);
             std::vector<std::string> synonyms{variable[0]};
-            resultTable.join(queryResult, synonyms);
+            resultTable.insert(queryResult, synonyms);
         }
 
         return getListOfResult(resultTable, variable[0]);

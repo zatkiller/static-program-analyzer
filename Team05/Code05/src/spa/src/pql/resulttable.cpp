@@ -1,5 +1,7 @@
 #include "resulttable.h"
 
+#include <utility>
+
 namespace qps::evaluator {
     bool ResultTable::synExists(std::string name) {
         return synSequenceMap.find(name) != synSequenceMap.end();
@@ -9,6 +11,10 @@ namespace qps::evaluator {
         return this->synSequenceMap;
     }
 
+    std::vector<std::string> ResultTable::getColumns() {
+        return this->columns;
+    }
+
     int ResultTable::getSynLocation(std::string synonym) {
         return getSynMap().find(synonym)->second;
     }
@@ -16,10 +22,15 @@ namespace qps::evaluator {
     void ResultTable::insertSynLocationToLast(std::string name) {
         int size = synSequenceMap.size();
         synSequenceMap.insert({name, size});
+        columns.push_back(name);
     }
 
-    Table ResultTable::getResult() {
+    Table ResultTable::getTable() {
         return this->table;
+    }
+
+    void ResultTable::setTable(Table table) {
+        this->table = table;
     }
 
     bool ResultTable::isEmpty() {
@@ -28,146 +39,117 @@ namespace qps::evaluator {
 
     VectorResponse ResultTable::transToVectorResponse(SingleResponse response) {
         VectorResponse newVectorRes;
-        for (auto r : response) {
+        for (const auto& r : response) {
             newVectorRes.insert(std::vector<PKBField>{r});
         }
         return newVectorRes;
     }
 
-    void ResultTable::insert(PKBResponse r) {
-        VectorResponse response;
-        if (auto *ptr = std::get_if<SingleResponse>(&r.res)) {
-            response = transToVectorResponse(*ptr);
-        } else if (auto *ptr = std::get_if<VectorResponse>(&r.res)) {
-            response = *ptr;
+    ResultTable ResultTable::transToResultTable(PKBResponse response, std::vector<std::string> synonyms) {
+        ResultTable resTable = ResultTable();
+        for (auto & synonym : synonyms) {
+            resTable.insertSynLocationToLast(synonym);
         }
-        for (auto r : response) {
-            table.insert(r);
+        VectorResponse vResponse;
+        if (auto *ptr = std::get_if<SingleResponse>(&response.res)) {
+            vResponse = ResultTable::transToVectorResponse(*ptr);
+        } else if (auto *ptr = std::get_if<VectorResponse>(&response.res)) {
+            vResponse = *ptr;
         }
+        Table t = Table{};
+        for (auto r : vResponse) {
+            t.insert(r);
+        }
+        resTable.setTable(t);
+        return resTable;
+    }
+
+    void ResultTable::insert(PKBResponse r, std::vector<std::string> synonyms) {
+        ResultTable resTable = ResultTable::transToResultTable(std::move(r), std::move(synonyms));
+        join(resTable);
     }
 
 
-    void ResultTable::crossJoin(PKBResponse r) {
+    void ResultTable::crossJoin(ResultTable& other) {
+        for (auto s : other.columns) {
+            insertSynLocationToLast(s);
+        }
         if (table.empty()) {
             return;
         }
         Table newTable;
-        VectorResponse response;
-        if (auto *ptr = std::get_if<SingleResponse>(&r.res)) {
-            response = transToVectorResponse(*ptr);
-        } else if (auto *ptr = std::get_if<VectorResponse>(&r.res)) {
-            response = *ptr;
-        }
-
-        for (auto r : response) {
-            for (auto record : table) {
-                std::vector<PKBField> newRecord = record;
-                auto rCopy = r;
-                std::move(rCopy.begin(), rCopy.end(), std::back_inserter(newRecord));
-                newTable.insert(newRecord);
+        for (const auto& row : other.table) {
+            for (const auto& thisRow : table) {
+                auto newRow = thisRow;
+                auto rowCopy = row;
+                std::move(rowCopy.begin(), rowCopy.end(), std::back_inserter(newRow));
+                newTable.insert(newRow);
             }
         }
         this->table = newTable;
     }
 
-    void ResultTable::oneSynInnerJoin(InnerJoinParam params, Table& newTable) {
-        int pos = getSynLocation(params.syns[0]);
-        for (auto r : params.vectorResponse) {
-            for (auto record : table) {
-                if (r[0] == record[pos]) {
-                    std::vector<PKBField> newRecord = record;
-                    newTable.insert(newRecord);
-                }
+    bool ResultTable::isJoinable(std::vector<PKBField> row1, std::vector<PKBField> row2,
+                    std::vector<int> pos1, std::vector<int> pos2) {
+        bool joinable = true;
+        std::unordered_set<int> otherColsSet{};
+        for (int i = 0; i < pos1.size(); i++) {
+            PKBField thisFld = row1[pos1[i]];
+            PKBField otherFld = row2[pos2[i]];
+            if (!(thisFld == otherFld)) {
+                joinable = false;
+                break;
             }
         }
+        return joinable;
     }
 
-    void ResultTable::twoSynInnerJoinTwo(InnerJoinParam params, Table& newTable) {
-        int firstMatch = getSynLocation(params.syns[0]);
-        int secondMatch = getSynLocation(params.syns[1]);
-        for (auto r : params.vectorResponse) {
-            for (auto record : table) {
-                if (r[0] == record[firstMatch] && r[1] == record[secondMatch]) {
-                    std::vector<PKBField> newRecord = record;
-                    newTable.insert(newRecord);
-                }
-            }
-        }
-    }
-
-    void ResultTable::twoSynInnerJoinOne(InnerJoinParam params, Table& newTable) {
-        std::string matched = params.isFirst ? params.syns[0] : params.syns[1];
-        std::string another = params.isFirst ? params.syns[1]  : params.syns[0];
-        int mPos = params.isFirst ? 0 : 1;
-        int aPos = params.isFirst ? 1 : 0;
-        int matchedPos = getSynLocation(matched);
-        for (auto r : params.vectorResponse) {
-            for (auto record : table) {
-                if ((r[mPos] == record[matchedPos])) {
-                    std::vector<PKBField> newRecord = record;
-                    newRecord.push_back(r[aPos]);
-                    newTable.insert(newRecord);
-                }
-            }
-        }
-    }
-
-    void ResultTable::innerJoin(InnerJoinParam params) {
+    void ResultTable::innerJoin(ResultTable& other) {
         if (table.empty()) {
             return;
         }
-        Table newTable;
-        if (auto *ptr = std::get_if<SingleResponse>(&params.response.res)) {
-            params.vectorResponse = transToVectorResponse(*ptr);
-        } else if (auto *ptr = std::get_if<VectorResponse>(&params.response.res)) {
-            params.vectorResponse = *ptr;
-        }
-        if (params.syns.size() == 1) {  // Only one synonym in the clause
-            oneSynInnerJoin(params, newTable);
-        } else if (params.isFirst && params.isSecond) {  // Two synonyms all in table already
-            twoSynInnerJoinTwo(params, newTable);
-        } else {  // Two synonyms in the clause, one is already in the table
-            twoSynInnerJoinOne(params, newTable);
-        }
-        this->table = newTable;
-    }
-
-    void ResultTable::join(PKBResponse response, std::vector<std::string> synonyms) {
-        if (synonyms.size() == 2) {
-            std::string first = synonyms[0];
-            std::string second = synonyms[1];
-            if (synExists(first) && synExists(second)) {
-                innerJoin(InnerJoinParam{synonyms, true, true, response});
-            } else if (!synExists(first) && !synExists(second)) {
-                if (isEmpty()) {
-                    insertSynLocationToLast(first);
-                    insertSynLocationToLast(second);
-                    insert(response);
-                    return;
-                }
-                insertSynLocationToLast(first);
-                insertSynLocationToLast(second);
-                crossJoin(response);
-            } else if (synExists(first)) {
-                insertSynLocationToLast(second);
-                innerJoin(InnerJoinParam{synonyms, true, false, response});
-            } else if (synExists(second)) {
-                insertSynLocationToLast(first);
-                innerJoin(InnerJoinParam{synonyms, false, true, response});
-            }
-        } else {
-            std::string syn = synonyms[0];
-            if (synExists(syn)) {
-                innerJoin(InnerJoinParam{synonyms, true, false, response});
+        std::vector<int> thisCols{};
+        std::vector<int> otherCols{};
+        for (auto syn : other.getColumns()) {
+            if (synSequenceMap.find(syn) != synSequenceMap.end()) {
+                thisCols.push_back(synSequenceMap.find(syn)->second);
+                otherCols.push_back(other.getSynLocation(syn));
             } else {
-                if (isEmpty()) {
-                    insertSynLocationToLast(syn);
-                    insert(response);
-                    return;
-                }
                 insertSynLocationToLast(syn);
-                crossJoin(response);
             }
+        }
+        Table newTable;
+        for (auto row : other.table) {
+            for (auto record : table) {
+                std::unordered_set<int> otherColsSet{otherCols.begin(), otherCols.end()};
+                bool joinable = isJoinable(record, row, thisCols, otherCols);
+                if (!joinable) continue;
+                auto newRow = record;
+                for (int i = 0; i < row.size(); i++) {
+                    if(otherColsSet.find(i) == otherColsSet.end()) {
+                        newRow.push_back(row[i]);
+                    }
+                }
+                newTable.insert(newRow);
+            }
+        }
+        this->table = newTable;
+    }
+
+    void ResultTable::join(ResultTable& other) {
+        bool hasSharedSyn = false;
+        for (auto syn : other.getSynMap()) {
+            if (synSequenceMap.find(syn.first) != synSequenceMap.end()) hasSharedSyn = true;
+        }
+
+        if (isEmpty()) {
+            this->synSequenceMap = other.synSequenceMap;
+            this->columns = other.columns;
+            this->table = other.table;
+        } else if (!hasSharedSyn) {
+            crossJoin(other);
+        } else {
+            innerJoin(other);
         }
     }
 }  // namespace qps::evaluator

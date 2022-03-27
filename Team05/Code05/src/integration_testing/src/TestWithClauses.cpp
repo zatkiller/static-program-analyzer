@@ -215,7 +215,7 @@ TEST_CASE("test with clauses with two attrRefs") {
     query1.addDeclaration("s", qps::query::DesignEntity::STMT);
     query1.addVariable("s");
     qps::evaluator::Evaluator evaluator1 = qps::evaluator::Evaluator{&pkb};
-    std::list<std::string> result1 = evaluator.evaluate(query1);
+    std::list<std::string> result1 = evaluator1.evaluate(query1);
     result1.sort();
     REQUIRE(result1 == std::list<std::string>{"1", "10", "2", "3", "4", "5", "6", "7", "8", "9"});
 
