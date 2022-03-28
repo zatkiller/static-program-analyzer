@@ -86,7 +86,6 @@ enum class ElemType {
 };
 
 struct Elem {
-
     static Elem ofDeclaration(Declaration d);
     static Elem ofAttrRef(AttrRef ar);
 
@@ -116,8 +115,8 @@ struct ResultCl {
     static ResultCl ofBoolean();
     static ResultCl ofTuple(std::vector<Elem> tuple);
 
-    bool isBoolean() const { return boolean; };
-    std::vector<Elem> getTuple() const { return tuple; };
+    bool isBoolean() const { return boolean; }
+    std::vector<Elem> getTuple() const { return tuple; }
 
     bool hasElem(Elem e) const;
 
@@ -531,11 +530,11 @@ struct ExpSpec {
     static ExpSpec ofPartialMatch(std::string str);
     static ExpSpec ofFullMatch(std::string str);
 
-    bool isPartialMatch() const ;
-    bool isFullMatch() const ;
-    bool isWildcard() const ;
+    bool isPartialMatch() const;
+    bool isFullMatch() const;
+    bool isWildcard() const;
 
-    std::string getPattern() const ;
+    std::string getPattern() const;
 
     bool operator==(const ExpSpec &o) const {
         return (wildCard == o.wildCard) && (partialMatch == o.partialMatch) && (pattern == o.pattern);
@@ -562,7 +561,7 @@ struct Pattern {
     DesignEntity getSynonymType() const { return declaration.getType(); }
 
     EntRef getEntRef() const { return lhs; }
-    ExpSpec getExpression() const ;
+    ExpSpec getExpression() const;
 
     bool operator==(const Pattern &o) const {
         return (declaration == o.declaration) && (lhs == o.lhs) &&

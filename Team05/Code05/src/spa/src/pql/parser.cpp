@@ -146,7 +146,7 @@ namespace qps::parser {
             AttrName an = parseAttrName(query, declaration);
             Elem e = Elem::ofAttrRef( AttrRef { an, declaration } );
             return e;
-        };
+        }
 
         return Elem::ofDeclaration(declaration);
     }
@@ -197,7 +197,8 @@ namespace qps::parser {
         } else if (type == TokenType::UNDERSCORE) {
             stmtRef = StmtRef::ofWildcard();
         } else if (type == TokenType::IDENTIFIER) {
-            stmtRef = StmtRef::ofDeclaration(Declaration {token.getText(), queryObj.getDeclarationDesignEntity(token.getText())});
+            stmtRef = StmtRef::ofDeclaration(Declaration {token.getText(),
+                                                          queryObj.getDeclarationDesignEntity(token.getText())});
 
             if (!isValidStatementType(queryObj, stmtRef))
                 throw exceptions::PqlSemanticException(messages::qps::parser::synonymNotStatementTypeMessage);
@@ -218,7 +219,8 @@ namespace qps::parser {
         } else if (type == TokenType::UNDERSCORE) {
             entRef = EntRef::ofWildcard();
         } else if (type == TokenType::IDENTIFIER) {
-            entRef = EntRef::ofDeclaration(Declaration {token.getText(), queryObj.getDeclarationDesignEntity(token.getText())});
+            entRef = EntRef::ofDeclaration(Declaration {token.getText(),
+                                                        queryObj.getDeclarationDesignEntity(token.getText())});
 
             if (!isValidEntityType(queryObj, entRef))
                 throw exceptions::PqlSemanticException(messages::qps::parser::synonymNotEntityTypeMessage);

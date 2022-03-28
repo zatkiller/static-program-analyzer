@@ -68,7 +68,7 @@ TEST_CASE("Get list of result") {
     qps::query::Query query{};
     query.addDeclaration("if", qps::query::DesignEntity::IF);
 
-    qps::query::Declaration d= qps::query::Declaration { "if", qps::query::DesignEntity::IF };
+    qps::query::Declaration d = qps::query::Declaration { "if", qps::query::DesignEntity::IF };
     std::vector<qps::query::Elem> tuple { qps::query::Elem::ofDeclaration(d) };
     qps::query::ResultCl r = qps::query::ResultCl::ofTuple(tuple);
     query.addResultCl(r);
@@ -88,9 +88,9 @@ TEST_CASE("Get list of result") {
     query2.addDeclaration("pr", qps::query::DesignEntity::PRINT);
     query2.addDeclaration("w", qps::query::DesignEntity::WHILE);
 
-    qps::query::Declaration d21= qps::query::Declaration { "if", qps::query::DesignEntity::IF };
-    qps::query::Declaration d22= qps::query::Declaration { "pr", qps::query::DesignEntity::PRINT };
-    qps::query::Declaration d23= qps::query::Declaration { "w", qps::query::DesignEntity::WHILE };
+    qps::query::Declaration d21 = qps::query::Declaration { "if", qps::query::DesignEntity::IF };
+    qps::query::Declaration d22 = qps::query::Declaration { "pr", qps::query::DesignEntity::PRINT };
+    qps::query::Declaration d23 = qps::query::Declaration { "w", qps::query::DesignEntity::WHILE };
     std::vector<qps::query::Elem> tuple2 { qps::query::Elem::ofDeclaration(d23),
                                            qps::query::Elem::ofDeclaration(d22),
                                            qps::query::Elem::ofDeclaration(d21) };
@@ -110,11 +110,11 @@ TEST_CASE("Get list of result") {
     query3.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
     query3.addDeclaration("p", qps::query::DesignEntity::PRINT);
 
-    qps::query::AttrRef d31= qps::query::AttrRef{qps::query::AttrName::STMTNUM,
+    qps::query::AttrRef d31 = qps::query::AttrRef{qps::query::AttrName::STMTNUM,
                                                  Declaration{ "a", qps::query::DesignEntity::ASSIGN}};
-    qps::query::AttrRef d32= qps::query::AttrRef{qps::query::AttrName::VARNAME,
+    qps::query::AttrRef d32 = qps::query::AttrRef{qps::query::AttrName::VARNAME,
                                                  Declaration{"v", qps::query::DesignEntity::VARIABLE}};
-    qps::query::AttrRef d33= qps::query::AttrRef{qps::query::AttrName::VARNAME,
+    qps::query::AttrRef d33 = qps::query::AttrRef{qps::query::AttrName::VARNAME,
                                                  Declaration{"p", qps::query::DesignEntity::PRINT}};
     std::vector<qps::query::Elem> tuple3 { qps::query::Elem::ofAttrRef(d33),
                                            qps::query::Elem::ofAttrRef(d32),

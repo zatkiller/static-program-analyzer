@@ -141,7 +141,8 @@ namespace qps::evaluator {
         } else {
             newResponse = twoAttrMerge<int>(*lhsPtr, *rhsPtr);
         }
-        tableRef.insert(newResponse, std::vector<std::string>{lhs.getDeclarationSynonym(), rhs.getDeclarationSynonym()});
+        tableRef.insert(newResponse,
+                        std::vector<std::string>{lhs.getDeclarationSynonym(), rhs.getDeclarationSynonym()});
     }
 
     void ClauseHandler::handleOneAttrRef(query::AttrRef attr, query::AttrCompareRef concrete) {

@@ -186,7 +186,6 @@ TEST_CASE("Parser parseAttrName") {
 }
 
 TEST_CASE("Parser parseElem") {
-
     SECTION("Elem is synonym") {
         Parser parser;
         Query query;
@@ -213,7 +212,6 @@ TEST_CASE("Parser parseElem") {
 }
 
 TEST_CASE("Parser parseTuple") {
-
     SECTION("select field is single elem") {
         Parser parser;
         Query query;
@@ -256,7 +254,8 @@ TEST_CASE("Parser parseTuple") {
         REQUIRE(selectFields.size() == 4);
 
         REQUIRE(selectFields[0].isAttrRef());
-        REQUIRE(selectFields[0].getAttrRef() == AttrRef { AttrName::STMTNUM, Declaration { "a", DesignEntity::ASSIGN }});
+        REQUIRE(selectFields[0].getAttrRef() == AttrRef { AttrName::STMTNUM,
+                                                          Declaration { "a", DesignEntity::ASSIGN }});
 
         REQUIRE(selectFields[1].isDeclaration());
         REQUIRE(selectFields[1].getDeclaration() ==  Declaration { "a", DesignEntity::ASSIGN });
@@ -265,12 +264,12 @@ TEST_CASE("Parser parseTuple") {
         REQUIRE(selectFields[2].getDeclaration() ==  Declaration { "cl", DesignEntity::CALL });
 
         REQUIRE(selectFields[3].isAttrRef());
-        REQUIRE(selectFields[3].getAttrRef() == AttrRef { AttrName::PROCNAME, Declaration { "cl", DesignEntity::CALL }});
+        REQUIRE(selectFields[3].getAttrRef() == AttrRef { AttrName::PROCNAME,
+                                                          Declaration { "cl", DesignEntity::CALL }});
     }
 }
 
 TEST_CASE("Parser parseSelectFields") {
-
     SECTION ("parse Boolean") {
         Parser parser;
         parser.addInput("Select BOOLEAN");
@@ -969,7 +968,8 @@ TEST_CASE("Parser parsePattern") {
 
         REQUIRE(pattern.getSynonym() == "ifs");
         REQUIRE(pattern.getSynonymType() == DesignEntity::IF);
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) &&
+                (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE_THROWS_MATCHES(pattern.getExpression(),
                                exceptions::PqlSyntaxException,
@@ -994,7 +994,8 @@ TEST_CASE("Parser parsePattern") {
 
         REQUIRE(pattern.getSynonym() == "w");
         REQUIRE(pattern.getSynonymType() == DesignEntity::WHILE);
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) &&
+                (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE_THROWS_MATCHES(pattern.getExpression(),
                                exceptions::PqlSyntaxException,
@@ -1707,7 +1708,8 @@ TEST_CASE("Parser parseQuery") {
     Pattern pattern = patterns[0];
 
     REQUIRE(pattern.getSynonym() == "a1");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) &&
+            (pattern.getEntRef().getDeclarationSynonym() == "v");
     REQUIRE(validDeclaration);
     REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 
@@ -1756,7 +1758,8 @@ TEST_CASE("Parser parsePql") {
         Pattern pattern = patterns[0];
 
         REQUIRE(pattern.getSynonym() == "a");
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) &&
+                (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 
@@ -1794,7 +1797,8 @@ TEST_CASE("Parser parsePql") {
         Pattern pattern = patterns[0];
 
         REQUIRE(pattern.getSynonym() == "a");
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) &&
+                (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 

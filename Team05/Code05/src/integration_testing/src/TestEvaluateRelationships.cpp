@@ -419,7 +419,8 @@ TEST_CASE("Test get Follows FollowsT") {
 
     std::shared_ptr<qps::query::FollowsT> mPtr3 = std::make_shared<qps::query::FollowsT>();
     mPtr3->follower = qps::query::StmtRef::ofWildcard();
-    mPtr3->transitiveFollowed = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
+    mPtr3->transitiveFollowed = qps::query::StmtRef::ofDeclaration(
+            Declaration { "s", qps::query::DesignEntity::STMT });
     query3.addSuchthat(mPtr3);
     qps::evaluator::Evaluator e3 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result3 = e3.evaluate(query3);
