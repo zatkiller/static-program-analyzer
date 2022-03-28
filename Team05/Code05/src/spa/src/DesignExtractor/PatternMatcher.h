@@ -9,7 +9,8 @@ namespace sp {
 namespace design_extractor {
 using PatternParam = std::optional<std::string>;
 using AssignPatternReturn = std::list<std::reference_wrapper<const ast::Assign>>;
-
+using IfPatternReturn = std::list<std::reference_wrapper<const ast::If>>;
+using WhilePatternReturn = std::list<std::reference_wrapper<const ast::While>>;
 /**
  * @brief Extracts all assignment statements in AST with given root that satisfy the constraint given.
  * 
@@ -20,5 +21,9 @@ using AssignPatternReturn = std::list<std::reference_wrapper<const ast::Assign>>
  * @return AssignPatternReturn return a list of references to the assign nodes.
  */
 AssignPatternReturn extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs, bool isStrict = false);
+IfPatternReturn extractIf(ast::ASTNode *root, PatternParam var);
+WhilePatternReturn extractWhile(ast::ASTNode *root, PatternParam var);
+
+
 }  // namespace design_extractor
 }  // namespace sp

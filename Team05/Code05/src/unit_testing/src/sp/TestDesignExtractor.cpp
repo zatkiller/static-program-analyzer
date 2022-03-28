@@ -807,7 +807,7 @@ namespace ast {
         }
     }
 
-    TEST_CASE("Pattern matcher test") {
+    TEST_CASE("Assign Pattern matcher test") {
         TEST_LOG << "Testing Assign Pattern matcher";
 
         // only support _ or string, treat synonyms as _.
@@ -889,6 +889,59 @@ namespace ast {
 
             REQUIRE(extractAssignHelper(ast.get(), "_", "v + x * (y + z) * t", true).size() == 1);
         }
+    
+    }
+
+    TEST_CASE("If Pattern matcher test") {
+        TEST_LOG << "Testing If Pattern matcher";
+        
+        /**
+         * if (x == y) then {
+         *     read z;
+         * } else {
+         *     print a;
+         * }
+         */
+        auto ast = make<If>(
+            1,
+            make<RelExpr>(
+                RelOp::EQ,
+                make<Var>("x"),
+                make<Var>("y")
+            ),
+            makeStmts(make<Read>(2, make<Var>("z"))),
+            makeStmts(make<Print>(3, make<Var>("a")))
+        );
+
+        REQUIRE(de::extractIf(ast.get(), "x").size() == 1);
+        REQUIRE(de::extractIf(ast.get(), std::nullopt).size() == 1);
+        REQUIRE(de::extractIf(ast.get(), "y").size() == 1);
+        REQUIRE(de::extractIf(ast.get(), "z").size() == 0);
+        REQUIRE(de::extractIf(ast.get(), "a").size() == 0);
+    }
+
+    TEST_CASE("While Pattern matcher test") {
+        TEST_LOG << "Testing While Pattern matcher";
+        
+        /**
+         * while (x == y) {
+         *     print z;
+         * }
+         */
+        auto ast = make<While>(
+            1,
+            make<RelExpr>(
+                RelOp::EQ,
+                make<Var>("x"),
+                make<Var>("y")
+            ),
+            makeStmts(make<Print>(2, make<Var>("z")))
+        );
+
+        REQUIRE(de::extractWhile(ast.get(), "x").size() == 1);
+        REQUIRE(de::extractWhile(ast.get(), std::nullopt).size() == 1);
+        REQUIRE(de::extractWhile(ast.get(), "y").size() == 1);
+        REQUIRE(de::extractWhile(ast.get(), "z").size() == 0);
     }
 
 }  // namespace ast
