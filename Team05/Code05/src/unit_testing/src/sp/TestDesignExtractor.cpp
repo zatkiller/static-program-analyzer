@@ -918,6 +918,9 @@ namespace ast {
         REQUIRE(de::extractIf(ast.get(), "y").size() == 1);
         REQUIRE(de::extractIf(ast.get(), "z").size() == 0);
         REQUIRE(de::extractIf(ast.get(), "a").size() == 0);
+
+        // wrong type of conditional statement matching should fail
+        REQUIRE(de::extractWhile(ast.get(), "x").size() == 0);
     }
 
     TEST_CASE("While Pattern matcher test") {
@@ -942,6 +945,9 @@ namespace ast {
         REQUIRE(de::extractWhile(ast.get(), std::nullopt).size() == 1);
         REQUIRE(de::extractWhile(ast.get(), "y").size() == 1);
         REQUIRE(de::extractWhile(ast.get(), "z").size() == 0);
+        
+        // wrong type of conditional statement matching should fail
+        REQUIRE(de::extractIf(ast.get(), "x").size() == 0);
     }
 
 }  // namespace ast
