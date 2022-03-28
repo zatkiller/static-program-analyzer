@@ -343,7 +343,7 @@ namespace qps::query {
         return getFieldHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
-    std::vector<std::string> ModifiesS::getSyns() {
+    std::vector<Declaration> ModifiesS::getSyns() {
         return getSynsHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
@@ -363,7 +363,7 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> ModifiesP::getSyns() {
+    std::vector<Declaration> ModifiesP::getSyns() {
         return getSynsHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
     }
 
@@ -384,7 +384,7 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> UsesP::getSyns()  {
+    std::vector<Declaration> UsesP::getSyns()  {
         return getSynsHelper(&UsesP::useProc, &UsesP::used);
     }
 
@@ -402,7 +402,7 @@ namespace qps::query {
         return getFieldHelper(&UsesS::useStmt, &UsesS::used);
     }
 
-    std::vector<std::string> UsesS::getSyns()  {
+    std::vector<Declaration> UsesS::getSyns()  {
         return getSynsHelper(&UsesS::useStmt, &UsesS::used);
     }
 
@@ -420,7 +420,7 @@ namespace qps::query {
         return getFieldHelper(&Follows::follower, &Follows::followed);
     }
 
-    std::vector<std::string> Follows::getSyns() {
+    std::vector<Declaration> Follows::getSyns() {
         return getSynsHelper(&Follows::follower, &Follows::followed);
     }
 
@@ -428,7 +428,7 @@ namespace qps::query {
         return getFieldHelper(&FollowsT::follower, &FollowsT::transitiveFollowed);
     }
 
-    std::vector<std::string> FollowsT::getSyns() {
+    std::vector<Declaration> FollowsT::getSyns() {
         return getSynsHelper(&FollowsT::follower, &FollowsT::transitiveFollowed);
     }
 
@@ -436,7 +436,7 @@ namespace qps::query {
         return getFieldHelper(&Parent::parent, &Parent::child);
     }
 
-    std::vector<std::string> Parent::getSyns() {
+    std::vector<Declaration> Parent::getSyns() {
         return getSynsHelper(&Parent::parent, &Parent::child);
     }
 
@@ -444,7 +444,7 @@ namespace qps::query {
         return getFieldHelper(&ParentT::parent, &ParentT::transitiveChild);
     }
 
-    std::vector<std::string> ParentT::getSyns() {
+    std::vector<Declaration> ParentT::getSyns() {
         return getSynsHelper(&ParentT::parent, &ParentT::transitiveChild);
     }
 
@@ -454,7 +454,7 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> Calls::getSyns() {
+    std::vector<Declaration> Calls::getSyns() {
         return getSynsHelper(&Calls::caller, &Calls::callee);
     }
 
@@ -476,7 +476,7 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> CallsT::getSyns() {
+    std::vector<Declaration> CallsT::getSyns() {
         return getSynsHelper(&CallsT::caller, &CallsT::transitiveCallee);
     }
 
@@ -492,7 +492,7 @@ namespace qps::query {
         }
     }
 
-    std::vector<std::string> Next::getSyns() {
+    std::vector<Declaration> Next::getSyns() {
         return getSynsHelper(&Next::before, &Next::after);
     }
 
@@ -500,7 +500,7 @@ namespace qps::query {
         return getFieldHelper(&Next::before, &Next::after);
     }
 
-    std::vector<std::string> NextT::getSyns() {
+    std::vector<Declaration> NextT::getSyns() {
         return getSynsHelper(&NextT::before, &NextT::transitiveAfter);
     }
 
@@ -508,7 +508,7 @@ namespace qps::query {
         return getFieldHelper(&NextT::before, &NextT::transitiveAfter);
     }
 
-    std::vector<std::string> Affects::getSyns() {
+    std::vector<Declaration> Affects::getSyns() {
         return getSynsHelper(&Affects::affectingStmt, &Affects::affected);
     }
 
@@ -528,7 +528,7 @@ namespace qps::query {
         }
     }
 
-    std::vector<std::string> AffectsT::getSyns() {
+    std::vector<Declaration> AffectsT::getSyns() {
         return getSynsHelper(&AffectsT::affectingStmt, &AffectsT::transitiveAffected);
     }
 

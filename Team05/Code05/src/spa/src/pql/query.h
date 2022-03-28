@@ -301,7 +301,7 @@ struct RelRef {
     virtual void checkSecondArg() {}
 
     virtual std::vector<PKBField> getField() = 0;
-    virtual std::vector<std::string> getSyns() = 0;
+    virtual std::vector<Declaration> getSyns() = 0;
 
 protected:
     template<typename T, typename F1, typename F2>
@@ -326,15 +326,15 @@ protected:
     }
 
     template<typename T, typename F1, typename F2>
-    std::vector<std::string> getSynsHelper(const F1 T::*f1, const F2 T::*f2) {
-        std::vector<std::string> synonyms;
+    std::vector<Declaration> getSynsHelper(const F1 T::*f1, const F2 T::*f2) {
+        std::vector<Declaration> synonyms;
         const auto derivedPtr = static_cast<T *>(this);
         if ((derivedPtr->*f1).isDeclaration()) {
-            synonyms.push_back((derivedPtr->*f1).getDeclarationSynonym());
+            synonyms.push_back((derivedPtr->*f1).getDeclaration());
         }
 
         if ((derivedPtr->*f2).isDeclaration()) {
-            synonyms.push_back((derivedPtr->*f2).getDeclarationSynonym());
+            synonyms.push_back((derivedPtr->*f2).getDeclaration());
         }
 
         return synonyms;
@@ -351,7 +351,7 @@ struct ModifiesS : RelRef {
     StmtRef modifiesStmt;
 
     std::vector<PKBField> getField() override;
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -367,7 +367,7 @@ struct ModifiesP : RelRef {
     EntRef modifiesProc;
 
     std::vector<PKBField> getField() override;
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -384,7 +384,7 @@ struct UsesS : RelRef {
 
     std::vector<PKBField> getField() override;
 
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -399,7 +399,7 @@ struct UsesP : RelRef {
     EntRef useProc;
 
     std::vector<PKBField> getField() override;
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -413,7 +413,7 @@ struct Follows : RelRef {
 
     std::vector<PKBField> getField() override;
 
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 };
 
 struct FollowsT : RelRef {
@@ -424,7 +424,7 @@ struct FollowsT : RelRef {
 
     std::vector<PKBField> getField() override;
 
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 };
 
 struct Parent : RelRef {
@@ -435,7 +435,7 @@ struct Parent : RelRef {
 
     std::vector<PKBField> getField() override;
 
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 };
 
 struct ParentT : RelRef {
@@ -446,7 +446,7 @@ struct ParentT : RelRef {
 
     std::vector<PKBField> getField() override;
 
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 };
 
 struct Calls : RelRef {
@@ -456,7 +456,7 @@ struct Calls : RelRef {
     EntRef callee;
 
     std::vector<PKBField> getField() override;
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -469,7 +469,7 @@ struct CallsT: RelRef {
     EntRef transitiveCallee;
 
     std::vector<PKBField> getField() override;
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -482,7 +482,7 @@ struct Next : RelRef {
     StmtRef after;
 
     std::vector<PKBField> getField() override;
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 };
 
 struct NextT : RelRef {
@@ -492,7 +492,7 @@ struct NextT : RelRef {
     StmtRef transitiveAfter;
 
     std::vector<PKBField> getField() override;
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 };
 
 struct Affects : RelRef {
@@ -502,7 +502,7 @@ struct Affects : RelRef {
     StmtRef affected;
 
     std::vector<PKBField> getField() override;
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -515,7 +515,7 @@ struct AffectsT : RelRef {
     StmtRef transitiveAffected;
 
     std::vector<PKBField> getField() override;
-    std::vector<std::string> getSyns() override;
+    std::vector<Declaration> getSyns() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;

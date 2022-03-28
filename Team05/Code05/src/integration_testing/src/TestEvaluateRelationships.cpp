@@ -762,7 +762,7 @@ TEST_CASE("multiple relationship clauses") {
     mPtr22->used = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
     query2.addSuchthat(mPtr22);
     std::shared_ptr<qps::query::UsesS> mPtr23 = std::make_shared<qps::query::UsesS>();
-    mPtr23->useStmt = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::VARIABLE });
+    mPtr23->useStmt = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
     mPtr23->used = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
     query2.addSuchthat(mPtr23);
     qps::evaluator::Evaluator e2 = qps::evaluator::Evaluator{pkbPtr};
