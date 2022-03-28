@@ -300,7 +300,7 @@ struct RelRef {
     virtual void checkSecondArg() {}
 
     virtual std::vector<PKBField> getField() = 0;
-    virtual std::vector<Declaration> getSyns() = 0;
+    virtual std::vector<Declaration> getDecs() = 0;
 
 protected:
     template<typename T, typename F1, typename F2>
@@ -325,7 +325,7 @@ protected:
     }
 
     template<typename T, typename F1, typename F2>
-    std::vector<Declaration> getSynsHelper(const F1 T::*f1, const F2 T::*f2) {
+    std::vector<Declaration> getDecsHelper(const F1 T::*f1, const F2 T::*f2) {
         std::vector<Declaration> synonyms;
         const auto derivedPtr = static_cast<T *>(this);
         if ((derivedPtr->*f1).isDeclaration()) {
@@ -350,7 +350,7 @@ struct ModifiesS : RelRef {
     StmtRef modifiesStmt;
 
     std::vector<PKBField> getField() override;
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -366,7 +366,7 @@ struct ModifiesP : RelRef {
     EntRef modifiesProc;
 
     std::vector<PKBField> getField() override;
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -383,7 +383,7 @@ struct UsesS : RelRef {
 
     std::vector<PKBField> getField() override;
 
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -398,7 +398,7 @@ struct UsesP : RelRef {
     EntRef useProc;
 
     std::vector<PKBField> getField() override;
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -412,7 +412,7 @@ struct Follows : RelRef {
 
     std::vector<PKBField> getField() override;
 
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 };
 
 struct FollowsT : RelRef {
@@ -423,7 +423,7 @@ struct FollowsT : RelRef {
 
     std::vector<PKBField> getField() override;
 
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 };
 
 struct Parent : RelRef {
@@ -434,7 +434,7 @@ struct Parent : RelRef {
 
     std::vector<PKBField> getField() override;
 
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 };
 
 struct ParentT : RelRef {
@@ -445,7 +445,7 @@ struct ParentT : RelRef {
 
     std::vector<PKBField> getField() override;
 
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 };
 
 struct Calls : RelRef {
@@ -455,7 +455,7 @@ struct Calls : RelRef {
     EntRef callee;
 
     std::vector<PKBField> getField() override;
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -468,7 +468,7 @@ struct CallsT: RelRef {
     EntRef transitiveCallee;
 
     std::vector<PKBField> getField() override;
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -481,7 +481,7 @@ struct Next : RelRef {
     StmtRef after;
 
     std::vector<PKBField> getField() override;
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 };
 
 struct NextT : RelRef {
@@ -491,7 +491,7 @@ struct NextT : RelRef {
     StmtRef transitiveAfter;
 
     std::vector<PKBField> getField() override;
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 };
 
 struct Affects : RelRef {
@@ -501,7 +501,7 @@ struct Affects : RelRef {
     StmtRef affected;
 
     std::vector<PKBField> getField() override;
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -514,7 +514,7 @@ struct AffectsT : RelRef {
     StmtRef transitiveAffected;
 
     std::vector<PKBField> getField() override;
-    std::vector<Declaration> getSyns() override;
+    std::vector<Declaration> getDecs() override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;

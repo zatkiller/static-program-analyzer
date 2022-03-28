@@ -50,7 +50,7 @@ namespace qps::evaluator {
                                     std::vector<std::shared_ptr<query::RelRef>> &hasSyn) {
         for (auto r : clauses) {
             query::RelRef *relRefPtr = r.get();
-            if (relRefPtr->getSyns().empty()) {
+            if (relRefPtr->getDecs().empty()) {
                 noSyn.push_back(r);
             } else {
                 hasSyn.push_back(r);

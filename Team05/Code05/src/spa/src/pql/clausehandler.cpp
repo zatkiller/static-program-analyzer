@@ -58,7 +58,7 @@ namespace qps::evaluator {
     void ClauseHandler::handleSynClauses(std::vector<std::shared_ptr<query::RelRef>> clauses) {
         for (auto c : clauses) {
             query::RelRef *relRefPtr = c.get();
-            std::vector<query::Declaration> declarations = relRefPtr->getSyns();
+            std::vector<query::Declaration> declarations = relRefPtr->getDecs();
             std::vector<std::string> synonyms{};
             for (auto d : declarations) {
                 synonyms.push_back(d.getSynonym());
