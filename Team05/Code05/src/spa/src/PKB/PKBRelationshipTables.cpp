@@ -160,3 +160,69 @@ CallsRelationshipTable::CallsRelationshipTable() : TransitiveRelationshipTable<P
 /** =========================NEXTRELATIONSHIPTABLE METHODS ============================== */
 
 NextRelationshipTable::NextRelationshipTable() : TransitiveRelationshipTable<STMT_LO>{ PKBRelationship::NEXT } {}
+
+/** ========================AFFECTSEVALUATOR METHODS ==================================== */
+
+AffectsEvaluator::AffectsEvaluator(std::shared_ptr<NextRelationshipTable> nextTable,
+    std::shared_ptr<ModifiesRelationshipTable> modifiesTable,
+    std::shared_ptr<UsesRelationshipTable> usesTable) {
+    this->nextTable = nextTable;
+    this->modifiesTable = modifiesTable;
+    this->usesTable = usesTable;
+};
+
+bool AffectsEvaluator::contains(PKBField field1, PKBField field2) const {
+    // Validate fields
+    if (!isContainsValid(field1, field2)) {
+        Logger(Level::ERROR) << "An Affects relationship is only between 2 concrete statements!";
+        return false;
+    }
+
+    // Check if fields are assignments 
+    if (field1.statementType.value() != StatementType::Assignment) {
+        Logger(Level::ERROR) << "An Affects relationship is only between 2 assignment statements!";
+        return false;
+    }
+    if (field2.statementType.value() != StatementType::Assignment) {
+        Logger(Level::ERROR) << "An Affects relationship is only between 2 assignment statements!";
+        return false;
+    }
+
+    // Check if variable modified by field1 is used by field2
+    PKBField moddedVar;
+    FieldRowResponse modVarRes = modifiesTable->retrieve(field1, PKBField::createDeclaration(PKBEntityType::VARIABLE));
+    for (auto item : modVarRes) {
+        moddedVar = item.back();
+    }
+    if (!usesTable->contains(field2, moddedVar)) {
+        return false;
+    }
+}
+
+bool AffectsEvaluator::containsT(PKBField field1, PKBField field2) const {
+
+}
+
+FieldRowResponse AffectsEvaluator::retrieve(PKBField field1, PKBField field2) const {
+
+}
+
+FieldRowResponse AffectsEvaluator::retrieveT(PKBField field1, PKBField field2) const {
+
+}
+
+bool AffectsEvaluator::isContainsValid(PKBField field1, PKBField field2) const {
+    if (!field1.isValidConcrete(PKBEntityType::STATEMENT) || !field2.isValidConcrete(PKBEntityType::STATEMENT)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool AffectsEvaluator::isRetrieveValid(PKBField field1, PKBField field2) const {
+    // Both fields must be statements
+    if (field1.entityType != PKBEntityType::STATEMENT && field2.entityType != PKBEntityType::STATEMENT) {
+        return false;
+    }
+    return true;
+}

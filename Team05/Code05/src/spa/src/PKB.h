@@ -122,13 +122,14 @@ private:
     std::unique_ptr<StatementTable> statementTable;
     std::unique_ptr<VariableTable> variableTable;
     std::unique_ptr<ProcedureTable> procedureTable;
-    std::unique_ptr<ModifiesRelationshipTable> modifiesTable;
+    std::shared_ptr<ModifiesRelationshipTable> modifiesTable;
     std::unique_ptr<FollowsRelationshipTable> followsTable;
     std::unique_ptr<ConstantTable> constantTable;
     std::unique_ptr<ParentRelationshipTable> parentTable;
     std::unique_ptr<UsesRelationshipTable> usesTable;
     std::unique_ptr<CallsRelationshipTable> callsTable;
-    std::unique_ptr<NextRelationshipTable> nextTable;
+    std::shared_ptr<NextRelationshipTable> nextTable;
+    std::unique_ptr<AffectsEvaluator> affectsEval;
     std::unique_ptr<sp::ast::ASTNode> root;
 
     /**

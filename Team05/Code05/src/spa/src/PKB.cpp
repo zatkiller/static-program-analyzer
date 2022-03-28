@@ -15,12 +15,13 @@ PKB::PKB() {
     variableTable = std::make_unique<VariableTable>();
     constantTable = std::make_unique<ConstantTable>();
     procedureTable = std::make_unique<ProcedureTable>();
-    modifiesTable = std::make_unique<ModifiesRelationshipTable>();
+    modifiesTable = std::make_shared<ModifiesRelationshipTable>();
     followsTable = std::make_unique<FollowsRelationshipTable>();
     parentTable = std::make_unique<ParentRelationshipTable>();
     usesTable = std::make_unique<UsesRelationshipTable>();
     callsTable = std::make_unique<CallsRelationshipTable>();
-    nextTable = std::make_unique<NextRelationshipTable>();
+    nextTable = std::make_shared<NextRelationshipTable>();
+    affectsEval = std::make_unique<AffectsEvaluator>();
 }
 
 // INSERT API
@@ -157,6 +158,8 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
     case PKBRelationship::NEXT:
         nextTable->insert(field1, field2);
         break;
+    case PKBRelationship::AFFECTS:
+        Logger(Level::ERROR) << "Cannot insert an Affects relationship!\n";
     default:
         Logger(Level::INFO) << "Inserted into an invalid relationship table\n";
         break;
@@ -196,6 +199,10 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
         return nextTable->contains(field1, field2);
     case PKBRelationship::NEXTT:
         return nextTable->containsT(field1, field2);
+    case PKBRelationship::AFFECTS:
+        return affectsEval->contains(field1, field2);
+    case PKBRelationship::AFFECTST:
+        return affectsEval->containsT(field1, field2);
     default:
         Logger(Level::INFO) << "Checking for an invalid relationship table\n";
         return false;
@@ -244,6 +251,12 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
         break;
     case PKBRelationship::NEXTT:
         extracted = nextTable->retrieveT(field1, field2);
+        break;
+    case PKBRelationship::AFFECTS:
+        extracted = affectsEval->retrieve(field1, field2);
+        break;
+    case PKBRelationship::AFFECTST:
+        extracted = affectsEval->retrieveT(field1, field2);
         break;
     default:
         throw "Invalid relationship type used!";

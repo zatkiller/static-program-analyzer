@@ -1059,3 +1059,26 @@ class NextRelationshipTable : public TransitiveRelationshipTable<STMT_LO> {
 public:
     NextRelationshipTable();
 };
+
+class AffectsEvaluator {
+public:
+    AffectsEvaluator(std::shared_ptr<NextRelationshipTable> nextTable, 
+        std::shared_ptr<ModifiesRelationshipTable> modifiesTable,
+        std::shared_ptr<UsesRelationshipTable> usesTable);
+
+    bool contains(PKBField field1, PKBField field2) const;
+
+    bool containsT(PKBField field1, PKBField field2) const;
+
+    FieldRowResponse retrieve(PKBField field1, PKBField field2) const;
+
+    FieldRowResponse retrieveT(PKBField field1, PKBField field2) const;
+
+private:
+    std::shared_ptr<NextRelationshipTable> nextTable;
+    std::shared_ptr<ModifiesRelationshipTable> modifiesTable;
+    std::shared_ptr<UsesRelationshipTable> usesTable;
+
+    bool isContainsValid(PKBField field1, PKBField field2) const;
+    bool isRetrieveValid(PKBField field1, PKBField field2) const;
+};
