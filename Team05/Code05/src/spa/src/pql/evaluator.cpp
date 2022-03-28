@@ -118,7 +118,6 @@ namespace qps::evaluator {
 
         std::vector<query::Pattern> patterns = query.getPattern();
 
-//        query::DesignEntity returnType = query.getDeclarationDesignEntity(variable[0]);
         ClauseHandler handler = ClauseHandler(pkb, resultTable);
 
         if (!with.empty()) {
