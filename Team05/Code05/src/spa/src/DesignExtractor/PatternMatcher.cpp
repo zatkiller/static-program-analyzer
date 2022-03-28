@@ -34,6 +34,8 @@ struct ExprFlattener : public TreeWalker {
 /**
  * @brief Collects a single type of node in the ast tree
  * 
+ * The collected nodes will be stored in the struct as a field nodes.
+ * 
  * @tparam T the type of node that needs to be collected.
  */
 template <typename T>
@@ -76,6 +78,18 @@ bool isSublist(
     return needleIter == needle.end();
 }
 
+/**
+ * @brief A general pattern extractor that returns a list of reference of target statement node of type T
+ * 
+ * The general pattern extractor that collects all the statement of target type and check them one by one
+ * to see if they pass the constraint predicate. The predicate should be partially applied with the constraints
+ * so that it only require the statement node to return the result.
+ * 
+ * @tparam T the target statement type. It can be ast::Assign / ast::If / ast::While
+ * @param root the root of the ast tree.
+ * @param isMatch the predicate that checks statement of type T
+ * @return std::list<std::reference_wrapper<const T>> the return list of statement that is matched by the predicate
+ */
 template<typename T>
 std::list<std::reference_wrapper<const T>> extractPattern(ast::ASTNode *root, std::function<bool(const T&)> isMatch) {
     SingleCollector<T> collector;
@@ -89,6 +103,13 @@ std::list<std::reference_wrapper<const T>> extractPattern(ast::ASTNode *root, st
     return matched;
 }
 
+/**
+ * @brief Make a predicate for pattern matching conditional statements
+ * 
+ * @tparam T the type of conditional statement. In this case ast::If / ast::While
+ * @param var the constraint of the var
+ * @return std::function<bool(const T&)> a predicate function to check a given conditional statement of type T
+ */
 template<typename T>
 std::function<bool(const T&)> makeCondPredicate(PatternParam var) {
     return [var](const T& node) {
@@ -107,6 +128,14 @@ std::function<bool(const T&)> makeCondPredicate(PatternParam var) {
     };
 }
 
+/**
+ * @brief Make a predicate for pattern matching assign statements
+ * 
+ * @param lhs the constraint on the lhs of the statement, which should be a var
+ * @param rhs the constraint on the rhs of the statement, which should be an expression
+ * @param isStrict boolean flag to indicate if strict matching is used on expression.
+ * @return std::function<bool(const ast::Assign&)> a predicate function to check a given assign statement
+ */
 std::function<bool(const ast::Assign&)> makeAssignPredicate(PatternParam lhs, PatternParam rhs, bool isStrict) {
     return [lhs, rhs, isStrict](const ast::Assign& node) {
         // === Check lHS constraint ===
