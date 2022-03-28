@@ -5,6 +5,8 @@
 namespace qps::parser {
     using qps::query::designEntityMap;
     using qps::query::attrNameToDesignEntityMap;
+    using qps::query::Elem;
+    using qps::query::ResultCl;
     using qps::query::UsesS;
     using qps::query::UsesP;
     using qps::query::ModifiesS;
@@ -93,24 +95,24 @@ namespace qps::parser {
         return token;
     }
 
-    void Parser::parseDeclaration(Query &queryObj, DesignEntity de) {
+    void Parser::parseDeclarationStmt(Query &queryObj, DesignEntity de) {
         Token variable = getAndCheckNextToken(TokenType::IDENTIFIER);
         queryObj.addDeclaration(variable.getText(), de);
     }
 
-    void Parser::parseDeclarations(Query &queryObj) {
+    void Parser::parseDeclarationStmts(Query &queryObj) {
         Token token = getAndCheckNextToken(TokenType::IDENTIFIER);
         auto iterator = designEntityMap.find(token.getText());
         if (iterator == designEntityMap.end())
             throw exceptions::PqlSyntaxException(messages::qps::parser::noSuchDesignEntityMessage);
 
         DesignEntity designEntity = iterator->second;
-        parseDeclaration(queryObj, designEntity);
+        parseDeclarationStmt(queryObj, designEntity);
         // Parse and add single declaration to Query Object
 
         while (peekNextToken().getTokenType() == TokenType::COMMA) {
             getAndCheckNextToken(TokenType::COMMA);
-            parseDeclaration(queryObj, designEntity);
+            parseDeclarationStmt(queryObj, designEntity);
         }
 
         getAndCheckNextToken(TokenType::SEMICOLON);
@@ -120,16 +122,67 @@ namespace qps::parser {
         lexer = Lexer(query);
     }
 
+    Declaration Parser::parseDeclaration(Query &query) {
+        Token identifier = getAndCheckNextToken(TokenType::IDENTIFIER);
+        std::string synonym = identifier.getText();
+        DesignEntity de = query.getDeclarationDesignEntity(synonym);
+        return Declaration { synonym, de };
+    }
+
+    AttrName Parser::parseAttrName(Query &query, Declaration declaration) {
+        Token attrRefToken = getNextReservedToken();
+        auto pos = tokenTypeToAttrName.find(attrRefToken.getTokenType());
+        AttrName attrName = pos->second;
+        checkDesignEntityAndAttrNameMatch(declaration.getType(), attrName);
+
+        return attrName;
+    }
+
+    Elem Parser::parseElem(Query &query) {
+        Declaration declaration = parseDeclaration(query);
+
+        if (peekNextToken().getTokenType() == TokenType::PERIOD) {
+            getAndCheckNextToken(TokenType::PERIOD);
+            AttrName an = parseAttrName(query, declaration);
+            Elem e = Elem::ofAttrRef( AttrRef { an, declaration } );
+            return e;
+        };
+
+        return Elem::ofDeclaration(declaration);
+    }
+
+    std::vector<Elem> Parser::parseTuple(Query &query) {
+        std::vector<Elem> elements;
+        bool expectClosing = (peekNextToken().getTokenType() == TokenType::LEFT_ARROW_HEAD);
+        if (expectClosing) {
+            getAndCheckNextToken(TokenType::LEFT_ARROW_HEAD);
+        }
+
+        elements.push_back(parseElem(query));
+
+        while (expectClosing && (peekNextToken().getTokenType() == TokenType::COMMA)) {
+            getAndCheckNextToken(TokenType::COMMA);
+            elements.push_back(parseElem(query));
+        }
+
+        if (expectClosing) {
+            getAndCheckNextToken(TokenType::RIGHT_ARROW_HEAD);
+        }
+
+        return elements;
+    }
+
     void Parser::parseSelectFields(Query &queryObj) {
         getAndCheckNextReservedToken(TokenType::SELECT);
 
-        Token t = getAndCheckNextToken(TokenType::IDENTIFIER);
-        std::string name = t.getText();
+        if (peekNextReservedToken().getTokenType() == TokenType::BOOLEAN) {
+            getNextReservedToken();
+            queryObj.addResultCl(ResultCl::ofBoolean());
+            return;
+        }
 
-        if (!queryObj.hasDeclaration(name))
-            throw exceptions::PqlSyntaxException(messages::qps::parser::declarationDoesNotExistMessage);
-
-        queryObj.addVariable(name);
+        ResultCl resultCl = ResultCl::ofTuple(parseTuple(queryObj));
+        queryObj.addResultCl(resultCl);
     }
 
     StmtRef Parser::parseStmtRef(Query &queryObj) {
@@ -374,9 +427,8 @@ namespace qps::parser {
         }
     }
 
-    EntRef Parser::parsePatternLhs(Query &query, std::string synonym) {
+    EntRef Parser::parsePatternLhs(Query &query) {
         EntRef e = parseEntRef(query);
-
 
         if (e.isDeclaration() && e.getDeclarationType() != DesignEntity::VARIABLE)
             throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
@@ -384,10 +436,13 @@ namespace qps::parser {
         return e;
     }
 
-    Pattern Parser::parsePatternVariables(Query &query, std::string synonym, DesignEntity de) {
+    Pattern Parser::parsePatternVariables(Query &query, Declaration d) {
         Pattern p;
         getAndCheckNextToken(TokenType::OPENING_PARAN);
-        EntRef e = parsePatternLhs(query, synonym);
+        EntRef e = parsePatternLhs(query);
+
+        std::string synonym = d.getSynonym();
+        DesignEntity de = d.getType();
 
         if (de == DesignEntity::ASSIGN) {
             getAndCheckNextToken(TokenType::COMMA);
@@ -410,13 +465,13 @@ namespace qps::parser {
     }
 
     void Parser::parsePattern(Query &query) {
-        Token t = getAndCheckNextToken(TokenType::IDENTIFIER);
-        std::string declarationName = t.getText();
-        DesignEntity de = query.getDeclarationDesignEntity(declarationName);
+        Declaration declaration = parseDeclaration(query);
+        DesignEntity de = declaration.getType();
+
         if ((de != DesignEntity::ASSIGN) && (de != DesignEntity::IF) && (de != DesignEntity::WHILE))
             throw exceptions::PqlSyntaxException(messages::qps::parser::notValidPatternType);
 
-        query.addPattern(parsePatternVariables(query, declarationName, de));
+        query.addPattern(parsePatternVariables(query, declaration));
     }
 
     void Parser::parsePatternClause(Query &queryObj) {
@@ -431,19 +486,9 @@ namespace qps::parser {
     }
 
     AttrRef Parser::parseAttrRef(Query &query) {
-        Token identifier = getAndCheckNextToken(TokenType::IDENTIFIER);
-
-        std::string synonym = identifier.getText();
-        DesignEntity de = query.getDeclarationDesignEntity(synonym);
-
+        Declaration declaration = parseDeclaration(query);
         getAndCheckNextToken(TokenType::PERIOD);
-
-        Token attrRefToken = getNextReservedToken();
-        auto pos = tokenTypeToAttrName.find(attrRefToken.getTokenType());
-        AttrName attrName = pos->second;
-        checkDesignEntityAndAttrNameMatch(de, attrName);
-
-        Declaration declaration(synonym, de);
+        AttrName attrName = parseAttrName(query, declaration);
 
         return AttrRef { attrName, declaration };
     }
@@ -516,7 +561,7 @@ namespace qps::parser {
                  token = peekNextReservedToken()) {
                 if (token.getTokenType() != TokenType::SELECT) {
                     // Parse delcarations first
-                    parseDeclarations(queryObj);
+                    parseDeclarationStmts(queryObj);
                 } else {
                     // Start parsing the actual query
                     parseQuery(queryObj);

@@ -4,6 +4,8 @@
 #include "exceptions.h"
 
 using qps::query::Query;
+using qps::query::Elem;
+using qps::query::ResultCl;
 using qps::query::StmtRef;
 using qps::query::EntRef;
 using qps::query::RelRef;
@@ -237,8 +239,11 @@ TEST_CASE("Query") {
     query.addDeclaration("a", DesignEntity::STMT);
     REQUIRE(query.hasDeclaration("a"));
 
-    query.addVariable("a");
-    REQUIRE(query.hasVariable("a"));
+    std::vector<Elem> tuple;
+    Elem e = Elem::ofDeclaration(Declaration { "a", DesignEntity::STMT });
+    tuple.push_back(e);
+    query.addResultCl(ResultCl::ofTuple(tuple));
+    REQUIRE(query.hasSelectElem(e));
 
     std::shared_ptr<ModifiesS> ptr = std::make_shared<ModifiesS>();
     ptr->modifiesStmt = StmtRef::ofLineNo(4);

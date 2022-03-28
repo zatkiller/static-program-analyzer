@@ -14,7 +14,7 @@ namespace qps {
 struct QPS {
     qps::parser::Parser parser;
 
-    /*
+    /**
      * Evaluates a query and stores the query results in a list of string
      *
      * @param query the pql query

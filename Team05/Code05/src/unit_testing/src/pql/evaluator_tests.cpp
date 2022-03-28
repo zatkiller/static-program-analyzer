@@ -62,7 +62,12 @@ TEST_CASE("Get list of result") {
     qps::query::Query query{};
     TEST_LOG << "log";
     query.addDeclaration("if", qps::query::DesignEntity::IF);
-    query.addVariable("if");
+
+    qps::query::Declaration d= qps::query::Declaration { "if", qps::query::DesignEntity::IF };
+    std::vector<qps::query::Elem> tuple { qps::query::Elem::ofDeclaration(d) };
+    qps::query::ResultCl r = qps::query::ResultCl::ofTuple(tuple);
+    query.addResultCl(r);
+
     REQUIRE(query.getSuchthat().empty());
     std::list<std::string> result = evaluator.evaluate(query);
 

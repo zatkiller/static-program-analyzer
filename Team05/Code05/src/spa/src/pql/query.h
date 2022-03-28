@@ -1,6 +1,8 @@
 #pragma once
 
 #include <unordered_map>
+#include <algorithm>
+#include <utility>
 #include <vector>
 #include <string>
 #include <memory>
@@ -36,7 +38,6 @@ enum class StmtRefType {
     WILDCARD
 };
 
-
 struct Declaration {
     DesignEntity type {};
     std::string synonym;
@@ -50,6 +51,82 @@ struct Declaration {
     bool operator==(const Declaration &o) const { return synonym == o.synonym && type == o.type; }
 };
 
+enum class AttrName {
+    INVALID,
+    PROCNAME,
+    VARNAME,
+    VALUE,
+    STMTNUM
+};
+
+struct AttrRef {
+    AttrRef() {}
+    AttrRef(AttrName an, Declaration d) : attrName(an), declaration(std::move(d)) {}
+
+    bool isString() const { return attrName == AttrName::VARNAME || attrName == AttrName::PROCNAME; }
+    bool isNumber() const { return attrName == AttrName::VALUE || attrName == AttrName::STMTNUM; }
+    bool compatbileComparison(const AttrRef &o) const;
+
+    bool operator==(const AttrRef &o) const { return (attrName == o.attrName) && (declaration == o.declaration); }
+
+    AttrName getAttrName() const { return attrName; }
+    std::string getDeclarationSynonym() const { return declaration.getSynonym(); }
+    DesignEntity getDeclarationType() const { return declaration.getType(); }
+    Declaration getDeclaration() const { return declaration; }
+
+private:
+    AttrName attrName = AttrName::INVALID;
+    Declaration declaration {};
+};
+
+enum class ElemType {
+    NOT_INITIALIZED,
+    ATTR_REF,
+    DECLARATION
+};
+
+struct Elem {
+
+    static Elem ofDeclaration(Declaration d);
+    static Elem ofAttrRef(AttrRef ar);
+
+    bool isDeclaration() const { return type == ElemType::DECLARATION; }
+    bool isAttrRef() const { return type == ElemType::ATTR_REF; }
+
+    Declaration getDeclaration() const { return declaration; }
+    AttrRef getAttrRef() const { return ar; }
+
+    bool operator==(const Elem &o) const {
+        if ((type == ElemType::ATTR_REF) && (o.type == ElemType::ATTR_REF)) {
+            return ar == o.ar;
+        } else if ((type == ElemType::DECLARATION) && (o.type == ElemType::DECLARATION)) {
+            return declaration == o.declaration;
+        }
+
+        return (type == ElemType::NOT_INITIALIZED) && (o.type == ElemType::NOT_INITIALIZED);
+    }
+
+private:
+    AttrRef ar;
+    Declaration declaration {};
+    ElemType type = ElemType::NOT_INITIALIZED;
+};
+
+struct ResultCl {
+    static ResultCl ofBoolean();
+    static ResultCl ofTuple(std::vector<Elem> tuple);
+
+    bool isBoolean() const { return boolean; };
+    std::vector<Elem> getTuple() const { return tuple; };
+
+    bool hasElem(Elem e) const;
+
+
+private:
+    bool boolean = false;
+    std::vector<Elem> tuple;
+};
+
 /**
 * Struct used to store information on a StmtRef
 */
@@ -60,7 +137,7 @@ private:
     int lineNo = -1;
 
 public:
-    /*
+    /**
         * Returns a StmtRef of type Declaration
         *
         * @param declaration the declaration
@@ -68,7 +145,7 @@ public:
         */
     static StmtRef ofDeclaration(Declaration d);
 
-    /*
+    /**
         * Returns a StmtRef of type LineNo
         *
         * @param lineNo the line number of the StmtRef
@@ -76,7 +153,7 @@ public:
         */
     static StmtRef ofLineNo(int lineNo);
 
-    /*
+    /**
         * Returns a StmtRef of type Wildcard
         *
         * @return StmtRef of type wildcard
@@ -121,7 +198,7 @@ private:
     std::string variable = "";
 
 public:
-    /*
+    /**
         * Returns a EntRef of type Declaration
         *
         * @param d the declaration
@@ -129,15 +206,15 @@ public:
         */
     static EntRef ofDeclaration(Declaration d);
 
-    /*
-        * Returns a EntRef of type variable name
-        *
-        * @param name the line number of the StmtRef
-        * @return EntRef of type variable and variable name
-        */
+    /**
+    * Returns a EntRef of type variable name
+    *
+    * @param name the line number of the StmtRef
+    * @return EntRef of type variable and variable name
+    */
     static EntRef ofVarName(std::string name);
 
-    /*
+    /**
         * Returns a EntRef of type Wildcard
         *
         * @return EntRef of type wildcard
@@ -444,7 +521,7 @@ struct AffectsT : RelRef {
     void checkSecondArg() override;
 };
 
-/*
+/**
 * Struct used to represent a Expression-Spec
 */
 struct ExpSpec {
@@ -498,32 +575,6 @@ private:
     ExpSpec expression {};
 };
 
-enum class AttrName {
-    INVALID,
-    PROCNAME,
-    VARNAME,
-    VALUE,
-    STMTNUM
-};
-
-struct AttrRef {
-    AttrRef() {}
-    AttrRef(AttrName an, Declaration d) : attrName(an), declaration(std::move(d)) {}
-
-    bool isString() const { return attrName == AttrName::VARNAME || attrName == AttrName::PROCNAME; }
-    bool isNumber() const { return attrName == AttrName::VALUE || attrName == AttrName::STMTNUM; }
-    bool compatbileComparison(const AttrRef &o) const { return (isString() && o.isString()) || (isNumber() && o.isNumber()); }
-
-    AttrName getAttrName() const { return attrName; }
-    std::string getDeclarationSynonym() const { return declaration.getSynonym(); }
-    DesignEntity getDeclarationType() const { return declaration.getType(); }
-    Declaration getDeclaration() const { return declaration; }
-
-private:
-    AttrName attrName = AttrName::INVALID;
-    Declaration declaration = {};
-};
-
 enum class AttrCompareRefType {
     NOT_INITIALIZED,
     NUMBER,
@@ -571,7 +622,7 @@ struct AttrCompare {
 class Query {
 private:
     std::unordered_map<std::string, DesignEntity> declarations;
-    std::vector<std::string> variable;
+    ResultCl selectResults;
     std::vector<std::shared_ptr<RelRef>> suchthat;
     std::vector<Pattern> pattern;
     std::vector<AttrCompare> with;
@@ -579,8 +630,9 @@ private:
 
 public:
     std::unordered_map<std::string, DesignEntity> getDeclarations() const;
-
     std::vector<std::string> getVariable() const;
+    ResultCl getResultCl() const;
+
     std::vector<std::shared_ptr<RelRef>> getSuchthat() const;
     std::vector<Pattern> getPattern() const;
     std::vector<AttrCompare> getWith() const;
@@ -590,15 +642,16 @@ public:
     void setValid(bool);
 
     bool hasDeclaration(const std::string &) const;
-    bool hasVariable(const std::string &) const;
+    bool hasSelectElem(const Elem e) const;
 
     void addDeclaration(const std::string&, DesignEntity);
-    void addVariable(const std::string& var);
+    void addResultCl(const ResultCl resultCl);
+
     void addSuchthat(const std::shared_ptr<RelRef>&);
     void addPattern(const Pattern&);
     void addWith(const AttrCompare&);
 
-    /*
+    /**
         * Returns the DesignEntity of the specified declaration
         *
         * @param declaration the name of the declaration

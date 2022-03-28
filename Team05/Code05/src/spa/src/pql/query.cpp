@@ -40,8 +40,8 @@ namespace qps::query {
         return declarations.count(name) > 0;
     }
 
-    bool Query::hasVariable(const std::string& var) const {
-        return std::find(variable.begin(), variable.end(), var) != variable.end();
+    bool Query::hasSelectElem(const Elem e) const {
+        return selectResults.hasElem(e);
     }
 
     DesignEntity Query::getDeclarationDesignEntity(const std::string& name) const {
@@ -55,8 +55,22 @@ namespace qps::query {
         return declarations;
     }
 
+    // For backward compatibility, will remove once Evaluator switches to selectFields
     std::vector<std::string> Query::getVariable() const {
-        return variable;
+        std::vector<std::string> results;
+        Elem e = selectResults.getTuple()[0];
+
+        if (e.isDeclaration()) {
+            results.push_back(e.getDeclaration().getSynonym());
+        } else {
+            results.push_back(e.getAttrRef().getDeclaration().getSynonym());
+        }
+
+        return results;
+    }
+
+    ResultCl Query::getResultCl() const {
+        return selectResults;
     }
 
     std::vector<std::shared_ptr<RelRef>> Query::getSuchthat() const {
@@ -79,9 +93,8 @@ namespace qps::query {
         declarations.insert({var, de});
     }
 
-
-    void Query::addVariable(const std::string& var) {
-        variable.push_back(var);
+    void Query::addResultCl(const ResultCl resultCl) {
+        selectResults = resultCl;
     }
 
     void Query::addSuchthat(const std::shared_ptr<RelRef>& rel) {
@@ -96,6 +109,38 @@ namespace qps::query {
         with.push_back(ac);
     }
 
+    bool AttrRef::compatbileComparison(const AttrRef &o) const {
+        return (isString() && o.isString()) || (isNumber() && o.isNumber());
+    }
+
+    Elem Elem::ofDeclaration(Declaration d) {
+        Elem e; e.declaration = std::move(d);
+        e.type = ElemType::DECLARATION;
+        return e;
+    }
+
+    Elem Elem::ofAttrRef(AttrRef ar) {
+        Elem e;
+        e.ar = std::move(ar);
+        e.type = ElemType::ATTR_REF;
+        return e;
+    }
+
+    ResultCl ResultCl::ofBoolean() {
+        ResultCl r;
+        r.boolean = true;
+        return r;
+    }
+
+    ResultCl ResultCl::ofTuple(std::vector<Elem> tuple) {
+        ResultCl r;
+        r.tuple = tuple;
+        return r;
+    }
+
+    bool ResultCl::hasElem(Elem e) const {
+        return std::find(tuple.begin(), tuple.end(), e) != tuple.end();
+    }
 
     EntRef EntRef::ofVarName(std::string name) {
         EntRef e;
