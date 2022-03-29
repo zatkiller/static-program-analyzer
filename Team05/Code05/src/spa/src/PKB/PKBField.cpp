@@ -99,3 +99,18 @@ size_t PKBFieldHash::operator() (const PKBField& other) const {
 size_t PKBFieldVectorHash::operator() (const std::vector<PKBField>& other) const {
     return std::hash<int>()(other.size());
 }
+
+size_t std::hash<STMT_LO>::operator()(const STMT_LO& k) const {
+    std::hash<std::string> hasher;
+    return hasher("STMT_LO" + k.statementNum);
+}
+
+size_t std::hash<VAR_NAME>::operator()(const VAR_NAME& k) const {
+    std::hash<std::string> hasher;
+    return hasher("VAR_NAME" + k.name);
+}
+
+size_t std::hash<PROC_NAME>::operator()(const PROC_NAME& k) const {
+    std::hash<std::string> hasher;
+    return hasher("PROC_NAME" + k.name);
+}
