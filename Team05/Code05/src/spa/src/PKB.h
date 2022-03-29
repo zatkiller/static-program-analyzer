@@ -112,12 +112,8 @@ public:
     *   Defaults to false if no argument provided.
     * @return PKBResponse
     */
-    PKBResponse match(
-        StatementType type,
-        sp::design_extractor::PatternParam lhs,
-        sp::design_extractor::PatternParam rhs,
-        bool isStrict = false
-    );
+    PKBResponse match(StatementType type, sp::design_extractor::PatternParam lhs,
+        sp::design_extractor::PatternParam rhs = std::nullopt, bool isStrict = false) const;
 
 private:
     std::unique_ptr<StatementTable> statementTable;
@@ -131,7 +127,7 @@ private:
     * Returns a pointer to the relationship table corresponding to the given relationship. Transitive
     * relationships will be converted to its non-transitive counterpart before retrievals. Relationships without
     * a corrsponding table will throw an std::invalid_argument error.
-    * 
+    *
     * @param relationship the type of program design abstraction
     * @return a pointer to the relationship table
     */
@@ -206,4 +202,11 @@ private:
     * @param field
     */
     void appendStatementInformation(PKBField* field);
+
+    PKBResponse matchAssign(sp::design_extractor::PatternParam lhs,
+        sp::design_extractor::PatternParam rhs, bool isStrict) const;
+
+    PKBResponse matchIf(sp::design_extractor::PatternParam lhs) const;
+
+    PKBResponse matchWhile(sp::design_extractor::PatternParam lhs) const;
 };
