@@ -11,6 +11,7 @@
 #include <variant>
 #include <map>
 #include <list>
+#include <utility>
 
 #include "pql/query.h"
 #include "pql/clausehandler.h"
@@ -20,7 +21,14 @@
 #include "PKB/PKBCommons.h"
 
 namespace qps::evaluator {
+struct SelectElemInfo {
+    int columnNo;
+    query::AttrName attrName;
+    bool isAttr;
 
+    static SelectElemInfo ofDeclaration(int columnNo);
+    static SelectElemInfo ofAttr(int columnNo, query::AttrName attrName);
+};
 /**
  * A class to evaluate a query object. Get the corresponding result from PKB and merge results accordingly.
  */
@@ -43,6 +51,7 @@ public:
      */
     static std::string PKBFieldToString(PKBField pkbField);
 
+    std::string PKBFieldAttrToString(PKBField pkbField, query::AttrName attrName);
     /**
      * Classifies the clauses in such that into clauses with synonyms and clauses without synonyms.
      *
@@ -70,7 +79,7 @@ public:
      * @param variable the synonym in select part of the query
      * @return the list of string representation of the query result
      */
-    std::list<std::string> getListOfResult(ResultTable &table, std::string variable);
+    std::list<std::string> getListOfResult(ResultTable &table, query::ResultCl resultCl);
 
     /**
      * Evaluates the query object.

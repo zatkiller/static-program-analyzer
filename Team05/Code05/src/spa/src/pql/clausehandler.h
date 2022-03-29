@@ -16,10 +16,9 @@ class ClauseHandler {
 public:
     PKB *pkb;
     ResultTable &tableRef;
-    query::Query &query;
 
     /** Constructor of the ClauseHandler */
-    ClauseHandler(PKB *pkb, ResultTable &tableRef, query::Query &query) : pkb(pkb), tableRef(tableRef), query(query) {}
+    ClauseHandler(PKB *pkb, ResultTable &tableRef) : pkb(pkb), tableRef(tableRef) {}
 
     /**
      * Retrieves all the results of a certain design entity from PKB database.
@@ -35,7 +34,7 @@ public:
      * @param fields PKBFields returned from RelRef
      * @param synonyms all of the synonyms in RelRef
      */
-    void processStmtField(std::vector<PKBField> &fields, std::vector<std::string> synonyms);
+    void processStmtField(std::vector<PKBField> &fields, std::vector<query::Declaration> declarations);
 
     /**
      * Selects the corresponding values of synonyms in the PKBResponse.
@@ -84,7 +83,7 @@ public:
     void handleOneAttrRef(query::AttrRef attr, query::AttrCompareRef concrete);
 
     template<typename T>
-    T getPKBFieldAttr(PKBField field) {
+    static T getPKBFieldAttr(PKBField field) {
         T value;
         if constexpr(std::is_same_v<T, std::string>) {
             if (auto pptr = field.getContent<PROC_NAME>()) value = pptr->name;
@@ -124,5 +123,7 @@ public:
         bool hasResult = !res.empty();
         return PKBResponse{hasResult, Response{res}};
     }
+
+    void  handleResultCl(query::ResultCl resultCl);
 };
 }  // namespace qps::evaluator

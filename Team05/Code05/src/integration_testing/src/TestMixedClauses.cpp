@@ -376,4 +376,26 @@ TEST_CASE("test evaluate pattern") {
     result11.sort();
     printEvaluatorResult(result11);
     REQUIRE(result11 == std::list<std::string>{"3", "4", "5", "6", "7"});
+
+    TEST_LOG << "assign a; stmt s; Select <a,s> pattern a('sum', _)";
+    qps::evaluator::Evaluator evaluator12 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query12{};
+    query12.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    query12.addDeclaration("s", qps::query::DesignEntity::STMT);
+
+    qps::query::Declaration d12_1 = qps::query::Declaration { "s", qps::query::DesignEntity::STMT };
+    qps::query::Declaration d12_2 = qps::query::Declaration { "a", qps::query::DesignEntity::ASSIGN };
+    std::vector<qps::query::Elem> tuple12 { qps::query::Elem::ofDeclaration(d12_2),
+                                            qps::query::Elem::ofDeclaration(d12_1) };
+    qps::query::ResultCl r12 = qps::query::ResultCl::ofTuple(tuple12);
+    query12.addResultCl(r12);
+
+    query12.addPattern(qps::query::Pattern::ofAssignPattern("a",
+                                                           qps::query::EntRef::ofVarName("sum"),
+                                                           qps::query::ExpSpec::ofWildcard()));
+    std::list<std::string> result12 = evaluator12.evaluate(query12);
+    result12.sort();
+    printEvaluatorResult(result12);
+    REQUIRE(result12 == std::list<std::string>{"2 1", "2 2", "2 3", "2 4", "2 5", "2 6", "2 7",
+                                               "5 1", "5 2", "5 3", "5 4", "5 5", "5 6", "5 7" });
 }

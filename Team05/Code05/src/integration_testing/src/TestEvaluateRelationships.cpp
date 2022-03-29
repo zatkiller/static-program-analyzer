@@ -419,7 +419,8 @@ TEST_CASE("Test get Follows FollowsT") {
 
     std::shared_ptr<qps::query::FollowsT> mPtr3 = std::make_shared<qps::query::FollowsT>();
     mPtr3->follower = qps::query::StmtRef::ofWildcard();
-    mPtr3->transitiveFollowed = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
+    mPtr3->transitiveFollowed = qps::query::StmtRef::ofDeclaration(
+            Declaration { "s", qps::query::DesignEntity::STMT });
     query3.addSuchthat(mPtr3);
     qps::evaluator::Evaluator e3 = qps::evaluator::Evaluator{pkbPtr};
     std::list<std::string> result3 = e3.evaluate(query3);
@@ -762,7 +763,7 @@ TEST_CASE("multiple relationship clauses") {
     mPtr22->used = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
     query2.addSuchthat(mPtr22);
     std::shared_ptr<qps::query::UsesS> mPtr23 = std::make_shared<qps::query::UsesS>();
-    mPtr23->useStmt = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::VARIABLE });
+    mPtr23->useStmt = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
     mPtr23->used = qps::query::EntRef::ofDeclaration( Declaration { "v", qps::query::DesignEntity::VARIABLE });
     query2.addSuchthat(mPtr23);
     qps::evaluator::Evaluator e2 = qps::evaluator::Evaluator{pkbPtr};

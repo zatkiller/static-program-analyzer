@@ -253,7 +253,7 @@ TEST_CASE("Query") {
     REQUIRE(query.getSuchthat()[0] == ptr);
 
     std::vector<std::shared_ptr<RelRef>> suchThat = query.getSuchthat();
-    REQUIRE(suchThat[0]->getSyns() == std::vector<std::string>{"v"});
+    REQUIRE(suchThat[0]->getDecs() == std::vector<Declaration>{Declaration{"v", DesignEntity::VARIABLE}});
 
     std::vector<PKBField> fields = suchThat[0]->getField();
     REQUIRE(fields[0].entityType == PKBEntityType::STATEMENT);
