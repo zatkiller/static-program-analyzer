@@ -97,8 +97,8 @@ TEST_CASE("Get list of result") {
     qps::query::ResultCl r2 = qps::query::ResultCl::ofTuple(tuple2);
     query2.addResultCl(r2);
     std::list<std::string> result2 = evaluator2.evaluate(query2);
-
-    REQUIRE(result2 == std::list<std::string>{"3 7 6", "3 8 6", "3 7 4", "3 8 4"});
+    result2.sort();
+    REQUIRE(result2 == std::list<std::string>{"3 7 4", "3 7 6", "3 8 4", "3 8 6"});
     for (auto r : result2) {
         TEST_LOG << r;
     }
@@ -128,7 +128,8 @@ TEST_CASE("Get list of result") {
     qps::query::AttrCompare with3 = qps::query::AttrCompare{lhs3, rhs3};
     query3.addWith(with3);
     std::list<std::string> result3 = evaluator3.evaluate(query3);
-    REQUIRE(result3 == std::list<std::string>{"x x 1", "y x 1", "x x 5", "y x 5", "x x 2", "y x 2"});
+    result3.sort();
+    REQUIRE(result3 == std::list<std::string>{"x x 1", "x x 2", "x x 5", "y x 1", "y x 2", "y x 5"});
     for (auto r : result3) {
         TEST_LOG << r;
     }
@@ -155,6 +156,20 @@ TEST_CASE("Get list of result") {
     query5.addWith(with5);
     std::list<std::string> result5 = evaluator5.evaluate(query5);
     REQUIRE(result5 == std::list<std::string>{"FALSE"});
+
+    TEST_LOG << "select <a, a>";
+    qps::evaluator::Evaluator evaluator6(ptr);
+    qps::query::Query query6{};
+    query6.addDeclaration("a", qps::query::DesignEntity::ASSIGN);
+    qps::query::Declaration d61 = qps::query::Declaration { "a", qps::query::DesignEntity::ASSIGN };
+    qps::query::Declaration d62 = qps::query::Declaration { "a", qps::query::DesignEntity::ASSIGN };
+    std::vector<qps::query::Elem> tuple6 { qps::query::Elem::ofDeclaration(d61),
+                                           qps::query::Elem::ofDeclaration(d62) };
+    qps::query::ResultCl r6 = qps::query::ResultCl::ofTuple(tuple6);
+    query6.addResultCl(r6);
+    std::list<std::string> result6 = evaluator6.evaluate(query6);
+    result6.sort();
+    REQUIRE(result6 == std::list<std::string>{"1 1", "2 2", "5 5"});
 }
 
 TEST_CASE("PKBField to string") {
