@@ -9,11 +9,10 @@
 #include "logging.h"
 
 #include "PKB/PKBTables.h"
+#include "PKB/PKBRelationshipTables.h"
 #include "PKB/PKBResponse.h"
 #include "PKB/PKBField.h"
-#include "PKB/PKBRelationshipTables.h"
 #include "DesignExtractor/PatternMatcher.h"
-#include "DesignExtractor/CFG/CFG.h"
 
 class PKB {
 public:

@@ -1,4 +1,5 @@
 #include "PKB/PKBTables.h"
+#include "PKB/PKBRelationshipTables.h"
 #include "catch.hpp"
 
 TEST_CASE("EntityRow::getVal") {

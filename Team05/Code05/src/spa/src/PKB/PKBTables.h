@@ -3,11 +3,12 @@
 #include <set>
 #include <optional>
 #include <type_traits>
-#include "PKBField.h"
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 #include <memory>
-#include "PKBRelationshipTables.h"
+
+#include "PKBField.h"
 
 /**
 * An interface for a data structure used in an EntityTable.

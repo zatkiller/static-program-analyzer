@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Parser/AST.h"
-#include "PKB.h"
-#include "DesignExtractor/PKBStrategy.h"
+//#include "PKB.h"
+//#include "DesignExtractor/PKBStrategy.h"
 
 namespace sp {
 namespace design_extractor {
