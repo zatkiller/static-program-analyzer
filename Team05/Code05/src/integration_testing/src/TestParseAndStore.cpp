@@ -109,7 +109,7 @@ struct TestParseAndStorePackage1 : public DesignExtractionTestTemplate {
         expectedRelationships.emplace(
             PKBRelationship::MODIFIES,
             std::set<std::pair<Content, Content>> {
-            p(STMT_LO{ 1, StatementType::Read, "number" }, VAR_NAME{ "number" }),
+                p(STMT_LO{ 1, StatementType::Read, "number" }, VAR_NAME{ "number" }),
                 p(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{ "sum" }),
                 p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "digit" }),
                 p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "sum" }),
@@ -120,13 +120,13 @@ struct TestParseAndStorePackage1 : public DesignExtractionTestTemplate {
                 p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "number" }),
                 p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "digit" }),
                 p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "sum" })
-        }
+            }
         );
 
         expectedRelationships.emplace(
             PKBRelationship::USES,
             std::set<std::pair<Content, Content>> {
-            p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "number" }),
+                p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "number" }),
                 p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "digit" }),
                 p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "sum" }),
                 p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "number" }),
@@ -137,27 +137,27 @@ struct TestParseAndStorePackage1 : public DesignExtractionTestTemplate {
                 p(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{ "digit" }),
                 p(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{ "number" }),
                 p(STMT_LO{ 7, StatementType::Print, "sum" }, VAR_NAME{ "sum" }),
-        }
+            }
         );
 
         expectedRelationships.emplace(
             PKBRelationship::FOLLOWS,
             std::set<std::pair<Content, Content>> {
-            p(STMT_LO{ 1, StatementType::Read, "number" }, STMT_LO{ 2, StatementType::Assignment }),
+                p(STMT_LO{ 1, StatementType::Read, "number" }, STMT_LO{ 2, StatementType::Assignment }),
                 p(STMT_LO{ 2, StatementType::Assignment }, STMT_LO{ 3, StatementType::While }),
                 p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 7, StatementType::Print, "sum" }),
                 p(STMT_LO{ 4, StatementType::Assignment }, STMT_LO{ 5, StatementType::Assignment }),
                 p(STMT_LO{ 5, StatementType::Assignment }, STMT_LO{ 6, StatementType::Assignment }),
-        }
+            }
         );
 
         expectedRelationships.emplace(
             PKBRelationship::PARENT,
             std::set<std::pair<Content, Content>> {
-            p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 4, StatementType::Assignment }),
+                p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 4, StatementType::Assignment }),
                 p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 5, StatementType::Assignment }),
                 p(STMT_LO{ 3, StatementType::While }, STMT_LO{ 6, StatementType::Assignment }),
-        }
+            }
         );
     }
 };
@@ -229,7 +229,7 @@ struct TestParseAndStorePackage2 : public DesignExtractionTestTemplate {
         expectedRelationships.emplace(
             PKBRelationship::FOLLOWS,
             std::set<std::pair<Content, Content>> {
-            p(s1, s3),
+                p(s1, s3),
                 p(s4, s5),
                 p(s6, s7),
                 p(s8, s9),
@@ -237,22 +237,22 @@ struct TestParseAndStorePackage2 : public DesignExtractionTestTemplate {
                 p(s11, s12),
                 p(s13, s14),
                 p(s14, s15)
-        }
+            }
         );
 
         expectedRelationships.emplace(
             PKBRelationship::CALLS,
             std::set<std::pair<Content, Content>> {
-            p(PROC_NAME{ "main" }, PROC_NAME{ "p1" }),
+                p(PROC_NAME{ "main" }, PROC_NAME{ "p1" }),
                 p(PROC_NAME{ "main" }, PROC_NAME{ "p3" }),
                 p(PROC_NAME{ "p1" }, PROC_NAME{ "p2" }),
                 p(PROC_NAME{ "p2" }, PROC_NAME{ "p3" }),
-        }
+            }
         );
         expectedRelationships.emplace(
             PKBRelationship::NEXT,
             std::set<std::pair<Content, Content>> {
-            p(s1, s2),
+                p(s1, s2),
                 p(s2, s1),
                 p(s1, s3),
                 p(s3, s4),
@@ -268,7 +268,7 @@ struct TestParseAndStorePackage2 : public DesignExtractionTestTemplate {
                 p(s14, s15),
                 p(s15, s16),
                 p(s16, s15),
-        }
+            }
         );
     }
 };
@@ -283,7 +283,7 @@ TEST_CASE("Test parse and store for basic package 1") {
         return std::vector<PKBField>({
             PKBField::createConcrete(a),
             PKBField::createConcrete(b),
-            });
+        });
     };
 
     auto expectedResponse = [](auto rows) {
