@@ -17,6 +17,8 @@ enum class TokenType {
     PERIOD,
     EQUAL,
     AND,
+    LEFT_ARROW_HEAD,
+    RIGHT_ARROW_HEAD,
 
     IDENTIFIER,
     NUMBER,
@@ -52,6 +54,8 @@ enum class TokenType {
     VARNAME,
     VALUE,
     STMTNUM,
+
+    BOOLEAN
 };
 
 /**
@@ -85,7 +89,7 @@ struct Lexer {
 
     void eatWhitespace();
 
-    /*
+    /**
      * Returns a boolean if the curent lexified query
      * has the specified prefix
      *
@@ -96,21 +100,21 @@ struct Lexer {
 
     std::string getText();
 
-    /*
+    /**
      * Returns the next token from the lexified query
      *
      * @return a token
      */
     Token getNextToken();
 
-    /*
+    /**
      * Returns the next token that belongs to a reserved word
      *
      * @return a token
      */
     Token getNextReservedToken();
 
-    /*
+    /**
      * Returns the next token of the query without modifying
      * the lexified query
      *
@@ -118,7 +122,7 @@ struct Lexer {
      */
     Token peekNextToken();
 
-    /*
+    /**
      * Returns the next token that belongs to a reserved word
      * without modifying the lexified queryy
      *

@@ -28,38 +28,31 @@ private:
     }
 
     virtual void insert(const Bucket&, Depth, Content) = 0;
+    void handleStatement(int stmtNo, StatementType type) {
+        auto stmt = STMT_LO{stmtNo, type};
+        insert(bucket, currentDepth, stmt);
+        enterBucket(stmt);
+    }
 
 public:
     std::set<Entry> relationships;
     void visit(const ast::If& node) override {
-        auto stmt = STMT_LO{node.getStmtNo(), StatementType::If};
-        insert(bucket, currentDepth, stmt);
-        enterBucket(stmt);
+        handleStatement(node.getStmtNo(), StatementType::If);
     }
     void visit(const ast::While& node) override {
-        auto stmt = STMT_LO{node.getStmtNo(), StatementType::While};
-        insert(bucket, currentDepth, stmt);
-        enterBucket(stmt);
+        handleStatement(node.getStmtNo(), StatementType::While);
     }
     void visit(const ast::Read& node) override {
-        auto stmt = STMT_LO{node.getStmtNo(), StatementType::Read};
-        insert(bucket, currentDepth, stmt);
-        enterBucket(stmt);
+        handleStatement(node.getStmtNo(), StatementType::Read);
     }
     void visit(const ast::Print& node) override {
-        auto stmt = STMT_LO{node.getStmtNo(), StatementType::Print};
-        insert(bucket, currentDepth, stmt);
-        enterBucket(stmt);
+        handleStatement(node.getStmtNo(), StatementType::Print);
     }
     void visit(const ast::Assign& node) override {
-        auto stmt = STMT_LO{node.getStmtNo(), StatementType::Assignment};
-        insert(bucket, currentDepth, stmt);
-        enterBucket(stmt);
+        handleStatement(node.getStmtNo(), StatementType::Assignment);
     }
     void visit(const ast::Call& node) override {
-        auto stmt = STMT_LO{node.getStmtNo(), StatementType::Call};
-        insert(bucket, currentDepth, stmt);
-        enterBucket(stmt);
+        handleStatement(node.getStmtNo(), StatementType::Call);
     }
 
     void enterContainer(std::variant<int, std::string> containerId) override {

@@ -14,21 +14,23 @@ namespace design_extractor {
  * Extracts all Next relationship from the CFG and return them as a set of entries
  */
 struct NextExtractor : public Extractor<const cfg::PROC_CFG_MAP*> {
+private:
+    std::set<Entry> entries;
+
+    // helper to turn insert nodes as entries.    
+    void collect(cfg::CFGNode *n1, cfg::CFGNode *n2) {
+        if (n1->stmt.has_value() && n2->stmt.has_value()) {
+            auto s1 = n1->stmt.value();
+            auto s2 = n2->stmt.value();
+            entries.insert(Relationship(PKBRelationship::NEXT, s1, s2));
+        }
+    }
+public:
     std::set<Entry> extractOne(cfg::CFGNode *node) {
         // a little helper to check if a node has been visited before.
         std::unordered_set<cfg::CFGNode*> visited;
         auto hasVisited = [&visited](auto node) {
             return visited.find(node) != visited.end();
-        };
-
-        // helper to turn insert nodes as entries.
-        std::set<Entry> entries;
-        auto collect = [&entries](cfg::CFGNode *n1, cfg::CFGNode *n2) {
-            if (n1->stmt.has_value() && n2->stmt.has_value()) {
-                auto s1 = n1->stmt.value();
-                auto s2 = n2->stmt.value();
-                entries.insert(Relationship(PKBRelationship::NEXT, s1, s2));
-            }
         };
 
         std::queue<cfg::CFGNode*> queue;  // bfs queue
@@ -66,10 +68,8 @@ struct NextExtractor : public Extractor<const cfg::PROC_CFG_MAP*> {
             }
         }
         
-        
         return entries;
     }
-
 
     std::set<Entry> extract(const cfg::PROC_CFG_MAP* cfgs) override {
         std::set<Entry> entries;

@@ -40,8 +40,8 @@ namespace qps::query {
         return declarations.count(name) > 0;
     }
 
-    bool Query::hasVariable(const std::string& var) const {
-        return std::find(variable.begin(), variable.end(), var) != variable.end();
+    bool Query::hasSelectElem(const Elem e) const {
+        return selectResults.hasElem(e);
     }
 
     DesignEntity Query::getDeclarationDesignEntity(const std::string& name) const {
@@ -55,8 +55,22 @@ namespace qps::query {
         return declarations;
     }
 
+    // For backward compatibility, will remove once Evaluator switches to selectFields
     std::vector<std::string> Query::getVariable() const {
-        return variable;
+        std::vector<std::string> results;
+        Elem e = selectResults.getTuple()[0];
+
+        if (e.isDeclaration()) {
+            results.push_back(e.getDeclaration().getSynonym());
+        } else {
+            results.push_back(e.getAttrRef().getDeclaration().getSynonym());
+        }
+
+        return results;
+    }
+
+    ResultCl Query::getResultCl() const {
+        return selectResults;
     }
 
     std::vector<std::shared_ptr<RelRef>> Query::getSuchthat() const {
@@ -79,9 +93,8 @@ namespace qps::query {
         declarations.insert({var, de});
     }
 
-
-    void Query::addVariable(const std::string& var) {
-        variable.push_back(var);
+    void Query::addResultCl(const ResultCl resultCl) {
+        selectResults = resultCl;
     }
 
     void Query::addSuchthat(const std::shared_ptr<RelRef>& rel) {
@@ -96,6 +109,38 @@ namespace qps::query {
         with.push_back(ac);
     }
 
+    bool AttrRef::compatbileComparison(const AttrRef &o) const {
+        return (isString() && o.isString()) || (isNumber() && o.isNumber());
+    }
+
+    Elem Elem::ofDeclaration(Declaration d) {
+        Elem e; e.declaration = std::move(d);
+        e.type = ElemType::DECLARATION;
+        return e;
+    }
+
+    Elem Elem::ofAttrRef(AttrRef ar) {
+        Elem e;
+        e.ar = std::move(ar);
+        e.type = ElemType::ATTR_REF;
+        return e;
+    }
+
+    ResultCl ResultCl::ofBoolean() {
+        ResultCl r;
+        r.boolean = true;
+        return r;
+    }
+
+    ResultCl ResultCl::ofTuple(std::vector<Elem> tuple) {
+        ResultCl r;
+        r.tuple = tuple;
+        return r;
+    }
+
+    bool ResultCl::hasElem(Elem e) const {
+        return std::find(tuple.begin(), tuple.end(), e) != tuple.end();
+    }
 
     EntRef EntRef::ofVarName(std::string name) {
         EntRef e;
@@ -298,8 +343,8 @@ namespace qps::query {
         return getFieldHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
-    std::vector<std::string> ModifiesS::getSyns() {
-        return getSynsHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
+    std::vector<Declaration> ModifiesS::getDecs() {
+        return getDecsHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
     void ModifiesS::checkFirstArg() {
@@ -318,8 +363,8 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> ModifiesP::getSyns() {
-        return getSynsHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
+    std::vector<Declaration> ModifiesP::getDecs() {
+        return getDecsHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
     }
 
     void ModifiesP::checkFirstArg() {
@@ -339,8 +384,8 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> UsesP::getSyns()  {
-        return getSynsHelper(&UsesP::useProc, &UsesP::used);
+    std::vector<Declaration> UsesP::getDecs()  {
+        return getDecsHelper(&UsesP::useProc, &UsesP::used);
     }
 
     void UsesP::checkFirstArg() {
@@ -357,8 +402,8 @@ namespace qps::query {
         return getFieldHelper(&UsesS::useStmt, &UsesS::used);
     }
 
-    std::vector<std::string> UsesS::getSyns()  {
-        return getSynsHelper(&UsesS::useStmt, &UsesS::used);
+    std::vector<Declaration> UsesS::getDecs()  {
+        return getDecsHelper(&UsesS::useStmt, &UsesS::used);
     }
 
     void UsesS::checkFirstArg() {
@@ -375,32 +420,32 @@ namespace qps::query {
         return getFieldHelper(&Follows::follower, &Follows::followed);
     }
 
-    std::vector<std::string> Follows::getSyns() {
-        return getSynsHelper(&Follows::follower, &Follows::followed);
+    std::vector<Declaration> Follows::getDecs() {
+        return getDecsHelper(&Follows::follower, &Follows::followed);
     }
 
     std::vector<PKBField> FollowsT::getField() {
         return getFieldHelper(&FollowsT::follower, &FollowsT::transitiveFollowed);
     }
 
-    std::vector<std::string> FollowsT::getSyns() {
-        return getSynsHelper(&FollowsT::follower, &FollowsT::transitiveFollowed);
+    std::vector<Declaration> FollowsT::getDecs() {
+        return getDecsHelper(&FollowsT::follower, &FollowsT::transitiveFollowed);
     }
 
     std::vector<PKBField> Parent::getField() {
         return getFieldHelper(&Parent::parent, &Parent::child);
     }
 
-    std::vector<std::string> Parent::getSyns() {
-        return getSynsHelper(&Parent::parent, &Parent::child);
+    std::vector<Declaration> Parent::getDecs() {
+        return getDecsHelper(&Parent::parent, &Parent::child);
     }
 
     std::vector<PKBField> ParentT::getField() {
         return getFieldHelper(&ParentT::parent, &ParentT::transitiveChild);
     }
 
-    std::vector<std::string> ParentT::getSyns() {
-        return getSynsHelper(&ParentT::parent, &ParentT::transitiveChild);
+    std::vector<Declaration> ParentT::getDecs() {
+        return getDecsHelper(&ParentT::parent, &ParentT::transitiveChild);
     }
 
     std::vector<PKBField> Calls::getField() {
@@ -409,8 +454,8 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> Calls::getSyns() {
-        return getSynsHelper(&Calls::caller, &Calls::callee);
+    std::vector<Declaration> Calls::getDecs() {
+        return getDecsHelper(&Calls::caller, &Calls::callee);
     }
 
     void Calls::checkFirstArg() {
@@ -431,8 +476,8 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> CallsT::getSyns() {
-        return getSynsHelper(&CallsT::caller, &CallsT::transitiveCallee);
+    std::vector<Declaration> CallsT::getDecs() {
+        return getDecsHelper(&CallsT::caller, &CallsT::transitiveCallee);
     }
 
     void CallsT::checkFirstArg() {
@@ -447,24 +492,24 @@ namespace qps::query {
         }
     }
 
-    std::vector<std::string> Next::getSyns() {
-        return getSynsHelper(&Next::before, &Next::after);
+    std::vector<Declaration> Next::getDecs() {
+        return getDecsHelper(&Next::before, &Next::after);
     }
 
     std::vector<PKBField> Next::getField() {
         return getFieldHelper(&Next::before, &Next::after);
     }
 
-    std::vector<std::string> NextT::getSyns() {
-        return getSynsHelper(&NextT::before, &NextT::transitiveAfter);
+    std::vector<Declaration> NextT::getDecs() {
+        return getDecsHelper(&NextT::before, &NextT::transitiveAfter);
     }
 
     std::vector<PKBField> NextT::getField() {
         return getFieldHelper(&NextT::before, &NextT::transitiveAfter);
     }
 
-    std::vector<std::string> Affects::getSyns() {
-        return getSynsHelper(&Affects::affectingStmt, &Affects::affected);
+    std::vector<Declaration> Affects::getDecs() {
+        return getDecsHelper(&Affects::affectingStmt, &Affects::affected);
     }
 
     std::vector<PKBField> Affects::getField() {
@@ -483,8 +528,8 @@ namespace qps::query {
         }
     }
 
-    std::vector<std::string> AffectsT::getSyns() {
-        return getSynsHelper(&AffectsT::affectingStmt, &AffectsT::transitiveAffected);
+    std::vector<Declaration> AffectsT::getDecs() {
+        return getDecsHelper(&AffectsT::affectingStmt, &AffectsT::transitiveAffected);
     }
 
     std::vector<PKBField> AffectsT::getField() {

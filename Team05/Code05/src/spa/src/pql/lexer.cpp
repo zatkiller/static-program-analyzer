@@ -19,11 +19,13 @@ namespace qps::parser {
             { '*', TokenType::MULTIPLY },
             { '/', TokenType::DIVIDE },
             { '%', TokenType::MODULO },
-            { '=', TokenType::EQUAL }
+            { '=', TokenType::EQUAL },
+            { '<', TokenType::LEFT_ARROW_HEAD },
+            { '>', TokenType::RIGHT_ARROW_HEAD },
     };
 
     std::vector<std::string> keywords = {
-            "Select", "Modifies", "Uses", "Parent*",
+            "Select", "BOOLEAN", "Modifies", "Uses", "Parent*",
             "Parent", "Follows*", "Follows", "Next*",
             "Next", "Calls*", "Calls", "Affects*", "Affects",
             "pattern", "such that", "with", "procName", "varName",
@@ -32,6 +34,7 @@ namespace qps::parser {
 
     std::unordered_map<std::string, TokenType> keywordsToTokenTypeMap {
             { "Select", TokenType::SELECT },
+            { "BOOLEAN", TokenType::BOOLEAN },
             { "Modifies", TokenType::MODIFIES },
             { "Uses", TokenType::USES },
             { "Parent*", TokenType::PARENT_T },

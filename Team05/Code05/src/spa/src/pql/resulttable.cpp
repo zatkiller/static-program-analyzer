@@ -37,6 +37,10 @@ namespace qps::evaluator {
         return table.empty() && synSequenceMap.empty();
     }
 
+    bool ResultTable::hasResult() {
+        return table.empty() && !synSequenceMap.empty();
+    }
+
     VectorResponse ResultTable::transToVectorResponse(SingleResponse response) {
         VectorResponse newVectorRes;
         for (const auto& r : response) {

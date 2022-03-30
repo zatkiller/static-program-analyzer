@@ -10,7 +10,9 @@
 namespace qps::parser {
 
 using qps::query::Query;
+using qps::query::Declaration;
 using qps::query::DesignEntity;
+using qps::query::Elem;
 using qps::query::RelRef;
 using qps::query::EntRef;
 using qps::query::StmtRef;
@@ -33,7 +35,7 @@ struct Parser {
 
     bool hasLeadingWhitespace();
 
-    /*
+    /**
      * Checks if the next token is surrounded by whitespace, throwing an error if it is
      *
      * @param f a function used to pull the next token
@@ -50,14 +52,14 @@ struct Parser {
     void checkType(Token, TokenType);
     void checkDesignEntityAndAttrNameMatch(DesignEntity, AttrName);
 
-    /*
+    /**
      * Returns the next token from the lexified query
      *
      * @return a token
      */
     Token getNextToken();
 
-    /*
+    /**
      * Returns the next token of the query without modifying
      * the lexified query
      *
@@ -65,14 +67,14 @@ struct Parser {
      */
     Token peekNextToken();
 
-    /*
+    /**
      * Returns the next token that belongs to a reserved word
      *
      * @return a token
      */
     Token getNextReservedToken();
 
-    /*
+    /**
      * Returns the next token that belongs to a reserved word
      * without modifying the lexified queryy
      *
@@ -80,7 +82,7 @@ struct Parser {
      */
     Token peekNextReservedToken();
 
-    /*
+    /**
      * Returns the next token of the query without modifying
      * the lexified query while checking the type of the token
      *
@@ -89,7 +91,7 @@ struct Parser {
      */
     Token getAndCheckNextToken(TokenType type);
 
-    /*
+    /**
      * Returns the next token of the query without modifying
      * the lexified query while checking the type of the token
      *
@@ -98,7 +100,7 @@ struct Parser {
      */
     Token peekAndCheckNextToken(TokenType type);
 
-    /*
+    /**
      * Returns the next token that belongs to a reserved word
      * while checking the token type
      *
@@ -107,7 +109,7 @@ struct Parser {
      */
     Token getAndCheckNextReservedToken(TokenType type);
 
-    /*
+    /**
      * Returns the next token that belongs to a reserved word
      * without modifying the lexified query and checks the token type
      *
@@ -116,7 +118,7 @@ struct Parser {
      */
     Token peekAndCheckNextReservedToken(TokenType type);
 
-    /*
+    /**
      * Returns the curent state of parsed query
      *
      * @return the current state of the parsed string
@@ -124,38 +126,38 @@ struct Parser {
     std::string getParsedText();
 
 
-    /*
+    /**
      * Adds the specified query to parser
      *
      * @param query the query to add
      */
     void addInput(std::string query);
 
-    /*
+    /**
      * Returns a Query object representing the parsed query
      *
      * @param query the query to parse
      */
     Query parsePql(std::string query);
 
-    /*
+    /**
      * Parses the declarations of a query and adds them to
      * the query object
      *
      * @param query the query object
      */
-    void parseDeclarations(Query &query);
+    void parseDeclarationStmts(Query &queryObj);
 
-    /*
+    /**
      * Parses the declarations belonging to a single design entity
      * and adds them to the query object
      *
      * @param query the query object
      * @param entity the design entity to assign the declaration
      */
-    void parseDeclaration(Query &query, DesignEntity entity);
+    void parseDeclarationStmt(Query &queryObj, DesignEntity de);
 
-    /*
+    /**
      * Parses the query section of the pql query
      * and adds them to the query object
      *
@@ -163,29 +165,52 @@ struct Parser {
      */
     void parseQuery(Query &query);
 
-    /*
-     * Parses the select fields of a pql query
+    /**
+     * Returns a Declaration
+     *
+     * @param query the query object
+     * @return the parsed declaration
+     */
+    Declaration parseDeclaration(Query &query);
+    
+    /**
+     * Returns an element
+     *
+     * @param query the query object
+     * @return the parsed eleme
+     */
+    Elem parseElem(Query &query);
+
+    /**
+     * Returns a tuple
+     *
+     * @param query the query object
+     */
+    std::vector<Elem> parseTuple(Query &query);
+
+    /**
+     * Parses the select fields of a pql query into a ResultCl
      * and adds them to the query object
      *
      * @param query the query object
      */
     void parseSelectFields(Query &query);
 
-    /*
+    /**
      * Parses the such that clauses and adds them to the query object
      *
      * @param query the query object
      */
     void parseSuchThatClause(Query &query);
 
-    /*
+    /**
      * Parses a RelRef and adds them to a query object
      *
      * @param query the query object
      */
     void parseRelRef(Query &query);
 
-    /*
+    /**
      * Helper function to parse RelRef depending on the RelRef subclass
      *
      * @param query the query object
@@ -211,7 +236,7 @@ struct Parser {
      */
     bool isValidEntityType(Query &query, EntRef e);
 
-    /*
+    /**
      * Returns a shared pointer containg a pointer of type T, representing the relationship being parsed
      *
      * @param query the query object
@@ -246,7 +271,7 @@ struct Parser {
         return ptr;
     }
 
-    /*
+    /**
      * Returns a shared pointer containing a pointer of type RelRef, representing the Modifies
      * or Uses relationship parsed
      *
@@ -255,7 +280,7 @@ struct Parser {
      */
     std::shared_ptr<RelRef> parseModifiesOrUsesVariables(Query &query, TokenType type);
 
-    /*
+    /**
      * Returns a StmtRef that has been parsed
      *
      * @param query the query object
@@ -263,7 +288,7 @@ struct Parser {
      */
     StmtRef parseStmtRef(Query &query);
 
-    /*
+    /**
      * Returns a EntRef that has been parsed
      *
      * @param query the query object
@@ -271,55 +296,55 @@ struct Parser {
      */
     EntRef parseEntRef(Query &query);
 
-    EntRef parsePatternLhs(Query &query, std::string synonym);
-//    Pattern parseAssignPattern(Query &query, std::string synonym);
-//    Pattern parseIfPattern(Query &query, std::string synonym);
-//    Pattern parseWhilePattern(Query &query, std::string synonym);
-    Pattern parsePatternVariables(Query &query, std::string synonym, DesignEntity de);
+    EntRef parsePatternLhs(Query &query);
+
+    Pattern parsePatternVariables(Query &query, Declaration d);
 
     void parsePattern(Query &query);
 
-    /*
+    /**
      * Parses a Pattern and adds them to a query object
      *
      * @param query the query object
      */
     void parsePatternClause(Query &query);
 
-    /*
+    AttrName parseAttrName(Query &query, Declaration declaration);
+
+    /**
      * Parses and returns a AttrRef
      *
      * @param query the query ADT
      */
     AttrRef parseAttrRef(Query &query);
 
-    /*
+    /**
      * Parses and returns a AttrCompareRef
      *
      * @param query the query ADT
      */
     AttrCompareRef parseAttrCompareRef(Query &query);
 
-    /*
+    /**
      * Parses a with clause and adds them to the query ADT
      *
      * @param query the query ADT
      */
     void parseWithClause(Query &query);
 
-    /*
+    /**
      * Parses attrCompare for the with clause
      *
      * @param query the query ADT
      */
     void parseAttrCompare(Query &query);
 
-    /*
+    /**
      * Returns a ExpSpec belonging to an assign pattern
      */
     ExpSpec parseExpSpec();
 
-    /*
+    /**
      * Validate the expression in Pattern using Pratt parsing, which is an enhancement of recursive descent algorithm
      * but with precedence and associativity
      *
@@ -327,17 +352,17 @@ struct Parser {
      */
     void validateExpr(std::string expr);
 
-    /*
+    /**
      * The base function to start the Pratt parsing
      */
     void parseExpr();
 
-    /*
+    /**
      * Parses the current expression
      */
     void parseCurrentExpr();
 
-    /*
+    /**
      * Parses the next expression. Expressions can be considered different if they have different operator precedence
      *
      * @param priority - priority the next expression holds
@@ -345,10 +370,11 @@ struct Parser {
      */
     void parseNextExpr(int priority);
 
-    /*
+    /**
      * get priority of operator token
      *
      * @param token token to get priority
+     * @return the operator priority
      */
     int getOperatorPriority(Token token);
 };

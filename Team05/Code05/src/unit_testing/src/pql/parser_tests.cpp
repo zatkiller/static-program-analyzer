@@ -12,7 +12,9 @@ using qps::parser::TokenType;
 using qps::parser::DesignEntity;
 
 using qps::query::Query;
+using qps::query::ResultCl;
 using qps::query::StmtRef;
+using qps::query::Elem;
 using qps::query::EntRef;
 using qps::query::RelRef;
 using qps::query::RelRefType;
@@ -110,29 +112,29 @@ TEST_CASE("Parser addInput") {
     REQUIRE(!(lexer1 == parser.lexer));
 }
 
-TEST_CASE("Parser parseDeclaration") {
+TEST_CASE("Parser parseDeclarationStmt") {
     Parser parser;
     parser.lexer.text = "a;\n";
 
     Query queryObj;
-    parser.parseDeclaration(queryObj, DesignEntity::ASSIGN);
+    parser.parseDeclarationStmt(queryObj, DesignEntity::ASSIGN);
 
     REQUIRE(queryObj.hasDeclaration("a"));
 }
 
-TEST_CASE("Parser parseDeclarations") {
+TEST_CASE("Parser parseDeclarationStmts") {
     Parser parser;
     parser.lexer.text = "assign a;\n";
 
     Query queryObj;
-    parser.parseDeclarations(queryObj);
+    parser.parseDeclarationStmts(queryObj);
     REQUIRE(queryObj.hasDeclaration("a"));
     REQUIRE(queryObj.getDeclarationDesignEntity("a") == DesignEntity::ASSIGN);
 
     // Multiple declarations
     queryObj = Query{};
     parser.lexer.text = "assign a, a1;\n";
-    parser.parseDeclarations(queryObj);
+    parser.parseDeclarationStmts(queryObj);
 
     REQUIRE(queryObj.hasDeclaration("a"));
     REQUIRE(queryObj.getDeclarationDesignEntity("a") == DesignEntity::ASSIGN);
@@ -143,7 +145,7 @@ TEST_CASE("Parser parseDeclarations") {
     // Multiple declarations of different Design Entities
     queryObj = Query{};
     parser.lexer.text = "assign a, a1; variable v; call cl;";
-    parser.parseDeclarations(queryObj);
+    parser.parseDeclarationStmts(queryObj);
 
     REQUIRE(queryObj.hasDeclaration("a"));
     REQUIRE(queryObj.getDeclarationDesignEntity("a") == DesignEntity::ASSIGN);
@@ -151,31 +153,167 @@ TEST_CASE("Parser parseDeclarations") {
     REQUIRE(queryObj.hasDeclaration("a1"));
     REQUIRE(queryObj.getDeclarationDesignEntity("a1") == DesignEntity::ASSIGN);
 
-    parser.parseDeclarations(queryObj);
+    parser.parseDeclarationStmts(queryObj);
     REQUIRE(queryObj.hasDeclaration("v"));
     REQUIRE(queryObj.getDeclarationDesignEntity("v") == DesignEntity::VARIABLE);
 
-    parser.parseDeclarations(queryObj);
+    parser.parseDeclarationStmts(queryObj);
     REQUIRE(queryObj.hasDeclaration("cl"));
     REQUIRE(queryObj.getDeclarationDesignEntity("cl") == DesignEntity::CALL);
 }
 
-TEST_CASE("Parser parseSelectFields") {
+TEST_CASE("Parser parseDeclaration") {
     Parser parser;
-    parser.addInput("Select a");
+    Query query;
 
-    Query queryObj;
+    parser.addInput("a");
+    query.addDeclaration("a", DesignEntity::ASSIGN);
+    Declaration d = parser.parseDeclaration(query);
+    REQUIRE(d.getType() == DesignEntity::ASSIGN);
+    REQUIRE(d.getSynonym() == "a");
+}
 
-    queryObj.addDeclaration("a", DesignEntity::ASSIGN);
-    parser.parseSelectFields(queryObj);
+TEST_CASE("Parser parseAttrName") {
+    Parser parser;
+    Query query;
 
-    REQUIRE(queryObj.hasVariable("a"));
+    parser.addInput("stmt#");
+    query.addDeclaration("a", DesignEntity::ASSIGN);
+    Declaration d = Declaration { "a", DesignEntity::ASSIGN };
+    AttrName attrName = parser.parseAttrName(query, d);
 
-    queryObj = Query{};
-    parser.addInput("Select v");
+    REQUIRE(attrName == AttrName::STMTNUM);
+}
 
-    REQUIRE_THROWS_MATCHES(parser.parseSelectFields(queryObj), exceptions::PqlSyntaxException,
-                           Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
+TEST_CASE("Parser parseElem") {
+    SECTION("Elem is synonym") {
+        Parser parser;
+        Query query;
+
+        parser.addInput("a");
+        query.addDeclaration("a", DesignEntity::ASSIGN);
+        Elem e = parser.parseElem(query);
+
+        REQUIRE(e.isDeclaration());
+        REQUIRE(e.getDeclaration() == Declaration { "a", DesignEntity::ASSIGN });
+    }
+
+    SECTION("Elem is AttrRef") {
+        Parser parser;
+        Query query;
+
+        parser.addInput("a.stmt#");
+        query.addDeclaration("a", DesignEntity::ASSIGN);
+        Elem e = parser.parseElem(query);
+
+        REQUIRE(e.isAttrRef());
+        REQUIRE(e.getAttrRef() == AttrRef { AttrName::STMTNUM, Declaration { "a", DesignEntity::ASSIGN }});
+    }
+}
+
+TEST_CASE("Parser parseTuple") {
+    SECTION("select field is single elem") {
+        Parser parser;
+        Query query;
+
+        parser.addInput("a");
+        query.addDeclaration("a", DesignEntity::ASSIGN);
+        std::vector<Elem> selectFields = parser.parseTuple(query);
+
+        REQUIRE(selectFields.size() == 1);
+        Elem e = selectFields[0];
+
+        REQUIRE(e.isDeclaration());
+        REQUIRE(e.getDeclaration() ==  Declaration { "a", DesignEntity::ASSIGN });
+    }
+
+    SECTION("select field is single elem with brackets") {
+        Parser parser;
+        Query query;
+
+        parser.addInput("<a.stmt#>");
+        query.addDeclaration("a", DesignEntity::ASSIGN);
+        std::vector<Elem> selectFields = parser.parseTuple(query);
+
+        REQUIRE(selectFields.size() == 1);
+        Elem e = selectFields[0];
+
+        REQUIRE(e.isAttrRef());
+        REQUIRE(e.getAttrRef() == AttrRef { AttrName::STMTNUM, Declaration { "a", DesignEntity::ASSIGN }});
+    }
+
+    SECTION("select field is multiple elem with brackets") {
+        Parser parser;
+        Query query;
+
+        parser.addInput("<a.stmt#, a, cl, cl.procName>");
+        query.addDeclaration("a", DesignEntity::ASSIGN);
+        query.addDeclaration("cl", DesignEntity::CALL);
+        std::vector<Elem> selectFields = parser.parseTuple(query);
+
+        REQUIRE(selectFields.size() == 4);
+
+        REQUIRE(selectFields[0].isAttrRef());
+        REQUIRE(selectFields[0].getAttrRef() == AttrRef { AttrName::STMTNUM,
+                                                          Declaration { "a", DesignEntity::ASSIGN }});
+
+        REQUIRE(selectFields[1].isDeclaration());
+        REQUIRE(selectFields[1].getDeclaration() ==  Declaration { "a", DesignEntity::ASSIGN });
+
+        REQUIRE(selectFields[2].isDeclaration());
+        REQUIRE(selectFields[2].getDeclaration() ==  Declaration { "cl", DesignEntity::CALL });
+
+        REQUIRE(selectFields[3].isAttrRef());
+        REQUIRE(selectFields[3].getAttrRef() == AttrRef { AttrName::PROCNAME,
+                                                          Declaration { "cl", DesignEntity::CALL }});
+    }
+}
+
+TEST_CASE("Parser parseSelectFields") {
+    SECTION ("parse Boolean") {
+        Parser parser;
+        parser.addInput("Select BOOLEAN");
+
+        Query query;
+        parser.parseSelectFields(query);
+
+        ResultCl r = query.getResultCl();
+        REQUIRE(r.isBoolean());
+    }
+
+    SECTION ("parse Tuple - Single synonym") {
+        Parser parser;
+        parser.addInput("Select a");
+
+        Query query;
+        query.addDeclaration("a", DesignEntity::ASSIGN);
+        parser.parseSelectFields(query);
+
+        ResultCl r = query.getResultCl();
+        std::vector<Elem> tuple = r.getTuple();
+        REQUIRE(tuple.size() == 1);
+
+        Elem e = tuple[0];
+        REQUIRE(e.isDeclaration());
+    }
+
+    SECTION ("parse Tuple") {
+        Parser parser;
+        parser.addInput("Select <a, a.stmt#, rd>");
+
+        Query query;
+        query.addDeclaration("a", DesignEntity::ASSIGN);
+        query.addDeclaration("rd", DesignEntity::READ);
+        parser.parseSelectFields(query);
+
+        ResultCl r = query.getResultCl();
+        std::vector<Elem> tuple = r.getTuple();
+        REQUIRE(tuple.size() == 3);
+
+        REQUIRE(tuple[0].isDeclaration());
+        REQUIRE(tuple[1].isAttrRef());
+        REQUIRE(tuple[2].isDeclaration());
+    }
 }
 
 TEST_CASE("Parser parseRelRef - Uses") {
@@ -733,7 +871,7 @@ TEST_CASE("Parser parsePatternLhs") {
 
         queryObj.addDeclaration("p", DesignEntity::PROCEDURE);
 
-        REQUIRE_THROWS_MATCHES(parser.parsePatternLhs(queryObj, "a"),
+        REQUIRE_THROWS_MATCHES(parser.parsePatternLhs(queryObj),
                                exceptions::PqlSemanticException,
                                Catch::Message(messages::qps::parser::notVariableSynonymMessage));
     }
@@ -830,7 +968,8 @@ TEST_CASE("Parser parsePattern") {
 
         REQUIRE(pattern.getSynonym() == "ifs");
         REQUIRE(pattern.getSynonymType() == DesignEntity::IF);
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) &&
+                (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE_THROWS_MATCHES(pattern.getExpression(),
                                exceptions::PqlSyntaxException,
@@ -855,7 +994,8 @@ TEST_CASE("Parser parsePattern") {
 
         REQUIRE(pattern.getSynonym() == "w");
         REQUIRE(pattern.getSynonymType() == DesignEntity::WHILE);
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) &&
+                (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE_THROWS_MATCHES(pattern.getExpression(),
                                exceptions::PqlSyntaxException,
@@ -1539,7 +1679,8 @@ TEST_CASE("Parser parseQuery") {
     query.addDeclaration("c", DesignEntity::CONSTANT);
     parser.parseQuery(query);
 
-    REQUIRE(query.hasVariable("c"));
+    Elem e = Elem::ofDeclaration(Declaration { "c", DesignEntity::CONSTANT });
+    REQUIRE(query.hasSelectElem(e));
 
     parser.lexer.text = "Select a such that Modifies (a, v1) pattern a1 (v, _\"x\"_) with a.stmt# = 3";
     query = {};
@@ -1549,7 +1690,8 @@ TEST_CASE("Parser parseQuery") {
     query.addDeclaration("v1", DesignEntity::VARIABLE);
     parser.parseQuery(query);
 
-    REQUIRE(query.hasVariable("a"));
+    Elem e1 = Elem::ofDeclaration( Declaration { "a", DesignEntity::ASSIGN });
+    REQUIRE(query.hasSelectElem(e1));
 
     // Check such that
     std::shared_ptr<RelRef> relRefPtr = (query.getSuchthat())[0];
@@ -1566,7 +1708,8 @@ TEST_CASE("Parser parseQuery") {
     Pattern pattern = patterns[0];
 
     REQUIRE(pattern.getSynonym() == "a1");
-    bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
+    bool validDeclaration = (pattern.getEntRef().isDeclaration()) &&
+            (pattern.getEntRef().getDeclarationSynonym() == "v");
     REQUIRE(validDeclaration);
     REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 
@@ -1598,7 +1741,8 @@ TEST_CASE("Parser parsePql") {
         REQUIRE(queryObj.getDeclarationDesignEntity("v") == DesignEntity::VARIABLE);
 
         // Check Select
-        REQUIRE(queryObj.hasVariable("a"));
+        Elem e = Elem::ofDeclaration( Declaration { "a", DesignEntity::ASSIGN });
+        REQUIRE(queryObj.hasSelectElem(e));
 
         // Check such that
         std::shared_ptr<RelRef> relRefPtr = (queryObj.getSuchthat())[0];
@@ -1614,7 +1758,8 @@ TEST_CASE("Parser parsePql") {
         Pattern pattern = patterns[0];
 
         REQUIRE(pattern.getSynonym() == "a");
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) &&
+                (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 
@@ -1644,14 +1789,16 @@ TEST_CASE("Parser parsePql") {
         REQUIRE(queryObj.getDeclarationDesignEntity("v") == DesignEntity::VARIABLE);
 
         // Check Select
-        REQUIRE(queryObj.hasVariable("a"));
+        Elem e = Elem::ofDeclaration( Declaration { "a", DesignEntity::ASSIGN });
+        REQUIRE(queryObj.hasSelectElem(e));
 
         // Check pattern
         std::vector<Pattern> patterns = queryObj.getPattern();
         Pattern pattern = patterns[0];
 
         REQUIRE(pattern.getSynonym() == "a");
-        bool validDeclaration = (pattern.getEntRef().isDeclaration()) && (pattern.getEntRef().getDeclarationSynonym() == "v");
+        bool validDeclaration = (pattern.getEntRef().isDeclaration()) &&
+                (pattern.getEntRef().getDeclarationSynonym() == "v");
         REQUIRE(validDeclaration);
         REQUIRE(pattern.getExpression() == ExpSpec::ofPartialMatch("x"));
 

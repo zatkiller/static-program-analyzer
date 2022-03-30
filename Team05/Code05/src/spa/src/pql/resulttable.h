@@ -79,6 +79,11 @@ public:
     bool isEmpty();
 
     /**
+     * @return whether the result table contains valid results;
+     */
+    bool hasResult();
+
+    /**
      * Transfers the PKBResponse in a type of set<PKBField> into set<vector<PKBField>>.
      *
      * @param response the PKBResponse in set<PKBField> format

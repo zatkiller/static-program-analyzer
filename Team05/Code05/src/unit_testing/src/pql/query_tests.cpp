@@ -4,6 +4,8 @@
 #include "exceptions.h"
 
 using qps::query::Query;
+using qps::query::Elem;
+using qps::query::ResultCl;
 using qps::query::StmtRef;
 using qps::query::EntRef;
 using qps::query::RelRef;
@@ -237,8 +239,11 @@ TEST_CASE("Query") {
     query.addDeclaration("a", DesignEntity::STMT);
     REQUIRE(query.hasDeclaration("a"));
 
-    query.addVariable("a");
-    REQUIRE(query.hasVariable("a"));
+    std::vector<Elem> tuple;
+    Elem e = Elem::ofDeclaration(Declaration { "a", DesignEntity::STMT });
+    tuple.push_back(e);
+    query.addResultCl(ResultCl::ofTuple(tuple));
+    REQUIRE(query.hasSelectElem(e));
 
     std::shared_ptr<ModifiesS> ptr = std::make_shared<ModifiesS>();
     ptr->modifiesStmt = StmtRef::ofLineNo(4);
@@ -248,7 +253,7 @@ TEST_CASE("Query") {
     REQUIRE(query.getSuchthat()[0] == ptr);
 
     std::vector<std::shared_ptr<RelRef>> suchThat = query.getSuchthat();
-    REQUIRE(suchThat[0]->getSyns() == std::vector<std::string>{"v"});
+    REQUIRE(suchThat[0]->getDecs() == std::vector<Declaration>{Declaration{"v", DesignEntity::VARIABLE}});
 
     std::vector<PKBField> fields = suchThat[0]->getField();
     REQUIRE(fields[0].entityType == PKBEntityType::STATEMENT);

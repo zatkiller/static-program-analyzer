@@ -40,7 +40,7 @@ TEST_CASE("Lexer hasPrefx") {
 
 TEST_CASE("Lexer getNextToken") {
     SECTION("Valid tokens") {
-        Lexer lexer("0 123 hi123 hi \"test\" ;()_,$+-*/%.=");
+        Lexer lexer("0 123 hi123 hi \"test\" ;()_,$+-*/%.=<>");
 
         auto t1 = lexer.getNextToken();
         REQUIRE(t1.getTokenType() == TokenType::NUMBER);
@@ -116,6 +116,14 @@ TEST_CASE("Lexer getNextToken") {
         REQUIRE(t1.getText() == "=");
 
         t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::LEFT_ARROW_HEAD);
+        REQUIRE(t1.getText() == "<");
+
+        t1 = lexer.getNextToken();
+        REQUIRE(t1.getTokenType() == TokenType::RIGHT_ARROW_HEAD);
+        REQUIRE(t1.getText() == ">");
+
+        t1 = lexer.getNextToken();
         REQUIRE(t1.getTokenType() == TokenType::END_OF_FILE);
     }
 
@@ -133,12 +141,16 @@ TEST_CASE("Lexer peekNextToken") {
 }
 
 TEST_CASE("Lexer getNextReservedToken") {
-    Lexer lexer("Select Modifies Uses Follows Follows* Parent Parent* Next Next* Calls Calls* Affects Affects* "
+    Lexer lexer("Select BOOLEAN Modifies Uses Follows Follows* Parent Parent* Next Next* Calls Calls* Affects Affects* "
                 "pattern such that with and");
 
     auto t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::SELECT);
     REQUIRE(t1.getText() == "Select");
+
+    t1 = lexer.getNextReservedToken();
+    REQUIRE(t1.getTokenType() == TokenType::BOOLEAN);
+    REQUIRE(t1.getText() == "BOOLEAN");
 
     t1 = lexer.getNextReservedToken();
     REQUIRE(t1.getTokenType() == TokenType::MODIFIES);
