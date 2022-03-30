@@ -13,6 +13,7 @@
 #include "logging.h"
 #include "PKBField.h"
 #include "PKBCommons.h"
+#include "DesignExtractor/CFG/CFG.h"
 
 /**
 * A data structure to store a program design abstraction (relationship) which has two fields.
@@ -1060,25 +1061,38 @@ public:
     NextRelationshipTable();
 };
 
+using AffectsList = std::unordered_set<std::vector<PKBField>, PKBFieldHash>;
+using NodePtr = std::shared_ptr<sp::cfg::CFGNode>;
+
 class AffectsEvaluator {
 public:
-    AffectsEvaluator(std::shared_ptr<NextRelationshipTable> nextTable, 
-        std::shared_ptr<ModifiesRelationshipTable> modifiesTable,
-        std::shared_ptr<UsesRelationshipTable> usesTable);
+    AffectsEvaluator() {};
 
-    bool contains(PKBField field1, PKBField field2) const;
+    void initCFG(NodePtr cfgRoot) {
+        if (cfgRoot->getChildren().size() != 0) {
+            this->root = cfgRoot->getChildren().at(0);
+        } else {
+            this->root = cfgRoot;
+        }
+        this->isInit = true;
+    }
 
-    bool containsT(PKBField field1, PKBField field2) const;
+    bool contains(PKBField field1, PKBField field2);
 
-    FieldRowResponse retrieve(PKBField field1, PKBField field2) const;
+    bool containsT(PKBField field1, PKBField field2);
 
-    FieldRowResponse retrieveT(PKBField field1, PKBField field2) const;
+    FieldRowResponse retrieve(PKBField field1, PKBField field2);
+
+    FieldRowResponse retrieveT(PKBField field1, PKBField field2);
 
 private:
-    std::shared_ptr<NextRelationshipTable> nextTable;
-    std::shared_ptr<ModifiesRelationshipTable> modifiesTable;
-    std::shared_ptr<UsesRelationshipTable> usesTable;
+    bool isInit = false;
+    bool isCacheActive = false;
+    std::shared_ptr<sp::cfg::CFGNode> root;
+    AffectsList affList;
 
     bool isContainsValid(PKBField field1, PKBField field2) const;
     bool isRetrieveValid(PKBField field1, PKBField field2) const;
+    void extractAndCacheAffects();
+    void walkAndExtract(NodePtr curr, VAR_NAME voi, NodePtr src);
 };

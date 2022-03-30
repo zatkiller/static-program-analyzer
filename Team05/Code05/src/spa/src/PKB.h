@@ -41,7 +41,7 @@ public:
     */
     void insertAST(std::unique_ptr<sp::ast::Program> root);
 
-    void insertCFG(std::unique_ptr<sp::cfg::CFGNode> root);
+    void insertCFG(std::shared_ptr<sp::cfg::CFGNode> root);
 
     /**
     * Checks whether there exist. If any fields are invalid, return false. Both fields must be concrete.
@@ -132,7 +132,7 @@ private:
 
     std::unique_ptr<AffectsEvaluator> affectsEval;
 
-    std::unique_ptr<sp::cfg::CFGNode> cfgRoot;
+    std::shared_ptr<sp::cfg::CFGNode> cfgRoot;
     std::unique_ptr<sp::ast::ASTNode> root;
     
     /**

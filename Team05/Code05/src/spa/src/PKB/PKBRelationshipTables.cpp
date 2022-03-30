@@ -163,15 +163,13 @@ NextRelationshipTable::NextRelationshipTable() : TransitiveRelationshipTable<STM
 
 /** ========================AFFECTSEVALUATOR METHODS ==================================== */
 
-AffectsEvaluator::AffectsEvaluator(std::shared_ptr<NextRelationshipTable> nextTable,
-    std::shared_ptr<ModifiesRelationshipTable> modifiesTable,
-    std::shared_ptr<UsesRelationshipTable> usesTable) {
-    this->nextTable = nextTable;
-    this->modifiesTable = modifiesTable;
-    this->usesTable = usesTable;
-};
-
-bool AffectsEvaluator::contains(PKBField field1, PKBField field2) const {
+bool AffectsEvaluator::contains(PKBField field1, PKBField field2) {
+    // Check if CFG initialized
+    if (!isInit) {
+        Logger(Level::ERROR) << "CFG has not been initialized!";
+        return false;
+    }
+    
     // Validate fields
     if (!isContainsValid(field1, field2)) {
         Logger(Level::ERROR) << "An Affects relationship is only between 2 concrete statements!";
@@ -188,26 +186,24 @@ bool AffectsEvaluator::contains(PKBField field1, PKBField field2) const {
         return false;
     }
 
-    // Check if variable modified by field1 is used by field2
-    PKBField moddedVar;
-    FieldRowResponse modVarRes = modifiesTable->retrieve(field1, PKBField::createDeclaration(PKBEntityType::VARIABLE));
-    for (auto item : modVarRes) {
-        moddedVar = item.back();
+    // If cache not populated compute and cache Affects
+    if (!isCacheActive) {
+        this->extractAndCacheAffects();
     }
-    if (!usesTable->contains(field2, moddedVar)) {
-        return false;
-    }
+    std::vector<PKBField> key{ field1, field2 };
+
+    return affList.find(key) != affList.end();
 }
 
-bool AffectsEvaluator::containsT(PKBField field1, PKBField field2) const {
-
-}
-
-FieldRowResponse AffectsEvaluator::retrieve(PKBField field1, PKBField field2) const {
+bool AffectsEvaluator::containsT(PKBField field1, PKBField field2) {
 
 }
 
-FieldRowResponse AffectsEvaluator::retrieveT(PKBField field1, PKBField field2) const {
+FieldRowResponse AffectsEvaluator::retrieve(PKBField field1, PKBField field2) {
+
+}
+
+FieldRowResponse AffectsEvaluator::retrieveT(PKBField field1, PKBField field2) {
 
 }
 
@@ -225,4 +221,12 @@ bool AffectsEvaluator::isRetrieveValid(PKBField field1, PKBField field2) const {
         return false;
     }
     return true;
+}
+
+void AffectsEvaluator::extractAndCacheAffects() {
+
+}
+
+void AffectsEvaluator::walkAndExtract(NodePtr curr, VAR_NAME voi, NodePtr src) {
+
 }
