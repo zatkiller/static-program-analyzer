@@ -77,7 +77,7 @@ struct TestParseAndStorePackage1 : public DesignExtractionTestTemplate {
                 VAR_NAME{"number"},
                 VAR_NAME{"sum"},
                 VAR_NAME{"digit"}
-                })
+            })
         );
         expectedEntities.emplace(
             PKBEntityType::STATEMENT,
@@ -89,21 +89,21 @@ struct TestParseAndStorePackage1 : public DesignExtractionTestTemplate {
                 STMT_LO{5, StatementType::Assignment},
                 STMT_LO{6, StatementType::Assignment},
                 STMT_LO{7, StatementType::Print, "sum"}
-                })
+            })
         );
         expectedEntities.emplace(
             PKBEntityType::CONST,
             std::set<Content>({
                 CONST{0},
                 CONST{10},
-                })
-                );
+            })
+        );
         expectedEntities.emplace(
             PKBEntityType::PROCEDURE,
             std::set<Content>({
                 PROC_NAME{"sumDigits"},
-                })
-                );
+            })
+        );
     }
     void initRelationships() {
         expectedRelationships.emplace(
@@ -506,7 +506,7 @@ TEST_CASE("Test parse and store for multi procedure package 2") {
         return std::vector<PKBField>({
             PKBField::createConcrete(a),
             PKBField::createConcrete(b),
-            });
+        });
     };
 
     auto expectedResponse = [](auto rows) {

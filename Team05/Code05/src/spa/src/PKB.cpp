@@ -33,7 +33,7 @@ void PKB::insertEntity(Content entity) {
         [&](PROC_NAME& item) { insertProcedure(item); },
         [&](CONST& item) { insertConstant(item); },
         [](auto& item) { Logger(Level::ERROR) << "PKB.cpp " << "Unsupported entity type"; }
-        }, entity);
+    }, entity);
 }
 
 void PKB::insertStatement(STMT_LO stmt) {
