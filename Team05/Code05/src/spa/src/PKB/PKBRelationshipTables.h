@@ -9,6 +9,7 @@
 #include <optional>
 #include <memory>
 #include <type_traits>
+#include <memory>
 #include <cstdarg>
 #include "logging.h"
 #include "PKBField.h"
@@ -212,7 +213,7 @@ using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 */
 template<typename T>
 struct Node {
-    using NodeSet = std::unordered_set<Node<T>*>;
+    using NodeSet = std::unordered_set<std::shared_ptr<Node<T>>>;
 
     Node(T val, NodeSet prev, NodeSet next) : val(val), next(next), prev(prev) {}
 
@@ -257,8 +258,8 @@ public:
             }
         }
 
-        Node<T>* uNode = createNode(u);
-        Node<T>* vNode = createNode(v);
+        auto uNode = createNode(u);
+        auto vNode = createNode(v);
 
         if (!uNode || !vNode) {
             return;
@@ -285,11 +286,11 @@ public:
         T second = *field2.getContent<T>();
 
         if (nodes.count(first) != 0) {
-            Node<T>* curr = nodes.at(first);
-            typename Node<T>::NodeSet nextNodes = curr->next;
+            auto curr = nodes.at(first);
+            auto nextNodes = curr->next;
             typename Node<T>::NodeSet filtered;
             std::copy_if(nextNodes.begin(), nextNodes.end(),
-                std::inserter(filtered, filtered.end()), [second](Node<T>* const& node) {
+                std::inserter(filtered, filtered.end()), [second](auto const& node) {
                     return node->val == second;
                 });
             return (filtered.size() == 1);
@@ -317,7 +318,7 @@ public:
         }
 
         if (nodes.count(first) != 0) {
-            Node<T>* curr = nodes.at(first);
+            auto curr = nodes.at(first);
             typename Node<T>::NodeSet nextNodes = curr->next;
 
             // Recursive lookup for each node in the NodeSet
@@ -395,7 +396,7 @@ public:
 
 private:
     PKBRelationship type; /**< The type of relationships this Graph holds */
-    std::map<T, Node<T>*> nodes; /**< The list of nodes in this Graph */
+    std::map<T, std::shared_ptr<Node<T>>> nodes; /**< The list of nodes in this Graph */
 
     /**
     * Add a node represented by program design entity to the list of nodes stored in the graph if it does not exist
@@ -403,9 +404,9 @@ private:
     *
     * @param val a program design entity  representing the statement
     */
-    Node<T>* createNode(T val) {
+    std::shared_ptr<Node<T>> createNode(T val) {
         // Filter nodes whose val are the same as the inputs
-        std::map<T, Node<T>*> filtered;
+        std::map<T, std::shared_ptr<Node<T>>> filtered;
         std::copy_if(nodes.begin(), nodes.end(), std::inserter(filtered, filtered.end()),
             [val](auto const& pair) {
                 if constexpr (std::is_same_v<T, STMT_LO>) {
@@ -430,7 +431,7 @@ private:
             }
         }
 
-        Node<T>* node = new Node<T>(val, typename Node<T>::NodeSet{}, typename Node<T>::NodeSet{});
+        std::shared_ptr<Node<T>> node = std::make_shared<Node<T>>(val, typename Node<T>::NodeSet{}, typename Node<T>::NodeSet{});
         nodes.emplace(val, node);
         return node;
     }
@@ -460,13 +461,13 @@ private:
 
 
         if (nodes.count(target) != 0) {
-            Node<T>* curr = nodes.at(target);
+            auto curr = nodes.at(target);
 
             if (!curr->next.empty()) {
                 typename Node<T>::NodeSet nextNodes = curr->next;
                 typename Node<T>::NodeSet filtered;
                 std::copy_if(nextNodes.begin(), nextNodes.end(), std::inserter(filtered, filtered.end()),
-                    [&](Node<T>* const& node) {
+                    [&](auto const& node) {
                         // filter for statements. for all other type no filtering is required.
                         if constexpr (std::is_same_v<T, STMT_LO>) {
                             StatementType targetType = field2.statementType.value();
@@ -475,7 +476,7 @@ private:
                         return true;
                     });
 
-                for (Node<T>* node : filtered) {
+                for (auto node : filtered) {
                     std::vector<PKBField> temp;
                     PKBField second = PKBField::createConcrete(Content{ node->val });
                     temp.push_back(field1);
@@ -537,7 +538,7 @@ private:
     *
     * @see PKBField
     */
-    void traverseStartT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) const {
+    void traverseStartT(std::set<T>* found, std::shared_ptr<Node<T>> node, StatementType targetType = StatementType::None) const {
         typename Node<T>::NodeSet nextNodes = node->next;
 
         for (auto nextNode : nextNodes) {
@@ -585,13 +586,13 @@ private:
         }
 
         if (nodes.count(target) != 0) {
-            Node<T>* curr = nodes.at(target);
+            auto curr = nodes.at(target);
 
             if (!curr->prev.empty()) {
                 typename Node<T>::NodeSet prevNodes = curr->prev;
                 typename Node<T>::NodeSet filtered;
                 std::copy_if(prevNodes.begin(), prevNodes.end(), std::inserter(filtered, filtered.end()),
-                    [&](Node<T>* const& node) {
+                    [&](auto const& node) {
                         // filter for statements. for all other type no filtering is required.
                         if constexpr (std::is_same_v<T, STMT_LO>) {
                             StatementType targetType = field1.statementType.value();
@@ -600,7 +601,7 @@ private:
                         return true;
                     });
 
-                for (Node<T>* node : filtered) {
+                for (auto node : filtered) {
                     std::vector<PKBField> temp;
                     PKBField first = PKBField::createConcrete(Content{ node->val });
                     temp.push_back(first);
@@ -661,7 +662,7 @@ private:
     *
     * @see PKBField
     */
-    void traverseEndT(std::set<T>* found, Node<T>* node, StatementType targetType = StatementType::None) const {
+    void traverseEndT(std::set<T>* found, std::shared_ptr<Node<T>> node, StatementType targetType = StatementType::None) const {
         typename Node<T>::NodeSet prevNodes = node->prev;
 
         for (auto prevNode : prevNodes) {
@@ -701,7 +702,7 @@ private:
         Result res{};
 
         for (auto const& [key, node] : nodes) {
-            Node<T>* curr = node;
+            auto curr = node;
 
             if (!curr->next.empty()) {
                 if constexpr (std::is_same_v<T, STMT_LO>) {
@@ -717,7 +718,7 @@ private:
                 // Filter nodes that match second statement type
                 typename Node<T>::NodeSet filtered;
                 std::copy_if(nextNodes.begin(), nextNodes.end(), std::inserter(filtered, filtered.end()),
-                    [&](Node<T>* const& node) {
+                    [&](auto const& node) {
                         if constexpr (std::is_same_v<T, STMT_LO>) {
                             return node->val.type.value() == field2.statementType.value() ||
                                 field2.statementType.value() == StatementType::All;
@@ -727,7 +728,7 @@ private:
 
                 // Populate result
                 std::transform(filtered.begin(), filtered.end(), std::insert_iterator<Result>(res, res.end()),
-                    [curr](Node<T>* const& node) {
+                    [curr](auto const& node) {
                         PKBField first = PKBField::createConcrete(Content{ curr->val });
                         PKBField second = PKBField::createConcrete(Content{ node->val });
                         return std::vector<PKBField>{first, second};
@@ -756,7 +757,7 @@ private:
         std::set<T> found;
 
         for (auto const& [key, node] : nodes) {
-            Node<T>* curr = node;
+            auto curr = node;
             found.clear();
 
             if constexpr (std::is_same_v<T, STMT_LO>) {
