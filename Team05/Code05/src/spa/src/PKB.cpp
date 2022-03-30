@@ -279,26 +279,16 @@ PKBResponse PKB::getConstants() {
     return createResponseFromTable<CONST>(constantTable->getAllEntity());
 }
 
-PKBField createStatement(int statementNumber, StatementTable& statementTable) {
-    return PKBField::createConcrete(STMT_LO{ statementNumber, statementTable.getStmtTypeOfLine(statementNumber).value() });
-}
-
 PKBResponse PKB::matchAssign(sp::design_extractor::PatternParam lhs,
     sp::design_extractor::PatternParam rhs, bool isStrict) const {
-
     auto matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs, isStrict);
     FieldRowResponse res;
 
-    if (matchedStmts.size() == 0) {
-        return PKBResponse{ false, Response{res} };
-    }
-
     for (auto& node : matchedStmts) {
         std::vector<PKBField> stmtRes;
-
         int statementNumber = node.get().getStmtNo();
-        auto stmt = createStatement(statementNumber, *statementTable);
-        stmtRes.emplace_back(stmt);
+        stmtRes.emplace_back(PKBField::createConcrete(
+            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() }));
 
         auto varName = node.get().getLHS()->getVarName();
         stmtRes.emplace_back(PKBField::createConcrete(VAR_NAME{ varName }));
@@ -306,24 +296,18 @@ PKBResponse PKB::matchAssign(sp::design_extractor::PatternParam lhs,
         res.insert(stmtRes);
     }
 
-    return PKBResponse{ true, Response{res} };
+    return PKBResponse{ matchedStmts.size() > 0, Response{res} };
 }
 
 PKBResponse PKB::matchIf(sp::design_extractor::PatternParam lhs) const {
     auto matchedStmts = sp::design_extractor::extractIf(root.get(), lhs);
     FieldRowResponse res;
 
-    if (matchedStmts.size() == 0) {
-        return PKBResponse{ false, Response{res} };
-    }
-
     for (auto& node : matchedStmts) {
         std::vector<PKBField> stmtRes;
-
         int statementNumber = node.get().getStmtNo();
-        auto stmt = PKBField::createConcrete(
-            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() });
-        stmtRes.emplace_back(stmt);
+        stmtRes.emplace_back(PKBField::createConcrete(
+            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() }));
 
         sp::design_extractor::VariableCollector vc;
         node.get().getCondExpr()->accept(&vc);
@@ -336,24 +320,18 @@ PKBResponse PKB::matchIf(sp::design_extractor::PatternParam lhs) const {
         res.insert(stmtRes);
     }
 
-    return PKBResponse{ true, Response{res} };
+    return PKBResponse{ matchedStmts.size() > 0, Response{res} };
 }
 
 PKBResponse PKB::matchWhile(sp::design_extractor::PatternParam lhs) const {
     auto matchedStmts = sp::design_extractor::extractWhile(root.get(), lhs);
     FieldRowResponse res;
 
-    if (matchedStmts.size() == 0) {
-        return PKBResponse{ false, Response{res} };
-    }
-
     for (auto& node : matchedStmts) {
         std::vector<PKBField> stmtRes;
-
         int statementNumber = node.get().getStmtNo();
-        auto stmt = PKBField::createConcrete(
-            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() });
-        stmtRes.emplace_back(stmt);
+        stmtRes.emplace_back(PKBField::createConcrete(
+            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() }));
 
         sp::design_extractor::VariableCollector vc;
         node.get().getCondExpr()->accept(&vc);
@@ -366,7 +344,7 @@ PKBResponse PKB::matchWhile(sp::design_extractor::PatternParam lhs) const {
         res.insert(stmtRes);
     }
 
-    return PKBResponse{ true, Response{res} };
+    return PKBResponse{ matchedStmts.size() > 0, Response{res} };
 }
 
 PKBResponse PKB::match(StatementType type, sp::design_extractor::PatternParam lhs,
