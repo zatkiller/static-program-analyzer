@@ -29,19 +29,29 @@ namespace qps::parser {
     using qps::query::AttrCompare;
     using qps::query::Declaration;
 
-    std::unordered_map<TokenType, AttrName> tokenTypeToAttrName = {
+    const std::unordered_map<TokenType, AttrName> tokenTypeToAttrName = {
             { TokenType::PROCNAME, AttrName::PROCNAME },
             { TokenType::VARNAME, AttrName::VARNAME },
             { TokenType::VALUE, AttrName::VALUE },
             { TokenType::STMTNUM, AttrName::STMTNUM }
     };
 
+    const std::unordered_set<DesignEntity> statementsType {
+            DesignEntity::STMT, DesignEntity::ASSIGN,
+            DesignEntity::WHILE, DesignEntity::IF,
+            DesignEntity::PRINT, DesignEntity::READ, DesignEntity::CALL
+    };
+
+    const std::unordered_set<DesignEntity> entityTypes {
+            DesignEntity::PROCEDURE, DesignEntity::VARIABLE
+    };
+
     bool Parser::hasLeadingWhitespace() {
         return lexer.hasLeadingWhitespace();
     }
 
-    std::string Parser::getParsedText() {
-        return lexer.text;
+    std::string Parser::getParsedText() const {
+        return std::string { lexer.text };
     }
 
     Token Parser::getNextToken() {
@@ -60,7 +70,7 @@ namespace qps::parser {
         return lexer.peekNextReservedToken();
     }
 
-    void Parser::checkType(Token token, TokenType tokenType) {
+    void Parser::checkType(Token &token, TokenType tokenType) {
         if (token.getTokenType() != tokenType)
             throw exceptions::PqlSyntaxException(messages::qps::parser::notExpectingTokenMessage);
     }
@@ -118,7 +128,7 @@ namespace qps::parser {
         getAndCheckNextToken(TokenType::SEMICOLON);
     }
 
-    void Parser::addInput(std::string query) {
+    void Parser::addInput(std::string_view query) {
         lexer = Lexer(query);
     }
 
@@ -129,7 +139,7 @@ namespace qps::parser {
         return Declaration { synonym, de };
     }
 
-    AttrName Parser::parseAttrName(Query &query, Declaration declaration) {
+    AttrName Parser::parseAttrName(Query &query, const Declaration& declaration) {
         Token attrRefToken = getNextReservedToken();
         auto pos = tokenTypeToAttrName.find(attrRefToken.getTokenType());
         AttrName attrName = pos->second;
@@ -232,7 +242,7 @@ namespace qps::parser {
         return entRef;
     }
 
-    bool usePVariant(Token t, Query &query) {
+    bool usePVariant(const Token& t, Query &query) {
         TokenType tt = t.getTokenType();
         if (tt == TokenType::STRING) {
             return true;
@@ -299,12 +309,8 @@ namespace qps::parser {
         return ptr;
     }
 
-    bool Parser::isValidStatementType(Query &query, StmtRef s) {
-        std::unordered_set<DesignEntity> statementsType {
-            DesignEntity::STMT, DesignEntity::ASSIGN,
-            DesignEntity::WHILE, DesignEntity::IF,
-            DesignEntity::PRINT, DesignEntity::READ, DesignEntity::CALL
-        };
+    bool Parser::isValidStatementType(Query &query, const StmtRef& s) {
+
         if (s.isDeclaration()) {
             DesignEntity d = query.getDeclarationDesignEntity(s.getDeclarationSynonym());
             return statementsType.find(d) != statementsType.end();
@@ -312,10 +318,7 @@ namespace qps::parser {
         return false;
     }
 
-    bool Parser::isValidEntityType(Query &query, EntRef e) {
-        std::unordered_set<DesignEntity> entityTypes {
-                DesignEntity::PROCEDURE, DesignEntity::VARIABLE
-        };
+    bool Parser::isValidEntityType(Query &query, const EntRef& e) {
         if (e.isDeclaration()) {
             DesignEntity d = e.getDeclarationType();
             return entityTypes.find(d) != entityTypes.end();
@@ -326,7 +329,7 @@ namespace qps::parser {
     ExpSpec Parser::parseExpSpec() {
         bool hasString = false;
         bool hasWildcard = false;
-        std::string value = "";
+        std::string value;
 
         if (peekNextToken().getTokenType() == TokenType::UNDERSCORE) {
             hasWildcard = true;
@@ -354,7 +357,7 @@ namespace qps::parser {
         throw exceptions::PqlSyntaxException("Unable to parse pattern");
     }
 
-    void Parser::validateExpr(std::string expr) {
+    void Parser::validateExpr(const std::string& expr) {
         Parser expParser;
         expParser.addInput(expr);
         expParser.parseExpr();
@@ -381,7 +384,7 @@ namespace qps::parser {
         }
     }
 
-    int Parser::getOperatorPriority(Token token) {
+    int Parser::getOperatorPriority(const Token& token) {
         TokenType type = token.getTokenType();
         if ((type == TokenType::MULTIPLY) || (type == TokenType::DIVIDE) || (type == TokenType::MODULO)) {
             return 20;
@@ -438,7 +441,7 @@ namespace qps::parser {
         return e;
     }
 
-    Pattern Parser::parsePatternVariables(Query &query, Declaration d) {
+    Pattern Parser::parsePatternVariables(Query &query, const Declaration& d) {
         Pattern p;
         getAndCheckNextToken(TokenType::OPENING_PARAN);
         EntRef e = parsePatternLhs(query);
@@ -553,7 +556,7 @@ namespace qps::parser {
         }
     }
 
-    Query Parser::parsePql(std::string query) {
+    Query Parser::parsePql(std::string_view query) {
         addInput(query);
         Query queryObj;
         queryObj.setValid(true);
@@ -569,7 +572,7 @@ namespace qps::parser {
                     parseQuery(queryObj);
                 }
             }
-        } catch (exceptions::PqlException) {
+        } catch (exceptions::PqlException &err) {
             queryObj.setValid(false);
         }
 

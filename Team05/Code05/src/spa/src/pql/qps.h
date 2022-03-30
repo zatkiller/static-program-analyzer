@@ -21,7 +21,7 @@ struct QPS {
      * @param results the list to store the pql query results in
      * @param pkbPtr the pointer to the pkb
      */
-    void evaluate(std::string query, std::list<std::string> &results, PKB *pkbPtr);
+    void evaluate(const std::string& query, std::list<std::string> &results, PKB *pkbPtr);
 };
 
 }  // namespace qps
