@@ -11,8 +11,9 @@
 #include "PKB/PKBTables.h"
 #include "PKB/PKBResponse.h"
 #include "PKB/PKBField.h"
+#include "PKB/PKBRelationshipTables.h"
 #include "DesignExtractor/PatternMatcher.h"
-#include "DesignExtractor/CFG/cfg.h"
+#include "DesignExtractor/CFG/CFG.h"
 
 class PKB {
 public:
@@ -41,7 +42,7 @@ public:
     */
     void insertAST(std::unique_ptr<sp::ast::Program> root);
 
-    void insertCFG(std::shared_ptr<sp::cfg::CFGNode> root);
+    void insertCFG(ProcToCfgMap roots);
 
     /**
     * Checks whether there exist. If any fields are invalid, return false. Both fields must be concrete.
@@ -132,7 +133,7 @@ private:
 
     std::unique_ptr<AffectsEvaluator> affectsEval;
 
-    std::shared_ptr<sp::cfg::CFGNode> cfgRoot;
+    ProcToCfgMap cfgRoots;
     std::unique_ptr<sp::ast::ASTNode> root;
     
     /**

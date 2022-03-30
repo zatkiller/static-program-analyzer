@@ -163,7 +163,7 @@ NextRelationshipTable::NextRelationshipTable() : TransitiveRelationshipTable<STM
 
 /** ========================AFFECTSEVALUATOR METHODS ==================================== */
 
-bool AffectsEvaluator::contains(PKBField field1, PKBField field2) {
+bool AffectsEvaluator::contains(PKBField field1, PKBField field2, bool isTransitive) {
     // Check if CFG initialized
     if (!isInit) {
         Logger(Level::ERROR) << "CFG has not been initialized!";
@@ -190,21 +190,35 @@ bool AffectsEvaluator::contains(PKBField field1, PKBField field2) {
     if (!isCacheActive) {
         this->extractAndCacheAffects();
     }
-    std::vector<PKBField> key{ field1, field2 };
 
-    return affList.find(key) != affList.end();
+    return isTransitive 
+        ? affCache->containsT(field1, field2) 
+        : affCache->contains(field1, field2);
 }
 
-bool AffectsEvaluator::containsT(PKBField field1, PKBField field2) {
+FieldRowResponse AffectsEvaluator::retrieve(PKBField field1, PKBField field2, bool isTransitive) {
+    FieldRowResponse res;
+    
+    // Check if CFG initialized
+    if (!isInit) {
+        Logger(Level::ERROR) << "CFG has not been initialized!";
+        return res;
+    }
 
-}
+    // Validate fields
+    if (!isRetrieveValid(field1, field2)) {
+        Logger(Level::ERROR) << "An Affects relationship is only between assignment statements!";
+        return res;
+    }
 
-FieldRowResponse AffectsEvaluator::retrieve(PKBField field1, PKBField field2) {
+    // If cache not populated compute and cache Affects
+    if (!isCacheActive) {
+        this->extractAndCacheAffects();
+    }
 
-}
-
-FieldRowResponse AffectsEvaluator::retrieveT(PKBField field1, PKBField field2) {
-
+    return isTransitive
+        ? affCache->retrieveT(field1, field2)
+        : affCache->retrieve(field1, field2);
 }
 
 bool AffectsEvaluator::isContainsValid(PKBField field1, PKBField field2) const {
@@ -220,11 +234,55 @@ bool AffectsEvaluator::isRetrieveValid(PKBField field1, PKBField field2) const {
     if (field1.entityType != PKBEntityType::STATEMENT && field2.entityType != PKBEntityType::STATEMENT) {
         return false;
     }
+
+    // Check if fields are assignments
+    bool isConcreteFirst = field1.fieldType == PKBFieldType::CONCRETE;
+    bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
+
+    if (isConcreteFirst) {
+        if (field1.getContent<STMT_LO>()->type.value() != StatementType::Assignment) {
+            return false;
+        }
+    }
+
+    if (isConcreteSec) {
+        if (field2.getContent<STMT_LO>()->type.value() != StatementType::Assignment) {
+            return false;
+        }
+    }
+
     return true;
 }
 
 void AffectsEvaluator::extractAndCacheAffects() {
+    // Initialize cache
+    this->affCache = std::make_unique<Graph<STMT_LO>>(PKBRelationship::AFFECTS);
+    this->isCacheActive = true;
 
+    // Initialize visited set for main traversal
+    CfgNodeSet visited;
+
+    // Traverse and extract relationships from each procedure's CFG
+    for (auto varCfgPair : roots) {
+        // Skip first dummy node
+        auto root = varCfgPair.second;
+        if (!root.get()->stmt.has_value() && root.get()->getChildren().size() != 0) {
+            root = root.get()->getChildren().at(0);
+        }
+
+        this->extractAndCacheFrom(root, &visited);
+    }
+}
+
+void AffectsEvaluator::extractAndCacheFrom(NodePtr start, CfgNodeSet* visited) {
+    // Deal with case where node is dummy
+    if (!start->stmt.has_value()) {
+        // Get children
+        std::vector<NodePtr> children = start->getChildren();
+        for (auto child : children) {
+            this->extractAndCacheFrom(child, visited);
+        }
+    }
 }
 
 void AffectsEvaluator::walkAndExtract(NodePtr curr, VAR_NAME voi, NodePtr src) {

@@ -256,6 +256,12 @@ public:
                 && u.type.value() != StatementType::While) {
                 return;
             }
+        
+            // Both statements in an Affects relationship have to be assignments
+            if (type == PKBRelationship::AFFECTS && u.type.value() != StatementType::Assignment
+                && v.type.value() != u.type.value()) {
+                return;
+            }
         }
 
         auto uNode = createNode(u);
@@ -1062,38 +1068,34 @@ public:
     NextRelationshipTable();
 };
 
-using AffectsList = std::unordered_set<std::vector<PKBField>, PKBFieldHash>;
+using AffectsCache = std::unique_ptr<Graph<STMT_LO>>;
 using NodePtr = std::shared_ptr<sp::cfg::CFGNode>;
+using ProcToCfgMap = std::map<std::string, std::shared_ptr<sp::cfg::CFGNode>>;
+using CfgNodeSet = std::unordered_set<sp::cfg::CFGNode*>;
 
 class AffectsEvaluator {
 public:
     AffectsEvaluator() {};
 
-    void initCFG(NodePtr cfgRoot) {
-        if (cfgRoot->getChildren().size() != 0) {
-            this->root = cfgRoot->getChildren().at(0);
-        } else {
-            this->root = cfgRoot;
-        }
+    void initCFG(ProcToCfgMap cfgRoots) {
+        this->roots = cfgRoots;
         this->isInit = true;
     }
 
-    bool contains(PKBField field1, PKBField field2);
+    bool contains(PKBField field1, PKBField field2, bool isTransitive = false);
 
-    bool containsT(PKBField field1, PKBField field2);
-
-    FieldRowResponse retrieve(PKBField field1, PKBField field2);
-
-    FieldRowResponse retrieveT(PKBField field1, PKBField field2);
+    FieldRowResponse retrieve(PKBField field1, PKBField field2, bool isTransitive = false);
 
 private:
     bool isInit = false;
     bool isCacheActive = false;
-    std::shared_ptr<sp::cfg::CFGNode> root;
-    AffectsList affList;
+
+    ProcToCfgMap roots;
+    AffectsCache affCache;
 
     bool isContainsValid(PKBField field1, PKBField field2) const;
     bool isRetrieveValid(PKBField field1, PKBField field2) const;
     void extractAndCacheAffects();
     void walkAndExtract(NodePtr curr, VAR_NAME voi, NodePtr src);
+    void extractAndCacheFrom(NodePtr start, CfgNodeSet *visited);
 };

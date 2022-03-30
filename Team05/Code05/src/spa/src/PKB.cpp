@@ -58,9 +58,9 @@ void PKB::insertAST(std::unique_ptr<sp::ast::Program> root) {
     this->root = std::move(root);
 }
 
-void PKB::insertCFG(std::shared_ptr<sp::cfg::CFGNode> root) {
-    this->cfgRoot = root;
-    this->affectsEval->initCFG(root);
+void PKB::insertCFG(ProcToCfgMap roots) {
+    this->cfgRoots = roots;
+    this->affectsEval->initCFG(roots);
 }
 
 bool PKB::validate(const PKBField field) const {
@@ -217,7 +217,7 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
     }
 
     if (rs == PKBRelationship::AFFECTST) {
-        return affectsEval->containsT(field1, field2);
+        return affectsEval->contains(field1, field2, true);
     }
 
     auto relationshipTablePtr = getRelationshipTable(rs);
@@ -256,7 +256,7 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
     }
 
     if (rs == PKBRelationship::AFFECTST) {
-        extracted = affectsEval->retrieveT(field1, field2);
+        extracted = affectsEval->retrieve(field1, field2, true);
 
         return extracted.size() != 0
             ? PKBResponse{ true, Response{extracted} }
