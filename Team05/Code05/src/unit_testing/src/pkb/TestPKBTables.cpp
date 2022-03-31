@@ -973,21 +973,56 @@ TEST_CASE("AffectsEvaluator test") {
     // Initialize affEval
     affEval->initCFG(cfgRoots);
 
-    PKBField conc1 = PKBField::createConcrete(STMT_LO(1, ASSIGN));
-    PKBField conc2 = PKBField::createConcrete(STMT_LO(8, ASSIGN));
-    REQUIRE(affEval->contains(conc1, conc2));
+    SECTION("AffectsEvaluator::contains (transitive and non-transitive)") {
+        PKBField conc1 = PKBField::createConcrete(STMT_LO(1, ASSIGN));
+        PKBField conc2 = PKBField::createConcrete(STMT_LO(8, ASSIGN));
+        REQUIRE(affEval->contains(conc1, conc2));
 
-    PKBField conc3 = PKBField::createConcrete(STMT_LO(5, ASSIGN));
-    PKBField conc4 = PKBField::createConcrete(STMT_LO(5, ASSIGN));
-    REQUIRE(affEval->contains(conc3, conc4));
+        PKBField conc3 = PKBField::createConcrete(STMT_LO(5, ASSIGN));
+        PKBField conc4 = PKBField::createConcrete(STMT_LO(5, ASSIGN));
+        REQUIRE(affEval->contains(conc3, conc4));
 
-    PKBField conc5 = PKBField::createConcrete(STMT_LO(2, ASSIGN));
-    REQUIRE_FALSE(affEval->contains(conc5, conc3));
+        PKBField conc5 = PKBField::createConcrete(STMT_LO(2, ASSIGN));
+        REQUIRE_FALSE(affEval->contains(conc5, conc3));
 
-    PKBField conc6 = PKBField::createConcrete(STMT_LO(9, ASSIGN));
+        PKBField conc6 = PKBField::createConcrete(STMT_LO(9, ASSIGN));
+        REQUIRE(affEval->contains(conc1, conc6, true));
+        REQUIRE_FALSE(affEval->contains(conc1, conc6));
+    }
+    
+    SECTION("AffectsEvaluator::retrieve (transitive)") {
+        PKBField stmtDecl = PKBField::createDeclaration(StatementType::All);
 
-    // Currently not working due to issues with Graph<T> transitive traversal, 
-    // unrelated to AffectsEval
-    // REQUIRE(affEval->contains(conc1, conc6, true));
-    // REQUIRE_FALSE(affEval->contains(conc1, conc6));
+        PKBField field1 = PKBField::createConcrete(STMT_LO(1, ASSIGN));
+        PKBField field2 = PKBField::createConcrete(STMT_LO(2, ASSIGN));
+        PKBField field3 = PKBField::createConcrete(STMT_LO(5, ASSIGN));
+        PKBField field4 = PKBField::createConcrete(STMT_LO(6, ASSIGN));
+        PKBField field5 = PKBField::createConcrete(STMT_LO(8, ASSIGN));
+        PKBField field6 = PKBField::createConcrete(STMT_LO(9, ASSIGN));
+
+        // (Decl, Concrete)
+        FieldRowResponse expected1{ {field1, field6}, {field3, field6}, 
+            {field4, field6}, {field5, field6} };
+        REQUIRE(affEval->retrieve(stmtDecl, field6, true) == expected1);
+
+        // (Concrete, Decl)
+        FieldRowResponse expected2{ {field3, field3}, {field3, field5}, {field3, field6} };
+        REQUIRE(affEval->retrieve(field3, stmtDecl, true) == expected2);
+
+        // (Decl, Decl)
+        FieldRowResponse expected3{
+            {field1, field2},
+            {field1, field3},
+            {field1, field4},
+            {field1, field5},
+            {field1, field6},
+            {field3, field3},
+            {field3, field5},
+            {field3, field6},
+            {field4, field5},
+            {field4, field6},
+            {field5, field6}
+        };
+        REQUIRE(affEval->retrieve(stmtDecl, stmtDecl, true) == expected3);
+    }
 }
