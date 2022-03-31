@@ -279,37 +279,40 @@ TEST_CASE("CFG Test") {
         // There should be two procedures.
         // 1st procedure:
         auto proc1 = result.at("test");
+
         // Line 1: while statement
         auto stmt1 = proc1->getChildren().at(0);
         REQUIRE(stmt1->modifies.empty());
         REQUIRE(stmt1->uses.empty());
+
         // Line 2: print statement
         auto stmt2 = stmt1->getChildren().at(0);  // print node is the first child of while node
         REQUIRE(stmt2->modifies.empty());
         REQUIRE(stmt2->uses.empty());
+
         // Line 3: if statement
         auto stmt3 = stmt1->getChildren().at(1);  // if node is the second child of while node
         REQUIRE(stmt3->modifies.empty());
         REQUIRE(stmt3->uses.empty());
+
         // Line 4: read statement
         auto stmt4 = stmt3->getChildren().at(0);  // statements inside then block of if first
         auto stmt4lo = STMT_LO(4, StatementType::Read);
-        ContentToVarMap expectedRes1;  // Should contain modifies
+        // Should contain modifies
         std::unordered_set<VAR_NAME> expectedVars1 ({
             VAR_NAME("x")
         });
-        expectedRes1[stmt4lo] = expectedVars1;
-        REQUIRE(stmt4->modifies == expectedRes1);
+        REQUIRE(stmt4->modifies == expectedVars1);
         REQUIRE(stmt4->uses.empty());
+
         // Line 5: call statement
         auto stmt5 = stmt3->getChildren().at(1);  // statements inside the else block of if
         auto stmt5lo = STMT_LO(5, StatementType::Call);
-        ContentToVarMap expectedRes2;  // Should contain modifies
+        // Should contain modifies
         std::unordered_set<VAR_NAME> expectedVars2 ({
             VAR_NAME("z")
         });
-        expectedRes2[stmt5lo] = expectedVars2;
-        REQUIRE(stmt5->modifies == expectedRes2);
+        REQUIRE(stmt5->modifies == expectedVars2);
         REQUIRE(stmt5->uses.empty());
 
         // 2nd procedure:
@@ -317,19 +320,17 @@ TEST_CASE("CFG Test") {
         // Line 6: assignment statement
         auto stmt6 = proc2->getChildren().at(0);
         auto stmt6lo = STMT_LO(6, StatementType::Assignment);
-        ContentToVarMap expectedRes3, expectedRes4;  // Should contain modifies and uses
+        // Should contain modifies and uses
         // modifies
         std::unordered_set<VAR_NAME> expectedVars3 ({
             VAR_NAME("z")
         });
-        expectedRes3[stmt6lo] = expectedVars3;
         // uses
         std::unordered_set<VAR_NAME> expectedVars4 ({
             VAR_NAME("x"), VAR_NAME("y")
         });
-        expectedRes4[stmt6lo] = expectedVars4;
-        REQUIRE(stmt6->modifies == expectedRes3);
-        REQUIRE(stmt6->uses == expectedRes4);
+        REQUIRE(stmt6->modifies == expectedVars3);
+        REQUIRE(stmt6->uses == expectedVars4);
     }
 }
 }  // namespace cfg
