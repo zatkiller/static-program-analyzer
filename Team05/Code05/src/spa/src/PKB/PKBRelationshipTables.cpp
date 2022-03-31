@@ -302,7 +302,7 @@ void AffectsEvaluator::extractAndCacheFrom(NodePtr start, CfgNodeSet* visited) {
         // Do secondary traversal if node is assignment statement
         if (isAssignNode) {
             // Extract variable of interest (i.e. var being modified)
-            auto voi = curr->modifies.at(currStmt);
+            auto voi = curr->modifies;
 
             // Get children
             std::vector<NodePtr> nextNodes = curr->getChildren();
@@ -341,7 +341,7 @@ void AffectsEvaluator::walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME>
     STMT_LO currStmt = curr.get()->stmt.value();
     bool isAssignNode = currStmt.type.value() == StatementType::Assignment;
     bool hasRs = false;
-    auto usedVars = curr.get()->uses.at(currStmt);
+    auto usedVars = curr.get()->uses;
     for (auto var : voi) {
         if (usedVars.find(var) != usedVars.end()) {
             hasRs = true;
@@ -355,7 +355,7 @@ void AffectsEvaluator::walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME>
 
     // Check if node modifies voi
     if (!curr.get()->modifies.empty()) {
-        auto modVars = curr.get()->modifies.at(currStmt);
+        auto modVars = curr.get()->modifies;
         for (auto var : voi) {
             if (modVars.find(var) != modVars.end()) {
                 visited->insert(curr.get());
