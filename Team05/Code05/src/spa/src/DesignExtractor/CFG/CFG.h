@@ -15,7 +15,8 @@ namespace cfg {
 
 class CFGNode;
 using PROC_CFG_MAP = std::map<std::string, std::shared_ptr<cfg::CFGNode>>;
-using ContentToVarMap = std::unordered_map<Content, std::unordered_set<VAR_NAME>>;
+using VAR_NAMES = std::unordered_set<VAR_NAME>;
+using ContentToVarMap = std::unordered_map<Content, VAR_NAMES>;
 
 /**
  * @brief Class to encapsulate a single CFGNode.
@@ -27,8 +28,8 @@ private:
     std::vector<std::shared_ptr<CFGNode>> children;
 public:
     std::optional<STMT_LO> stmt;
-    ContentToVarMap modifies;  // information on modifies relationship for current node
-    ContentToVarMap uses;  // information on uses relationship relationship for current node
+    VAR_NAMES modifies;  // information on modifies relationship for current node
+    VAR_NAMES uses;  // information on uses relationship relationship for current node
     CFGNode () : stmt(std::nullopt) {}
     CFGNode(int stmtNo, StatementType stmtType) : stmt(STMT_LO(stmtNo, stmtType)) {}
 
