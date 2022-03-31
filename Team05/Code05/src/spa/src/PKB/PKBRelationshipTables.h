@@ -319,7 +319,6 @@ public:
         return containsT(field1, field2, &visited);
     }
 
-
     /**
     * Gets all pairs of PKBFields that satisfy the provided rs relationship, rs(field1, field2).
     *
@@ -423,6 +422,16 @@ private:
         return node;
     }
 
+    /**
+    * Helper function for containsT. Keeps track of all nodes visited and performs depth-first traversal.
+    * Checks if rs*(field1, field2) is in the graph.
+    * 
+    * @param field1 the first program design entity in a rs*(u,v) query wrapped in a PKBField
+    * @param field2 the second program design entity in a rs*(u,v) query wrapped in a PKBField
+    * 
+    * @return bool true if rs*(field1, field2) is in the graph and false otherwise
+    * @see PKBField
+    */
     bool containsT(PKBField field1, PKBField field2, std::unordered_set<T>* visited) {
         T first = *field1.getContent<T>();
         T second = *field2.getContent<T>();
@@ -1082,17 +1091,65 @@ using NodePtr = std::shared_ptr<sp::cfg::CFGNode>;
 using ProcToCfgMap = std::map<std::string, std::shared_ptr<sp::cfg::CFGNode>>;
 using CfgNodeSet = std::unordered_set<sp::cfg::CFGNode*>;
 
+/**
+* An evaluator class to evaluate Affects and Affects* design abstraction using a CFG.
+* Internally computes all direct Affects relations and caches them in a Graph<STMT_LO>.
+* 
+* @see CFGNode, Graph
+*/
 class AffectsEvaluator {
 public:
     AffectsEvaluator() {}
 
+    /**
+    * Initializes the evaluator with a map of procedure names to roots of their CFGs.
+    * 
+    * @param cfgRoots A map of procedure names to roots of their CFGs.
+    */
     void initCFG(ProcToCfgMap cfgRoots) {
         this->roots = cfgRoots;
         this->isInit = true;
     }
 
+    /**
+    * Clears the internal cache of all Affects relationships.
+    * To be called after each query.
+    */
+    void clearCache() {
+        this->affCache.reset();
+        this->isCacheActive = false;
+    }
+
+    /**
+    * Checks if the relationship Affects(field1, field2) or Affects*(field1, field2) is true,
+    * depending on the flag provided. By default, will check for Affects(field1, field2).
+    * Internally utilizes the cached results of Affects. If no cached results are found, 
+    * extracts all Affects relationships and caches them.
+    * 
+    * @param field1 the first program design entity in a Affects/Affects*(u,v) query wrapped in a PKBField
+    * @param field2 the second program design entity in a Affects/Affects*(u,v) query wrapped in a PKBField
+    * @param isTransitive flag that indicates if the evaluator will check for an Affects or an Affects* relationship.
+    *   Defaults to false i.e. checks Affects by default
+    * 
+    * @return bool true if the relationship is satisfied and false otherwise
+    * @see PKBField
+    */
     bool contains(PKBField field1, PKBField field2, bool isTransitive = false);
 
+    /**
+    * Retrieves all rows of PKBFields that satisfy an Affects(field1, field2) or Affects*(field1, field2) relationship,
+    * depending on the flag provided. Retrieves fields for Affects(field1, field2) by default.
+    * Internally utilizes the cached results of Affects. If no cached results are found,
+    * extracts all Affects relationships and caches them.
+    *
+    * @param field1 the first program design entity in a Affects/Affects*(u,v) query wrapped in a PKBField
+    * @param field2 the second program design entity in a Affects/Affects*(u,v) query wrapped in a PKBField
+    * @param isTransitive flag that indicates if the evaluator will check for an Affects or an Affects* relationship.
+    *   Defaults to false i.e. checks Affects by default
+    *
+    * @return FieldRowResponse A set of rows of PKBFields that obey the provided relationship.
+    * @see PKBField
+    */
     FieldRowResponse retrieve(PKBField field1, PKBField field2, bool isTransitive = false);
 
 private:
