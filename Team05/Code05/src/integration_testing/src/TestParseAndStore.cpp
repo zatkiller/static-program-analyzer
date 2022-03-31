@@ -126,7 +126,7 @@ struct TestParseAndStorePackage1 : public DesignExtractionTestTemplate {
         expectedRelationships.emplace(
             PKBRelationship::USES,
             std::set<std::pair<Content, Content>> {
-            p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "number" }),
+                p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "number" }),
                 p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "digit" }),
                 p(PROC_NAME{ "sumDigits" }, VAR_NAME{ "sum" }),
                 p(STMT_LO{ 3, StatementType::While }, VAR_NAME{ "number" }),
@@ -136,7 +136,7 @@ struct TestParseAndStorePackage1 : public DesignExtractionTestTemplate {
                 p(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{ "sum" }),
                 p(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{ "digit" }),
                 p(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{ "number" }),
-                p(STMT_LO{ 7, StatementType::Print, "sum"}, VAR_NAME{ "sum" }),
+                p(STMT_LO{ 7, StatementType::Print, "sum" }, VAR_NAME{ "sum" }),
             }
         );
 
@@ -207,23 +207,23 @@ struct TestParseAndStorePackage2 : public DesignExtractionTestTemplate {
     void initEntities() {}
 
     void initRelationships() {
-        auto s1 = STMT_LO{1, StatementType::While};
-        auto s2 = STMT_LO{2, StatementType::Call, "p1"};
-        auto s3 = STMT_LO{3, StatementType::If};
-        auto s4 = STMT_LO{4, StatementType::Assignment};
-        auto s5 = STMT_LO{5, StatementType::Call, "p3"};
-        auto s6 = STMT_LO{6, StatementType::Assignment};
-        auto s7 = STMT_LO{7, StatementType::While};
-        auto s8 = STMT_LO{8, StatementType::Read, "z"};
-        auto s9 = STMT_LO{9, StatementType::Print, "y"};
-        auto s10 = STMT_LO{10, StatementType::Read, "y1"};
-        auto s11 = STMT_LO{11, StatementType::Print, "x1"};
-        auto s12 = STMT_LO{12, StatementType::Call, "p2"};
-        auto s13 = STMT_LO{13, StatementType::Call, "p3"};
-        auto s14 = STMT_LO{14, StatementType::Assignment};
-        auto s15 = STMT_LO{15, StatementType::While};
-        auto s16 = STMT_LO{16, StatementType::Call, "p3"};
-        auto s17 = STMT_LO{17, StatementType::Read, "x3"};
+        auto s1 = STMT_LO{ 1, StatementType::While };
+        auto s2 = STMT_LO{ 2, StatementType::Call, "p1" };
+        auto s3 = STMT_LO{ 3, StatementType::If };
+        auto s4 = STMT_LO{ 4, StatementType::Assignment };
+        auto s5 = STMT_LO{ 5, StatementType::Call, "p3" };
+        auto s6 = STMT_LO{ 6, StatementType::Assignment };
+        auto s7 = STMT_LO{ 7, StatementType::While };
+        auto s8 = STMT_LO{ 8, StatementType::Read, "z" };
+        auto s9 = STMT_LO{ 9, StatementType::Print, "y" };
+        auto s10 = STMT_LO{ 10, StatementType::Read, "y1" };
+        auto s11 = STMT_LO{ 11, StatementType::Print, "x1" };
+        auto s12 = STMT_LO{ 12, StatementType::Call, "p2" };
+        auto s13 = STMT_LO{ 13, StatementType::Call, "p3" };
+        auto s14 = STMT_LO{ 14, StatementType::Assignment };
+        auto s15 = STMT_LO{ 15, StatementType::While };
+        auto s16 = STMT_LO{ 16, StatementType::Call, "p3" };
+        auto s17 = STMT_LO{ 17, StatementType::Read, "x3" };
 
 
         expectedRelationships.emplace(
@@ -239,14 +239,14 @@ struct TestParseAndStorePackage2 : public DesignExtractionTestTemplate {
                 p(s14, s15)
             }
         );
-        
+
         expectedRelationships.emplace(
             PKBRelationship::CALLS,
             std::set<std::pair<Content, Content>> {
-                p(PROC_NAME{"main"}, PROC_NAME{"p1"}),
-                p(PROC_NAME{"main"}, PROC_NAME{"p3"}),
-                p(PROC_NAME{"p1"}, PROC_NAME{"p2"}),
-                p(PROC_NAME{"p2"}, PROC_NAME{"p3"}),
+                p(PROC_NAME{ "main" }, PROC_NAME{ "p1" }),
+                p(PROC_NAME{ "main" }, PROC_NAME{ "p3" }),
+                p(PROC_NAME{ "p1" }, PROC_NAME{ "p2" }),
+                p(PROC_NAME{ "p2" }, PROC_NAME{ "p3" }),
             }
         );
         expectedRelationships.emplace(
@@ -292,23 +292,31 @@ TEST_CASE("Test parse and store for basic package 1") {
 
     using Rows = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
+    TEST_LOG << "Pattern matching from PKB";
+    {
+        REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, "digit") ==
+            expectedResponse(FieldRowResponse{
+                row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}) }));
 
-    REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, "digit") ==
-        expectedResponse(FieldRowResponse{
-            row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"})}));
+        REQUIRE(pkb.match(StatementType::Assignment, "sum", std::nullopt) ==
+            expectedResponse(FieldRowResponse{
+                row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
+                row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"}) }));
 
-    REQUIRE(pkb.match(StatementType::Assignment, "sum", std::nullopt) ==
-        expectedResponse(FieldRowResponse{
-            row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
-            row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"})}));
+        REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, std::nullopt) ==
+            expectedResponse(FieldRowResponse{
+                row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
+                row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"}),
+                row(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{"digit"}),
+                row(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{"number"}) }));
 
-    REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, std::nullopt) ==
-        expectedResponse(FieldRowResponse{
-            row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
-            row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"}),
-            row(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{"digit"}),
-            row(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{"number"})}));
+        REQUIRE(pkb.match(StatementType::If, std::nullopt) ==
+            PKBResponse{ false, FieldRowResponse{} });
 
+        REQUIRE(pkb.match(StatementType::While, std::nullopt) ==
+            expectedResponse(FieldRowResponse{
+                row(STMT_LO{ 3, StatementType::While }, VAR_NAME{"number"}) }));
+    }
 
     TEST_LOG << "Variable extraction from PKB";
     {
@@ -563,5 +571,37 @@ TEST_CASE("Test parse and store for multi procedure package 2") {
             ));
         }
         REQUIRE(test.isCorrect(results, PKBRelationship::FOLLOWS));
+    }
+
+    TEST_LOG << "Pattern matching from PKB";
+    {
+        REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, "x") ==
+            expectedResponse(FieldRowResponse{
+                row(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{"y"}) }));
+
+        REQUIRE(pkb.match(StatementType::Assignment, "y2", std::nullopt) ==
+            expectedResponse(FieldRowResponse{
+                row(STMT_LO{ 14, StatementType::Assignment }, VAR_NAME{"y2"}) }));
+
+        REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, std::nullopt) ==
+            expectedResponse(FieldRowResponse{
+                row(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{"y"}),
+                row(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{"x"}),
+                row(STMT_LO{ 14, StatementType::Assignment }, VAR_NAME{"y2"}) }));
+
+        REQUIRE(pkb.match(StatementType::If, std::nullopt) ==
+            expectedResponse(FieldRowResponse{
+                row(STMT_LO{ 3, StatementType::If }, VAR_NAME{"x"}) }));
+        auto f = pkb.match(StatementType::While, std::nullopt);
+        REQUIRE(pkb.match(StatementType::While, std::nullopt) ==
+            expectedResponse(FieldRowResponse{
+                std::vector<PKBField>{PKBField::createConcrete(STMT_LO{ 1, StatementType::While }),
+                    PKBField::createConcrete(VAR_NAME{"x"})},
+                std::vector<PKBField>{
+                    PKBField::createConcrete(STMT_LO{ 7, StatementType::While }),
+                    PKBField::createConcrete(VAR_NAME{"y"}),
+                    PKBField::createConcrete(VAR_NAME{"z"}) },
+                std::vector<PKBField>{PKBField::createConcrete(STMT_LO{ 15, StatementType::While }),
+                    PKBField::createConcrete(VAR_NAME{"x2"})} }));
     }
 }
