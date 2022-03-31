@@ -112,11 +112,11 @@ ContentToVarMap createContentVarMap(const EntrySet &entrySet) {
     return result;
 }
 
-ContentToVarMap filterContentVarMap(const ContentToVarMap &contentToVarMap, const Content &content) {
-    ContentToVarMap result;
+VAR_NAMES filterContentVarMap(const ContentToVarMap &contentToVarMap, const Content &content) {
+    VAR_NAMES result;
     auto entry = contentToVarMap.find(content);
     if (entry != contentToVarMap.end()) {
-        result.insert(*entry);
+        result = entry->second;
     }
     return result;
 }
