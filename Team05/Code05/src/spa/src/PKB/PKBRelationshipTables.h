@@ -314,29 +314,9 @@ public:
     * @return bool true if rs*(field1, field2) is in the graph and false otherwise
     * @see PKBField
     */
-    bool containsT(PKBField field1, PKBField field2) const {
-        T first = *field1.getContent<T>();
-        T second = *field2.getContent<T>();
-
-        // Base Case where rs(field1, field2) holds
-        if (this->contains(field1, field2)) {
-            return true;
-        }
-
-        if (nodes.count(first) != 0) {
-            auto curr = nodes.at(first);
-            typename Node<T>::NodeSet nextNodes = curr->next;
-
-            // Recursive lookup for each node in the NodeSet
-            for (auto node : nextNodes) {
-                T newVal = node->val;
-                PKBField newField1 = PKBField::createConcrete(Content{ newVal });
-                if (this->containsT(newField1, field2)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    bool containsT(PKBField field1, PKBField field2) {
+        std::unordered_set<T> visited;
+        return containsT(field1, field2, &visited);
     }
 
 
@@ -374,7 +354,7 @@ public:
     * @return std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> all pairs of PKBFields
     *   that satisfy rs*(field1, field2)
     */
-    Result retrieveT(PKBField field1, PKBField field2) const {
+    Result retrieveT(PKBField field1, PKBField field2) {
         bool isConcreteFirst = field1.fieldType == PKBFieldType::CONCRETE;
         bool isDeclarationFirst = field1.fieldType == PKBFieldType::DECLARATION;
         bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
@@ -437,9 +417,36 @@ private:
             }
         }
 
-        std::shared_ptr<Node<T>> node = std::make_shared<Node<T>>(val, typename Node<T>::NodeSet{}, typename Node<T>::NodeSet{});
+        std::shared_ptr<Node<T>> node = std::make_shared<Node<T>>(val, 
+            typename Node<T>::NodeSet{}, typename Node<T>::NodeSet{});
         nodes.emplace(val, node);
         return node;
+    }
+
+    bool containsT(PKBField field1, PKBField field2, std::unordered_set<T>* visited) {
+        T first = *field1.getContent<T>();
+        T second = *field2.getContent<T>();
+
+        // Base Case where rs(field1, field2) holds
+        if (this->contains(field1, field2)) {
+            return true;
+        }
+
+        if (nodes.count(first) != 0 && visited->find(first) == visited->end()) {
+            auto curr = nodes.at(first);
+            visited->insert(first);
+            typename Node<T>::NodeSet nextNodes = curr->next;
+
+            // Recursive lookup for each node in the NodeSet
+            for (auto node : nextNodes) {
+                T newVal = node->val;
+                PKBField newField1 = PKBField::createConcrete(Content{ newVal });
+                if (this->containsT(newField1, field2, visited)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -544,7 +551,8 @@ private:
     *
     * @see PKBField
     */
-    void traverseStartT(std::set<T>* found, std::shared_ptr<Node<T>> node, StatementType targetType = StatementType::None) const {
+    void traverseStartT(std::set<T>* found, std::shared_ptr<Node<T>> node, 
+        StatementType targetType = StatementType::None) const {
         typename Node<T>::NodeSet nextNodes = node->next;
 
         for (auto nextNode : nextNodes) {
@@ -668,7 +676,8 @@ private:
     *
     * @see PKBField
     */
-    void traverseEndT(std::set<T>* found, std::shared_ptr<Node<T>> node, StatementType targetType = StatementType::None) const {
+    void traverseEndT(std::set<T>* found, std::shared_ptr<Node<T>> node, 
+        StatementType targetType = StatementType::None) const {
         typename Node<T>::NodeSet prevNodes = node->prev;
 
         for (auto prevNode : prevNodes) {
@@ -1075,7 +1084,7 @@ using CfgNodeSet = std::unordered_set<sp::cfg::CFGNode*>;
 
 class AffectsEvaluator {
 public:
-    AffectsEvaluator() {};
+    AffectsEvaluator() {}
 
     void initCFG(ProcToCfgMap cfgRoots) {
         this->roots = cfgRoots;
