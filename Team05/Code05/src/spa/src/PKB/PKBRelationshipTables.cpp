@@ -177,11 +177,11 @@ bool AffectsEvaluator::contains(PKBField field1, PKBField field2, bool isTransit
     }
 
     // Check if fields are assignments 
-    if (field1.statementType.value() != StatementType::Assignment) {
+    if (field1.getContent<STMT_LO>()->type.value() != StatementType::Assignment) {
         Logger(Level::ERROR) << "An Affects relationship is only between 2 assignment statements!";
         return false;
     }
-    if (field2.statementType.value() != StatementType::Assignment) {
+    if (field2.getContent<STMT_LO>()->type.value() != StatementType::Assignment) {
         Logger(Level::ERROR) << "An Affects relationship is only between 2 assignment statements!";
         return false;
     }
@@ -275,16 +275,103 @@ void AffectsEvaluator::extractAndCacheAffects() {
 }
 
 void AffectsEvaluator::extractAndCacheFrom(NodePtr start, CfgNodeSet* visited) {
+    auto curr = start.get();
+    
+    // Case where node has already been visited
+    if (visited->find(curr) != visited->end()) {
+        return;
+    }
+    
     // Deal with case where node is dummy
-    if (!start->stmt.has_value()) {
+    if (!curr->stmt.has_value()) {
         // Get children
-        std::vector<NodePtr> children = start->getChildren();
+        std::vector<NodePtr> children = curr->getChildren();
+        for (auto child : children) {
+            this->extractAndCacheFrom(child, visited);
+        }
+    } else {
+        // Add to visited list
+        visited->insert(start.get());
+
+        // Get statement at curr
+        STMT_LO currStmt = curr->stmt.value();
+
+        // Check type of stmt
+        bool isAssignNode = currStmt.type.value() == StatementType::Assignment;
+
+        // Do secondary traversal if node is assignment statement
+        if (isAssignNode) {
+            // Extract variable of interest (i.e. var being modified)
+            auto voi = curr->modifies.at(currStmt);
+
+            // Get children
+            std::vector<NodePtr> nextNodes = curr->getChildren();
+            for (auto nextNode : nextNodes) {
+                CfgNodeSet secVisited;
+                this->walkAndExtract(nextNode, voi, start, &secVisited);
+            }
+        }
+
+        // Continue traversal
+        std::vector<NodePtr> children = curr->getChildren();
         for (auto child : children) {
             this->extractAndCacheFrom(child, visited);
         }
     }
 }
 
-void AffectsEvaluator::walkAndExtract(NodePtr curr, VAR_NAME voi, NodePtr src) {
+void AffectsEvaluator::walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME> voi, 
+    NodePtr src, CfgNodeSet* visited) {
+    // Get children
+    auto children = curr.get()->getChildren();
+    
+    // Check if dummy node
+    if (!curr.get()->stmt.has_value()) {
+        // If children exist walk them
+        if (children.empty()) {
+            return;
+        }
+        for (auto child : children) {
+            this->walkAndExtract(child, voi, src, visited);
+        }
+        return;
+    }
 
+    // Check for affects relationship
+    STMT_LO currStmt = curr.get()->stmt.value();
+    bool isAssignNode = currStmt.type.value() == StatementType::Assignment;
+    bool hasRs = false;
+    auto usedVars = curr.get()->uses.at(currStmt);
+    for (auto var : voi) {
+        if (usedVars.find(var) != usedVars.end()) {
+            hasRs = true;
+            break;
+        }
+    }
+    if (hasRs && isAssignNode) {
+        STMT_LO srcStmt = src.get()->stmt.value();
+        affCache->addEdge(srcStmt, currStmt);
+    }
+
+    // Check if node modifies voi
+    if (!curr.get()->modifies.empty()) {
+        auto modVars = curr.get()->modifies.at(currStmt);
+        for (auto var : voi) {
+            if (modVars.find(var) != modVars.end()) {
+                visited->insert(curr.get());
+                return;
+            }
+        }
+    }
+
+    // Check if node already visited
+    if (visited->find(curr.get()) != visited->end()) {
+        return;
+    }
+
+    // Update visited list and continue traversal
+    visited->insert(curr.get());
+    for (auto child : children) {
+        this->walkAndExtract(child, voi, src, visited);
+    }
 }

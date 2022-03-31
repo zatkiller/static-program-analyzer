@@ -1096,6 +1096,7 @@ private:
     bool isContainsValid(PKBField field1, PKBField field2) const;
     bool isRetrieveValid(PKBField field1, PKBField field2) const;
     void extractAndCacheAffects();
-    void walkAndExtract(NodePtr curr, VAR_NAME voi, NodePtr src);
+    void walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME> voi, 
+        NodePtr src, CfgNodeSet* visited);
     void extractAndCacheFrom(NodePtr start, CfgNodeSet *visited);
 };
