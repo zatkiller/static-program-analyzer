@@ -136,8 +136,8 @@ TEST_CASE("Lexer getNextToken") {
 
 TEST_CASE("Lexer peekNextToken") {
     Lexer lexer("hello 123 hello123");
-    REQUIRE(lexer.peekNextToken() == Token{"hello", TokenType::IDENTIFIER});
-    REQUIRE(lexer.getNextToken() == Token{"hello", TokenType::IDENTIFIER});
+    REQUIRE(lexer.peekNextToken() == Token{ "hello", TokenType::IDENTIFIER });
+    REQUIRE(lexer.getNextToken() == Token{ "hello", TokenType::IDENTIFIER });
 }
 
 TEST_CASE("Lexer getNextReservedToken") {

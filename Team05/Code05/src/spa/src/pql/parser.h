@@ -49,8 +49,8 @@ struct Parser {
             throw exceptions::PqlSyntaxException(messages::qps::parser::unexpectedWhitespaceMessage);
     }
 
-    void checkType(Token, TokenType);
-    void checkDesignEntityAndAttrNameMatch(DesignEntity, AttrName);
+    static void checkType(Token &, TokenType);
+    static void checkDesignEntityAndAttrNameMatch(DesignEntity, AttrName);
 
     /**
      * Returns the next token from the lexified query
@@ -123,22 +123,21 @@ struct Parser {
      *
      * @return the current state of the parsed string
      */
-    std::string getParsedText();
-
+    std::string getParsedText() const;
 
     /**
      * Adds the specified query to parser
      *
      * @param query the query to add
      */
-    void addInput(std::string query);
+    void addInput(std::string_view query);
 
     /**
      * Returns a Query object representing the parsed query
      *
      * @param query the query to parse
      */
-    Query parsePql(std::string query);
+    Query parsePql(std::string_view query);
 
     /**
      * Parses the declarations of a query and adds them to
@@ -225,7 +224,7 @@ struct Parser {
      * @param s the StmtRef
      * @return a bool value indicates whether a synonym is declared as a statement reference.
      */
-    bool isValidStatementType(Query &query, StmtRef s);
+    static bool isValidStatementType(Query &query, const StmtRef& s);
 
     /**
      * Checks whether a synonym wrapped in EntRef has the correct Design Entity.
@@ -234,7 +233,7 @@ struct Parser {
      * @param e the EntRef
      * @return a bool value indicates whether a synonym is declared as a entity reference.
      */
-    bool isValidEntityType(Query &query, EntRef e);
+    static bool isValidEntityType(Query &query, const EntRef& e);
 
     /**
      * Returns a shared pointer containg a pointer of type T, representing the relationship being parsed
@@ -298,7 +297,7 @@ struct Parser {
 
     EntRef parsePatternLhs(Query &query);
 
-    Pattern parsePatternVariables(Query &query, Declaration d);
+    Pattern parsePatternVariables(Query &query, const Declaration& d);
 
     void parsePattern(Query &query);
 
@@ -309,7 +308,7 @@ struct Parser {
      */
     void parsePatternClause(Query &query);
 
-    AttrName parseAttrName(Query &query, Declaration declaration);
+    AttrName parseAttrName(Query &query, const Declaration& declaration);
 
     /**
      * Parses and returns a AttrRef
@@ -350,7 +349,7 @@ struct Parser {
      *
      * @param expr expression under pattern to be parsed
      */
-    void validateExpr(std::string expr);
+    static void validateExpr(const std::string& expr);
 
     /**
      * The base function to start the Pratt parsing
@@ -376,7 +375,7 @@ struct Parser {
      * @param token token to get priority
      * @return the operator priority
      */
-    int getOperatorPriority(Token token);
+    static int getOperatorPriority(const Token& token);
 };
 
 }  // namespace qps::parser

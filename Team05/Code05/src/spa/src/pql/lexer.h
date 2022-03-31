@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <string_view>
 
 namespace qps::parser {
 
@@ -65,17 +66,10 @@ struct Token {
     std::string text;
     TokenType type;
 
-    TokenType getTokenType() {
-        return this->type;
-    }
+    TokenType getTokenType() const { return type; }
+    std::string getText() const { return text; }
 
-    std::string getText() {
-        return this->text;
-    }
-
-    bool operator==(const Token &o) const {
-        return (this->type == o.type) && (this->text == o.text);
-    }
+    bool operator==(const Token &o) const { return (type == o.type) && (text == o.text); }
 };
 
 /**
@@ -83,9 +77,9 @@ struct Token {
 * the PQL query input
 */
 struct Lexer {
-    std::string text;
+    std::string_view text;
 
-    explicit Lexer(std::string input) : text(input) {}
+    explicit Lexer(const std::string_view input) : text(input) {}
 
     void eatWhitespace();
 
@@ -98,7 +92,7 @@ struct Lexer {
      */
     bool hasPrefix(std::string prefix);
 
-    std::string getText();
+    std::string_view getText();
 
     /**
      * Returns the next token from the lexified query
@@ -141,9 +135,7 @@ struct Lexer {
 
     bool hasLeadingWhitespace();
 
-    bool operator==(const Lexer &o) const {
-        return this->text == o.text;
-    }
+    bool operator==(const Lexer &o) const { return text == o.text; }
 };
 
 }  // namespace qps::parser

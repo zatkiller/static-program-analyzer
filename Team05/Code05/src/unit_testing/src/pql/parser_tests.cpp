@@ -42,10 +42,10 @@ using qps::query::Declaration;
 
 TEST_CASE("Parser checkType") {
     Parser parser;
-    Token token = Token{"", TokenType::INVALID};
+    Token token = Token{ "", TokenType::INVALID };
     REQUIRE_NOTHROW(parser.checkType(token, TokenType::INVALID));
 
-    Token token2 = Token{"", TokenType::STRING};
+    Token token2 = Token{ "", TokenType::STRING };
     REQUIRE_THROWS_MATCHES(parser.checkType(token2, TokenType::INVALID), exceptions::PqlSyntaxException,
                            Catch::Message(messages::qps::parser::notExpectingTokenMessage));
 }
@@ -89,11 +89,11 @@ TEST_CASE("Parser peekNextToken and getNextToken") {
     Parser parser;
     parser.lexer.text = "assign a; \n";
 
-    REQUIRE(parser.peekNextToken() == Token{"assign", TokenType::IDENTIFIER});
-    REQUIRE(parser.peekAndCheckNextToken(TokenType::IDENTIFIER) == Token{"assign", TokenType::IDENTIFIER});
+    REQUIRE(parser.peekNextToken() == Token{ "assign", TokenType::IDENTIFIER });
+    REQUIRE(parser.peekAndCheckNextToken(TokenType::IDENTIFIER) == Token{ "assign", TokenType::IDENTIFIER});
 
-    REQUIRE(parser.getNextToken() == Token{"assign", TokenType::IDENTIFIER});
-    REQUIRE(parser.getAndCheckNextToken(TokenType::IDENTIFIER) == Token{"a", TokenType::IDENTIFIER});
+    REQUIRE(parser.getNextToken() == Token{ "assign", TokenType::IDENTIFIER });
+    REQUIRE(parser.getAndCheckNextToken(TokenType::IDENTIFIER) == Token{ "a", TokenType::IDENTIFIER });
 }
 
 TEST_CASE("Parser addInput") {

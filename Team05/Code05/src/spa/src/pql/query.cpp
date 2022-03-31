@@ -32,19 +32,19 @@ namespace qps::query {
         return valid;
     }
 
-    void Query::setValid(bool valid) {
-        this->valid = valid;
+    void Query::setValid(bool validity) {
+        valid = validity;
     }
 
     bool Query::hasDeclaration(const std::string &name) const {
         return declarations.count(name) > 0;
     }
 
-    bool Query::hasSelectElem(const Elem e) const {
+    bool Query::hasSelectElem(const Elem &e) const {
         return selectResults.hasElem(e);
     }
 
-    DesignEntity Query::getDeclarationDesignEntity(const std::string& name) const {
+    DesignEntity Query::getDeclarationDesignEntity(const std::string &name) const {
         if (declarations.count(name) == 0)
             throw exceptions::PqlSyntaxException(messages::qps::parser::declarationDoesNotExistMessage);
 
@@ -85,15 +85,14 @@ namespace qps::query {
         return with;
     }
 
-
-    void Query::addDeclaration(const std::string& var, DesignEntity de) {
+    void Query::addDeclaration(const std::string &var, DesignEntity de) {
         if (declarations.find(var) != declarations.end())
             throw exceptions::PqlSyntaxException("Declaration already exists!");
 
-        declarations.insert({var, de});
+        declarations.emplace(var, de);
     }
 
-    void Query::addResultCl(const ResultCl resultCl) {
+    void Query::addResultCl(const ResultCl& resultCl) {
         selectResults = resultCl;
     }
 
@@ -134,11 +133,11 @@ namespace qps::query {
 
     ResultCl ResultCl::ofTuple(std::vector<Elem> tuple) {
         ResultCl r;
-        r.tuple = tuple;
+        r.tuple = std::move(tuple);
         return r;
     }
 
-    bool ResultCl::hasElem(Elem e) const {
+    bool ResultCl::hasElem(const Elem& e) const {
         return std::find(tuple.begin(), tuple.end(), e) != tuple.end();
     }
 
