@@ -101,7 +101,7 @@ namespace qps::parser {
     Token Lexer::getIdentifier() {
         int charCount = 0;
 
-        while (text.length() > 0 && (isalpha(text[charCount]) || isdigit(text[charCount])))
+        while (text.length() > charCount && (isalpha(text[charCount]) || isdigit(text[charCount])))
             charCount++;
 
         std::string identifier = std::string { text.substr(0, charCount) };
@@ -113,7 +113,7 @@ namespace qps::parser {
     Token Lexer::getNumber() {
         int charCount = 0;
 
-        while (text.length() > 0 && (isdigit(text[charCount])))
+        while (text.length() > charCount && (isdigit(text[charCount])))
             charCount++;
 
         std::string number = std::string { text.substr(0, charCount) };
