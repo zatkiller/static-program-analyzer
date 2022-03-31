@@ -4,8 +4,23 @@
 
 namespace qps::evaluator {
 
+    SelectElemInfo SelectElemInfo::ofDeclaration(int columnNo) {
+        SelectElemInfo e;
+        e.columnNo = columnNo;
+        e.isAttr = false;
+        return e;
+    }
+
+    SelectElemInfo SelectElemInfo::ofAttr(int columnNo, query::AttrName attrName) {
+        SelectElemInfo e;
+        e.columnNo = columnNo;
+        e.attrName = std::move(attrName);
+        e.isAttr = true;
+        return e;
+    }
+
     std::string Evaluator::PKBFieldToString(PKBField pkbField) {
-        std::string res = "";
+        std::string res;
         if (pkbField.entityType == PKBEntityType::STATEMENT) {
             int lineNo = std::get<STMT_LO>(pkbField.content).statementNum;
             res = std::to_string(lineNo);
@@ -20,12 +35,22 @@ namespace qps::evaluator {
         return res;
     }
 
+    std::string Evaluator::PKBFieldAttrToString(PKBField pkbField, query::AttrName attrName) {
+        std::string res;
+        if (attrName == query::AttrName::PROCNAME || attrName == query::AttrName::VARNAME) {
+            res = ClauseHandler::getPKBFieldAttr<std::string>(pkbField);
+        } else {
+            res = std::to_string(ClauseHandler::getPKBFieldAttr<int>(pkbField));
+        }
+        return res;
+    }
+
     void Evaluator::processSuchthat(std::vector<std::shared_ptr<query::RelRef>> clauses,
                                     std::vector<std::shared_ptr<query::RelRef>> &noSyn,
                                     std::vector<std::shared_ptr<query::RelRef>> &hasSyn) {
         for (auto r : clauses) {
             query::RelRef *relRefPtr = r.get();
-            if (relRefPtr->getSyns().empty()) {
+            if (relRefPtr->getDecs().empty()) {
                 noSyn.push_back(r);
             } else {
                 hasSyn.push_back(r);
@@ -44,27 +69,45 @@ namespace qps::evaluator {
         }
     }
 
-    std::list<std::string> Evaluator::getListOfResult(ResultTable &table, std::string variable) {
+    std::list<std::string> Evaluator::getListOfResult(ResultTable &table, query::ResultCl resultCl) {
         std::list<std::string> listResult{};
-        if (table.getResult().empty()) {
+        if (table.hasResult()) {
             return listResult;
         }
-        int synPos = table.getSynLocation(variable);
-        std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash> resultTable = table.getResult();
+        std::vector<query::Elem> tuple = resultCl.getTuple();
+        std::vector<SelectElemInfo> elem{};
+        for (auto e : tuple) {
+            SelectElemInfo elemInfo;
+            if (e.isDeclaration())
+                elemInfo = SelectElemInfo::ofDeclaration(table.getSynLocation(e.getDeclaration().getSynonym()));
+            else
+                elemInfo = SelectElemInfo::ofAttr(table.getSynLocation(e.getAttrRef().getDeclarationSynonym()),
+                                e.getAttrRef().getAttrName());
+            elem.push_back(elemInfo);
+        }
         std::unordered_set<std::string> resultSet;
-        for (auto field : resultTable) {
-            if (resultSet.find(PKBFieldToString(field[synPos])) == resultSet.end()) {
-                listResult.push_back(PKBFieldToString(field[synPos]));
-                resultSet.insert(PKBFieldToString(field[synPos]));
+        for (auto record : table.getTable()) {
+            std::string result;
+            for (auto e : elem) {
+                PKBField fld = record[e.columnNo];
+                result += (e.isAttr ? PKBFieldAttrToString(fld, e.attrName)
+                        : PKBFieldToString(fld)) + " ";
+            }
+            result.erase(std::find_if(result.rbegin(), result.rend(), [](unsigned char ch) {
+                return !std::isspace(ch);}).base(), result.end());
+            if (resultSet.find(result) == resultSet.end()) {
+                listResult.push_back(result);
+                resultSet.insert(result);
             }
         }
 
         return listResult;
     }
 
+
     std::list<std::string> Evaluator::evaluate(query::Query query) {
         // std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
-        std::vector<std::string> variable = query.getVariable();
+        query::ResultCl resultcl = query.getResultCl();
         std::vector<query::AttrCompare> with = query.getWith();
         std::vector<query::AttrCompare> noAttrRef;
         std::vector<query::AttrCompare> hasAttrRef;
@@ -75,18 +118,19 @@ namespace qps::evaluator {
 
         std::vector<query::Pattern> patterns = query.getPattern();
 
-        query::DesignEntity returnType = query.getDeclarationDesignEntity(variable[0]);
-        ClauseHandler handler = ClauseHandler(pkb, resultTable, query);
+        ClauseHandler handler = ClauseHandler(pkb, resultTable);
 
         if (!with.empty()) {
             processWith(with, noAttrRef, hasAttrRef);
-            if (!handler.handleNoAttrRefWith(noAttrRef)) return std::list<std::string>{};
+            if (!handler.handleNoAttrRefWith(noAttrRef))
+                return resultcl.isBoolean() ? std::list<std::string>{"FALSE"} : std::list<std::string>{};
             handler.handleAttrRefWith(hasAttrRef);
         }
 
         if (!suchthat.empty()) {
             processSuchthat(suchthat, noSyn, hasSyn);
-            if (!handler.handleNoSynClauses(noSyn)) return std::list<std::string>{};
+            if (!handler.handleNoSynClauses(noSyn))
+                return resultcl.isBoolean() ? std::list<std::string>{"FALSE"} :std::list<std::string>{};
             handler.handleSynClauses(hasSyn);
         }
 
@@ -94,13 +138,12 @@ namespace qps::evaluator {
             handler.handlePatterns(patterns);
         }
 
-        // After process suchthat and pattern if select variable not in result table, add all
-        if ((suchthat.empty() && patterns.empty()) || !resultTable.synExists(variable[0])) {
-            PKBResponse queryResult = handler.getAll(returnType);
-            std::vector<std::string> synonyms{variable[0]};
-            resultTable.join(queryResult, synonyms);
+        handler.handleResultCl(resultcl);
+        if (resultcl.isBoolean()) {
+            if (with.empty() && suchthat.empty() && patterns.empty()) return std::list<std::string>{"TRUE"};
+            return resultTable.hasResult() ? std::list<std::string>{"FALSE"} : std::list<std::string>{"TRUE"};
         }
 
-        return getListOfResult(resultTable, variable[0]);
+        return getListOfResult(resultTable, resultcl);
     }
 }  // namespace qps::evaluator

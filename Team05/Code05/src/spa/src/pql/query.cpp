@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <unordered_set>
+#include <utility>
 
 #include "exceptions.h"
 #include "pql/query.h"
@@ -27,87 +28,130 @@ namespace qps::query {
                                    DesignEntity::WHILE, DesignEntity::IF, DesignEntity::ASSIGN} }
     };
 
-    bool Query::isValid() {
+    bool Query::isValid() const {
         return valid;
     }
 
-    void Query::setValid(bool valid) {
-        this->valid = valid;
+    void Query::setValid(bool validity) {
+        valid = validity;
     }
 
-    bool Query::hasDeclaration(std::string name) {
+    bool Query::hasDeclaration(const std::string &name) const {
         return declarations.count(name) > 0;
     }
 
-    bool Query::hasVariable(std::string var) {
-        return std::find(variable.begin(), variable.end(), var) != variable.end();
+    bool Query::hasSelectElem(const Elem &e) const {
+        return selectResults.hasElem(e);
     }
 
-    DesignEntity Query::getDeclarationDesignEntity(std::string name) {
+    DesignEntity Query::getDeclarationDesignEntity(const std::string &name) const {
         if (declarations.count(name) == 0)
             throw exceptions::PqlSyntaxException(messages::qps::parser::declarationDoesNotExistMessage);
 
         return declarations.find(name)->second;
     }
 
-    std::unordered_map<std::string, DesignEntity> Query::getDeclarations() {
+    std::unordered_map<std::string, DesignEntity> Query::getDeclarations() const {
         return declarations;
     }
 
-    std::vector<std::string> Query::getVariable() {
-        return variable;
+    // For backward compatibility, will remove once Evaluator switches to selectFields
+    std::vector<std::string> Query::getVariable() const {
+        std::vector<std::string> results;
+        Elem e = selectResults.getTuple()[0];
+
+        if (e.isDeclaration()) {
+            results.push_back(e.getDeclaration().getSynonym());
+        } else {
+            results.push_back(e.getAttrRef().getDeclaration().getSynonym());
+        }
+
+        return results;
     }
 
-    std::vector<std::shared_ptr<RelRef>> Query::getSuchthat() {
+    ResultCl Query::getResultCl() const {
+        return selectResults;
+    }
+
+    std::vector<std::shared_ptr<RelRef>> Query::getSuchthat() const {
         return suchthat;
     }
 
-    std::vector<Pattern> Query::getPattern() {
+    std::vector<Pattern> Query::getPattern() const {
         return pattern;
     }
 
-    std::vector<AttrCompare> Query::getWith() {
+    std::vector<AttrCompare> Query::getWith() const {
         return with;
     }
 
-
-    void Query::addDeclaration(std::string var, DesignEntity de) {
+    void Query::addDeclaration(const std::string &var, DesignEntity de) {
         if (declarations.find(var) != declarations.end())
             throw exceptions::PqlSyntaxException("Declaration already exists!");
 
-        declarations.insert({var, de});
+        declarations.emplace(var, de);
     }
 
-
-    void Query::addVariable(std::string var) {
-        variable.push_back(var);
+    void Query::addResultCl(const ResultCl& resultCl) {
+        selectResults = resultCl;
     }
 
-    void Query::addSuchthat(std::shared_ptr<RelRef> rel) {
+    void Query::addSuchthat(const std::shared_ptr<RelRef>& rel) {
         suchthat.push_back(rel);
     }
 
-    void Query::addPattern(Pattern p) {
+    void Query::addPattern(const Pattern& p) {
         pattern.push_back(p);
     }
 
-    void Query::addWith(AttrCompare ac) {
+    void Query::addWith(const AttrCompare& ac) {
         with.push_back(ac);
     }
 
+    bool AttrRef::compatbileComparison(const AttrRef &o) const {
+        return (isString() && o.isString()) || (isNumber() && o.isNumber());
+    }
+
+    Elem Elem::ofDeclaration(Declaration d) {
+        Elem e; e.declaration = std::move(d);
+        e.type = ElemType::DECLARATION;
+        return e;
+    }
+
+    Elem Elem::ofAttrRef(AttrRef ar) {
+        Elem e;
+        e.ar = std::move(ar);
+        e.type = ElemType::ATTR_REF;
+        return e;
+    }
+
+    ResultCl ResultCl::ofBoolean() {
+        ResultCl r;
+        r.boolean = true;
+        return r;
+    }
+
+    ResultCl ResultCl::ofTuple(std::vector<Elem> tuple) {
+        ResultCl r;
+        r.tuple = std::move(tuple);
+        return r;
+    }
+
+    bool ResultCl::hasElem(const Elem& e) const {
+        return std::find(tuple.begin(), tuple.end(), e) != tuple.end();
+    }
 
     EntRef EntRef::ofVarName(std::string name) {
         EntRef e;
-        e.variable = name;
+        e.variable = std::move(name);
         e.type = EntRefType::VARIABLE_NAME;
         return e;
     }
 
-    EntRef EntRef::ofDeclaration(std::string d, DesignEntity de) {
+    EntRef EntRef::ofDeclaration(Declaration d) {
         EntRef e;
-        e.declaration = d;
+        e.declaration = std::move(d);
         e.type = EntRefType::DECLARATION;
-        e.declarationType = de;
         return e;
     }
 
@@ -121,12 +165,16 @@ namespace qps::query {
         return type;
     }
 
-    std::string EntRef::getDeclaration() const {
+    Declaration EntRef::getDeclaration() const {
         return declaration;
     }
 
+    std::string EntRef::getDeclarationSynonym() const {
+        return declaration.getSynonym();
+    }
+
     DesignEntity EntRef::getDeclarationType() const {
-        return declarationType;
+        return declaration.type;
     }
 
     std::string EntRef::getVariableName() {
@@ -145,11 +193,10 @@ namespace qps::query {
         return type == EntRefType::WILDCARD;
     }
 
-    StmtRef StmtRef::ofDeclaration(std::string d, DesignEntity de) {
+    StmtRef StmtRef::ofDeclaration(Declaration d) {
         StmtRef s;
         s.type = StmtRefType::DECLARATION;
-        s.declaration = d;
-        s.declarationType = de;
+        s.declaration = std::move(d);
         return s;
     }
 
@@ -166,19 +213,23 @@ namespace qps::query {
         return s;
     }
 
-    StmtRefType StmtRef::getType() {
+    StmtRefType StmtRef::getType() const {
         return type;
     }
 
-    DesignEntity StmtRef::getDeclarationType() const {
-        return declarationType;
-    }
-
-    std::string StmtRef::getDeclaration() const {
+    Declaration StmtRef::getDeclaration() const {
         return declaration;
     }
 
-    int StmtRef::getLineNo() {
+    DesignEntity StmtRef::getDeclarationType() const {
+        return declaration.getType();
+    }
+
+    std::string StmtRef::getDeclarationSynonym() const {
+        return declaration.getSynonym();
+    }
+
+    int StmtRef::getLineNo() const {
         return lineNo;
     }
 
@@ -186,11 +237,11 @@ namespace qps::query {
         return type == StmtRefType::DECLARATION;
     }
 
-    bool StmtRef::isLineNo() {
+    bool StmtRef::isLineNo() const {
         return type == StmtRefType::LINE_NO;
     }
 
-    bool StmtRef::isWildcard() {
+    bool StmtRef::isWildcard() const {
         return type == StmtRefType::WILDCARD;
     }
 
@@ -199,30 +250,30 @@ namespace qps::query {
     }
 
     ExpSpec ExpSpec::ofPartialMatch(std::string str) {
-        return ExpSpec { false, true, str };
+        return ExpSpec { false, true, std::move(str) };
     }
 
     ExpSpec ExpSpec::ofFullMatch(std::string str) {
-        return ExpSpec { false, false, str };
+        return ExpSpec { false, false, std::move(str) };
     }
 
-    bool ExpSpec::isPartialMatch() {
+    bool ExpSpec::isPartialMatch() const {
         return partialMatch && (pattern.length() > 0) && !wildCard;
     }
 
-    bool ExpSpec::isFullMatch() {
+    bool ExpSpec::isFullMatch() const {
         return !partialMatch && (pattern.length() > 0) && !wildCard;
     }
 
-    bool ExpSpec::isWildcard() {
+    bool ExpSpec::isWildcard() const {
         return wildCard && (pattern.length() == 0) && !partialMatch;
     }
 
-    std::string ExpSpec::getPattern() {
+    std::string ExpSpec::getPattern() const {
         return pattern;
     }
 
-    PKBField PKBFieldTransformer::transformStmtRef(StmtRef s) {
+    PKBField PKBFieldTransformer::transformStmtRef(const StmtRef& s) {
         PKBField stmtField;
         if (s.isLineNo()) {
             stmtField = PKBField::createConcrete(STMT_LO{s.getLineNo()});
@@ -258,8 +309,8 @@ namespace qps::query {
         return entField;
     }
 
-    ExpSpec Pattern::getExpression() {
-        if (synonymType != DesignEntity::ASSIGN)
+    ExpSpec Pattern::getExpression() const {
+        if (declaration.getType() != DesignEntity::ASSIGN)
             throw exceptions::PqlSyntaxException(messages::qps::parser::notAnAssignPatternMessage);
 
         return expression;
@@ -267,26 +318,23 @@ namespace qps::query {
 
     Pattern Pattern::ofAssignPattern(std::string synonym, EntRef er, ExpSpec exp) {
         Pattern p;
-        p.synonym = synonym;
-        p.synonymType = DesignEntity::ASSIGN;
-        p.lhs = er;
-        p.expression = exp;
+        p.declaration = Declaration { std::move(synonym), DesignEntity::ASSIGN };
+        p.lhs = std::move(er);
+        p.expression = std::move(exp);
         return p;
     }
 
     Pattern Pattern::ofWhilePattern(std::string synonym, EntRef er) {
         Pattern p;
-        p.synonym = synonym;
-        p.synonymType = DesignEntity::WHILE;
-        p.lhs = er;
+        p.declaration = Declaration { std::move(synonym), DesignEntity::WHILE };
+        p.lhs = std::move(er);
         return p;
     }
 
     Pattern Pattern::ofIfPattern(std::string synonym, EntRef er) {
         Pattern p;
-        p.synonym = synonym;
-        p.synonymType = DesignEntity::IF;
-        p.lhs = er;
+        p.declaration = Declaration { std::move(synonym), DesignEntity::IF };
+        p.lhs = std::move(er);
         return p;
     }
 
@@ -294,8 +342,8 @@ namespace qps::query {
         return getFieldHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
-    std::vector<std::string> ModifiesS::getSyns() {
-        return getSynsHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
+    std::vector<Declaration> ModifiesS::getDecs() {
+        return getDecsHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified);
     }
 
     void ModifiesS::checkFirstArg() {
@@ -314,8 +362,8 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> ModifiesP::getSyns() {
-        return getSynsHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
+    std::vector<Declaration> ModifiesP::getDecs() {
+        return getDecsHelper(&ModifiesP::modifiesProc, &ModifiesP::modified);
     }
 
     void ModifiesP::checkFirstArg() {
@@ -335,8 +383,8 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> UsesP::getSyns()  {
-        return getSynsHelper(&UsesP::useProc, &UsesP::used);
+    std::vector<Declaration> UsesP::getDecs()  {
+        return getDecsHelper(&UsesP::useProc, &UsesP::used);
     }
 
     void UsesP::checkFirstArg() {
@@ -353,8 +401,8 @@ namespace qps::query {
         return getFieldHelper(&UsesS::useStmt, &UsesS::used);
     }
 
-    std::vector<std::string> UsesS::getSyns()  {
-        return getSynsHelper(&UsesS::useStmt, &UsesS::used);
+    std::vector<Declaration> UsesS::getDecs()  {
+        return getDecsHelper(&UsesS::useStmt, &UsesS::used);
     }
 
     void UsesS::checkFirstArg() {
@@ -371,32 +419,32 @@ namespace qps::query {
         return getFieldHelper(&Follows::follower, &Follows::followed);
     }
 
-    std::vector<std::string> Follows::getSyns() {
-        return getSynsHelper(&Follows::follower, &Follows::followed);
+    std::vector<Declaration> Follows::getDecs() {
+        return getDecsHelper(&Follows::follower, &Follows::followed);
     }
 
     std::vector<PKBField> FollowsT::getField() {
         return getFieldHelper(&FollowsT::follower, &FollowsT::transitiveFollowed);
     }
 
-    std::vector<std::string> FollowsT::getSyns() {
-        return getSynsHelper(&FollowsT::follower, &FollowsT::transitiveFollowed);
+    std::vector<Declaration> FollowsT::getDecs() {
+        return getDecsHelper(&FollowsT::follower, &FollowsT::transitiveFollowed);
     }
 
     std::vector<PKBField> Parent::getField() {
         return getFieldHelper(&Parent::parent, &Parent::child);
     }
 
-    std::vector<std::string> Parent::getSyns() {
-        return getSynsHelper(&Parent::parent, &Parent::child);
+    std::vector<Declaration> Parent::getDecs() {
+        return getDecsHelper(&Parent::parent, &Parent::child);
     }
 
     std::vector<PKBField> ParentT::getField() {
         return getFieldHelper(&ParentT::parent, &ParentT::transitiveChild);
     }
 
-    std::vector<std::string> ParentT::getSyns() {
-        return getSynsHelper(&ParentT::parent, &ParentT::transitiveChild);
+    std::vector<Declaration> ParentT::getDecs() {
+        return getDecsHelper(&ParentT::parent, &ParentT::transitiveChild);
     }
 
     std::vector<PKBField> Calls::getField() {
@@ -405,8 +453,8 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> Calls::getSyns() {
-        return getSynsHelper(&Calls::caller, &Calls::callee);
+    std::vector<Declaration> Calls::getDecs() {
+        return getDecsHelper(&Calls::caller, &Calls::callee);
     }
 
     void Calls::checkFirstArg() {
@@ -427,8 +475,8 @@ namespace qps::query {
         return std::vector<PKBField>{field1, field2};
     }
 
-    std::vector<std::string> CallsT::getSyns() {
-        return getSynsHelper(&CallsT::caller, &CallsT::transitiveCallee);
+    std::vector<Declaration> CallsT::getDecs() {
+        return getDecsHelper(&CallsT::caller, &CallsT::transitiveCallee);
     }
 
     void CallsT::checkFirstArg() {
@@ -443,24 +491,24 @@ namespace qps::query {
         }
     }
 
-    std::vector<std::string> Next::getSyns() {
-        return getSynsHelper(&Next::before, &Next::after);
+    std::vector<Declaration> Next::getDecs() {
+        return getDecsHelper(&Next::before, &Next::after);
     }
 
     std::vector<PKBField> Next::getField() {
         return getFieldHelper(&Next::before, &Next::after);
     }
 
-    std::vector<std::string> NextT::getSyns() {
-        return getSynsHelper(&NextT::before, &NextT::transitiveAfter);
+    std::vector<Declaration> NextT::getDecs() {
+        return getDecsHelper(&NextT::before, &NextT::transitiveAfter);
     }
 
     std::vector<PKBField> NextT::getField() {
         return getFieldHelper(&NextT::before, &NextT::transitiveAfter);
     }
 
-    std::vector<std::string> Affects::getSyns() {
-        return getSynsHelper(&Affects::affectingStmt, &Affects::affected);
+    std::vector<Declaration> Affects::getDecs() {
+        return getDecsHelper(&Affects::affectingStmt, &Affects::affected);
     }
 
     std::vector<PKBField> Affects::getField() {
@@ -479,8 +527,8 @@ namespace qps::query {
         }
     }
 
-    std::vector<std::string> AffectsT::getSyns() {
-        return getSynsHelper(&AffectsT::affectingStmt, &AffectsT::transitiveAffected);
+    std::vector<Declaration> AffectsT::getDecs() {
+        return getDecsHelper(&AffectsT::affectingStmt, &AffectsT::transitiveAffected);
     }
 
     std::vector<PKBField> AffectsT::getField() {
@@ -502,7 +550,7 @@ namespace qps::query {
     AttrCompareRef AttrCompareRef::ofString(std::string str) {
         AttrCompareRef acr;
         acr.type = AttrCompareRefType::STRING;
-        acr.str_value = str;
+        acr.str_value = std::move(str);
         return acr;
     }
 
@@ -516,11 +564,11 @@ namespace qps::query {
     AttrCompareRef AttrCompareRef::ofAttrRef(AttrRef ar) {
         AttrCompareRef acr;
         acr.type = AttrCompareRefType::ATTRREF;
-        acr.ar = ar;
+        acr.ar = std::move(ar);
         return acr;
     }
 
-    bool AttrCompareRef::validComparison(AttrCompareRef o) const {
+    bool AttrCompareRef::validComparison(const AttrCompareRef& o) const {
         if ((isString() && o.isString()) || (isNumber() && o.isNumber())) {
             return true;
         } else if (isAttrRef() && o.isAttrRef()) {
@@ -533,7 +581,7 @@ namespace qps::query {
         return false;
     }
 
-    void AttrCompare::validateComparingTypes() {
+    void AttrCompare::validateComparingTypes() const {
         if (!lhs.validComparison(rhs))
             throw exceptions::PqlSemanticException(messages::qps::parser::incompatibleComparisonMessage);
     }

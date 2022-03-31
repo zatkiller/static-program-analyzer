@@ -13,14 +13,14 @@ namespace qps::evaluator {
         }
     }
 
-    void ClauseHandler::processStmtField(std::vector<PKBField> &fields, std::vector<std::string> synonyms) {
+    void ClauseHandler::processStmtField(std::vector<PKBField> &fields, std::vector<query::Declaration> declarations) {
         if (fields[0].entityType == PKBEntityType::STATEMENT && fields[0].fieldType == PKBFieldType::DECLARATION) {
-            StatementType sType = PKBTypeMatcher::getStatementType(query.getDeclarationDesignEntity(synonyms[0]));
+            StatementType sType = PKBTypeMatcher::getStatementType(declarations[0].getType());
             fields[0] = PKBField::createDeclaration(sType);
         }
         if (fields[1].entityType == PKBEntityType::STATEMENT && fields[1].fieldType == PKBFieldType::DECLARATION) {
-            std::string name = synonyms.size() == 2 ? synonyms[1] : synonyms[0];
-            StatementType sType = PKBTypeMatcher::getStatementType(query.getDeclarationDesignEntity(name));
+            query::Declaration d = declarations.size() == 2 ? declarations[1] : declarations[0];
+            StatementType sType = PKBTypeMatcher::getStatementType(d.getType());
             fields[1] = PKBField::createDeclaration(sType);
         }
     }
@@ -58,9 +58,13 @@ namespace qps::evaluator {
     void ClauseHandler::handleSynClauses(std::vector<std::shared_ptr<query::RelRef>> clauses) {
         for (auto c : clauses) {
             query::RelRef *relRefPtr = c.get();
-            std::vector<std::string> synonyms = relRefPtr->getSyns();
+            std::vector<query::Declaration> declarations = relRefPtr->getDecs();
+            std::vector<std::string> synonyms{};
+            for (auto d : declarations) {
+                synonyms.push_back(d.getSynonym());
+            }
             std::vector<PKBField> fields = relRefPtr->getField();
-            processStmtField(fields, synonyms);
+            processStmtField(fields, declarations);
             PKBResponse response = pkb->getRelationship(fields[0], fields[1],
                                                         PKBTypeMatcher::getPKBRelationship(relRefPtr->getType()));
             bool isFirstSyn = fields[0].fieldType == PKBFieldType::DECLARATION;
@@ -71,7 +75,7 @@ namespace qps::evaluator {
                 synonyms.pop_back();
                 filterPKBResponse(response);
             }
-            tableRef.join(response, synonyms);
+            tableRef.insert(response, synonyms);
         }
     }
 
@@ -88,11 +92,10 @@ namespace qps::evaluator {
 
     void ClauseHandler::handlePatterns(std::vector<query::Pattern> patterns) {
         for (auto pattern : patterns) {
-            StatementType statementType = PKBTypeMatcher::getStatementType(
-                    query.getDeclarationDesignEntity(pattern.getSynonym()));
+            StatementType statementType = PKBTypeMatcher::getStatementType(pattern.getSynonymType());
             query::EntRef lhs = pattern.getEntRef();
             std::vector<std::string> synonyms{pattern.getSynonym()};
-            if (lhs.isDeclaration()) synonyms.push_back(lhs.getDeclaration());
+            if (lhs.isDeclaration()) synonyms.push_back(lhs.getDeclarationSynonym());
             query::ExpSpec exp = pattern.getExpression();
 
             std::optional<std::string> lhsParam = {};
@@ -106,7 +109,7 @@ namespace qps::evaluator {
             if (!lhs.isDeclaration()) {
                 response = selectDeclaredValue(response, true);
             }
-            tableRef.join(response, synonyms);
+            tableRef.insert(response, synonyms);
         }
     }
 
@@ -124,28 +127,29 @@ namespace qps::evaluator {
     }
 
     void ClauseHandler::handleTwoAttrRef(query::AttrRef lhs, query::AttrRef rhs) {
-        PKBResponse lhsResult = getAll(lhs.declarationType);
-        PKBResponse rhsResult = getAll(rhs.declarationType);
+        PKBResponse lhsResult = getAll(lhs.getDeclarationType());
+        PKBResponse rhsResult = getAll(rhs.getDeclarationType());
         PKBResponse newResponse;
         auto lhsPtr = std::get_if<SingleResponse>(&lhsResult.res);
         auto rhsPtr = std::get_if<SingleResponse>(&rhsResult.res);
-        if (lhs.declaration == rhs.declaration) {
-            tableRef.join(lhsResult, std::vector<std::string>{lhs.declaration});
+        if (lhs.getDeclarationSynonym() == rhs.getDeclarationSynonym()) {
+            tableRef.insert(lhsResult, std::vector<std::string>{lhs.getDeclarationSynonym()});
             return;
         }
-        if (lhs.attrName == query::AttrName::PROCNAME || lhs.attrName == query::AttrName::VARNAME) {
+        if (lhs.getAttrName() == query::AttrName::PROCNAME || lhs.getAttrName() == query::AttrName::VARNAME) {
             newResponse = twoAttrMerge<std::string>(*lhsPtr, *rhsPtr);
         } else {
             newResponse = twoAttrMerge<int>(*lhsPtr, *rhsPtr);
         }
-        tableRef.join(newResponse, std::vector<std::string>{lhs.declaration, rhs.declaration});
+        tableRef.insert(newResponse,
+                        std::vector<std::string>{lhs.getDeclarationSynonym(), rhs.getDeclarationSynonym()});
     }
 
     void ClauseHandler::handleOneAttrRef(query::AttrRef attr, query::AttrCompareRef concrete) {
-        PKBResponse attrResult = getAll(attr.declarationType);
+        PKBResponse attrResult = getAll(attr.getDeclarationType());
         if (concrete.isString()) attrResult = filterAttrValue<std::string>(attrResult, concrete.getString());
         if (concrete.isNumber()) attrResult = filterAttrValue<int>(attrResult, concrete.getNumber());
-        tableRef.join(attrResult, std::vector<std::string>{attr.declaration});
+        tableRef.insert(attrResult, std::vector<std::string>{attr.getDeclarationSynonym()});
     }
 
     void ClauseHandler::handleAttrRefWith(std::vector<query::AttrCompare> attrClauses) {
@@ -158,6 +162,20 @@ namespace qps::evaluator {
                 if (!lhs.isAttrRef())  handleOneAttrRef(rhs.getAttrRef(), lhs);
                 else
                     handleOneAttrRef(lhs.getAttrRef(), rhs);
+            }
+        }
+    }
+
+    void ClauseHandler::handleResultCl(query::ResultCl resultCl) {
+        std::vector<query::Elem> tuple = resultCl.getTuple();
+        for (auto elem : tuple) {
+            query::Declaration dec;
+            if (elem.isDeclaration()) dec = elem.getDeclaration();
+            else
+                dec = elem.getAttrRef().getDeclaration();
+            if (!tableRef.synExists(dec.getSynonym())) {
+                PKBResponse r = getAll(dec.getType());
+                tableRef.insert(r, std::vector<std::string>{dec.getSynonym()});
             }
         }
     }

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 #include "logging.h"
 
 #include "PKB/PKBTables.h"
@@ -18,7 +19,7 @@ public:
 
     /**
     * Inserts a program design entity into its respective table
-    * 
+    *
     * @param entity a STMT_LO, PROC_NAME, VAR_NAME, or CONST
     */
     void insertEntity(Content entity);
@@ -122,20 +123,25 @@ private:
     std::unique_ptr<StatementTable> statementTable;
     std::unique_ptr<VariableTable> variableTable;
     std::unique_ptr<ProcedureTable> procedureTable;
-    std::unique_ptr<ModifiesRelationshipTable> modifiesTable;
-    std::unique_ptr<FollowsRelationshipTable> followsTable;
     std::unique_ptr<ConstantTable> constantTable;
-    std::unique_ptr<ParentRelationshipTable> parentTable;
-    std::unique_ptr<UsesRelationshipTable> usesTable;
-    std::unique_ptr<CallsRelationshipTable> callsTable;
-    std::unique_ptr<NextRelationshipTable> nextTable;
     std::unique_ptr<sp::ast::ASTNode> root;
+    std::unordered_map<PKBRelationship, std::shared_ptr<RelationshipTable>> relationshipTables;
 
     /**
-   * Inserts an assignment, if, or while statement information into the PKB.
-   *
-   * @param stmt
-   */
+    * Returns a pointer to the relationship table corresponding to the given relationship. Transitive
+    * relationships will be converted to its non-transitive counterpart before retrievals. Relationships without
+    * a corrsponding table will throw an std::invalid_argument error.
+    * 
+    * @param relationship the type of program design abstraction
+    * @return a pointer to the relationship table
+    */
+    std::shared_ptr<RelationshipTable> getRelationshipTable(PKBRelationship relationship) const;
+
+    /**
+    * Inserts an assignment, if, or while statement information into the PKB.
+    *
+    * @param stmt
+    */
     void insertStatement(STMT_LO stmt);
 
     /**
@@ -196,7 +202,7 @@ private:
     /**
     * For concrete statement fields, replace its STMT_LO content with the one in the StatementTable. This function will
     * only run after PKB::validate and PKB::validateStatement return true.
-    * 
+    *
     * @param field
     */
     void appendStatementInformation(PKBField* field);

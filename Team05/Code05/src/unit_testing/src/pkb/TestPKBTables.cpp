@@ -65,8 +65,8 @@ TEST_CASE("ProcedureTable") {
     procTable->insert(PROC_NAME{ "monke1" });
     procTable->insert(PROC_NAME{ "monke2" });
 
-    REQUIRE(procTable->contains("monke1"));
-    REQUIRE_FALSE(procTable->contains("monke3"));
+    REQUIRE(procTable->contains(PROC_NAME{ "monke1" }));
+    REQUIRE_FALSE(procTable->contains(PROC_NAME{ "monke3" }));
 
     std::vector<PROC_NAME> expected = std::vector<PROC_NAME>{ PROC_NAME("monke1"), PROC_NAME("monke2") };
     auto actual = procTable->getAllEntity();
@@ -83,8 +83,8 @@ TEST_CASE("VariableTable") {
     varTable->insert(VAR_NAME{ "monke1" });
     varTable->insert(VAR_NAME{ "monke2" });
 
-    REQUIRE(varTable->contains("monke1"));
-    REQUIRE_FALSE(varTable->contains("monke3"));
+    REQUIRE(varTable->contains(VAR_NAME{ "monke1" }));
+    REQUIRE_FALSE(varTable->contains(VAR_NAME{ "monke3" }));
 
     std::vector<VAR_NAME> expected = std::vector<VAR_NAME>{ VAR_NAME("monke1"), VAR_NAME("monke2") };
     auto actual = varTable->getAllEntity();

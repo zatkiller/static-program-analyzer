@@ -1,8 +1,11 @@
+#include <functional>
+
 #include "PatternMatcher.h"
 #include "Parser/Lexer.h"
 #include "Parser/Parser.h"
 #include "PKB/PKBField.h"
 #include "DesignExtractor.h"
+#include "DesignExtractor/EntityExtractor/EntityExtractor.h"
 
 namespace sp {
 namespace design_extractor {
@@ -28,6 +31,20 @@ struct ExprFlattener : public TreeWalker {
     };
 };
 
+/**
+ * @brief Collects a single type of node in the ast tree
+ * 
+ * The collected nodes will be stored in the struct as a field nodes.
+ * 
+ * @tparam T the type of node that needs to be collected.
+ */
+template <typename T>
+struct SingleCollector : public TreeWalker {
+    std::list<std::reference_wrapper<const T>> nodes;
+    void visit(const T& node) override {
+        nodes.emplace_back(node);
+    };
+};
 
 // Helper method to flatten any expression tree to a list representation.
 std::list<std::reference_wrapper<const ast::ASTNode>> flatten(ast::Expr *root) {
@@ -61,14 +78,66 @@ bool isSublist(
     return needleIter == needle.end();
 }
 
-class AssignmentPatternExtractor : public TreeWalker {
-private:
-    PatternParam lhs, rhs;
-    bool isStrict;  // Not in use yet.
+/**
+ * @brief A general pattern extractor that returns a list of reference of target statement node of type T
+ * 
+ * The general pattern extractor that collects all the statement of target type and check them one by one
+ * to see if they pass the constraint predicate. The predicate should be partially applied with the constraints
+ * so that it only require the statement node to return the result.
+ * 
+ * @tparam T the target statement type. It can be ast::Assign / ast::If / ast::While
+ * @param root the root of the ast tree.
+ * @param isMatch the predicate that checks statement of type T
+ * @return std::list<std::reference_wrapper<const T>> the return list of statement that is matched by the predicate
+ */
+template<typename T>
+std::list<std::reference_wrapper<const T>> extractPattern(ast::ASTNode *root, std::function<bool(const T&)> isMatch) {
+    SingleCollector<T> collector;
+    root->accept(&collector);
+    std::list<std::reference_wrapper<const T>> matched;
+    for (auto stmt : collector.nodes) {
+        if (isMatch(stmt)) {
+            matched.emplace_back(stmt);
+        }
+    }
+    return matched;
+}
 
-public:
-    std::list<std::reference_wrapper<const ast::Assign>> nodes;
-    bool isMatch(const ast::Assign& node) {
+/**
+ * @brief Make a predicate for pattern matching conditional statements
+ * 
+ * @tparam T the type of conditional statement. In this case ast::If / ast::While
+ * @param var the constraint of the var
+ * @return std::function<bool(const T&)> a predicate function to check a given conditional statement of type T
+ */
+template<typename T>
+std::function<bool(const T&)> makeCondPredicate(PatternParam var) {
+    return [var](const T& node) {
+        if (!var.has_value()) {
+            return true;
+        }
+
+        SingleCollector<ast::Var> varCollector;
+        node.getCondExpr()->accept(&varCollector);
+        for (auto condVar : varCollector.nodes) {
+            if (condVar.get().getVarName() == var.value()) {
+                return true;
+            }
+        }
+        return false;
+    };
+}
+
+/**
+ * @brief Make a predicate for pattern matching assign statements
+ * 
+ * @param lhs the constraint on the lhs of the statement, which should be a var
+ * @param rhs the constraint on the rhs of the statement, which should be an expression
+ * @param isStrict boolean flag to indicate if strict matching is used on expression.
+ * @return std::function<bool(const ast::Assign&)> a predicate function to check a given assign statement
+ */
+std::function<bool(const ast::Assign&)> makeAssignPredicate(PatternParam lhs, PatternParam rhs, bool isStrict) {
+    return [lhs, rhs, isStrict](const ast::Assign& node) {
         // === Check lHS constraint ===
         if (lhs != std::nullopt && node.getLHS()->getVarName() != lhs.value()) {
             return false;
@@ -100,31 +169,20 @@ public:
 
         // check if RHS expression list is a sublist of assignment expression list
         return isSublist(assignList, exprList);
-    }
-
-    /**
-     * @brief Construct a new Assignment Pattern Extractor object
-     * 
-     * @param lhs Optional constraint for the left hand side of assignment. Give nullopt if wildcard or declaration.
-     * @param rhs Optional constraint for the right hand side of assignment. Give nullopt if wildcard or declaration.
-     * @param isStrict Deteremines if the matching is strict. If it's strict, exact match is expected. Defaults to false.
-     */
-    AssignmentPatternExtractor(PatternParam lhs, PatternParam rhs, bool isStrict = false) : 
-        lhs(lhs),
-        rhs(rhs), 
-        isStrict(isStrict) {}
-
-    void visit(const ast::Assign& node) override {
-        if (isMatch(node)) {
-            nodes.emplace_back(node);
-        }
     };
-};
+}
+
+IfPatternReturn extractIf(ast::ASTNode *root, PatternParam var) {
+    return extractPattern<ast::If>(root, makeCondPredicate<ast::If>(var));
+}
+
+WhilePatternReturn extractWhile(ast::ASTNode *root, PatternParam var) {
+    return extractPattern<ast::While>(root, makeCondPredicate<ast::While>(var));
+}
 
 AssignPatternReturn extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs, bool isStrict) {
-    auto ape = std::make_unique<AssignmentPatternExtractor>(lhs, rhs, isStrict);
-    root->accept(ape.get());
-    return ape->nodes;
-}
+    return extractPattern<ast::Assign>(root, makeAssignPredicate(lhs, rhs, isStrict));
+};
+
 }  // namespace design_extractor
 }  // namespace sp

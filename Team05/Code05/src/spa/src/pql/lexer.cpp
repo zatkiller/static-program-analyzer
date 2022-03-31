@@ -2,7 +2,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "logging.h"
 #include "exceptions.h"
 #include "pql/lexer.h"
 
@@ -19,11 +18,13 @@ namespace qps::parser {
             { '*', TokenType::MULTIPLY },
             { '/', TokenType::DIVIDE },
             { '%', TokenType::MODULO },
-            { '=', TokenType::EQUAL }
+            { '=', TokenType::EQUAL },
+            { '<', TokenType::LEFT_ARROW_HEAD },
+            { '>', TokenType::RIGHT_ARROW_HEAD },
     };
 
     std::vector<std::string> keywords = {
-            "Select", "Modifies", "Uses", "Parent*",
+            "Select", "BOOLEAN", "Modifies", "Uses", "Parent*",
             "Parent", "Follows*", "Follows", "Next*",
             "Next", "Calls*", "Calls", "Affects*", "Affects",
             "pattern", "such that", "with", "procName", "varName",
@@ -32,6 +33,7 @@ namespace qps::parser {
 
     std::unordered_map<std::string, TokenType> keywordsToTokenTypeMap {
             { "Select", TokenType::SELECT },
+            { "BOOLEAN", TokenType::BOOLEAN },
             { "Modifies", TokenType::MODIFIES },
             { "Uses", TokenType::USES },
             { "Parent*", TokenType::PARENT_T },
@@ -62,13 +64,13 @@ namespace qps::parser {
         return Token { keyword, pos->second };
     }
 
-    std::string Lexer::getText() {
+    std::string_view Lexer::getText() {
         return text;
     }
 
     void Lexer::eatWhitespace() {
         while (text.length() > 0 && (isspace(text[0]) || text[0] == '\n' || text[0] == '\t'))
-            text.erase(0, 1);
+            text.remove_prefix(1);
     }
 
     bool Lexer::hasPrefix(std::string prefix) {
@@ -89,11 +91,11 @@ namespace qps::parser {
         auto pos1 = text.find("\"");
         auto pos2 = text.find("\"", pos1 + 1);
         int num_chars = pos2 - pos1;
-        std::string strValue = text.substr(pos1 + 1, num_chars - 1);
+        std::string strValue = std::string { text.substr(pos1 + 1, num_chars - 1) };
 
-        text.erase(0, num_chars + 1);
+        text.remove_prefix(num_chars + 1);
 
-        return Token {strValue, TokenType::STRING };
+        return Token { strValue, TokenType::STRING };
     }
 
     Token Lexer::getIdentifier() {
@@ -102,8 +104,8 @@ namespace qps::parser {
         while (text.length() > 0 && (isalpha(text[charCount]) || isdigit(text[charCount])))
             charCount++;
 
-        std::string identifier = text.substr(0, charCount);
-        text.erase(0, charCount);
+        std::string identifier = std::string { text.substr(0, charCount) };
+        text.remove_prefix(charCount);
 
         return Token { identifier, TokenType::IDENTIFIER };
     }
@@ -114,28 +116,28 @@ namespace qps::parser {
         while (text.length() > 0 && (isdigit(text[charCount])))
             charCount++;
 
-        std::string number = text.substr(0, charCount);
+        std::string number = std::string { text.substr(0, charCount) };
 
         if (number[0] == '0' && number.length() > 1)
             throw exceptions::PqlSyntaxException(messages::qps::parser::leadingZeroMessage);
 
-        text.erase(0, charCount);
+        text.remove_prefix(charCount);
 
         return Token { number, TokenType::NUMBER };
     }
 
     Token Lexer::getSpecialChar() {
         Token token;
-        std::string value = text.substr(0, 1);
+        std::string value = std::string { text.substr(0, 1) };
         TokenType type = getSpecialCharTokenType(text[0]);
 
         if (type == TokenType::INVALID) {
-            token = { "", type };
+            token = Token { "", type };
         } else {
-            token = { value, type };
+            token = Token { value, type };
         }
 
-        text.erase(0, 1);
+        text.remove_prefix(1);
         return token;
     }
 
@@ -143,7 +145,7 @@ namespace qps::parser {
         eatWhitespace();
 
         if (text.length() == 0) {
-            return Token{"EOF", TokenType::END_OF_FILE};
+            return Token{ "EOF", TokenType::END_OF_FILE };
         } else if (text[0] == '"') {
             return getString();
         } else if (isalpha(text[0])) {
@@ -161,7 +163,7 @@ namespace qps::parser {
         Token token = Token{ "", TokenType::INVALID };
 
         if (text.length() == 0) {
-            token = Token {"EOF", TokenType::END_OF_FILE};
+            token = Token { "EOF", TokenType::END_OF_FILE };
             return token;
         }
 
@@ -172,19 +174,19 @@ namespace qps::parser {
             }
         }
 
-        text.erase(0, token.getText().length());
+        text.remove_prefix(token.getText().length());
         return token;
     }
 
     Token Lexer::peekNextToken() {
-        std::string copy = text;
+        std::string_view copy = text;
         Token token = getNextToken();
         text = copy;
         return token;
     }
 
     Token Lexer::peekNextReservedToken() {
-        std::string copy = text;
+        std::string_view copy = text;
         Token token = getNextReservedToken();
         text = copy;
         return token;
