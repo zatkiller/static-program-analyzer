@@ -19,7 +19,7 @@ void printTable(qps::evaluator::ResultTable table) {
     for (auto r : table.getTable()) {
         std::string record;
         for (auto f : r) {
-            record = record + qps::evaluator::Evaluator::PKBFieldToString(f) + " ";
+            record = record + qps::evaluator::ResultProjector::PKBFieldToString(f) + " ";
         }
         TEST_LOG << record;
     }
