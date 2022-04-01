@@ -6,6 +6,9 @@
 #include "clausehandler.h"
 
 namespace qps::evaluator {
+/**
+ * A struct contains the information of a element in result clause.
+ */
 struct SelectElemInfo {
     int columnNo;
     query::AttrName attrName;
@@ -18,17 +21,23 @@ struct SelectElemInfo {
 class ResultProjector {
 public:
     /**
-     * Wraps a certain PKBFiend into a string representation.
+     * Wraps a certain PKBField into a string representation.
      *
      * @param pkbField the PKBField to wrap
      * @return string representation of the PKBField
      */
     static std::string PKBFieldToString(PKBField pkbField);
 
+    /**
+     * Wraps a PKBField with attribute into a string representation.
+     * @param pkbField
+     * @param attrName name of the attribute
+     * @return string representation of the attribute
+     */
     static std::string PKBFieldAttrToString(PKBField pkbField, query::AttrName attrName);
 
     /**
-     * Retrieves the final result from the result table.
+     * Projects the final result from the result table.
      *
      * @param table the reference the result table
      * @param variable the synonym in select part of the query
