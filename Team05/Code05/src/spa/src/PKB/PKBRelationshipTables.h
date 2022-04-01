@@ -1106,19 +1106,13 @@ public:
     * 
     * @param cfgRoots A map of procedure names to roots of their CFGs.
     */
-    void initCFG(ProcToCfgMap cfgRoots) {
-        this->roots = cfgRoots;
-        this->isInit = true;
-    }
+    void initCFG(ProcToCfgMap cfgRoots);
 
     /**
     * Clears the internal cache of all Affects relationships.
     * To be called after each query.
     */
-    void clearCache() {
-        this->affCache.reset();
-        this->isCacheActive = false;
-    }
+    void clearCache();
 
     /**
     * Checks if the relationship Affects(field1, field2) or Affects*(field1, field2) is true,
@@ -1159,10 +1153,73 @@ private:
     ProcToCfgMap roots;
     AffectsCache affCache;
 
+    /**
+    * Checks whether the two PKBFields can be used for a contains query.
+    * The two fields must be concrete statements.
+    * 
+    * @param field1 The first field in the Affects relationship
+    * @param field2 The second field in the Affects relationship
+    * 
+    * @return bool true if the fields are valid and false otherwise
+    * @see PKBField
+    */
     bool isContainsValid(PKBField field1, PKBField field2) const;
+
+    /**
+    * Checks whether the two PKBFields can be used for a retrieve query.
+    * The two fields must be statements. If they are concrete, they should also
+    * be assignments.
+    * 
+    * @param field1 The first field in the Affects relationship
+    * @param field2 The second field in the Affects relationship
+    * 
+    * @return bool true if the fields are valid and false otherwsie
+    * @see PKBField
+    */
     bool isRetrieveValid(PKBField field1, PKBField field2) const;
+
+    /**
+    * Computes all Affects relationships for all procedures using the CFG of each
+    * procedure as provided in initCFG. Only direct Affects relationships will be
+    * extracted (i.e. Affects* relationships are not explicitly extracted)
+    */
     void extractAndCacheAffects();
+
+    /**
+    * Extracts all Affects relationship starting from a given node, using a provided
+    * variable of interest (variable that was modified at the source node) to extract
+    * Affects relationships. Internally done through a Depth-First Search.
+    * 
+    * @param curr A pointer to the current CFGNode
+    * @param voi An unordered set of VAR_NAME that indicates variables that were modified at curr
+    * @param src A pointer to the source CFGNode where the method was initially called on
+    * @param visited A pointer to an unordered set of CFGNodes that indicates which CFGNodes have been 
+    *   visited by the algorithm
+    * 
+    * @see CFGNode, VAR_NAME
+    */
     void walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME> voi, 
         NodePtr src, CfgNodeSet* visited);
+
+    /**
+    * Extracts all Affects relationships when provided a starting root node for the CFG.
+    * Extraction is done through a Depth-First Search.
+    * 
+    * @param start A pointer to the root of the CFG
+    * @param visited A pointer to an unordered set of CFGNodes that have already been visited
+    *   by the algorithm
+    * 
+    * @see CFGNode
+    */
     void extractAndCacheFrom(NodePtr start, CfgNodeSet *visited);
+
+    /**
+    * A helper function to check if the provided PKBField is an unassignment statement.
+    * 
+    * @param field The PKBField of interest
+    * @return bool true if the PKBField represents an assignment statement and false otherwise
+    * 
+    * @see PKBField
+    */
+    bool isAssignment(PKBField field) const;
 };

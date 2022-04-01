@@ -177,11 +177,7 @@ bool AffectsEvaluator::contains(PKBField field1, PKBField field2, bool isTransit
     }
 
     // Check if fields are assignments 
-    if (field1.getContent<STMT_LO>()->type.value() != StatementType::Assignment) {
-        Logger(Level::ERROR) << "An Affects relationship is only between 2 assignment statements!";
-        return false;
-    }
-    if (field2.getContent<STMT_LO>()->type.value() != StatementType::Assignment) {
+    if (!isAssignment(field1) || !isAssignment(field2)) {
         Logger(Level::ERROR) << "An Affects relationship is only between 2 assignment statements!";
         return false;
     }
@@ -221,6 +217,16 @@ FieldRowResponse AffectsEvaluator::retrieve(PKBField field1, PKBField field2, bo
         : affCache->retrieve(field1, field2);
 }
 
+void AffectsEvaluator::initCFG(ProcToCfgMap cfgRoots) {
+    this->roots = cfgRoots;
+    this->isInit = true;
+}
+
+void AffectsEvaluator::clearCache() {
+    this->affCache.reset();
+    this->isCacheActive = false;
+}
+
 bool AffectsEvaluator::isContainsValid(PKBField field1, PKBField field2) const {
     if (!field1.isValidConcrete(PKBEntityType::STATEMENT) || !field2.isValidConcrete(PKBEntityType::STATEMENT)) {
         return false;
@@ -239,18 +245,13 @@ bool AffectsEvaluator::isRetrieveValid(PKBField field1, PKBField field2) const {
     bool isConcreteFirst = field1.fieldType == PKBFieldType::CONCRETE;
     bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
 
-    if (isConcreteFirst) {
-        if (field1.getContent<STMT_LO>()->type.value() != StatementType::Assignment) {
-            return false;
-        }
+    if (isConcreteFirst && !isAssignment(field1)) {
+        return false;
     }
 
-    if (isConcreteSec) {
-        if (field2.getContent<STMT_LO>()->type.value() != StatementType::Assignment) {
-            return false;
-        }
+    if (isConcreteSec && !isAssignment(field2)) {
+        return false;
     }
-
     return true;
 }
 
@@ -266,8 +267,8 @@ void AffectsEvaluator::extractAndCacheAffects() {
     for (auto varCfgPair : roots) {
         // Skip first dummy node
         auto root = varCfgPair.second;
-        if (!root.get()->stmt.has_value() && root.get()->getChildren().size() != 0) {
-            root = root.get()->getChildren().at(0);
+        if (!root->stmt.has_value() && root->getChildren().size() != 0) {
+            root = root->getChildren().at(0);
         }
 
         this->extractAndCacheFrom(root, &visited);
@@ -323,10 +324,10 @@ void AffectsEvaluator::extractAndCacheFrom(NodePtr start, CfgNodeSet* visited) {
 void AffectsEvaluator::walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME> voi, 
     NodePtr src, CfgNodeSet* visited) {
     // Get children
-    auto children = curr.get()->getChildren();
+    auto children = curr->getChildren();
     
     // Check if dummy node
-    if (!curr.get()->stmt.has_value()) {
+    if (!curr->stmt.has_value()) {
         // If children exist walk them
         if (children.empty()) {
             return;
@@ -338,10 +339,10 @@ void AffectsEvaluator::walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME>
     }
 
     // Check for affects relationship
-    STMT_LO currStmt = curr.get()->stmt.value();
+    STMT_LO currStmt = curr->stmt.value();
     bool isAssignNode = currStmt.type.value() == StatementType::Assignment;
     bool hasRs = false;
-    auto usedVars = curr.get()->uses;
+    auto usedVars = curr->uses;
     for (auto var : voi) {
         if (usedVars.find(var) != usedVars.end()) {
             hasRs = true;
@@ -349,12 +350,12 @@ void AffectsEvaluator::walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME>
         }
     }
     if (hasRs && isAssignNode) {
-        STMT_LO srcStmt = src.get()->stmt.value();
+        STMT_LO srcStmt = src->stmt.value();
         affCache->addEdge(srcStmt, currStmt);
     }
 
     // Check if node modifies voi
-    if (!curr.get()->modifies.empty()) {
+    if (!curr->modifies.empty()) {
         auto modVars = curr.get()->modifies;
         for (auto var : voi) {
             if (modVars.find(var) != modVars.end()) {
@@ -374,4 +375,8 @@ void AffectsEvaluator::walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME>
     for (auto child : children) {
         this->walkAndExtract(child, voi, src, visited);
     }
+}
+
+bool AffectsEvaluator::isAssignment(PKBField field) const {
+    return field.getContent<STMT_LO>()->type.value() == StatementType::Assignment;
 }
