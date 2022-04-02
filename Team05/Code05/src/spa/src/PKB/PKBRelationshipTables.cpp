@@ -160,3 +160,223 @@ CallsRelationshipTable::CallsRelationshipTable() : TransitiveRelationshipTable<P
 /** =========================NEXTRELATIONSHIPTABLE METHODS ============================== */
 
 NextRelationshipTable::NextRelationshipTable() : TransitiveRelationshipTable<STMT_LO>{ PKBRelationship::NEXT } {}
+
+/** ========================AFFECTSEVALUATOR METHODS ==================================== */
+
+bool AffectsEvaluator::contains(PKBField field1, PKBField field2, bool isTransitive) {
+    // Check if CFG initialized
+    if (!isInit) {
+        Logger(Level::ERROR) << "CFG has not been initialized!";
+        return false;
+    }
+    
+    // Validate fields
+    if (!isContainsValid(field1, field2)) {
+        Logger(Level::ERROR) << "An Affects relationship is only between 2 concrete statements!";
+        return false;
+    }
+
+    // Check if fields are assignments 
+    if (!isAssignment(field1) || !isAssignment(field2)) {
+        Logger(Level::ERROR) << "An Affects relationship is only between 2 assignment statements!";
+        return false;
+    }
+
+    // If cache not populated compute and cache Affects
+    if (!isCacheActive) {
+        this->extractAndCacheAffects();
+    }
+
+    return isTransitive 
+        ? affCache->containsT(field1, field2) 
+        : affCache->contains(field1, field2);
+}
+
+FieldRowResponse AffectsEvaluator::retrieve(PKBField field1, PKBField field2, bool isTransitive) {
+    FieldRowResponse res;
+    
+    // Check if CFG initialized
+    if (!isInit) {
+        Logger(Level::ERROR) << "CFG has not been initialized!";
+        return res;
+    }
+
+    // Validate fields
+    if (!isRetrieveValid(field1, field2)) {
+        Logger(Level::ERROR) << "An Affects relationship is only between assignment statements!";
+        return res;
+    }
+
+    // If cache not populated compute and cache Affects
+    if (!isCacheActive) {
+        this->extractAndCacheAffects();
+    }
+
+    return isTransitive
+        ? affCache->retrieveT(field1, field2)
+        : affCache->retrieve(field1, field2);
+}
+
+void AffectsEvaluator::initCFG(ProcToCfgMap cfgRoots) {
+    this->roots = cfgRoots;
+    this->isInit = true;
+}
+
+void AffectsEvaluator::clearCache() {
+    this->affCache.reset();
+    this->isCacheActive = false;
+}
+
+bool AffectsEvaluator::isContainsValid(PKBField field1, PKBField field2) const {
+    if (!field1.isValidConcrete(PKBEntityType::STATEMENT) || !field2.isValidConcrete(PKBEntityType::STATEMENT)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool AffectsEvaluator::isRetrieveValid(PKBField field1, PKBField field2) const {
+    // Both fields must be statements
+    if (field1.entityType != PKBEntityType::STATEMENT && field2.entityType != PKBEntityType::STATEMENT) {
+        return false;
+    }
+
+    // Check if fields are assignments
+    bool isConcreteFirst = field1.fieldType == PKBFieldType::CONCRETE;
+    bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
+
+    if (isConcreteFirst && !isAssignment(field1)) {
+        return false;
+    }
+
+    if (isConcreteSec && !isAssignment(field2)) {
+        return false;
+    }
+    return true;
+}
+
+void AffectsEvaluator::extractAndCacheAffects() {
+    // Initialize cache
+    this->affCache = std::make_unique<Graph<STMT_LO>>(PKBRelationship::AFFECTS);
+    this->isCacheActive = true;
+
+    // Initialize visited set for main traversal
+    CfgNodeSet visited;
+
+    // Traverse and extract relationships from each procedure's CFG
+    for (auto varCfgPair : roots) {
+        // Skip first dummy node
+        auto root = varCfgPair.second;
+        if (!root->stmt.has_value() && root->getChildren().size() != 0) {
+            root = root->getChildren().at(0);
+        }
+
+        this->extractAndCacheFrom(root, &visited);
+    }
+}
+
+void AffectsEvaluator::extractAndCacheFrom(NodePtr start, CfgNodeSet* visited) {
+    auto curr = start.get();
+    
+    // Case where node has already been visited
+    if (visited->find(curr) != visited->end()) {
+        return;
+    }
+    
+    // Deal with case where node is dummy
+    if (!curr->stmt.has_value()) {
+        // Get children
+        std::vector<NodePtr> children = curr->getChildren();
+        for (auto child : children) {
+            this->extractAndCacheFrom(child, visited);
+        }
+    } else {
+        // Add to visited list
+        visited->insert(start.get());
+
+        // Get statement at curr
+        STMT_LO currStmt = curr->stmt.value();
+
+        // Check type of stmt
+        bool isAssignNode = currStmt.type.value() == StatementType::Assignment;
+
+        // Do secondary traversal if node is assignment statement
+        if (isAssignNode) {
+            // Extract variable of interest (i.e. var being modified)
+            auto voi = curr->modifies;
+
+            // Get children
+            std::vector<NodePtr> nextNodes = curr->getChildren();
+            for (auto nextNode : nextNodes) {
+                CfgNodeSet secVisited;
+                this->walkAndExtract(nextNode, voi, start, &secVisited);
+            }
+        }
+
+        // Continue traversal
+        std::vector<NodePtr> children = curr->getChildren();
+        for (auto child : children) {
+            this->extractAndCacheFrom(child, visited);
+        }
+    }
+}
+
+void AffectsEvaluator::walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME> voi, 
+    NodePtr src, CfgNodeSet* visited) {
+    // Get children
+    auto children = curr->getChildren();
+    
+    // Check if dummy node
+    if (!curr->stmt.has_value()) {
+        // If children exist walk them
+        if (children.empty()) {
+            return;
+        }
+        for (auto child : children) {
+            this->walkAndExtract(child, voi, src, visited);
+        }
+        return;
+    }
+
+    // Check for affects relationship
+    STMT_LO currStmt = curr->stmt.value();
+    bool isAssignNode = currStmt.type.value() == StatementType::Assignment;
+    bool hasRs = false;
+    auto usedVars = curr->uses;
+    for (auto var : voi) {
+        if (usedVars.find(var) != usedVars.end()) {
+            hasRs = true;
+            break;
+        }
+    }
+    if (hasRs && isAssignNode) {
+        STMT_LO srcStmt = src->stmt.value();
+        affCache->addEdge(srcStmt, currStmt);
+    }
+
+    // Check if node modifies voi
+    if (!curr->modifies.empty()) {
+        auto modVars = curr.get()->modifies;
+        for (auto var : voi) {
+            if (modVars.find(var) != modVars.end()) {
+                visited->insert(curr.get());
+                return;
+            }
+        }
+    }
+
+    // Check if node already visited
+    if (visited->find(curr.get()) != visited->end()) {
+        return;
+    }
+
+    // Update visited list and continue traversal
+    visited->insert(curr.get());
+    for (auto child : children) {
+        this->walkAndExtract(child, voi, src, visited);
+    }
+}
+
+bool AffectsEvaluator::isAssignment(PKBField field) const {
+    return field.getContent<STMT_LO>()->type.value() == StatementType::Assignment;
+}

@@ -9,6 +9,7 @@
 #include "logging.h"
 
 #include "PKB/PKBTables.h"
+#include "PKB/PKBRelationshipTables.h"
 #include "PKB/PKBResponse.h"
 #include "PKB/PKBField.h"
 #include "DesignExtractor/PatternMatcher.h"
@@ -39,6 +40,8 @@ public:
     * @param root the pointer to the root of the AST of the SIMPLE source program
     */
     void insertAST(std::unique_ptr<sp::ast::Program> root);
+
+    void insertCFG(ProcToCfgMap roots);
 
     /**
     * Checks whether there exist. If any fields are invalid, return false. Both fields must be concrete.
@@ -121,13 +124,18 @@ public:
         sp::design_extractor::PatternParam rhs = std::nullopt, bool isStrict = false) const;
 
 private:
+    std::unordered_map<PKBRelationship, std::shared_ptr<RelationshipTable>> relationshipTables;
+
     std::unique_ptr<StatementTable> statementTable;
     std::unique_ptr<VariableTable> variableTable;
     std::unique_ptr<ProcedureTable> procedureTable;
     std::unique_ptr<ConstantTable> constantTable;
-    std::unique_ptr<sp::ast::ASTNode> root;
-    std::unordered_map<PKBRelationship, std::shared_ptr<RelationshipTable>> relationshipTables;
 
+    std::unique_ptr<AffectsEvaluator> affectsEval;
+
+    ProcToCfgMap cfgRoots;
+    std::unique_ptr<sp::ast::ASTNode> root;
+    
     /**
     * Returns a pointer to the relationship table corresponding to the given relationship. Transitive
     * relationships will be converted to its non-transitive counterpart before retrievals. Relationships without
