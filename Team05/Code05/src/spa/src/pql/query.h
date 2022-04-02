@@ -39,8 +39,8 @@ enum class StmtRefType {
 };
 
 struct Declaration {
-    DesignEntity type {};
     std::string synonym;
+    DesignEntity type {};
 
     Declaration() {}
     Declaration(std::string synonym, DesignEntity type) : synonym(std::move(synonym)), type(type) {}
@@ -75,8 +75,8 @@ struct AttrRef {
     Declaration getDeclaration() const { return declaration; }
 
 private:
-    AttrName attrName = AttrName::INVALID;
     Declaration declaration {};
+    AttrName attrName = AttrName::INVALID;
 };
 
 enum class ElemType {
@@ -118,12 +118,12 @@ struct ResultCl {
     bool isBoolean() const { return boolean; }
     std::vector<Elem> getTuple() const { return tuple; }
 
-    bool hasElem(Elem e) const;
+    bool hasElem(const Elem& e) const;
 
 
 private:
-    bool boolean = false;
     std::vector<Elem> tuple;
+    bool boolean = false;
 };
 
 /**
@@ -131,9 +131,9 @@ private:
 */
 struct StmtRef {
 private:
-    StmtRefType type = StmtRefType::NOT_INITIALIZED;
     Declaration declaration {};
     int lineNo = -1;
+    StmtRefType type = StmtRefType::NOT_INITIALIZED;
 
 public:
     /**
@@ -192,9 +192,9 @@ enum class EntRefType {
 */
 struct EntRef {
 private:
-    EntRefType type = EntRefType::NOT_INITIALIZED;
     Declaration declaration {};
-    std::string variable = "";
+    std::string variable;
+    EntRefType type = EntRefType::NOT_INITIALIZED;
 
 public:
     /**
@@ -544,9 +544,9 @@ private:
     ExpSpec(bool wildCard, bool partialMatch, std::string pattern) : wildCard(wildCard), partialMatch(partialMatch),
                                                                     pattern(std::move(pattern)) {}
 
+    std::string pattern;
     bool wildCard = false;
     bool partialMatch = false;
-    std::string pattern = "";
 };
 
 /**
@@ -569,8 +569,8 @@ struct Pattern {
     }
 
 private:
-    Declaration declaration {};
     EntRef lhs {};
+    Declaration declaration {};
     ExpSpec expression {};
 };
 
@@ -584,7 +584,7 @@ enum class AttrCompareRefType {
 struct AttrCompareRef {
 private:
     AttrRef ar;
-    std::string str_value = "";
+    std::string str_value;
     AttrCompareRefType type = AttrCompareRefType::NOT_INITIALIZED;
     int number = -1;
 
@@ -629,7 +629,6 @@ private:
 
 public:
     std::unordered_map<std::string, DesignEntity> getDeclarations() const;
-    std::vector<std::string> getVariable() const;
     ResultCl getResultCl() const;
 
     std::vector<std::shared_ptr<RelRef>> getSuchthat() const;
@@ -640,11 +639,11 @@ public:
     bool isValid() const;
     void setValid(bool);
 
-    bool hasDeclaration(const std::string &) const;
-    bool hasSelectElem(const Elem e) const;
+    bool hasDeclaration(const std::string&) const;
+    bool hasSelectElem(const Elem &e) const;
 
-    void addDeclaration(const std::string&, DesignEntity);
-    void addResultCl(const ResultCl resultCl);
+    void addDeclaration(const std::string &, DesignEntity);
+    void addResultCl(const ResultCl& resultCl);
 
     void addSuchthat(const std::shared_ptr<RelRef>&);
     void addPattern(const Pattern&);
@@ -656,7 +655,7 @@ public:
         * @param declaration the name of the declaration
         * @return DesignEntity of the specified declaration
         */
-    DesignEntity getDeclarationDesignEntity(const std::string& declaration) const;
+    DesignEntity getDeclarationDesignEntity(const std::string &declaration) const;
 };
 
 }  // namespace qps::query

@@ -96,15 +96,18 @@ namespace qps::evaluator {
             query::EntRef lhs = pattern.getEntRef();
             std::vector<std::string> synonyms{pattern.getSynonym()};
             if (lhs.isDeclaration()) synonyms.push_back(lhs.getDeclarationSynonym());
-            query::ExpSpec exp = pattern.getExpression();
 
             std::optional<std::string> lhsParam = {};
             if (lhs.isVarName()) lhsParam = lhs.getVariableName();
 
             std::optional<std::string> rhsParam = {};
-            if (exp.isPartialMatch() || exp.isFullMatch()) rhsParam = exp.getPattern();
+            bool isStrict = false;
+            if (statementType == StatementType::Assignment) {
+                query::ExpSpec exp = pattern.getExpression();
+                if (exp.isPartialMatch() || exp.isFullMatch()) rhsParam = exp.getPattern();
+                isStrict = exp.isFullMatch();
+            }
 
-            bool isStrict = exp.isFullMatch();
             PKBResponse response = pkb->match(statementType, lhsParam, rhsParam, isStrict);
             if (!lhs.isDeclaration()) {
                 response = selectDeclaredValue(response, true);

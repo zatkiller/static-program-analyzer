@@ -101,23 +101,24 @@ public:
 
     /**
     * @brief Retrieves all the statements of the provided type that satisfy the constraints given
-    * Only assignments are supported.
+    * Only assignments, ifs, and whiles are supported.
     *
     * For a(v, _"x+1"_), use match(StatementType::Assignment, std::nullopt, "x+1")
     * For a(v, "x+1"), use match(StatementType::Assignment, std::nullopt, "x+1", true)
+    * For if(v, _, _), use match(StatementType::If, std::nullopt), applies for while
+    * For if("x", _, _), use match(StatementType::If, "x"), applies for while
     *
     * @param lhs The optional string constraint of LHS variable. Use std::nullopt if LHS is wildcard or synonym.
-    * @param rhs The optional string constraint of RHS expression. Use std::nullopt if RHS is wildcard.
-    * @param isStrict An optional boolean that indicates whether strict pattern matching should be used.
+    * @param rhs The optional string constraint of RHS expression. Use std::nullopt if RHS is wildcard. Defaults to 
+    * std::nullopt.
+    * @param isStrict An optional boolean indicating whether strict pattern matching should be used for assignments.
     *   Defaults to false if no argument provided.
-    * @return PKBResponse
+    * @return PKBResponse, where the first element of each vector<PKBField> is the statement and subsequent elements
+    * are the variables. E.g., for assignments, the variable will be the variable modified, and for container 
+    * statements, the variables will be the variables used in the conditional expression.
     */
-    PKBResponse match(
-        StatementType type,
-        sp::design_extractor::PatternParam lhs,
-        sp::design_extractor::PatternParam rhs,
-        bool isStrict = false
-    );
+    PKBResponse match(StatementType type, sp::design_extractor::PatternParam lhs,
+        sp::design_extractor::PatternParam rhs = std::nullopt, bool isStrict = false) const;
 
 private:
     std::unique_ptr<StatementTable> statementTable;
@@ -131,7 +132,7 @@ private:
     * Returns a pointer to the relationship table corresponding to the given relationship. Transitive
     * relationships will be converted to its non-transitive counterpart before retrievals. Relationships without
     * a corrsponding table will throw an std::invalid_argument error.
-    * 
+    *
     * @param relationship the type of program design abstraction
     * @return a pointer to the relationship table
     */
@@ -206,4 +207,20 @@ private:
     * @param field
     */
     void appendStatementInformation(PKBField* field);
+
+    /**
+    * Helper method to extract assignments matching the patterns provided.
+    */
+    PKBResponse matchAssign(sp::design_extractor::PatternParam lhs,
+        sp::design_extractor::PatternParam rhs, bool isStrict) const;
+
+    /**
+    * Helper method to extract ifs matching the pattern provided.
+    */
+    PKBResponse matchIf(sp::design_extractor::PatternParam lhs) const;
+
+    /**
+    * Helper method to extract while matching the pattern provided.
+    */
+    PKBResponse matchWhile(sp::design_extractor::PatternParam lhs) const;
 };

@@ -50,6 +50,27 @@ typedef struct STMT_LO {
     bool operator < (const STMT_LO&) const;
 } STMT_LO;
 
+/**
+ * @brief Hash function for type STMT_LO
+ */
+template <> struct std::hash<STMT_LO> {
+    size_t operator()(const STMT_LO& k) const;
+};
+
+/**
+ * @brief Hash function for type VAR_NAME
+ */
+template <> struct std::hash<VAR_NAME> {
+    size_t operator()(const VAR_NAME& k) const;
+};
+
+/**
+ * @brief Hash function for type PROC_NAME
+ */
+template <> struct std::hash<PROC_NAME> {
+    size_t operator()(const PROC_NAME& k) const;
+};
+
 using Content = std::variant<std::monostate, STMT_LO, VAR_NAME, PROC_NAME, CONST>;
 
 /**

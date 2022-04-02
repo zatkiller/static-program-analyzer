@@ -5,6 +5,7 @@
 
 #include "logging.h"
 #include "PKB.h"
+#include "DesignExtractor/EntityExtractor/EntityExtractor.h"
 
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 // explicit deduction guide (not needed as of C++20)
@@ -144,7 +145,7 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
 
 /**
 * Helper method to check whether the given relationship is transitive.
-* 
+*
 * @param relationship the type of program design abstraction
 * @return bool
 */
@@ -278,25 +279,16 @@ PKBResponse PKB::getConstants() {
     return createResponseFromTable<CONST>(constantTable->getAllEntity());
 }
 
-PKBResponse PKB::match(
-    StatementType type,
-    sp::design_extractor::PatternParam lhs,
-    sp::design_extractor::PatternParam rhs,
-    bool isStrict) {
+PKBResponse PKB::matchAssign(sp::design_extractor::PatternParam lhs,
+    sp::design_extractor::PatternParam rhs, bool isStrict) const {
     auto matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs, isStrict);
     FieldRowResponse res;
 
-    if (matchedStmts.size() == 0) {
-        return PKBResponse{ false, Response{res} };
-    }
-
     for (auto& node : matchedStmts) {
         std::vector<PKBField> stmtRes;
-
         int statementNumber = node.get().getStmtNo();
-        auto stmt = PKBField::createConcrete(
-            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() });
-        stmtRes.emplace_back(stmt);
+        stmtRes.emplace_back(PKBField::createConcrete(
+            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() }));
 
         auto varName = node.get().getLHS()->getVarName();
         stmtRes.emplace_back(PKBField::createConcrete(VAR_NAME{ varName }));
@@ -304,5 +296,69 @@ PKBResponse PKB::match(
         res.insert(stmtRes);
     }
 
-    return PKBResponse{ true, Response{res} };
+    return PKBResponse{ matchedStmts.size() > 0, Response{res} };
+}
+
+PKBResponse PKB::matchIf(sp::design_extractor::PatternParam lhs) const {
+    auto matchedStmts = sp::design_extractor::extractIf(root.get(), lhs);
+    FieldRowResponse res;
+
+    for (auto& node : matchedStmts) {
+        std::vector<PKBField> stmtRes;
+        int statementNumber = node.get().getStmtNo();
+        stmtRes.emplace_back(PKBField::createConcrete(
+            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() }));
+
+        sp::design_extractor::VariableCollector vc;
+        node.get().getCondExpr()->accept(&vc);
+        auto& vars = vc.entities;
+
+        for (auto& var : vars) {
+            stmtRes.emplace_back(PKBField::createConcrete(std::get<sp::design_extractor::Entity>(var)));
+        }
+
+        res.insert(stmtRes);
+    }
+
+    return PKBResponse{ matchedStmts.size() > 0, Response{res} };
+}
+
+PKBResponse PKB::matchWhile(sp::design_extractor::PatternParam lhs) const {
+    auto matchedStmts = sp::design_extractor::extractWhile(root.get(), lhs);
+    FieldRowResponse res;
+
+    for (auto& node : matchedStmts) {
+        std::vector<PKBField> stmtRes;
+        int statementNumber = node.get().getStmtNo();
+        stmtRes.emplace_back(PKBField::createConcrete(
+            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() }));
+
+        sp::design_extractor::VariableCollector vc;
+        node.get().getCondExpr()->accept(&vc);
+        auto& vars = vc.entities;
+
+        for (auto& var : vars) {
+            stmtRes.emplace_back(PKBField::createConcrete(std::get<sp::design_extractor::Entity>(var)));
+        }
+
+        res.insert(stmtRes);
+    }
+
+    return PKBResponse{ matchedStmts.size() > 0, Response{res} };
+}
+
+PKBResponse PKB::match(StatementType type, sp::design_extractor::PatternParam lhs,
+    sp::design_extractor::PatternParam rhs, bool isStrict) const {
+
+    switch (type) {
+    case StatementType::Assignment:
+        return matchAssign(lhs, rhs, isStrict);
+    case StatementType::If:
+        return matchIf(lhs);
+    case StatementType::While:
+        return matchWhile(lhs);
+    default:
+        Logger(Level::ERROR) << "No pattern matching available for the provided statement type.";
+        throw std::invalid_argument("No pattern matching available for the provided statement type.");
+    }
 }
