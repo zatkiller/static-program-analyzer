@@ -55,20 +55,6 @@ namespace qps::query {
         return declarations;
     }
 
-    // For backward compatibility, will remove once Evaluator switches to selectFields
-    std::vector<std::string> Query::getVariable() const {
-        std::vector<std::string> results;
-        Elem e = selectResults.getTuple()[0];
-
-        if (e.isDeclaration()) {
-            results.push_back(e.getDeclaration().getSynonym());
-        } else {
-            results.push_back(e.getAttrRef().getDeclaration().getSynonym());
-        }
-
-        return results;
-    }
-
     ResultCl Query::getResultCl() const {
         return selectResults;
     }

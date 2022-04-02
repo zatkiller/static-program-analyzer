@@ -629,7 +629,6 @@ private:
 
 public:
     std::unordered_map<std::string, DesignEntity> getDeclarations() const;
-    std::vector<std::string> getVariable() const;
     ResultCl getResultCl() const;
 
     std::vector<std::shared_ptr<RelRef>> getSuchthat() const;
