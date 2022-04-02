@@ -398,4 +398,42 @@ TEST_CASE("test evaluate pattern") {
     printEvaluatorResult(result12);
     REQUIRE(result12 == std::list<std::string>{"2 1", "2 2", "2 3", "2 4", "2 5", "2 6", "2 7",
                                                "5 1", "5 2", "5 3", "5 4", "5 5", "5 6", "5 7" });
+
+    TEST_LOG << "while w; variable v; Select <w, v> pattern w(v, _)";
+    qps::evaluator::Evaluator evaluator13 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query13{};
+    query13.addDeclaration("w", qps::query::DesignEntity::WHILE);
+    query13.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+
+    qps::query::Declaration d131 = qps::query::Declaration { "w", qps::query::DesignEntity::WHILE };
+    qps::query::Declaration d132 = qps::query::Declaration { "v", qps::query::DesignEntity::VARIABLE };
+    std::vector<qps::query::Elem> tuple13 { qps::query::Elem::ofDeclaration(d131),
+                                            qps::query::Elem::ofDeclaration(d132) };
+    qps::query::ResultCl r13 = qps::query::ResultCl::ofTuple(tuple13);
+    query13.addResultCl(r13);
+
+    query13.addPattern(qps::query::Pattern::ofWhilePattern("w",
+                                                           qps::query::EntRef::ofDeclaration( Declaration {
+                                                                   "v", qps::query::DesignEntity::VARIABLE })));
+    std::list<std::string> result13 = evaluator13.evaluate(query13);
+    result13.sort();
+    printEvaluatorResult(result13);
+    REQUIRE(result13 == std::list<std::string>{"3 number"});
+
+    TEST_LOG << "if ifs; variable v; Select v pattern ifs(_, _)";
+    qps::evaluator::Evaluator evaluator14 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query14{};
+    query14.addDeclaration("ifs", qps::query::DesignEntity::IF);
+    query14.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+
+    qps::query::Declaration d14 = qps::query::Declaration { "v", qps::query::DesignEntity::VARIABLE };
+    std::vector<qps::query::Elem> tuple14 { qps::query::Elem::ofDeclaration(d14) };
+    qps::query::ResultCl r14 = qps::query::ResultCl::ofTuple(tuple14);
+    query14.addResultCl(r14);
+
+    query14.addPattern(qps::query::Pattern::ofIfPattern("ifs", qps::query::EntRef::ofWildcard()));
+    std::list<std::string> result14 = evaluator14.evaluate(query14);
+    result14.sort();
+    printEvaluatorResult(result14);
+    REQUIRE(result14.empty());
 }
