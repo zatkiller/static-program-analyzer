@@ -583,7 +583,7 @@ enum class AttrCompareRefType {
 
 struct AttrCompareRef {
 private:
-    AttrRef ar;
+    AttrRef ar {};
     std::string str_value;
     AttrCompareRefType type = AttrCompareRefType::NOT_INITIALIZED;
     int number = -1;
@@ -608,6 +608,7 @@ struct AttrCompare {
     AttrCompareRef lhs;
     AttrCompareRef rhs;
 
+    AttrCompare() {}
     AttrCompare(AttrCompareRef lhs, AttrCompareRef rhs) : lhs(std::move(lhs)), rhs(std::move(rhs)) {}
 
     AttrCompareRef getLhs() const { return lhs; }

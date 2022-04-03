@@ -1,3 +1,4 @@
+#include <memory>
 #include "pql/optimizer.h"
 #include "pql/query.h"
 #include "catch.hpp"
@@ -16,6 +17,53 @@ void printGroupSyns(std::vector<qps::optimizer::ClauseGroup> groups) {
         TEST_LOG << s;
     }
 }
+
+TEST_CASE("OrderedClause") {
+
+    qps::query::Parent p1;
+    p1.parent = qps::query::StmtRef::ofDeclaration(qps::query::Declaration{ "s1", qps::query::DesignEntity::STMT });
+    p1.child = qps::query::StmtRef::ofDeclaration(qps::query::Declaration{ "s2", qps::query::DesignEntity::STMT });
+
+    std::shared_ptr<qps::query::RelRef> suchthat = std::make_shared<qps::query::Parent>(p1);
+
+    qps::optimizer::OrderedClause o1 = qps::optimizer::OrderedClause::ofSuchThat(suchthat);
+    REQUIRE(o1.isSuchThat());
+    std::vector<std::string> syns1 = o1.getSynonyms();
+    REQUIRE(syns1.size() == 2);
+    REQUIRE(syns1[0] == "s1");
+    REQUIRE(syns1[1] == "s2");
+
+    std::shared_ptr<qps::query::RelRef> suchthatResult = o1.getSuchThat();
+    REQUIRE((suchthatResult.get()->getType()) == qps::query::RelRefType::PARENT);
+
+    std::shared_ptr<qps::query::Parent> p2 = std::dynamic_pointer_cast<qps::query::Parent>(suchthatResult);
+    REQUIRE(p2.get()->parent == qps::query::StmtRef::ofDeclaration(qps::query::Declaration{ "s1", qps::query::DesignEntity::STMT }));
+    REQUIRE(p2.get()->child == qps::query::StmtRef::ofDeclaration(qps::query::Declaration{ "s2", qps::query::DesignEntity::STMT }));
+
+    qps::query::AttrRef ar = qps::query::AttrRef(qps::query::AttrName::STMTNUM, qps::query::Declaration{ "s3", qps::query::DesignEntity::STMT });
+    qps::query::AttrCompareRef lhs1 = qps::query::AttrCompareRef::ofAttrRef(ar);
+    qps::query::AttrCompareRef rhs1 = qps::query::AttrCompareRef::ofString("x");
+    qps::query::AttrCompare with1 = qps::query::AttrCompare{ lhs1, rhs1 };
+
+    qps::optimizer::OrderedClause o2 = qps::optimizer::OrderedClause::ofWith(with1);
+    REQUIRE(o2.isWith());
+    std::vector<std::string> syns2 = o2.getSynonyms();
+    REQUIRE(syns2.size() == 1);
+    REQUIRE(syns2[0] == "s3");
+
+    qps::query::Pattern pattern1 = qps::query::Pattern::ofAssignPattern("a",
+        qps::query::EntRef::ofDeclaration(qps::query::Declaration{ "v", qps::query::DesignEntity::VARIABLE }),
+        qps::query::ExpSpec::ofWildcard());
+
+    qps::optimizer::OrderedClause o3 = qps::optimizer::OrderedClause::ofPattern(pattern1);
+    REQUIRE(o3.isPattern());
+    std::vector<std::string> syns3 = o3.getSynonyms();
+    REQUIRE(syns3.size() == 2);
+    REQUIRE(syns3[0] == "a");
+    REQUIRE(syns3[1] == "v");
+}
+
+
 TEST_CASE("test group clauses") {
     std::vector<std::shared_ptr<qps::query::RelRef>> suchthat;
     std::vector<qps::query::AttrCompare> with;

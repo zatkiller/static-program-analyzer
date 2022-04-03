@@ -5,6 +5,39 @@
 #include "pql/query.h"
 namespace qps::optimizer {
 
+enum class OrderedClauseType {
+    INVALID,
+    SUCH_THAT,
+    WITH,
+    PATTERN
+};
+
+struct OrderedClause {
+
+    static OrderedClause ofWith(query::AttrCompare &);
+    static OrderedClause ofSuchThat(std::shared_ptr<query::RelRef> &);
+    static OrderedClause ofPattern(query::Pattern &);
+
+    std::shared_ptr<query::RelRef> getSuchThat() { return suchthat; }
+    query::AttrCompare getWith() { return with; }
+    query::Pattern getPattern() { return pattern; }
+
+    std::vector<std::string> getSynonyms() { return synonyms; }
+
+    bool isWith() { return type == OrderedClauseType::WITH; }
+    bool isSuchThat() { return type == OrderedClauseType::SUCH_THAT; }
+    bool isPattern() { return type == OrderedClauseType::PATTERN; }
+ 
+private:
+    std::shared_ptr<query::RelRef> suchthat {};
+    query::AttrCompare with {};
+    query::Pattern pattern {};
+
+    std::vector<std::string> synonyms;
+
+    OrderedClauseType type = OrderedClauseType::INVALID;
+};
+
 struct ClauseGroup {
     int groupId;
     std::unordered_set<std::string> syns;
@@ -74,10 +107,11 @@ public:
                 }
             }
             if (belongsToExistGroup) {
-                groups[groupId].template addClause(clause, syns);
-            } else {
+                groups[groupId].addClause(clause, syns);
+            }
+            else {
                 ClauseGroup newGroup = ClauseGroup::ofNewGroup(groupId);
-                newGroup.template addClause(clause, syns);
+                newGroup.addClause(clause, syns);
                 groups.push_back(newGroup);
             }
             addSynsToMap(syns, groupId);
