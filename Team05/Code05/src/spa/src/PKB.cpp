@@ -23,6 +23,8 @@ PKB::PKB() {
     variableTable = std::make_unique<VariableTable>();
     constantTable = std::make_unique<ConstantTable>();
     procedureTable = std::make_unique<ProcedureTable>();
+
+    affectsEval = std::make_unique<AffectsEvaluator>();
 }
 
 // INSERT API
@@ -55,6 +57,11 @@ void PKB::insertConstant(CONST constant) {
 
 void PKB::insertAST(std::unique_ptr<sp::ast::Program> root) {
     this->root = std::move(root);
+}
+
+void PKB::insertCFG(ProcToCfgMap roots) {
+    this->cfgRoots = roots;
+    this->affectsEval->initCFG(roots);
 }
 
 bool PKB::validate(const PKBField field) const {
@@ -140,6 +147,12 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
     appendStatementInformation(&field1);
     appendStatementInformation(&field2);
 
+    // Currently a hack to support Affects
+    if (type == PKBRelationship::AFFECTS || type == PKBRelationship::AFFECTST) {
+        Logger(Level::ERROR) << "Cannot insert Affects relationships!";
+        return;
+    }
+
     getRelationshipTable(type)->insert(field1, field2);
 }
 
@@ -199,6 +212,15 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
     appendStatementInformation(&field1);
     appendStatementInformation(&field2);
 
+    // Currently a hack to support Affects
+    if (rs == PKBRelationship::AFFECTS) {
+        return affectsEval->contains(field1, field2);
+    }
+
+    if (rs == PKBRelationship::AFFECTST) {
+        return affectsEval->contains(field1, field2, true);
+    }
+
     auto relationshipTablePtr = getRelationshipTable(rs);
     if (isTransitiveRelationship(rs)) {
         if (rs == PKBRelationship::CALLST) {
@@ -224,6 +246,23 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
     appendStatementInformation(&field2);
 
     FieldRowResponse extracted;
+
+    // Currently a hack to support Affects
+    if (rs == PKBRelationship::AFFECTS) {
+        extracted = affectsEval->retrieve(field1, field2);
+
+        return extracted.size() != 0
+            ? PKBResponse{ true, Response{extracted} }
+        : PKBResponse{ false, Response{extracted} };
+    }
+
+    if (rs == PKBRelationship::AFFECTST) {
+        extracted = affectsEval->retrieve(field1, field2, true);
+
+        return extracted.size() != 0
+            ? PKBResponse{ true, Response{extracted} }
+        : PKBResponse{ false, Response{extracted} };
+    } 
 
     auto relationshipTablePtr = getRelationshipTable(rs);
     if (isTransitiveRelationship(rs)) {
