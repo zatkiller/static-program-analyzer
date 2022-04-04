@@ -601,6 +601,10 @@ public:
     bool isNumber() const { return type == AttrCompareRefType::NUMBER; }
     bool isAttrRef() const { return type == AttrCompareRefType::ATTRREF; }
     bool validComparison(const AttrCompareRef&  o) const;
+
+    bool operator==(const AttrCompareRef &o) const {
+        return (type == o.type) && (str_value == o.str_value) && (ar == o.ar) && (number == o.number);
+    }
 };
 
 
@@ -614,6 +618,10 @@ struct AttrCompare {
     AttrCompareRef getLhs() const { return lhs; }
     AttrCompareRef getRhs() const { return rhs; }
     void validateComparingTypes() const;
+
+    bool operator==(const AttrCompare &o) const {
+        return (lhs == o.lhs) && (rhs == o.rhs);
+    }
 };
 
 /**

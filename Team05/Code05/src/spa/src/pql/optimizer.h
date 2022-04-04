@@ -1,7 +1,7 @@
 #pragma once
 
 #include <utility>
-
+#include <queue>
 #include "pql/query.h"
 namespace qps::optimizer {
 
@@ -23,11 +23,14 @@ struct OrderedClause {
     query::Pattern getPattern() { return pattern; }
 
     std::vector<std::string> getSynonyms() { return synonyms; }
-
+    int getPriority();
     bool isWith() { return type == OrderedClauseType::WITH; }
     bool isSuchThat() { return type == OrderedClauseType::SUCH_THAT; }
     bool isPattern() { return type == OrderedClauseType::PATTERN; }
- 
+
+    bool operator==(const OrderedClause& o) const {
+        return (type == o.type) && (suchthat == o.suchthat) && (with == o.with) && (pattern == o.pattern);
+    }
 private:
     std::shared_ptr<query::RelRef> suchthat {};
     query::AttrCompare with {};
@@ -38,6 +41,40 @@ private:
     OrderedClauseType type = OrderedClauseType::INVALID;
 };
 
+struct ClausePriority {
+public:
+    bool operator()(OrderedClause& a,OrderedClause& b)
+    {
+        if (a.getSynonyms().size() < b.getSynonyms().size()) {
+            return true;
+        } else if (a.getSynonyms().size() >= b.getSynonyms().size()) {
+            return false;
+        } else {
+            return a.getPriority() < b.getPriority();
+        }
+    }
+};
+//
+//struct GroupPriority {
+//public:
+//    bool operator()(OrderedClause& a,OrderedClause& b)
+//    {
+//        if (a.getSynonyms().size() < b.getSynonyms().size()) {
+//            return true;
+//        } else if (a.getSynonyms().size() >= b.getSynonyms().size()) {
+//            return false;
+//        } else {
+//            return a.getPriority() < b.getPriority();
+//        }
+//    }
+//};
+struct BFS {
+    bool initialized = false;
+    std::priority_queue<OrderedClause, std::vector<OrderedClause>, ClausePriority> pq;
+    std::unordered_set<OrderedClause> visitedCl;
+    std::unordered_set<std::string> visitedSyn;
+};
+
 struct ClauseGroup {
     int groupId;
     std::unordered_set<std::string> syns;
@@ -45,18 +82,45 @@ struct ClauseGroup {
     std::vector<query::AttrCompare> withGroup;
     std::vector<query::Pattern> patternGroup;
 
+    std::unordered_map<std::string, std::vector<OrderedClause>> subgroups;
+    std::string startingPoint;
+    int minClauseNo = INT_MAX;
+    BFS bfs;
+
     static ClauseGroup ofNewGroup(int id);
 
     template<typename T>
     void addClause(T clause, std::vector<std::string> syns) {
-        if constexpr(std::is_same_v<T, std::shared_ptr<query::RelRef>>) suchthatGroup.push_back(clause);
-        else if constexpr(std::is_same_v<T, query::AttrCompare>) withGroup.push_back(clause);
-        else if constexpr(std::is_same_v<T, query::Pattern>) patternGroup.push_back(clause);
+        OrderedClause o;
+        if constexpr(std::is_same_v<T, std::shared_ptr<query::RelRef>>) {
+            suchthatGroup.push_back(clause);
+            o = OrderedClause::ofSuchThat(clause);
+        } else if constexpr(std::is_same_v<T, query::AttrCompare>) {
+            withGroup.push_back(clause);
+            o = OrderedClause::ofWith(clause);
+        } else if constexpr(std::is_same_v<T, query::Pattern>) {
+            patternGroup.push_back(clause);
+            o = OrderedClause::ofPattern(clause);
+        }
         addSyn(syns);
+        for (auto s : syns) {
+            if (subgroups.find(s) != subgroups.end()) subgroups[s].push_back(o);
+            else
+                subgroups[s] = std::vector<OrderedClause>{o};
+
+            if (s == startingPoint && subgroups[s].size() < minClauseNo) minClauseNo += 1;
+            else if (subgroups[s].size() < minClauseNo) {
+                startingPoint = s;
+                minClauseNo = subgroups[s].size();
+            }
+        }
     }
 
     bool hasSyn();
     void addSyn(std::vector<std::string> s);
+    void insertToPQ(std::string s);
+    bool hasNext();
+    OrderedClause next();
 };
 
 class Optimizer {

@@ -1,5 +1,11 @@
 #include "optimizer.h"
 namespace qps::optimizer {
+    using query::RelRefType;
+
+    std::unordered_set<query::RelRefType> higherPriorityClause {
+        RelRefType::MODIFIESS, RelRefType::MODIFIESP, RelRefType::USESP, RelRefType::USESS, RelRefType::FOLLOWS,
+        RelRefType::PARENT, RelRefType::CALLS, RelRefType::NEXT, RelRefType::AFFECTS
+    };
 
     OrderedClause OrderedClause::ofWith(query::AttrCompare& with) {
         OrderedClause o;
@@ -50,6 +56,26 @@ namespace qps::optimizer {
         return o;
     }
 
+    int OrderedClause::getPriority() {
+        int priority;
+        if (isWith()) priority = 0;
+        else if (isPattern()) {
+            query::Pattern p = getPattern();
+            if (p.getSynonymType() == query::DesignEntity::IF || p.getSynonymType() == query::DesignEntity::WHILE) {
+                priority = 1;
+            }else if (p.getExpression().isFullMatch()) priority = 2;
+            else if (p.getExpression().isPartialMatch()) priority = 3;
+            else
+                priority = 4;
+        } else {
+            std::shared_ptr<query::RelRef> s = getSuchThat();
+            RelRefType type = s->getType();
+            if (higherPriorityClause.find(type) != higherPriorityClause.end()) priority = 5;
+            else
+                priority = 6;
+        }
+        return priority;
+    }
 
     ClauseGroup ClauseGroup::ofNewGroup(int id) {
         ClauseGroup group = ClauseGroup();
@@ -65,6 +91,38 @@ namespace qps::optimizer {
 
     bool ClauseGroup::hasSyn() {
         return syns.size() == 1 && syns.find("") != syns.end();
+    }
+
+
+    OrderedClause ClauseGroup::next() {
+        if (!bfs.initialized) {
+            for (auto cl : subgroups[startingPoint]) {
+                bfs.pq.push(cl);
+            }
+            bfs.initialized = true;
+        }
+        OrderedClause c = bfs.pq.top();
+        bfs.pq.pop();
+        for (auto s : c.getSynonyms()) {
+            if (bfs.visitedSyn.find(s) == bfs.visitedSyn.end()) {
+                insertToPQ(s);
+            }
+        }
+        return c;
+    }
+
+    void ClauseGroup::insertToPQ(std::string s) {
+        bfs.visitedSyn.insert(s);
+        for (auto cl : subgroups[s]) {
+            if (bfs.visitedCl.find(cl) == bfs.visitedCl.end()) {
+                bfs.pq.push(cl);
+                bfs.visitedCl.insert(cl);
+            }
+        }
+    }
+
+    bool ClauseGroup::hasNext() {
+        return bfs.pq.empty();
     }
 
     void Optimizer::addSynsToMap(std::vector<std::string> syns, int groupId) {
