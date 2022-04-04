@@ -605,3 +605,30 @@ TEST_CASE("Test parse and store for multi procedure package 2") {
                     PKBField::createConcrete(VAR_NAME{"x2"})} }));
     }
 }
+
+TEST_CASE("CFG and affects") {
+    std::string affectsTest = R"(
+        procedure main {
+            x = 2 + a;
+            y = x + 3;
+            if (b == 3) then {
+                while (x == 2) {
+                    x = x + 1;
+                }
+            } else {
+                a = x + c;
+            }
+            print x;
+            a = x - a;
+            y = a + x;
+        }
+    )";
+    // Declarations and extractions
+    PKB pkb;
+    SourceProcessor sp;
+    sp.processSimple(affectsTest, &pkb);
+    TEST_LOG << "Test affects from PKB";
+    {
+        
+    }
+}

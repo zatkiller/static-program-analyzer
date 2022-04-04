@@ -2,6 +2,7 @@
 
 #include "SourceProcessor.h"
 #include "PKB.h"
+#include "DesignExtractor/CFG/CFG.h"
 #include "Parser/Parser.h"
 #include "DesignExtractor/DesignExtractor.h"
 
@@ -17,6 +18,9 @@ bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb) {
 
     ActualPKBStrategy actualPKBStrategy(pkb);
     DesignExtractor(&actualPKBStrategy).extract(ast.get());
+    sp::cfg::CFGExtractor cfgExtractor;
+    sp::cfg::PROC_CFG_MAP cfg = cfgExtractor.extract(ast.get());
+    pkb->insertCFG(cfg);
     pkb->insertAST(std::move(ast));
     return true;
 }
