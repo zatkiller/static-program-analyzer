@@ -40,15 +40,15 @@ void throwInvalidArgError(string msg) {
     throw invalid_argument(msg);
 }
 
-void throwUnexpectedToken(char c) {
+void throwUnexpectedToken(char c, SourceLineCount count) {
     std::ostringstream oss;
-    oss << "'" << c << "'" << " expected!";
+    oss << "'" << c << "'" << " expected at line: " << count << "!";
     throwInvalidArgError(oss.str());
 }
 
-void throwUnexpectedToken(string s) {
+void throwUnexpectedToken(string s, SourceLineCount count) {
     std::ostringstream oss;
-    oss << "\"" << s << "\"" << " expected!";
+    oss << s << " expected at line: " << count << "!";
     throwInvalidArgError(oss.str());
 }
 
@@ -62,7 +62,7 @@ void checkAndConsume(char c, deque<Token>& tokens) {
     Token currToken = getNextToken(tokens);  // consume char c
     char* v = get_if<char>(&currToken.value);
     if (!v || *v != c) {
-        throwUnexpectedToken(c);
+        throwUnexpectedToken(c, currToken.sourceline);
     }
 }
 
@@ -70,7 +70,7 @@ void checkAndConsume(string s, deque<Token>& tokens) {
     Token currToken = getNextToken(tokens);  // consume string s
     string* v = get_if<string>(&currToken.value);
     if (!v || *v != s) {
-        throwUnexpectedToken(s);
+        throwUnexpectedToken(s, currToken.sourceline);
 }
 }
 
@@ -82,7 +82,7 @@ namespace AtomicParser {
 unique_ptr<ast::Const> parseConst(deque<Token>& tokens) {
     Token currToken = getNextToken(tokens);
     if (currToken.type != TokenType::number) {
-        throwInvalidArgError("Number expected!");
+        throwUnexpectedToken("Number", currToken.sourceline);
     }
     return make_unique<ast::Const>(get<int>(currToken.value));
 }
@@ -94,7 +94,7 @@ unique_ptr<ast::Var> parseVariable(deque<Token>& tokens) {
     Token varToken = getNextToken(tokens);
     string* varName = get_if<string>(&varToken.value);
     if (!varName) {
-        throwInvalidArgError("Name expected!");
+        throwUnexpectedToken("Name", varToken.sourceline);
     }
     return make_unique<ast::Var>(*varName); 
 }
@@ -103,10 +103,10 @@ ast::RelOp parseRelOp(deque<Token>& tokens) {
     Token relOpToken = getNextToken(tokens);
     char* relOp = get_if<char>(&relOpToken.value);
     if (!relOp) {
-        throwInvalidArgError("RelOp Expected!");
+        throwUnexpectedToken("RelOp", relOpToken.sourceline);
     }
     if (tokens.size() < 1) {
-        throwInvalidArgError("Missing Tokens for RelOp parsing!");
+        throwUnexpectedToken("More tokens (for RelOp parsing)", relOpToken.sourceline);
     }
     Token nextToken = tokens.front();
     char* nextOp = get_if<char>(&nextToken.value);
@@ -133,7 +133,7 @@ ast::RelOp parseRelOp(deque<Token>& tokens) {
     case '=':
         // can be "=="
         if (!nextOp || *nextOp != '=') {
-            throwUnexpectedToken('=');
+            throwUnexpectedToken('=', relOpToken.sourceline);
         }
         // we got "==", return
         getNextToken(tokens);  // consume '='
@@ -141,14 +141,14 @@ ast::RelOp parseRelOp(deque<Token>& tokens) {
     case '!':
         // can be "!="
         if (!nextOp || *nextOp != '=') {
-            throwUnexpectedToken('=');
+            throwUnexpectedToken('=', relOpToken.sourceline);
         }
         // we got "!=", return
         getNextToken(tokens);  // consume '='
         return ast::RelOp::NE;
     default:
         // special not recognised
-        throwInvalidArgError("RelOp not recognised!");
+        throwUnexpectedToken("RelOp", relOpToken.sourceline);
     }
 }
 
@@ -156,32 +156,32 @@ ast::CondOp parseCondOp(deque<Token>& tokens) {
     // either "&&" or "||"
     Token condOpToken = getNextToken(tokens);
     if (condOpToken.type != TokenType::special) {
-        throwInvalidArgError("CondOp expected!");
+        throwUnexpectedToken("CondOp", condOpToken.sourceline);
     }
     char currOp = get<char>(condOpToken.value);
 
     if (tokens.size() < 1) {
-        throwInvalidArgError("Missing Tokens for CondOp Parsing!");
+        throwUnexpectedToken("More tokens (for CondOp Parsing)", condOpToken.sourceline);
     }
     condOpToken = tokens.front();
     char* nextOp = get_if<char>(&condOpToken.value);
     switch (currOp) {
     case '&':
         if (!nextOp || *nextOp != '&') {
-            throwUnexpectedToken('&');
+            throwUnexpectedToken('&', condOpToken.sourceline);
         }
         // we have "&&"
         getNextToken(tokens);  // consume the next '&'
         return ast::CondOp::AND;
     case '|':
         if (!nextOp || *nextOp != '|') {
-            throwUnexpectedToken('|');
+            throwUnexpectedToken('|', condOpToken.sourceline);
         }
         // we have "||"
         getNextToken(tokens);  // consume the next '|'
         return ast::CondOp::OR;
     default:
-        throwInvalidArgError("CondOp not recognised!");
+        throwUnexpectedToken("CondOp", condOpToken.sourceline);
     }
 }
 
@@ -274,19 +274,21 @@ unique_ptr<ast::Expr> shuntingYardParser(deque<Token>& tokens) {
     std::stack<std::unique_ptr<ast::Expr>> operands;
     deque<Token> queue;
     std::stack<char> operators;
-
+    SourceLineCount lastLineCount = tokens.front().sourceline;
     bool isEnd = false;
     do {
         Token currToken = tokens.front();
         switch (currToken.type) {
         case TokenType::eof:
-            throwInvalidArgError("Unexpected Termination!");
+            throwUnexpectedToken("More tokens (for Expr Parsing)", currToken.sourceline);
             break;
         case TokenType::number:
             operands.push(AtomicParser::parseConst(tokens));
+            lastLineCount = currToken.sourceline;
             break;
         case TokenType::name:
             operands.push(AtomicParser::parseVariable(tokens));
+            lastLineCount = currToken.sourceline;
             break;
         case TokenType::special:
             char symbol = std::get<char>(currToken.value);
@@ -315,6 +317,7 @@ unique_ptr<ast::Expr> shuntingYardParser(deque<Token>& tokens) {
                 isEnd = true;
                 break;
             }
+            lastLineCount = currToken.sourceline;
             break;
         }
     } while (!isEnd && tokens.front().type != TokenType::eof);
@@ -324,7 +327,7 @@ unique_ptr<ast::Expr> shuntingYardParser(deque<Token>& tokens) {
     }
 
     if (operands.size() != 1) {
-        throwInvalidArgError("Expr Parsing Error!");
+        throwInvalidArgError("Error parsing Expr at line: " + lastLineCount);
     }
 
     return move(operands.top());
@@ -400,7 +403,7 @@ unique_ptr<ast::CondExpr> parse(deque<Token>& tokens) {
                 return move(parseRelExpr(tokens));
             }
         } else {
-            throwInvalidArgError("Symbol not recognised!");
+            throwInvalidArgError("Symbol not recognised at line: " + currToken.sourceline);
         }
     } else {
         // here, we parse rel_expr
@@ -502,13 +505,14 @@ unique_ptr<ast::Statement> parseCallStmt(deque<Token>& tokens) {
     checkAndConsume("call", tokens);
     // get procName
     auto currToken = getNextToken(tokens);
+    auto sourceline = currToken.sourceline;
     if (currToken.type != TokenType::name) {
-        throwUnexpectedToken("procName");
+        throwUnexpectedToken("procName", currToken.sourceline);
     }
     string procName = get<string>(currToken.value);
     checkAndConsume(';', tokens);
     // insert into callStmts tracker
-    callStmts[lineNo] = procName;
+    callStmts[sourceline] = procName;
     return make_unique<ast::Call>(
         lineNo,
         procName
@@ -522,7 +526,7 @@ ast::StmtLst parse(deque<Token>& tokens) {
         string* keyword = get_if<string>(&currToken.value);
         if (!keyword) {
             Logger(Level::ERROR) << "String Expected";
-            throw invalid_argument("String expected!");
+            throw invalid_argument("String expected");
         }
         if (*keyword == "read") {
             list.push_back(move(parseReadStmt(tokens)));
@@ -554,7 +558,7 @@ unique_ptr<ast::Procedure> parseProcedure(deque<Token>& tokens) {
     // get procName
     auto currToken = getNextToken(tokens);
     if (currToken.type != TokenType::name) {
-        throwUnexpectedToken("procName");
+        throwUnexpectedToken("procName", currToken.sourceline);
     }
     string procName = get<string>(currToken.value);
     // parse stmtLst in the container
@@ -563,8 +567,8 @@ unique_ptr<ast::Procedure> parseProcedure(deque<Token>& tokens) {
     checkAndConsume('}', tokens);
     if (procedures.count(procName)) {
         std::ostringstream os;
-        os << "Repeated procedure name: " << procName << "!";
-        throwInvalidArgError(os.str());
+        os << "Repeated procedure name: " << procName << "";
+        throwUnexpectedToken(os.str(), currToken.sourceline);
     }
     procedures.insert(procName);
     return make_unique<ast::Procedure>(move(procName), move(stmtLst));
@@ -572,12 +576,12 @@ unique_ptr<ast::Procedure> parseProcedure(deque<Token>& tokens) {
 
 unique_ptr<ast::Program> parseProgram(deque<Token>& tokens) {
     if (tokens.empty() || tokens.front().type == TokenType::eof) {
-        throwInvalidArgError("Empty program received!");
+        throwInvalidArgError("Empty program received");
     }
     std::vector<unique_ptr<ast::Procedure>> res;
     while (!tokens.empty() && tokens.front().type != TokenType::eof) {
         if (tokens.front().type != TokenType::name || get<string>(tokens.front().value) != "procedure") {
-            throwUnexpectedToken("procedure");
+            throwUnexpectedToken("\"procedure\"", tokens.front().sourceline);
         }
         res.push_back(parseProcedure(tokens));
     }
@@ -588,7 +592,7 @@ unique_ptr<ast::Program> parseProgram(deque<Token>& tokens) {
         if (!procedures.count(callStmt.second)) {
             std::ostringstream os;
             os << "Calling a non-existent procedure: " 
-            << callStmt.second << " at " << callStmt.first << "!";
+            << callStmt.second << " at " << callStmt.first << "";
             throwInvalidArgError(os.str());
         }
     }
@@ -606,7 +610,7 @@ unique_ptr<ast::Program> parse(const string& source) {
         return parseProgram(lexedTokens);        
     }
     catch (invalid_argument ex) {
-        Logger(Level::ERROR) << "exception caught: " << ex.what();
+        Logger(Level::ERROR) << "Exception caught: " << ex.what();
         return unique_ptr<ast::Program>();
     }
 }
