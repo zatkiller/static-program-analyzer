@@ -42,13 +42,13 @@ void throwInvalidArgError(string msg) {
 
 void throwUnexpectedToken(char c, SourceLineCount count) {
     std::ostringstream oss;
-    oss << "'" << c << "'" << " expected at line: " << count << "!";
+    oss << "'" << c << "'" << " expected at line: " << count;
     throwInvalidArgError(oss.str());
 }
 
 void throwUnexpectedToken(string s, SourceLineCount count) {
     std::ostringstream oss;
-    oss << s << " expected at line: " << count << "!";
+    oss << s << " expected at line: " << count;
     throwInvalidArgError(oss.str());
 }
 
@@ -507,7 +507,7 @@ unique_ptr<ast::Statement> parseCallStmt(deque<Token>& tokens) {
     auto currToken = getNextToken(tokens);
     auto sourceline = currToken.sourceline;
     if (currToken.type != TokenType::name) {
-        throwUnexpectedToken("procName", currToken.sourceline);
+        throwUnexpectedToken("Procedure name", currToken.sourceline);
     }
     string procName = get<string>(currToken.value);
     checkAndConsume(';', tokens);
@@ -525,8 +525,7 @@ ast::StmtLst parse(deque<Token>& tokens) {
         Token currToken = tokens.front();
         string* keyword = get_if<string>(&currToken.value);
         if (!keyword) {
-            Logger(Level::ERROR) << "String Expected";
-            throw invalid_argument("String expected");
+            throwUnexpectedToken("String", currToken.sourceline);
         }
         if (*keyword == "read") {
             list.push_back(move(parseReadStmt(tokens)));
@@ -567,8 +566,8 @@ unique_ptr<ast::Procedure> parseProcedure(deque<Token>& tokens) {
     checkAndConsume('}', tokens);
     if (procedures.count(procName)) {
         std::ostringstream os;
-        os << "Repeated procedure name: " << procName << "";
-        throwUnexpectedToken(os.str(), currToken.sourceline);
+        os << "Repeated procedure name: \"" << procName << "\" at line: " << currToken.sourceline;
+        throwInvalidArgError(os.str());
     }
     procedures.insert(procName);
     return make_unique<ast::Procedure>(move(procName), move(stmtLst));
@@ -592,7 +591,7 @@ unique_ptr<ast::Program> parseProgram(deque<Token>& tokens) {
         if (!procedures.count(callStmt.second)) {
             std::ostringstream os;
             os << "Calling a non-existent procedure: " 
-            << callStmt.second << " at " << callStmt.first << "";
+            << callStmt.second << " at line: " << callStmt.first << "";
             throwInvalidArgError(os.str());
         }
     }
