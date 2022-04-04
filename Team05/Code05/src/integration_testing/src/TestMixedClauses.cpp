@@ -436,4 +436,24 @@ TEST_CASE("test evaluate pattern") {
     result14.sort();
     printEvaluatorResult(result14);
     REQUIRE(result14.empty());
+
+    TEST_LOG << "stmt s; Select s such that affects(2, s)";
+    qps::evaluator::Evaluator evaluator15 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query15{};
+    query15.addDeclaration("ifs", qps::query::DesignEntity::IF);
+    query15.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+
+    qps::query::Declaration d15 = qps::query::Declaration { "s", qps::query::DesignEntity::STMT };
+    std::vector<qps::query::Elem> tuple15 { qps::query::Elem::ofDeclaration(d15) };
+    qps::query::ResultCl r15 = qps::query::ResultCl::ofTuple(tuple15);
+    query15.addResultCl(r15);
+
+    std::shared_ptr<qps::query::Affects> ptr15 = std::make_shared<qps::query::Affects>();
+    ptr15->affectingStmt = qps::query::StmtRef::ofLineNo(2);
+    ptr15->affected = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
+    query15.addSuchthat(ptr15);
+    std::list<std::string> result15 = evaluator15.evaluate(query15);
+    result15.sort();
+    printEvaluatorResult(result15);
+    REQUIRE(result15 == std::list<std::string>{"5"});
 }

@@ -16,7 +16,9 @@ namespace qps::evaluator {
             {RelRefType::CALLS, PKBRelationship::CALLS},
             {RelRefType::CALLST, PKBRelationship::CALLST},
             {RelRefType::NEXT, PKBRelationship::NEXT},
-            {RelRefType::NEXTT, PKBRelationship::NEXTT}
+            {RelRefType::NEXTT, PKBRelationship::NEXTT},
+            {RelRefType::AFFECTS, PKBRelationship::AFFECTS},
+            {RelRefType::AFFECTST, PKBRelationship::AFFECTST}
     };
 
     std::unordered_map<query::DesignEntity, StatementType> statementTypeMap {
