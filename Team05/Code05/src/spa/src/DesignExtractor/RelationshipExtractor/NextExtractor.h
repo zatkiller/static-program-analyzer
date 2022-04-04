@@ -25,6 +25,7 @@ private:
             entries.insert(Relationship(PKBRelationship::NEXT, s1, s2));
         }
     }
+
 public:
     std::set<Entry> extractOne(cfg::CFGNode *node) {
         // a little helper to check if a node has been visited before.

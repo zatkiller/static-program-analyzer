@@ -182,7 +182,7 @@ WhilePatternReturn extractWhile(ast::ASTNode *root, PatternParam var) {
 
 AssignPatternReturn extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs, bool isStrict) {
     return extractPattern<ast::Assign>(root, makeAssignPredicate(lhs, rhs, isStrict));
-};
+}
 
 }  // namespace design_extractor
 }  // namespace sp
