@@ -92,10 +92,10 @@ bool isSublist(
  * @return std::list<std::reference_wrapper<const T>> the return list of statement that is matched by the predicate
  */
 template<typename T>
-std::list<std::reference_wrapper<const T>> extractPattern(ast::ASTNode *root, std::function<bool(const T&)> isMatch) {
+MatchedNodes<T> extractPattern(ast::ASTNode *root, std::function<bool(const T&)> isMatch) {
     SingleCollector<T> collector;
     root->accept(&collector);
-    std::list<std::reference_wrapper<const T>> matched;
+    MatchedNodes<T> matched;
     for (auto stmt : collector.nodes) {
         if (isMatch(stmt)) {
             matched.emplace_back(stmt);
@@ -173,15 +173,15 @@ std::function<bool(const ast::Assign&)> makeAssignPredicate(PatternParam lhs, Pa
     };
 }
 
-IfPatternReturn extractIf(ast::ASTNode *root, PatternParam var) {
+MatchedNodes<ast::If> extractIf(ast::ASTNode *root, PatternParam var) {
     return extractPattern<ast::If>(root, makeCondPredicate<ast::If>(var));
 }
 
-WhilePatternReturn extractWhile(ast::ASTNode *root, PatternParam var) {
+MatchedNodes<ast::While> extractWhile(ast::ASTNode *root, PatternParam var) {
     return extractPattern<ast::While>(root, makeCondPredicate<ast::While>(var));
 }
 
-AssignPatternReturn extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs, bool isStrict) {
+MatchedNodes<ast::Assign> extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs, bool isStrict) {
     return extractPattern<ast::Assign>(root, makeAssignPredicate(lhs, rhs, isStrict));
 };
 
