@@ -4,9 +4,9 @@
 #include <string>
 #include <map>
 
-#include "Parser/AST.h"
 #include "DesignExtractor/RelationshipExtractor/TransitiveRelationshipTemplate.h"
 #include "PKB.h"
+#include "Parser/AST.h"
 
 namespace sp {
 namespace design_extractor {

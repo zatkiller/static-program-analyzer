@@ -1,11 +1,12 @@
 #include <functional>
 
-#include "PatternMatcher.h"
-#include "Parser/Lexer.h"
-#include "Parser/Parser.h"
-#include "PKB/PKBField.h"
 #include "DesignExtractor.h"
 #include "DesignExtractor/EntityExtractor/EntityExtractor.h"
+#include "Parser/Lexer.h"
+#include "Parser/Parser.h"
+#include "PatternMatcher.h"
+#include "PKB/PKBField.h"
+
 
 namespace sp {
 namespace design_extractor {

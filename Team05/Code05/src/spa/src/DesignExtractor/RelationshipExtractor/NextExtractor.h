@@ -5,8 +5,8 @@
 #include <queue>
 #include <map>
 
-#include "DesignExtractor/Extractor.h"
 #include "DesignExtractor/CFG/CFG.h"
+#include "DesignExtractor/Extractor.h"
 
 namespace sp {
 namespace design_extractor {

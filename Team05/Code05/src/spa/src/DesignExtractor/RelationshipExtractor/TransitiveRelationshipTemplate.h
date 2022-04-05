@@ -6,10 +6,9 @@
 #include <map>
 
 #include "DesignExtractor/Extractor.h"
+#include "Parser/AST.h"
 #include "PKB/PKBField.h"
 #include "PKB/PKBCommons.h"
-#include "Parser/AST.h"
-
 
 namespace sp {
 namespace design_extractor {

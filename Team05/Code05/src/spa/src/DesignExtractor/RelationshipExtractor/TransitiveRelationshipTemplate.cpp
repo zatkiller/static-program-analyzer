@@ -1,5 +1,5 @@
-#include "TransitiveRelationshipTemplate.h"
 #include "DesignExtractor/EntityExtractor/EntityExtractor.h"
+#include "TransitiveRelationshipTemplate.h"
 
 namespace sp {
 namespace design_extractor {

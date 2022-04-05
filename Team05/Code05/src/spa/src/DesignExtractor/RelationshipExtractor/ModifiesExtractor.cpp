@@ -1,6 +1,5 @@
-#include "ModifiesExtractor.h"
 #include "logging.h"
-
+#include "ModifiesExtractor.h"
 
 #define DEBUG_LOG Logger(Level::DEBUG) << "ModifiesExtractor.cpp Extracted "
 namespace sp {

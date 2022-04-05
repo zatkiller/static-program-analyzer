@@ -1,12 +1,10 @@
-#include "UsesExtractor.h"
 #include "logging.h"
+#include "UsesExtractor.h"
 
 #define DEBUG_LOG Logger(Level::DEBUG) << "UsesExtractor.cpp Extracted "
 
 namespace sp {
 namespace design_extractor {
-
-
 /**
  * a ASTNodeVisitor that collects the Follows relationship as it walks through the AST.
  */

@@ -2,11 +2,11 @@
 
 #include <set>
 
-#include "TreeWalker.h"
-#include "Parser/AST.h"
-#include "PKB.h"
 #include "DesignExtractor/PKBStrategy.h"
 #include "DesignExtractor/CFG/CFG.h"
+#include "Parser/AST.h"
+#include "PKB.h"
+#include "TreeWalker.h"
 
 namespace sp {
 namespace design_extractor {
