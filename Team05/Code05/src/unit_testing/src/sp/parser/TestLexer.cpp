@@ -13,9 +13,9 @@ namespace parser {
      * Ensures token structs and token type are correct.
      */
     TEST_CASE("Token testing") {
-        Token name = { TokenType::name, "hello" };
-        Token number = { TokenType::number, 1 };
-        Token special = { TokenType::special, '+' };
+        Token name = { TokenType::name, "hello", 5 };
+        Token number = { TokenType::number, 1, 5 };
+        Token special = { TokenType::special, '+', 5 };
 
         TEST_LOG << "Testing token value";
         // Value test
@@ -25,21 +25,29 @@ namespace parser {
 
         TEST_LOG << "Testing token equality";
         // Equality test
-        Token name2 = { TokenType::name, "hello" };
-        Token number2 = { TokenType::number, 1 };
-        Token special2 = { TokenType::special, '+' };
+        Token name2 = { TokenType::name, "hello", 5 };
+        Token diffName = { TokenType::name, "world", 5 };
+        Token nameDiffLine = { TokenType::name, "hello", 69 };
 
         REQUIRE(name == name2);
-        REQUIRE(number == number2);
-        REQUIRE(special == special2);
-
-        Token diffName = { TokenType::name, "world" };
-        Token diffNumber = { TokenType::number, 2 };
-        Token diffSpecial = { TokenType::special, '-' };
-
         REQUIRE_FALSE(name == diffName);
+        REQUIRE_FALSE(name == nameDiffLine);
+
+        Token number2 = { TokenType::number, 1, 5 };
+        Token diffNumber = { TokenType::number, 2, 5 };
+        Token numberDiffLine = { TokenType::number, 1, 69 };
+
+        REQUIRE(number == number2);
         REQUIRE_FALSE(number == diffNumber);
+        REQUIRE_FALSE(number == numberDiffLine);
+
+        Token special2 = { TokenType::special, '+', 5 };
+        Token diffSpecial = { TokenType::special, '-', 5 };
+        Token specialDiffLine = { TokenType::special, '+', 69 };
+
+        REQUIRE(special == special2);
         REQUIRE_FALSE(special == diffSpecial);
+        REQUIRE_FALSE(special == specialDiffLine);
 
         TEST_LOG << "Testing token assignment";
         // Assign test
@@ -62,27 +70,25 @@ namespace parser {
                 read y;
                 x = y     + 1234;})";
 
-
             std::queue<Token> tokens;
-            tokens.push(Token{ TokenType::name, "procedure" });
-            tokens.push(Token{ TokenType::name, "name" });
-            tokens.push(Token{ TokenType::special, '{' });
+            tokens.push(Token{ TokenType::name, "procedure", 1 });
+            tokens.push(Token{ TokenType::name, "name", 1 });
+            tokens.push(Token{ TokenType::special, '{', 1 });
 
-            tokens.push(Token{ TokenType::name, "read" });
-            tokens.push(Token{ TokenType::name, "y" });
-            tokens.push(Token{ TokenType::special, ';' });
+            tokens.push(Token{ TokenType::name, "read", 2 });
+            tokens.push(Token{ TokenType::name, "y", 2 });
+            tokens.push(Token{ TokenType::special, ';', 2 });
 
-            tokens.push(Token{ TokenType::name, "x" });
-            tokens.push(Token{ TokenType::special, '=' });
-            tokens.push(Token{ TokenType::name, "y" });
-            tokens.push(Token{ TokenType::special, '+' });
-            tokens.push(Token{ TokenType::number, 1234 });
-            tokens.push(Token{ TokenType::special, ';' });
-            tokens.push(Token{ TokenType::special, '}' });
-            tokens.push(Token{ TokenType::eof, EOF });
+            tokens.push(Token{ TokenType::name, "x", 3 });
+            tokens.push(Token{ TokenType::special, '=', 3 });
+            tokens.push(Token{ TokenType::name, "y", 3 });
+            tokens.push(Token{ TokenType::special, '+', 3 });
+            tokens.push(Token{ TokenType::number, 1234, 3 });
+            tokens.push(Token{ TokenType::special, ';', 3 });
+            tokens.push(Token{ TokenType::special, '}', 3 });
+            tokens.push(Token{ TokenType::eof, EOF, 3 });
 
             std::deque<Token> lexedTokens = Lexer(source).getTokens();
-
 
             REQUIRE(tokens.size() == lexedTokens.size());
             while (!tokens.empty()) {

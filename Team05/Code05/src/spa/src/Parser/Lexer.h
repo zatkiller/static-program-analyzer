@@ -16,15 +16,19 @@ enum class TokenType {
     special,  // special characters like +-*/><=;
 };
 
+using SourceLineCount = int;
+
 struct Token {
     TokenType type;
     std::variant<char, std::string, int> value;
+    SourceLineCount sourceline;
     bool operator==(const Token& o) const {
-        return type == o.type && value == o.value;
+        return type == o.type && value == o.value && sourceline == o.sourceline;
     }
     Token& operator=(const Token& other) {
         this->type = other.type;
         this->value = other.value;
+        this->sourceline = other.sourceline;
         return *this;
     }
 };
