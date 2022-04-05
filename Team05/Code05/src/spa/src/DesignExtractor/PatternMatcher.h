@@ -14,7 +14,7 @@ struct MatchedNodes : public std::list<std::reference_wrapper<const T>>{};
 /**
  * @brief Encapsualtes a pattern matching parameter
  * 
- * Using a comination of boolean and optional to encapsulate the different types of parameter for pattern matching.
+ * Using a combination of boolean and optional to encapsulate the different types of parameter for pattern matching.
  * 
  * Examples:
  * 
