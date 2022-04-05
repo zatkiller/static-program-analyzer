@@ -32,10 +32,14 @@ void logQueue(std::deque<Token> q) {
  */
 void Lexer::lex(const std::string& source) {
     Logger() << "Lexer.cpp " << "Lexing the source code:\n" << source;
+    // keeps track of source line
+    SourceLineCount count = 1;
 
     char lastChar = ' ';
     for (auto it = source.begin(); it != source.end(); it++) {
         lastChar = *it;
+        // checks for newlines
+        if (lastChar == '\n') count++;
         if (isspace(lastChar)) continue;
 
         // handle names
@@ -46,7 +50,7 @@ void Lexer::lex(const std::string& source) {
                 it++; lastChar = *it;
                 s.push_back(lastChar);
             }
-            this->tokens.push_back(Token{TokenType::name, s});
+            this->tokens.push_back(Token{TokenType::name, s, count});
             continue;
         }
 
@@ -63,16 +67,16 @@ void Lexer::lex(const std::string& source) {
                 throw std::invalid_argument("Number cannot start with 0!");
             }
             int number = strtod(s.c_str(), nullptr);
-            this->tokens.push_back(Token{TokenType::number, number});
+            this->tokens.push_back(Token{TokenType::number, number, count});
             continue;
         }
 
         // handle special
-        this->tokens.push_back(Token{TokenType::special, lastChar});
+        this->tokens.push_back(Token{TokenType::special, lastChar, count});
     }
 
     // Add EOF to token queue to mark the end
-    this->tokens.push_back(Token{TokenType::eof, EOF});
+    this->tokens.push_back(Token{TokenType::eof, EOF, count});
 
 #ifdef _DEBUG
     logQueue(this->tokens);
