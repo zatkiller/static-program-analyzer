@@ -14,6 +14,9 @@ auto p = [](auto first, auto second) {
     return std::make_pair<>(first, second);
 };
 
+using sp::design_extractor::PatternParam;
+
+
 struct DesignExtractionTestTemplate {
     std::map<PKBEntityType, std::set<Content>> expectedEntities;
     std::map<PKBRelationship, std::set<std::pair<Content, Content>>> expectedRelationships;
@@ -294,26 +297,26 @@ TEST_CASE("Test parse and store for basic package 1") {
 
     TEST_LOG << "Pattern matching from PKB";
     {
-        REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, "digit") ==
+        REQUIRE(pkb.match(StatementType::Assignment, PatternParam(std::nullopt), PatternParam("digit", false)) ==
             expectedResponse(FieldRowResponse{
                 row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}) }));
 
-        REQUIRE(pkb.match(StatementType::Assignment, "sum", std::nullopt) ==
+        REQUIRE(pkb.match(StatementType::Assignment, PatternParam("sum", false), PatternParam(std::nullopt)) ==
             expectedResponse(FieldRowResponse{
                 row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
                 row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"}) }));
 
-        REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, std::nullopt) ==
+        REQUIRE(pkb.match(StatementType::Assignment, PatternParam(std::nullopt), PatternParam(std::nullopt)) ==
             expectedResponse(FieldRowResponse{
                 row(STMT_LO{ 5, StatementType::Assignment }, VAR_NAME{"sum"}),
                 row(STMT_LO{ 2, StatementType::Assignment }, VAR_NAME{"sum"}),
                 row(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{"digit"}),
                 row(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{"number"}) }));
 
-        REQUIRE(pkb.match(StatementType::If, std::nullopt) ==
+        REQUIRE(pkb.match(StatementType::If, PatternParam(std::nullopt)) ==
             PKBResponse{ false, FieldRowResponse{} });
 
-        REQUIRE(pkb.match(StatementType::While, std::nullopt) ==
+        REQUIRE(pkb.match(StatementType::While, PatternParam(std::nullopt)) ==
             expectedResponse(FieldRowResponse{
                 row(STMT_LO{ 3, StatementType::While }, VAR_NAME{"number"}) }));
     }
@@ -575,25 +578,24 @@ TEST_CASE("Test parse and store for multi procedure package 2") {
 
     TEST_LOG << "Pattern matching from PKB";
     {
-        REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, "x") ==
+        REQUIRE(pkb.match(StatementType::Assignment, PatternParam(std::nullopt), PatternParam("x", false)) ==
             expectedResponse(FieldRowResponse{
                 row(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{"y"}) }));
 
-        REQUIRE(pkb.match(StatementType::Assignment, "y2", std::nullopt) ==
+        REQUIRE(pkb.match(StatementType::Assignment, PatternParam("y2", false), PatternParam(std::nullopt)) ==
             expectedResponse(FieldRowResponse{
                 row(STMT_LO{ 14, StatementType::Assignment }, VAR_NAME{"y2"}) }));
 
-        REQUIRE(pkb.match(StatementType::Assignment, std::nullopt, std::nullopt) ==
+        REQUIRE(pkb.match(StatementType::Assignment, PatternParam(std::nullopt), PatternParam(std::nullopt)) ==
             expectedResponse(FieldRowResponse{
                 row(STMT_LO{ 4, StatementType::Assignment }, VAR_NAME{"y"}),
                 row(STMT_LO{ 6, StatementType::Assignment }, VAR_NAME{"x"}),
                 row(STMT_LO{ 14, StatementType::Assignment }, VAR_NAME{"y2"}) }));
 
-        REQUIRE(pkb.match(StatementType::If, std::nullopt) ==
+        REQUIRE(pkb.match(StatementType::If, PatternParam(std::nullopt)) ==
             expectedResponse(FieldRowResponse{
                 row(STMT_LO{ 3, StatementType::If }, VAR_NAME{"x"}) }));
-        auto f = pkb.match(StatementType::While, std::nullopt);
-        REQUIRE(pkb.match(StatementType::While, std::nullopt) ==
+        REQUIRE(pkb.match(StatementType::While, sp::design_extractor::PatternParam(std::nullopt)) ==
             expectedResponse(FieldRowResponse{
                 std::vector<PKBField>{PKBField::createConcrete(STMT_LO{ 1, StatementType::While }),
                     PKBField::createConcrete(VAR_NAME{"x"})},

@@ -137,8 +137,8 @@ std::function<bool(const T&)> makeCondPredicate(PatternParam var) {
  * @param isStrict boolean flag to indicate if strict matching is used on expression.
  * @return std::function<bool(const ast::Assign&)> a predicate function to check a given assign statement
  */
-std::function<bool(const ast::Assign&)> makeAssignPredicate(PatternParam lhs, PatternParam rhs, bool isStrict) {
-    return [lhs, rhs, isStrict](const ast::Assign& node) {
+std::function<bool(const ast::Assign&)> makeAssignPredicate(PatternParam lhs, PatternParam rhs) {
+    return [lhs, rhs](const ast::Assign& node) {
         // === Check lHS constraint ===
         if (lhs != std::nullopt && node.getLHS()->getVarName() != lhs.value()) {
             return false;
@@ -158,7 +158,7 @@ std::function<bool(const ast::Assign&)> makeAssignPredicate(PatternParam lhs, Pa
         auto expr = sp::parser::expr_parser::parse(tokens);
 
         // If it is strict, RHS must be an exact match.
-        if (isStrict) {
+        if (rhs.isStrict) {
             return *node.getRHS() == *expr;
         }
 
@@ -181,8 +181,8 @@ MatchedNodes<ast::While> extractWhile(ast::ASTNode *root, PatternParam var) {
     return extractPattern<ast::While>(root, makeCondPredicate<ast::While>(var));
 }
 
-MatchedNodes<ast::Assign> extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs, bool isStrict) {
-    return extractPattern<ast::Assign>(root, makeAssignPredicate(lhs, rhs, isStrict));
+MatchedNodes<ast::Assign> extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs) {
+    return extractPattern<ast::Assign>(root, makeAssignPredicate(lhs, rhs));
 };
 
 }  // namespace design_extractor
