@@ -54,20 +54,7 @@ public:
         }
     }
 };
-//
-//struct GroupPriority {
-//public:
-//    bool operator()(OrderedClause& a,OrderedClause& b)
-//    {
-//        if (a.getSynonyms().size() < b.getSynonyms().size()) {
-//            return true;
-//        } else if (a.getSynonyms().size() >= b.getSynonyms().size()) {
-//            return false;
-//        } else {
-//            return a.getPriority() < b.getPriority();
-//        }
-//    }
-//};
+
 struct BFS {
     bool initialized = false;
     std::priority_queue<OrderedClause, std::vector<OrderedClause>, ClausePriority> pq;
@@ -123,12 +110,28 @@ struct ClauseGroup {
     OrderedClause next();
 };
 
+
+struct GroupPriority {
+public:
+    bool operator()(ClauseGroup& a,ClauseGroup& b)
+    {
+        if (a.syns.find("") != a.syns.end()) {
+            return true;
+        } else if (b.syns.find("") != b.syns.end()) {
+            return false;
+        } else {
+            return a.syns.size() < b.syns.size();
+        }
+    }
+};
+
 class Optimizer {
 std::vector<ClauseGroup> groups;
 std::unordered_map<std::string, int> synToGroup;
 std::vector<std::shared_ptr<query::RelRef>>& suchthat;
 std::vector<query::AttrCompare>& with;
 std::vector<query::Pattern>& pattern;
+std::priority_queue<ClauseGroup, std::vector<ClauseGroup>, GroupPriority> pq;
 
 public:
     Optimizer(std::vector<std::shared_ptr<query::RelRef>>& suchthatcl, std::vector<query::AttrCompare>& withcl,
@@ -185,5 +188,9 @@ public:
     void optimize();
 
     std::vector<ClauseGroup> getGroups();
+
+    bool hasNext();
+
+    ClauseGroup next();
 };
 }

@@ -122,7 +122,7 @@ namespace qps::optimizer {
     }
 
     bool ClauseGroup::hasNext() {
-        return bfs.pq.empty();
+        return bfs.pq.empty() || !bfs.initialized;
     }
 
     void Optimizer::addSynsToMap(std::vector<std::string> syns, int groupId) {
@@ -135,9 +135,22 @@ namespace qps::optimizer {
         groupClauses<std::shared_ptr<query::RelRef>>(suchthat);
         groupClauses<query::AttrCompare>(with);
         groupClauses<query::Pattern>(pattern);
+        for (auto g : groups) {
+            pq.push(g);
+        }
     }
 
     std::vector<ClauseGroup> Optimizer::getGroups() {
         return groups;
+    }
+
+    ClauseGroup Optimizer::next() {
+        ClauseGroup group = pq.top();
+        pq.pop();
+        return group;
+    }
+
+    bool Optimizer::hasNext() {
+        return pq.empty();
     }
 } // namespace qps::optimizer
