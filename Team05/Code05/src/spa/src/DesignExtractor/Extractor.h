@@ -1,5 +1,7 @@
 #pragma once
 
+#include <set>
+
 #include "TreeWalker.h"
 #include "Parser/AST.h"
 #include "PKB.h"
@@ -15,6 +17,19 @@ using Entity = Content;
 using Relationship = std::tuple<PKBRelationship, Content, Content>;
 // An entry to PKB is either an Entity or a Relationship
 using Entry = std::variant<Entity, Relationship>;
+
+/**
+ * @brief Base class for all AST based relationship collectors
+ * 
+ * Not all Extractors need an AST based Collector. But most of them do. So a shared base class
+ * is extracted here.
+ */
+class Collector : public TreeWalker {
+protected:
+    std::set<Entry> entries;
+public:
+    const std::set<Entry> getEntries() { return entries; }
+};
 
 /**
  * @brief The base class for all design extractors

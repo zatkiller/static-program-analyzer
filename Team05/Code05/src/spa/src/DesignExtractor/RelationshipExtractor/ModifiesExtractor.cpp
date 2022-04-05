@@ -20,9 +20,9 @@ public:
 };
 
 std::set<Entry> ModifiesExtractor::extract(const ast::ASTNode* node) {
-    ModifiesCollector extractor;
-    extractor.extract(node);
-    return extractor.relationships;
+    ModifiesCollector collector;
+    collector.extract(node);
+    return collector.getEntries();
 }
 
 void ModifiesCollector::visit(const ast::Read& node) {
@@ -43,7 +43,7 @@ void ModifiesCollector::visit(const ast::If& node) {
 
 void ModifiesCollector::insert(Content a1, Content a2) {
     auto relationship = Relationship(PKBRelationship::MODIFIES, a1, a2);
-    relationships.insert(relationship);
+    entries.insert(relationship);
 }
 }  // namespace design_extractor
 }  // namespace sp

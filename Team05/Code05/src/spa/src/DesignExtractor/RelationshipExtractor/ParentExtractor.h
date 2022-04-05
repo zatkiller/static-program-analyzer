@@ -12,7 +12,7 @@ private:
         // A saved statement at the previous depth means there is a container statement that contains our current stmt.
         if (bucket.find(depth-1) != bucket.end()) {
             // The saved statement at the previous depth should be parent of our current statement.
-            relationships.insert(Relationship(PKBRelationship::PARENT, bucket.at(depth-1), stmt));
+            entries.insert(Relationship(PKBRelationship::PARENT, bucket.at(depth-1), stmt));
         }
     };
 };
@@ -26,7 +26,7 @@ public:
     std::set<Entry> extract(const ast::ASTNode* node) override {
         ParentCollector collector;
         node->accept(&collector);
-        return collector.relationships;
+        return collector.getEntries();
     }
 };
 

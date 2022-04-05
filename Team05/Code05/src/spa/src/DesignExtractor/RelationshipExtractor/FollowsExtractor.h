@@ -16,7 +16,7 @@ private:
         // A saved statement at the current depth means there is a previous statement to our current stmt.
         if (bucket.find(depth) != bucket.end()) {
             // The saved statement at the current depth should be followed by our current statement.
-            relationships.insert(Relationship(PKBRelationship::FOLLOWS, bucket.at(depth), stmt));
+            entries.insert(Relationship(PKBRelationship::FOLLOWS, bucket.at(depth), stmt));
         }
     };
 };
@@ -30,7 +30,7 @@ public:
     std::set<Entry> extract(const ast::ASTNode* node) override {
         FollowsCollector collector;
         node->accept(&collector);
-        return collector.relationships;
+        return collector.getEntries();
     }
 };
 

@@ -350,9 +350,9 @@ PKBResponse PKB::matchIf(sp::design_extractor::PatternParam lhs) const {
 
         sp::design_extractor::VariableCollector vc;
         node.get().getCondExpr()->accept(&vc);
-        auto& vars = vc.entities;
+        auto vars = vc.getEntries();
 
-        for (auto& var : vars) {
+        for (auto var : vars) {
             stmtRes.emplace_back(PKBField::createConcrete(std::get<sp::design_extractor::Entity>(var)));
         }
 
@@ -374,9 +374,9 @@ PKBResponse PKB::matchWhile(sp::design_extractor::PatternParam lhs) const {
 
         sp::design_extractor::VariableCollector vc;
         node.get().getCondExpr()->accept(&vc);
-        auto& vars = vc.entities;
+        auto vars = vc.getEntries();
 
-        for (auto& var : vars) {
+        for (auto var : vars) {
             stmtRes.emplace_back(PKBField::createConcrete(std::get<sp::design_extractor::Entity>(var)));
         }
 

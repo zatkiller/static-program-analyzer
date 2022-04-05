@@ -22,9 +22,9 @@ public:
 };
 
 std::set<Entry> UsesExtractor::extract(const ast::ASTNode* node) {
-    UsesCollector extractor;
-    extractor.extract(node);
-    return extractor.relationships;
+    UsesCollector collector;
+    collector.extract(node);
+    return collector.getEntries();
 }
 
 void UsesCollector::visit(const ast::Print& node) {
@@ -46,7 +46,7 @@ void UsesCollector::visit(const ast::If& node) {
 
 void UsesCollector::insert(Content a1, Content a2) {
     auto relationship = Relationship(PKBRelationship::USES, a1, a2);
-    relationships.insert(relationship);
+    entries.insert(relationship);
 }
 }  // namespace design_extractor
 }  // namespace sp
