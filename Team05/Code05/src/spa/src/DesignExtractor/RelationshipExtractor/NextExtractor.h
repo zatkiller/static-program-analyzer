@@ -17,7 +17,12 @@ struct NextExtractor : public Extractor<const cfg::PROC_CFG_MAP*> {
 private:
     std::set<Entry> entries;
 
-    // helper to turn insert nodes as entries.    
+    /**
+     * @brief helper function to insert 2 cfg nodes as a next relationship entry. Next(n1, n2).
+     * 
+     * @param n1 the LHS of the Next relationship
+     * @param n2 the  RHS of the Next relationship
+     */
     void collect(cfg::CFGNode *n1, cfg::CFGNode *n2) {
         if (n1->stmt.has_value() && n2->stmt.has_value()) {
             auto s1 = n1->stmt.value();
@@ -26,6 +31,12 @@ private:
         }
     }
 public:
+    /**
+     * @brief Extracts the Next relationship from CFG for 1 procedure.
+     * 
+     * @param node the root of the procedure's CFG.
+     * @return std::set<Entry> the set of next relationships extracted
+     */
     std::set<Entry> extractOne(cfg::CFGNode *node) {
         // a little helper to check if a node has been visited before.
         std::unordered_set<cfg::CFGNode*> visited;
