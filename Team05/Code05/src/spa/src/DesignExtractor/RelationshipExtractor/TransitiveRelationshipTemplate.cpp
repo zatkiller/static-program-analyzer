@@ -43,8 +43,7 @@ struct CallGraphPreProcessor {
     void processReverseTopoOrder(
         std::string node, 
         const AdjacencyList& lst, 
-        std::map<std::string, bool>& visited, 
-        std::vector<std::string>& topolst
+        std::map<std::string, bool>& visited
     ) {
         if (visited[node]) {
             return;
@@ -53,7 +52,7 @@ struct CallGraphPreProcessor {
 
         if (lst.find(node) != lst.end()) {
             for (auto m : lst.at(node)) {
-                processReverseTopoOrder(m, lst, visited, topolst);
+                processReverseTopoOrder(m, lst, visited);
             }
         }
 
@@ -64,7 +63,7 @@ struct CallGraphPreProcessor {
         CallGraphWalker cgw;
         node->accept(&cgw);
         std::map<std::string, bool> visited;
-        processReverseTopoOrder("1", cgw.callGraph, visited, topolst);
+        processReverseTopoOrder("1", cgw.callGraph, visited);
 
         // remove the place holder 
         topolst.pop_back();
