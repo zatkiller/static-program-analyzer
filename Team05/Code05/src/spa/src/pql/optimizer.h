@@ -55,10 +55,16 @@ public:
     }
 };
 
+struct OrderedClauseHash {
+public:
+    size_t operator() (const OrderedClause&) const{};
+};
+
+
 struct BFS {
     bool initialized = false;
     std::priority_queue<OrderedClause, std::vector<OrderedClause>, ClausePriority> pq;
-    std::unordered_set<OrderedClause> visitedCl;
+    std::unordered_set<OrderedClause, OrderedClauseHash> visitedCl;
     std::unordered_set<std::string> visitedSyn;
 };
 

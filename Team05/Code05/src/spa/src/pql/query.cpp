@@ -342,6 +342,12 @@ namespace qps::query {
             throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
     }
 
+    bool ModifiesS::equalTo(const RelRef& r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&ModifiesS::modifiesStmt, &ModifiesS::modified, &r);
+    }
+
+
     std::vector<PKBField> ModifiesP::getField() {
         PKBField field1 = PKBFieldTransformer::transformEntRefProc(modifiesProc);
         PKBField field2 = PKBFieldTransformer::transformEntRefVar(modified);
@@ -360,6 +366,11 @@ namespace qps::query {
     void ModifiesP::checkSecondArg() {
         if(modified.isDeclaration() && modified.getDeclarationType() != DesignEntity::VARIABLE)
             throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
+    }
+
+    bool ModifiesP::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&ModifiesP::modifiesProc, &ModifiesP::modified, &r);
     }
 
 
@@ -383,6 +394,11 @@ namespace qps::query {
             throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
     }
 
+    bool UsesP::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&UsesP::useProc, &UsesP::used, &r);
+    }
+
     std::vector<PKBField> UsesS::getField() {
         return getFieldHelper(&UsesS::useStmt, &UsesS::used);
     }
@@ -401,12 +417,22 @@ namespace qps::query {
             throw exceptions::PqlSemanticException(messages::qps::parser::notVariableSynonymMessage);
     }
 
+    bool UsesS::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&UsesS::useStmt, &UsesS::used, &r);
+    }
+
     std::vector<PKBField> Follows::getField() {
         return getFieldHelper(&Follows::follower, &Follows::followed);
     }
 
     std::vector<Declaration> Follows::getDecs() {
         return getDecsHelper(&Follows::follower, &Follows::followed);
+    }
+
+    bool Follows::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&Follows::follower, &Follows::followed, &r);
     }
 
     std::vector<PKBField> FollowsT::getField() {
@@ -417,6 +443,11 @@ namespace qps::query {
         return getDecsHelper(&FollowsT::follower, &FollowsT::transitiveFollowed);
     }
 
+    bool FollowsT::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&FollowsT::follower, &FollowsT::transitiveFollowed, &r);
+    }
+
     std::vector<PKBField> Parent::getField() {
         return getFieldHelper(&Parent::parent, &Parent::child);
     }
@@ -425,12 +456,22 @@ namespace qps::query {
         return getDecsHelper(&Parent::parent, &Parent::child);
     }
 
+    bool Parent::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&Parent::parent, &Parent::child, &r);
+    }
+
     std::vector<PKBField> ParentT::getField() {
         return getFieldHelper(&ParentT::parent, &ParentT::transitiveChild);
     }
 
     std::vector<Declaration> ParentT::getDecs() {
         return getDecsHelper(&ParentT::parent, &ParentT::transitiveChild);
+    }
+
+    bool ParentT::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&ParentT::parent, &ParentT::transitiveChild, &r);
     }
 
     std::vector<PKBField> Calls::getField() {
@@ -455,6 +496,11 @@ namespace qps::query {
         }
     }
 
+    bool Calls::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&Calls::caller, &Calls::callee, &r);
+    }
+
     std::vector<PKBField> CallsT::getField() {
         PKBField field1 = PKBFieldTransformer::transformEntRefProc(caller);
         PKBField field2 = PKBFieldTransformer::transformEntRefProc(transitiveCallee);
@@ -477,6 +523,11 @@ namespace qps::query {
         }
     }
 
+    bool CallsT::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&CallsT::caller, &CallsT::transitiveCallee, &r);
+    }
+
     std::vector<Declaration> Next::getDecs() {
         return getDecsHelper(&Next::before, &Next::after);
     }
@@ -485,12 +536,22 @@ namespace qps::query {
         return getFieldHelper(&Next::before, &Next::after);
     }
 
+    bool Next::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&Next::before, &Next::after, &r);
+    }
+
     std::vector<Declaration> NextT::getDecs() {
         return getDecsHelper(&NextT::before, &NextT::transitiveAfter);
     }
 
     std::vector<PKBField> NextT::getField() {
         return getFieldHelper(&NextT::before, &NextT::transitiveAfter);
+    }
+
+    bool NextT::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&NextT::before, &NextT::transitiveAfter, &r);
     }
 
     std::vector<Declaration> Affects::getDecs() {
@@ -513,6 +574,11 @@ namespace qps::query {
         }
     }
 
+    bool Affects::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&Affects::affectingStmt, &Affects::affected, &r);
+    }
+
     std::vector<Declaration> AffectsT::getDecs() {
         return getDecsHelper(&AffectsT::affectingStmt, &AffectsT::transitiveAffected);
     }
@@ -531,6 +597,11 @@ namespace qps::query {
         if (transitiveAffected.isDeclaration() && transitiveAffected.getDeclarationType() != DesignEntity::ASSIGN) {
             throw exceptions::PqlSemanticException(messages::qps::parser::notAssignSynonymMessage);
         }
+    }
+
+    bool AffectsT::equalTo(const RelRef &r) const {
+        if (r.type != this->type) return false;
+        return equalityCheckHelper(&AffectsT::affectingStmt, &AffectsT::transitiveAffected, &r);
     }
 
     AttrCompareRef AttrCompareRef::ofString(std::string str) {

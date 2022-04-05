@@ -302,6 +302,11 @@ struct RelRef {
     virtual std::vector<PKBField> getField() = 0;
     virtual std::vector<Declaration> getDecs() = 0;
 
+    virtual bool equalTo(const RelRef& r) const = 0;
+
+    bool operator==(const RelRef& r) const {
+        return equalTo(r);
+    }
 protected:
     template<typename T, typename F1, typename F2>
     std::vector<PKBField> getFieldHelper(const F1 T::*f1, const F2 T::*f2) {
@@ -338,6 +343,13 @@ protected:
 
         return synonyms;
     }
+
+    template<typename T, typename F1, typename F2>
+    bool equalityCheckHelper(const F1 T::*f1, const F2 T::*f2, const RelRef* r ) const {
+        const auto derivedPtr1 = static_cast<const T *>(this);
+        const auto derivedPtr2 = static_cast<const T *>(r);
+        return (derivedPtr1->*f1 == derivedPtr2->*f1) && (derivedPtr1->*f2 == derivedPtr2->*f2);
+    }
 };
 
 /**
@@ -352,6 +364,7 @@ struct ModifiesS : RelRef {
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
 
+    bool equalTo(const RelRef& r) const override;
     void checkFirstArg() override;
     void checkSecondArg() override;
 };
@@ -368,6 +381,7 @@ struct ModifiesP : RelRef {
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
 
+    bool equalTo(const RelRef& r) const override;
     void checkFirstArg() override;
     void checkSecondArg() override;
 };
@@ -384,7 +398,7 @@ struct UsesS : RelRef {
     std::vector<PKBField> getField() override;
 
     std::vector<Declaration> getDecs() override;
-
+    bool equalTo(const RelRef& r) const override;
     void checkFirstArg() override;
     void checkSecondArg() override;
 };
@@ -399,7 +413,7 @@ struct UsesP : RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
-
+    bool equalTo(const RelRef& r) const override;
     void checkFirstArg() override;
     void checkSecondArg() override;
 };
@@ -413,6 +427,7 @@ struct Follows : RelRef {
     std::vector<PKBField> getField() override;
 
     std::vector<Declaration> getDecs() override;
+    bool equalTo(const RelRef& r) const override;
 };
 
 struct FollowsT : RelRef {
@@ -424,6 +439,7 @@ struct FollowsT : RelRef {
     std::vector<PKBField> getField() override;
 
     std::vector<Declaration> getDecs() override;
+    bool equalTo(const RelRef& r) const override;
 };
 
 struct Parent : RelRef {
@@ -435,6 +451,7 @@ struct Parent : RelRef {
     std::vector<PKBField> getField() override;
 
     std::vector<Declaration> getDecs() override;
+    bool equalTo(const RelRef& r) const override;
 };
 
 struct ParentT : RelRef {
@@ -446,6 +463,8 @@ struct ParentT : RelRef {
     std::vector<PKBField> getField() override;
 
     std::vector<Declaration> getDecs() override;
+
+    bool equalTo(const RelRef& r) const override;
 };
 
 struct Calls : RelRef {
@@ -456,6 +475,8 @@ struct Calls : RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
+
+    bool equalTo(const RelRef& r) const override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -470,6 +491,8 @@ struct CallsT: RelRef {
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
 
+    bool equalTo(const RelRef& r) const override;
+
     void checkFirstArg() override;
     void checkSecondArg() override;
 };
@@ -482,6 +505,7 @@ struct Next : RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
+    bool equalTo(const RelRef& r) const override;
 };
 
 struct NextT : RelRef {
@@ -492,6 +516,7 @@ struct NextT : RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
+    bool equalTo(const RelRef& r) const override;
 };
 
 struct Affects : RelRef {
@@ -502,6 +527,8 @@ struct Affects : RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
+
+    bool equalTo(const RelRef& r) const override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
@@ -515,6 +542,8 @@ struct AffectsT : RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
+
+    bool equalTo(const RelRef& r) const override;
 
     void checkFirstArg() override;
     void checkSecondArg() override;
