@@ -10,11 +10,11 @@ namespace design_extractor {
  */
 class UsesCollector : public TransitiveRelationshipTemplate {
 private:
-    void insert(Content a1, Content a2);
+    void insert(Content, Content);
 public:
     using TransitiveRelationshipTemplate::TransitiveRelationshipTemplate;
-    void visit(const ast::Print& node) override;
-    void visit(const ast::Assign& node) override;
+    void visit(const ast::Print&) override;
+    void visit(const ast::Assign&) override;
     void visit(const ast::While&) override;
     void visit(const ast::If&) override;
 };

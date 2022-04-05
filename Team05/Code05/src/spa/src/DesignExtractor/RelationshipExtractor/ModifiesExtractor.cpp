@@ -9,11 +9,11 @@ namespace design_extractor {
  */
 class ModifiesCollector : public TransitiveRelationshipTemplate {
 private:
-    void insert(Content a1, Content a2);
+    void insert(Content, Content);
 public:
     using TransitiveRelationshipTemplate::TransitiveRelationshipTemplate;
-    void visit(const ast::Read& node) override;
-    void visit(const ast::Assign& node) override;
+    void visit(const ast::Read&) override;
+    void visit(const ast::Assign&) override;
     void visit(const ast::While&) override;
     void visit(const ast::If&) override;
 };
