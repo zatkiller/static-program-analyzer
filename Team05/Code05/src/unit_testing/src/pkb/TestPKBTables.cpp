@@ -946,12 +946,12 @@ TEST_CASE("AffectsEvaluator test") {
     stmt3->insert(stmt4);
     stmt3->insert(stmt6);
     stmt3->uses.insert(b);
-    //stmt3->uses.emplace(stmt3->stmt.value(), std::unordered_set<VAR_NAME>({ b }));
+    // stmt3->uses.emplace(stmt3->stmt.value(), std::unordered_set<VAR_NAME>({ b }));
     
     stmt4->insert(stmt5);
     stmt4->insert(dummy);
     stmt4->uses.insert(x);
-    //stmt4->uses.emplace(stmt4->stmt.value(), std::unordered_set<VAR_NAME>({ x }));
+    // stmt4->uses.emplace(stmt4->stmt.value(), std::unordered_set<VAR_NAME>({ x }));
 
     stmt5->insert(stmt4);
     stmt5->modifies.insert(x);
@@ -963,27 +963,27 @@ TEST_CASE("AffectsEvaluator test") {
     stmt6->modifies.insert(a);
     stmt6->uses.insert(x);
     stmt6->uses.insert(c);
-    //stmt6->modifies.emplace(stmt6->stmt.value(), std::unordered_set<VAR_NAME>({ a }));
-    //stmt6->uses.emplace(stmt6->stmt.value(), std::unordered_set<VAR_NAME>({ x, c }));
+    // stmt6->modifies.emplace(stmt6->stmt.value(), std::unordered_set<VAR_NAME>({ a }));
+    // stmt6->uses.emplace(stmt6->stmt.value(), std::unordered_set<VAR_NAME>({ x, c }));
 
     dummy->insert(stmt7);
     stmt7->insert(stmt8);
     stmt7->uses.insert(x);
-    //stmt7->uses.emplace(stmt7->stmt.value(), std::unordered_set<VAR_NAME>({ x }));
+    // stmt7->uses.emplace(stmt7->stmt.value(), std::unordered_set<VAR_NAME>({ x }));
 
     stmt8->insert(stmt9);
     stmt8->modifies.insert(a);
     stmt8->uses.insert(x);
     stmt8->uses.insert(a);
-    //stmt8->modifies.emplace(stmt8->stmt.value(), std::unordered_set<VAR_NAME>({ a }));
-    //stmt8->uses.emplace(stmt8->stmt.value(), std::unordered_set<VAR_NAME>({ x, a }));
+    // stmt8->modifies.emplace(stmt8->stmt.value(), std::unordered_set<VAR_NAME>({ a }));
+    // stmt8->uses.emplace(stmt8->stmt.value(), std::unordered_set<VAR_NAME>({ x, a }));
 
     stmt9->insert(exit);
     stmt9->modifies.insert(y);
     stmt9->uses.insert(b);
     stmt9->uses.insert(a);
-    //stmt9->modifies.emplace(stmt9->stmt.value(), std::unordered_set<VAR_NAME>({ y }));
-    //stmt9->uses.emplace(stmt9->stmt.value(), std::unordered_set<VAR_NAME>({ b, a }));
+    // stmt9->modifies.emplace(stmt9->stmt.value(), std::unordered_set<VAR_NAME>({ y }));
+    // stmt9->uses.emplace(stmt9->stmt.value(), std::unordered_set<VAR_NAME>({ b, a }));
 
     ProcToCfgMap cfgRoots;
     cfgRoots.emplace("main", root);

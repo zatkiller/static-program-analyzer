@@ -888,8 +888,7 @@ namespace ast {
             REQUIRE(extractAssignHelper(ast.get(), "_", "x * (y + z)").size() == 1);
 
             REQUIRE(extractAssignHelper(ast.get(), "_", "v + x * (y + z) * t", true).size() == 1);
-        }
-    
+        }    
     }
 
     TEST_CASE("If Pattern matcher test") {

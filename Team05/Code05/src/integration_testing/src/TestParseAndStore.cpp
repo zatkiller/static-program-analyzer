@@ -605,3 +605,218 @@ TEST_CASE("Test parse and store for multi procedure package 2") {
                     PKBField::createConcrete(VAR_NAME{"x2"})} }));
     }
 }
+
+TEST_CASE("CFG and affects Program 1") {
+    // Test case 1 with a fairly simple program
+    std::string affectsTest = R"(procedure main {
+        x = 2 + a;
+        y = x + 3;
+        if (b == 3) then {
+            while (x == 2) {
+                x = x + 1;
+            }
+        } else {
+            a = x + c;
+        }
+        print x;
+        a = x - a;
+        y = a + x;
+    })";
+    // Declarations and extractions
+    PKB pkb;
+    SourceProcessor sp;
+    sp.processSimple(affectsTest, &pkb);
+    StatementType ASSIGN = StatementType::Assignment;
+
+    auto row = [](auto a, auto b) {
+        return std::vector<PKBField>({
+            PKBField::createConcrete(a),
+            PKBField::createConcrete(b),
+        });
+    };
+
+    TEST_LOG << "Test affects from PKB";
+    {
+        auto response = *(pkb.getRelationship(
+            PKBField::createDeclaration(ASSIGN),
+            PKBField::createDeclaration(ASSIGN),
+            PKBRelationship::AFFECTS
+        ).getResponse<FieldRowResponse>());
+
+        FieldRowResponse expected {
+            row(STMT_LO(1, ASSIGN), STMT_LO(2, ASSIGN)),
+            row(STMT_LO(1, ASSIGN), STMT_LO(5, ASSIGN)),
+            row(STMT_LO(1, ASSIGN), STMT_LO(6, ASSIGN)),
+            row(STMT_LO(1, ASSIGN), STMT_LO(8, ASSIGN)),
+            row(STMT_LO(1, ASSIGN), STMT_LO(9, ASSIGN)),
+            row(STMT_LO(5, ASSIGN), STMT_LO(5, ASSIGN)),
+            row(STMT_LO(5, ASSIGN), STMT_LO(8, ASSIGN)),
+            row(STMT_LO(5, ASSIGN), STMT_LO(9, ASSIGN)),
+            row(STMT_LO(6, ASSIGN), STMT_LO(8, ASSIGN)),
+            row(STMT_LO(8, ASSIGN), STMT_LO(9, ASSIGN))
+        };
+        REQUIRE(response == expected);
+    }
+
+    TEST_LOG << "Test affects* from PKB";
+    {
+        auto response = *(pkb.getRelationship(
+            PKBField::createDeclaration(ASSIGN),
+            PKBField::createDeclaration(ASSIGN),
+            PKBRelationship::AFFECTST
+        ).getResponse<FieldRowResponse>());
+
+        FieldRowResponse expected {
+            row(STMT_LO(1, ASSIGN), STMT_LO(2, ASSIGN)),
+            row(STMT_LO(1, ASSIGN), STMT_LO(5, ASSIGN)),
+            row(STMT_LO(1, ASSIGN), STMT_LO(6, ASSIGN)),
+            row(STMT_LO(1, ASSIGN), STMT_LO(8, ASSIGN)),
+            row(STMT_LO(1, ASSIGN), STMT_LO(9, ASSIGN)),
+            row(STMT_LO(5, ASSIGN), STMT_LO(5, ASSIGN)),
+            row(STMT_LO(5, ASSIGN), STMT_LO(8, ASSIGN)),
+            row(STMT_LO(5, ASSIGN), STMT_LO(9, ASSIGN)),
+            row(STMT_LO(6, ASSIGN), STMT_LO(8, ASSIGN)),
+            row(STMT_LO(6, ASSIGN), STMT_LO(9, ASSIGN)),
+            row(STMT_LO(8, ASSIGN), STMT_LO(9, ASSIGN))
+        };
+        REQUIRE(response == expected);
+    }
+}
+
+TEST_CASE("CFG and Affects Program 2") {
+    // Test case 2 with a deeply nested (>= 3 levels) program
+    std::string affectsTest2 = R"(procedure main {
+        while (x == 3) {
+            if (y > a) then {
+                if (y < b) then {
+                    a = monke * b;
+                } else {
+                    x = y * z + x; 
+                }
+            } else {
+                while (b > a) {
+                    monke = x + a;
+                }
+            }
+        }
+    })";
+    
+    PKB pkb;
+    SourceProcessor sp;
+    sp.processSimple(affectsTest2, &pkb);
+    StatementType ASSIGN = StatementType::Assignment;
+
+    auto row = [](auto a, auto b) {
+        return std::vector<PKBField>({
+            PKBField::createConcrete(a),
+            PKBField::createConcrete(b),
+        });
+    };
+
+    TEST_LOG << "Nested test for affects from PKB";
+    {
+        auto response = *pkb.getRelationship(
+            PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(StatementType::All),
+            PKBRelationship::AFFECTS
+        ).getResponse<FieldRowResponse>();
+        
+        FieldRowResponse expected {
+            row(STMT_LO(4, ASSIGN), STMT_LO(7, ASSIGN)),
+            row(STMT_LO(5, ASSIGN), STMT_LO(7, ASSIGN)),
+            row(STMT_LO(5, ASSIGN), STMT_LO(5, ASSIGN)),
+            row(STMT_LO(7, ASSIGN), STMT_LO(4, ASSIGN))
+        };
+
+        REQUIRE(response == expected);
+    }
+    
+    TEST_LOG << "Nested test for affects* from PKB";
+    {
+        auto response = *pkb.getRelationship(
+            PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(StatementType::All),
+            PKBRelationship::AFFECTST
+        ).getResponse<FieldRowResponse>();
+        
+        FieldRowResponse expected {
+            row(STMT_LO(4, ASSIGN), STMT_LO(7, ASSIGN)),
+            row(STMT_LO(4, ASSIGN), STMT_LO(4, ASSIGN)),
+            row(STMT_LO(5, ASSIGN), STMT_LO(4, ASSIGN)),
+            row(STMT_LO(5, ASSIGN), STMT_LO(7, ASSIGN)),
+            row(STMT_LO(5, ASSIGN), STMT_LO(5, ASSIGN)),
+            row(STMT_LO(7, ASSIGN), STMT_LO(4, ASSIGN)),
+            row(STMT_LO(7, ASSIGN), STMT_LO(7, ASSIGN))
+        };
+
+        REQUIRE(response == expected);
+    }
+}
+
+TEST_CASE("CFG and Affects Program 3") {
+    // Testing for Affects across multiple procedures
+    std::string affectsTest3 = R"(procedure monke {
+        x = a + b;
+        while (x < y) {
+            call biggus;
+            y = x + y;
+        }
+    }
+    procedure biggus {
+        y = a;
+        call diggus;
+    }
+    procedure diggus {
+        b = x + y;
+        if (b == 0) then {
+            b = b + x;
+        } else {
+            y = x + b;
+        }
+    })";
+    PKB pkb;
+    SourceProcessor sp;
+    sp.processSimple(affectsTest3, &pkb);
+    StatementType ASSIGN = StatementType::Assignment;
+
+    auto row = [](auto a, auto b) {
+        return std::vector<PKBField>({
+            PKBField::createConcrete(a),
+            PKBField::createConcrete(b),
+        });
+    };
+
+    TEST_LOG << "Nested test for affects from PKB";
+    {
+        auto response = *pkb.getRelationship(
+            PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(StatementType::All),
+            PKBRelationship::AFFECTS
+        ).getResponse<FieldRowResponse>();
+
+        FieldRowResponse expected {
+            row(STMT_LO{1, ASSIGN}, STMT_LO{4, ASSIGN}),
+            row(STMT_LO{7, ASSIGN}, STMT_LO{9, ASSIGN}),
+            row(STMT_LO{7, ASSIGN}, STMT_LO{10, ASSIGN})
+        };
+
+        REQUIRE(response == expected);
+    }
+
+    TEST_LOG << "Nested test for affects* from PKB";
+    {
+        auto response = *pkb.getRelationship(
+            PKBField::createDeclaration(StatementType::All),
+            PKBField::createDeclaration(StatementType::All),
+            PKBRelationship::AFFECTST
+        ).getResponse<FieldRowResponse>();
+
+        FieldRowResponse expected {
+            row(STMT_LO{1, ASSIGN}, STMT_LO{4, ASSIGN}),
+            row(STMT_LO{7, ASSIGN}, STMT_LO{9, ASSIGN}),
+            row(STMT_LO{7, ASSIGN}, STMT_LO{10, ASSIGN})
+        };
+
+        REQUIRE(response == expected);
+    }
+}
