@@ -12,10 +12,18 @@ struct VariableExtractorModule;
 struct ConstExtractorModule;
 struct ProcedureExtractorModule;
 
+/**
+ * @brief A base dataclass that can be used to collect entities by walking the AST.
+ */
 struct EntityCollector : public TreeWalker {
     std::set<Entry> entities;
 };
 
+/**
+ * @brief Extracts entities using collectors of type T.
+ * 
+ * @tparam T the type of collector to be used for extracting entities.
+ */
 template<typename T>
 class EntityExtractor : public Extractor<const ast::ASTNode*> {
 public:
