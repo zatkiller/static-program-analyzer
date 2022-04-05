@@ -231,7 +231,6 @@ struct Node {
     T val;
     NodeSet next; /**< The descendant(s) of this Node. */
     NodeSet prev; /**< The predecessor(s) of this Node. */
-
 };
 
 /**
