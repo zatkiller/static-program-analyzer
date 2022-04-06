@@ -30,6 +30,7 @@ private:
             entries.insert(Relationship(PKBRelationship::NEXT, s1, s2));
         }
     }
+
 public:
     /**
      * @brief Extracts the Next relationship from CFG for 1 procedure.

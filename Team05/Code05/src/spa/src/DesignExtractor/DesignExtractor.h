@@ -16,6 +16,7 @@ private:
     std::list<std::shared_ptr<ExtractorModule<const ast::ASTNode*>>> astExtractors;
     std::list<std::shared_ptr<ExtractorModule<const cfg::PROC_CFG_MAP*>>> cfgExtractors;
     PKBStrategy* pkbStrategy;
+    ProcToCfgMap cfgs;
 
 public:
     explicit DesignExtractor(PKBStrategy* pkbStrategy) : pkbStrategy(pkbStrategy) {
@@ -33,13 +34,19 @@ public:
     }
 
     void extract(ast::ASTNode* ast) {
-        auto cfgs = cfg::CFGExtractor().extract(ast);
+        if (cfgs.empty()) {
+            auto cfgs = cfg::CFGExtractor().extract(ast);
+        }
         for (auto extractor : astExtractors) {
             extractor->extract(ast);
         }
         for (auto extractor : cfgExtractors) {
             extractor->extract(&cfgs);
         }
+    }
+
+    void insert(const ProcToCfgMap &newCFGs) {
+        cfgs = newCFGs;
     }
 };
 }  // namespace design_extractor
