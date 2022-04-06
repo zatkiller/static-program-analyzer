@@ -6,16 +6,13 @@
 #include <map>
 
 #include "DesignExtractor/Extractor.h"
+#include "Parser/AST.h"
 #include "PKB/PKBField.h"
 #include "PKB/PKBCommons.h"
-#include "Parser/AST.h"
-
 
 namespace sp {
 namespace design_extractor {
-class RelExtractorTemplate : public TreeWalker {
-public:
-    std::set<Entry> relationships;
+class RelExtractorTemplate : public Collector {
 protected:
     virtual void extractAndInsert(Content, const ast::ASTNode*) = 0;
     virtual void insert(Content, Content) = 0;

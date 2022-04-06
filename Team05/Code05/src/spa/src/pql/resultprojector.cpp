@@ -1,6 +1,6 @@
 #include "resultprojector.h"
 
-namespace qps::evaluator{
+namespace qps::evaluator {
     SelectElemInfo SelectElemInfo::ofDeclaration(int columnNo) {
         SelectElemInfo e;
         e.columnNo = columnNo;
@@ -76,4 +76,4 @@ namespace qps::evaluator{
 
         return listResult;
     }
-}
+}  // namespace qps::evaluator

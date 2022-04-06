@@ -1,6 +1,8 @@
 #include "clausehandler.h"
 
 namespace qps::evaluator {
+    using sp::design_extractor::PatternParam;
+
     PKBResponse ClauseHandler::getAll(query::DesignEntity type) {
         switch (type) {
             case query::DesignEntity::PROCEDURE: return pkb->getProcedures();
@@ -91,7 +93,7 @@ namespace qps::evaluator {
             isStrict = exp.isFullMatch();
         }
 
-        PKBResponse response = pkb->match(statementType, lhsParam, rhsParam, isStrict);
+        PKBResponse response = pkb->match(statementType, PatternParam(lhsParam), PatternParam(rhsParam, isStrict));
         if (!lhs.isDeclaration()) {
             response = selectDeclaredValue(response, true);
         }

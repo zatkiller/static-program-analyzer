@@ -310,7 +310,6 @@ namespace qps::parser {
     }
 
     bool Parser::isValidStatementType(Query &query, const StmtRef& s) {
-
         if (s.isDeclaration()) {
             DesignEntity d = query.getDeclarationDesignEntity(s.getDeclarationSynonym());
             return statementsType.find(d) != statementsType.end();
