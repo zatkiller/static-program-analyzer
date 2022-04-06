@@ -5,6 +5,7 @@
 #include "exceptions.h"
 #include "pql/query.h"
 #include "pql/lexer.h"
+#include "pql/pkbtypematcher.h"
 
 namespace qps::query {
     std::unordered_map<std::string, DesignEntity> designEntityMap = {
@@ -111,6 +112,12 @@ namespace qps::query {
         return e;
     }
 
+    std::string Elem::getSyn() const {
+        if (isDeclaration()) return getDeclaration().getSynonym();
+        else
+            return getAttrRef().getDeclarationSynonym();
+    }
+
     ResultCl ResultCl::ofBoolean() {
         ResultCl r;
         r.boolean = true;
@@ -125,6 +132,14 @@ namespace qps::query {
 
     bool ResultCl::hasElem(const Elem& e) const {
         return std::find(tuple.begin(), tuple.end(), e) != tuple.end();
+    }
+
+    std::vector<std::string> ResultCl::getSynAsList() const {
+        std::vector<std::string> syns;
+        for (auto elem : getTuple()) {
+            syns.push_back(elem.getSyn());
+        }
+        return syns;
     }
 
     EntRef EntRef::ofVarName(std::string name) {
@@ -266,7 +281,8 @@ namespace qps::query {
         } else if (s.isWildcard()) {
             stmtField = PKBField::createWildcard(PKBEntityType::STATEMENT);
         } else if (s.isDeclaration()) {
-            stmtField = PKBField::createDeclaration(StatementType::All);
+            StatementType type = evaluator::PKBTypeMatcher::getStatementType(s.getDeclarationType());
+            stmtField = PKBField::createDeclaration(type);
         }
         return stmtField;
     }

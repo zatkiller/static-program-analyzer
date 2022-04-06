@@ -83,6 +83,8 @@ public:
      */
     bool hasResult();
 
+    void filterColumns(std::vector<std::string> selectSyns);
+
     /**
      * Transfers the PKBResponse in a type of set<PKBField> into set<vector<PKBField>>.
      *

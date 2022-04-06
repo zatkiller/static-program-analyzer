@@ -94,6 +94,7 @@ struct Elem {
 
     Declaration getDeclaration() const { return declaration; }
     AttrRef getAttrRef() const { return ar; }
+    std::string getSyn() const;
 
     bool operator==(const Elem &o) const {
         if ((type == ElemType::ATTR_REF) && (o.type == ElemType::ATTR_REF)) {
@@ -117,6 +118,7 @@ struct ResultCl {
 
     bool isBoolean() const { return boolean; }
     std::vector<Elem> getTuple() const { return tuple; }
+    std::vector<std::string> getSynAsList() const;
 
     bool hasElem(const Elem& e) const;
 

@@ -131,8 +131,34 @@ TEST_CASE("test group clauses") {
     pattern.push_back(pattern2);
 
     qps::optimizer::Optimizer opt = qps::optimizer::Optimizer(suchthat, with, pattern);
-//    opt.groupClauses<std::shared_ptr<qps::query::RelRef>>(suchthat);
     opt.optimize();
     REQUIRE(opt.getGroups().size() == 5);
-    printGroupSyns(opt.getGroups());
+
+    TEST_LOG << "Test group order";
+    std::vector<qps::optimizer::ClauseGroup> orderedGroups;
+    while (opt.hasNext()) {
+        orderedGroups.push_back(opt.next());
+    }
+    for (int i = 0; i < orderedGroups.size() - 1; i++) {
+        REQUIRE(orderedGroups[i].syns.size() <= orderedGroups[i + 1].syns.size());
+    }
+    REQUIRE(orderedGroups[0].syns.find("") != orderedGroups[0].syns.end());
+    printGroupSyns(orderedGroups);
+
+    TEST_LOG << "Test clause order";
+    for (auto group : orderedGroups) {
+        std::vector<qps::optimizer::OrderedClause> orderedClause;
+        TEST_LOG << " group id: " + std::to_string(group.groupId);
+        while (group.hasNext()) {
+            qps::optimizer::OrderedClause clause = group.next();
+            orderedClause.push_back(clause);
+            int priority = clause.getPriority();
+            TEST_LOG << " " + std::to_string(priority);
+        }
+        TEST_LOG << "\n";
+        REQUIRE(orderedClause.size() == group.suchthatGroup.size() + group.withGroup.size() + group.patternGroup.size());
+        for (int i = 0; i < orderedClause.size() - 1; i++) {
+            REQUIRE(orderedClause[i].getSynonyms().size() <= orderedClause[i + 1].getSynonyms().size());
+        }
+    }
 }

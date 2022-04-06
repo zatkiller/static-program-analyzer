@@ -28,9 +28,8 @@ struct OrderedClause {
     bool isSuchThat() { return type == OrderedClauseType::SUCH_THAT; }
     bool isPattern() { return type == OrderedClauseType::PATTERN; }
 
-    bool operator==(const OrderedClause& o) const {
-        return (type == o.type) && (suchthat == o.suchthat) && (with == o.with) && (pattern == o.pattern);
-    }
+    bool operator==(const OrderedClause& o) const;
+
 private:
     std::shared_ptr<query::RelRef> suchthat {};
     query::AttrCompare with {};
@@ -46,11 +45,11 @@ public:
     bool operator()(OrderedClause& a,OrderedClause& b)
     {
         if (a.getSynonyms().size() < b.getSynonyms().size()) {
-            return true;
-        } else if (a.getSynonyms().size() >= b.getSynonyms().size()) {
             return false;
+        } else if (a.getSynonyms().size() > b.getSynonyms().size()) {
+            return true;
         } else {
-            return a.getPriority() < b.getPriority();
+            return a.getPriority() > b.getPriority();
         }
     }
 };
@@ -109,11 +108,11 @@ struct ClauseGroup {
         }
     }
 
-    bool hasSyn();
+    bool noSyn();
     void addSyn(std::vector<std::string> s);
     void insertToPQ(std::string s);
-    bool hasNext();
-    OrderedClause next();
+    bool hasNextClause();
+    OrderedClause nextClause();
 };
 
 
@@ -122,11 +121,11 @@ public:
     bool operator()(ClauseGroup& a,ClauseGroup& b)
     {
         if (a.syns.find("") != a.syns.end()) {
-            return true;
-        } else if (b.syns.find("") != b.syns.end()) {
             return false;
+        } else if (b.syns.find("") != b.syns.end()) {
+            return true;
         } else {
-            return a.syns.size() < b.syns.size();
+            return a.syns.size() > b.syns.size();
         }
     }
 };
@@ -195,8 +194,8 @@ public:
 
     std::vector<ClauseGroup> getGroups();
 
-    bool hasNext();
+    bool hasNextGroup();
 
-    ClauseGroup next();
+    ClauseGroup nextGroup();
 };
 }

@@ -77,6 +77,14 @@ namespace qps::optimizer {
         return priority;
     }
 
+    bool OrderedClause::operator==(const OrderedClause &o) const {
+        if (type != o.type) return false;
+        if (type == OrderedClauseType::SUCH_THAT) return *(suchthat) == *(o.suchthat);
+        else if (type == OrderedClauseType::WITH) return with == o.with;
+        else
+            return pattern == o.pattern;
+    }
+
     ClauseGroup ClauseGroup::ofNewGroup(int id) {
         ClauseGroup group = ClauseGroup();
         group.groupId = id;
@@ -89,15 +97,17 @@ namespace qps::optimizer {
         }
     }
 
-    bool ClauseGroup::hasSyn() {
+    bool ClauseGroup::noSyn() {
         return syns.size() == 1 && syns.find("") != syns.end();
     }
 
 
-    OrderedClause ClauseGroup::next() {
+    OrderedClause ClauseGroup::nextClause() {
         if (!bfs.initialized) {
+            bfs.visitedSyn.insert(startingPoint);
             for (auto cl : subgroups[startingPoint]) {
                 bfs.pq.push(cl);
+                bfs.visitedCl.insert(cl);
             }
             bfs.initialized = true;
         }
@@ -121,8 +131,8 @@ namespace qps::optimizer {
         }
     }
 
-    bool ClauseGroup::hasNext() {
-        return bfs.pq.empty() || !bfs.initialized;
+    bool ClauseGroup::hasNextClause() {
+        return !bfs.pq.empty() || !bfs.initialized;
     }
 
     void Optimizer::addSynsToMap(std::vector<std::string> syns, int groupId) {
@@ -144,13 +154,13 @@ namespace qps::optimizer {
         return groups;
     }
 
-    ClauseGroup Optimizer::next() {
+    ClauseGroup Optimizer::nextGroup() {
         ClauseGroup group = pq.top();
         pq.pop();
         return group;
     }
 
-    bool Optimizer::hasNext() {
-        return pq.empty();
+    bool Optimizer::hasNextGroup() {
+        return !pq.empty();
     }
 } // namespace qps::optimizer

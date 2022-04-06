@@ -303,5 +303,5 @@ TEST_CASE("RelRef equality check") {
     ptr2->modifiesStmt = StmtRef::ofLineNo(4);
     ptr2->modified = EntRef::ofDeclaration( Declaration { "v", DesignEntity::VARIABLE });
 
-    REQUIRE(ptr1 == ptr2);
+    REQUIRE(*(ptr1) == *(ptr2));
 }

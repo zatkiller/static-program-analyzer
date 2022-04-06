@@ -44,7 +44,7 @@ namespace qps::evaluator{
 
     std::list<std::string> ResultProjector::projectResult(ResultTable &table, query::ResultCl resultCl) {
         std::list<std::string> listResult{};
-        if (table.hasResult()) {
+        if (!table.hasResult()) {
             return listResult;
         }
         std::vector<query::Elem> tuple = resultCl.getTuple();
