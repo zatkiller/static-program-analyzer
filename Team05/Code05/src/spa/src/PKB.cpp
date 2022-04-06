@@ -336,7 +336,6 @@ PKBResponse PKB::match(StatementType type, sp::design_extractor::PatternParam lh
 
 template <typename T>
 PKBResponse PKB::match(sp::design_extractor::PatternParam lhs, sp::design_extractor::PatternParam rhs) const {
-    
     FieldRowResponse res;
     sp::design_extractor::MatchedNodes<T> nodes;
 
