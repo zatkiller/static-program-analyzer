@@ -1,8 +1,6 @@
 #include "clausehandler.h"
 
 namespace qps::evaluator {
-    using sp::design_extractor::PatternParam;
-
     PKBResponse ClauseHandler::getAll(query::DesignEntity type) {
         switch (type) {
             case query::DesignEntity::PROCEDURE: return pkb->getProcedures();
@@ -77,6 +75,8 @@ namespace qps::evaluator {
     }
 
     void ClauseHandler::handlePattern(query::Pattern pattern) {
+        using sp::design_extractor::PatternParam;
+
         StatementType statementType = PKBTypeMatcher::getStatementType(pattern.getSynonymType());
         query::EntRef lhs = pattern.getEntRef();
         std::vector<std::string> synonyms{pattern.getSynonym()};
