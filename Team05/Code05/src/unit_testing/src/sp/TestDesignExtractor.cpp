@@ -33,6 +33,8 @@ using de::ModifiesExtractorModule;
 using de::ParentExtractorModule;
 using de::FollowsExtractorModule;
 using de::NextExtractorModule;
+using de::PatternParam;
+
 
 class TestPKBStrategy : public de::PKBStrategy {
 public:
@@ -809,12 +811,11 @@ namespace ast {
 
     TEST_CASE("Assign Pattern matcher test") {
         TEST_LOG << "Testing Assign Pattern matcher";
-
         // only support _ or string, treat synonyms as _.
         auto extractAssignHelper = [](sp::ast::ASTNode *ast, std::string s1, std::string s2, bool isStrict = false){
-            auto field1 = s1 == "_" ? std::nullopt : std::make_optional<>(s1);
-            auto field2 = s2 == "_" ? std::nullopt : std::make_optional<>(s2);
-            return de::extractAssign(ast, field1, field2, isStrict);
+            auto field1 = s1 == "_" ? PatternParam(std::nullopt) : PatternParam(std::make_optional<>(s1));
+            auto field2 = s2 == "_" ? PatternParam(std::nullopt) : PatternParam(s2, isStrict);
+            return de::extractAssign(ast, field1, field2);
         };
 
         // assignment: z = 1 + x - 2 + y
@@ -912,14 +913,14 @@ namespace ast {
             makeStmts(make<Print>(3, make<Var>("a")))
         );
 
-        REQUIRE(de::extractIf(ast.get(), "x").size() == 1);
-        REQUIRE(de::extractIf(ast.get(), std::nullopt).size() == 1);
-        REQUIRE(de::extractIf(ast.get(), "y").size() == 1);
-        REQUIRE(de::extractIf(ast.get(), "z").size() == 0);
-        REQUIRE(de::extractIf(ast.get(), "a").size() == 0);
+        REQUIRE(de::extractIf(ast.get(), PatternParam("x")).size() == 1);
+        REQUIRE(de::extractIf(ast.get(), PatternParam(std::nullopt)).size() == 1);
+        REQUIRE(de::extractIf(ast.get(), PatternParam("y")).size() == 1);
+        REQUIRE(de::extractIf(ast.get(), PatternParam("z")).size() == 0);
+        REQUIRE(de::extractIf(ast.get(), PatternParam("a")).size() == 0);
 
         // wrong type of conditional statement matching should fail
-        REQUIRE(de::extractWhile(ast.get(), "x").size() == 0);
+        REQUIRE(de::extractWhile(ast.get(), PatternParam("x")).size() == 0);
     }
 
     TEST_CASE("While Pattern matcher test") {
@@ -940,13 +941,13 @@ namespace ast {
             makeStmts(make<Print>(2, make<Var>("z")))
         );
 
-        REQUIRE(de::extractWhile(ast.get(), "x").size() == 1);
-        REQUIRE(de::extractWhile(ast.get(), std::nullopt).size() == 1);
-        REQUIRE(de::extractWhile(ast.get(), "y").size() == 1);
-        REQUIRE(de::extractWhile(ast.get(), "z").size() == 0);
+        REQUIRE(de::extractWhile(ast.get(), PatternParam("x")).size() == 1);
+        REQUIRE(de::extractWhile(ast.get(), PatternParam(std::nullopt)).size() == 1);
+        REQUIRE(de::extractWhile(ast.get(), PatternParam("y")).size() == 1);
+        REQUIRE(de::extractWhile(ast.get(), PatternParam("z")).size() == 0);
         
         // wrong type of conditional statement matching should fail
-        REQUIRE(de::extractIf(ast.get(), "x").size() == 0);
+        REQUIRE(de::extractIf(ast.get(), PatternParam("x")).size() == 0);
     }
 
 }  // namespace ast

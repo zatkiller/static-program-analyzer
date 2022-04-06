@@ -5,10 +5,10 @@
 #include <map>
 #include <set>
 
-#include "Parser/AST.h"
 #include "DesignExtractor/Extractor.h"
-#include "PKB.h"
 #include "DesignExtractor/RelationshipExtractor/TransitiveRelationshipTemplate.h"
+#include "Parser/AST.h"
+#include "PKB.h"
 
 namespace sp {
 namespace design_extractor {

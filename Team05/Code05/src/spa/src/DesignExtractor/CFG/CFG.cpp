@@ -1,9 +1,9 @@
 #include <unordered_set>
 
 #include "CFG.h"
-#include "logging.h"
 #include "DesignExtractor/RelationshipExtractor/ModifiesExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/UsesExtractor.h"
+#include "logging.h"
 
 #define DEBUG_LOG Logger(Level::DEBUG) << "CFGExtractor.cpp Extracted "
 

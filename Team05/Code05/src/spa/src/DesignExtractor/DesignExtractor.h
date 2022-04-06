@@ -2,12 +2,12 @@
 
 #include <list>
 
-#include "PKB.h"
-#include "Parser/AST.h"
-#include "DesignExtractor/Extractor.h"
 #include "DesignExtractor/CFG/CFG.h"
 #include "DesignExtractor/EntityExtractor/EntityExtractor.h"
+#include "DesignExtractor/Extractor.h"
 #include "DesignExtractor/RelationshipExtractor/RelationshipExtractor.h"
+#include "Parser/AST.h"
+#include "PKB.h"
 
 namespace sp {
 namespace design_extractor {
