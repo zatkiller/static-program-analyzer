@@ -41,6 +41,11 @@ public:
     */
     void insertAST(std::unique_ptr<sp::ast::Program> root);
 
+    /**
+    * Stores the CFGs of each procedure that were parsed by the source processor.
+    * 
+    * @param roots map of procedure names to their respective CFG's root
+    */
     void insertCFG(ProcToCfgMap roots);
 
     /**
