@@ -217,18 +217,8 @@ private:
     void appendStatementInformation(PKBField* field);
 
     /**
-    * Helper method to extract assignments matching the patterns provided.
+    * Helper template method to extract the patterns from the AST node indicated in the type T.
     */
-    PKBResponse matchAssign(sp::design_extractor::PatternParam lhs,
-        sp::design_extractor::PatternParam rhs) const;
-
-    /**
-    * Helper method to extract ifs matching the pattern provided.
-    */
-    PKBResponse matchIf(sp::design_extractor::PatternParam lhs) const;
-
-    /**
-    * Helper method to extract while matching the pattern provided.
-    */
-    PKBResponse matchWhile(sp::design_extractor::PatternParam lhs) const;
+    template <typename T>
+    PKBResponse match(sp::design_extractor::PatternParam lhs, sp::design_extractor::PatternParam rhs) const;
 };
