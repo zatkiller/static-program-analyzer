@@ -1527,6 +1527,46 @@ TEST_CASE("Parser parseAttrRef") {
     }
 }
 
+TEST_CASE("validateComparingTypes") {
+    SECTION("Incompatible type matches") {
+        Parser p;
+        REQUIRE_THROWS_MATCHES(p.validateComparingTypes(AttrCompareRef::ofAttrRef(AttrRef{ AttrName::STMTNUM, Declaration {
+            "rd", DesignEntity::READ } }), AttrCompareRef::ofString("v")), exceptions::PqlSemanticException,
+                Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
+
+        REQUIRE_THROWS_MATCHES(p.validateComparingTypes(AttrCompareRef::ofNumber(1), AttrCompareRef::ofAttrRef(
+            AttrRef{ AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE } })), exceptions::PqlSemanticException,
+                Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
+
+        REQUIRE_THROWS_MATCHES(p.validateComparingTypes(AttrCompareRef::ofString("v"), AttrCompareRef::ofNumber(1)), 
+            exceptions::PqlSemanticException, Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
+    }
+
+    SECTION("Compatible type matches") {
+        Parser p;
+
+        REQUIRE_NOTHROW(p.validateComparingTypes(AttrCompareRef::ofAttrRef(AttrRef{ AttrName::PROCNAME, Declaration {
+            "p", DesignEntity::PROCEDURE } }), AttrCompareRef::ofString("v")));
+
+        REQUIRE_NOTHROW(p.validateComparingTypes(AttrCompareRef::ofString("v"), AttrCompareRef::ofAttrRef(
+            AttrRef{ AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE, } })));
+
+        REQUIRE_NOTHROW(p.validateComparingTypes(AttrCompareRef::ofAttrRef(AttrRef{ AttrName::STMTNUM,  Declaration {
+            "cl", DesignEntity::CALL} }), AttrCompareRef::ofNumber(200)));
+
+        REQUIRE_NOTHROW(p.validateComparingTypes(AttrCompareRef::ofNumber(99), AttrCompareRef::ofAttrRef(
+            AttrRef{ AttrName::VALUE, Declaration { "c", DesignEntity::CONSTANT } })));
+
+        REQUIRE_NOTHROW(p.validateComparingTypes(AttrCompareRef::ofAttrRef(AttrRef{ AttrName::PROCNAME, Declaration {
+            "p", DesignEntity::PROCEDURE } }), AttrCompareRef::ofAttrRef(AttrRef{
+                AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE } })));
+
+        REQUIRE_NOTHROW(p.validateComparingTypes(AttrCompareRef::ofAttrRef(AttrRef{ AttrName::STMTNUM, Declaration {
+            "cl", DesignEntity::CALL } }), AttrCompareRef::ofAttrRef(AttrRef{
+                AttrName::VALUE, Declaration { "c", DesignEntity::CONSTANT } })));
+    }
+}
+
 TEST_CASE("Parser parseAttrCompareRef") {
     SECTION ("AttrRef") {
         Query query;

@@ -70,7 +70,7 @@ struct AttrRef {
 
     bool isString() const { return attrName == AttrName::VARNAME || attrName == AttrName::PROCNAME; }
     bool isNumber() const { return attrName == AttrName::VALUE || attrName == AttrName::STMTNUM; }
-    bool compatbileComparison(const AttrRef& o) const;
+    bool canBeCompared(const AttrRef &o) const;
 
     bool operator==(const AttrRef& o) const { return (attrName == o.attrName) && (declaration == o.declaration); }
 
@@ -656,8 +656,6 @@ public:
     bool isString() const { return type == AttrCompareRefType::STRING; }
     bool isNumber() const { return type == AttrCompareRefType::NUMBER; }
     bool isAttrRef() const { return type == AttrCompareRefType::ATTRREF; }
-    bool validComparison(const AttrCompareRef& o) const;
-
     bool operator==(const AttrCompareRef& o) const {
         if (isString() && o.isString()) {
             return str_value == o.getString();
@@ -679,9 +677,6 @@ struct AttrCompare {
 
     AttrCompareRef getLhs() const { return lhs; }
     AttrCompareRef getRhs() const { return rhs; }
-    void validateComparingTypes() const;
-
-    bool operator==(const AttrCompare& o) const { return (lhs == o.lhs) && (rhs == o.rhs); }
 };
 
 /**

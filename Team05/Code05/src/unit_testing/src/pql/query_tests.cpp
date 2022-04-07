@@ -45,15 +45,15 @@ TEST_CASE("AttrRef") {
         AttrRef ar3 = AttrRef{ AttrName::STMTNUM, Declaration { "s", DesignEntity::STMT} };
         AttrRef ar4 = AttrRef{ AttrName::VALUE, Declaration {"c", DesignEntity::CONSTANT} };
 
-        REQUIRE(ar.compatbileComparison(ar2));
-        REQUIRE(ar3.compatbileComparison(ar4));
+    REQUIRE(ar.canBeCompared(ar2));
+    REQUIRE(ar3.canBeCompared(ar4));
 
-        REQUIRE(!ar.compatbileComparison(ar3));
-        REQUIRE(!ar.compatbileComparison(ar4));
+    REQUIRE(!ar.canBeCompared(ar3));
+    REQUIRE(!ar.canBeCompared(ar4));
 
-        REQUIRE(!ar2.compatbileComparison(ar3));
-        REQUIRE(!ar2.compatbileComparison(ar4));
-    }
+    REQUIRE(!ar2.canBeCompared(ar3));
+    REQUIRE(!ar2.canBeCompared(ar4));
+}
 
     SECTION("AttrRef Hash") {
         AttrRef ar1 = AttrRef{ AttrName::PROCNAME, Declaration {"p", DesignEntity::PROCEDURE} };
@@ -118,7 +118,6 @@ TEST_CASE("AttrCompare") {
         AttrCompare ac(AttrCompareRef::ofAttrRef( AttrRef { AttrName::VARNAME, d }),
                        AttrCompareRef::ofString("v"));
 
-        REQUIRE_NOTHROW(ac.validateComparingTypes());
         AttrCompareRef lhs = ac.getLhs();
         AttrCompareRef rhs = ac.getRhs();
 
@@ -130,72 +129,6 @@ TEST_CASE("AttrCompare") {
 
         REQUIRE(rhs.isString());
         REQUIRE(rhs.getString() == "v");
-    }
-
-    SECTION ("AttrCompare validateComparingTypes") {
-        SECTION ("Incompatible type matches") {
-            AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, Declaration {
-                "rd", DesignEntity::READ } }), AttrCompareRef::ofString("v"));
-
-            REQUIRE_THROWS_MATCHES(ac1.validateComparingTypes(), exceptions::PqlSemanticException,
-                                   Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
-
-            AttrCompare ac2(AttrCompareRef::ofNumber(1), AttrCompareRef::ofAttrRef(
-                    AttrRef {AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE }}));
-
-            REQUIRE_THROWS_MATCHES(ac2.validateComparingTypes(), exceptions::PqlSemanticException,
-                                   Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
-
-            AttrCompare ac3(AttrCompareRef::ofString("v"), AttrCompareRef::ofNumber(1));
-
-            REQUIRE_THROWS_MATCHES(ac3.validateComparingTypes(), exceptions::PqlSemanticException,
-                                   Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
-        }
-
-        SECTION ("Compatible type matches") {
-            AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::PROCNAME, Declaration {
-                "p", DesignEntity::PROCEDURE }}), AttrCompareRef::ofString("v"));
-            REQUIRE_NOTHROW(ac1.validateComparingTypes());
-
-            AttrCompare ac2(AttrCompareRef::ofString("v"), AttrCompareRef::ofAttrRef(
-                    AttrRef {AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE, }}));
-            REQUIRE_NOTHROW(ac2.validateComparingTypes());
-
-
-            AttrCompare ac3(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM,  Declaration {
-                "cl", DesignEntity::CALL}}), AttrCompareRef::ofNumber(200));
-            REQUIRE_NOTHROW(ac3.validateComparingTypes());
-
-            AttrCompare ac4(AttrCompareRef::ofNumber(99), AttrCompareRef::ofAttrRef(
-                    AttrRef {AttrName::VALUE, Declaration { "c", DesignEntity::CONSTANT }}));
-            REQUIRE_NOTHROW(ac4.validateComparingTypes());
-
-            AttrCompare ac5(AttrCompareRef::ofAttrRef( AttrRef {AttrName::PROCNAME, Declaration {
-                "p", DesignEntity::PROCEDURE }}), AttrCompareRef::ofAttrRef( AttrRef {
-                    AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE }}));
-
-            REQUIRE_NOTHROW(ac5.validateComparingTypes());
-
-            AttrCompare ac6(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, Declaration {
-                "cl", DesignEntity::CALL }}), AttrCompareRef::ofAttrRef(AttrRef {
-                    AttrName::VALUE, Declaration { "c", DesignEntity::CONSTANT }}));
-
-            REQUIRE_NOTHROW(ac6.validateComparingTypes());
-        }
-
-        SECTION("AttrCompare Hash") {
-            std::unordered_set<AttrCompare> aSet;
-            AttrCompare ac1(AttrCompareRef::ofAttrRef(AttrRef{ AttrName::PROCNAME, Declaration {
-                "p", DesignEntity::PROCEDURE } }), AttrCompareRef::ofString("v"));
-            AttrCompare ac2(AttrCompareRef::ofAttrRef(AttrRef{ AttrName::PROCNAME, Declaration {
-                "p", DesignEntity::PROCEDURE } }), AttrCompareRef::ofString("v"));
-
-
-            aSet.insert(ac1);
-            aSet.insert(ac2);
-
-            REQUIRE(aSet.size() == 1);
-        }
     }
 }
 

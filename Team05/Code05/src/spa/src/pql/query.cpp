@@ -81,9 +81,9 @@ void Query::addPattern(const Pattern& p) { pattern.push_back(p); }
 
 void Query::addWith(const AttrCompare& ac) { with.push_back(ac); }
 
-bool AttrRef::compatbileComparison(const AttrRef& o) const {
-    return (isString() && o.isString()) || (isNumber() && o.isNumber());
-}
+    bool AttrRef::canBeCompared(const AttrRef &o) const {
+        return (isString() && o.isString()) || (isNumber() && o.isNumber());
+    }
 
 Elem Elem::ofDeclaration(Declaration d) {
     Elem e;
@@ -742,24 +742,4 @@ AttrCompareRef AttrCompareRef::ofAttrRef(AttrRef ar) {
     return acr;
 }
 
-bool AttrCompareRef::validComparison(const AttrCompareRef& o) const {
-    if ((isString() && o.isString()) || (isNumber() && o.isNumber())) {
-        return true;
-    } else if (isAttrRef() && o.isAttrRef()) {
-        return ar.compatbileComparison(o.getAttrRef());
-    } else if (isAttrRef()) {
-        return (ar.isString() && o.isString()) || (ar.isNumber() && o.isNumber());
-    } else if (o.isAttrRef()) {
-        return (isString() && o.getAttrRef().isString()) ||
-            (isNumber() && o.getAttrRef().isNumber());
-    }
-    return false;
-}
-
-void AttrCompare::validateComparingTypes() const {
-    if (!lhs.validComparison(rhs))
-        throw exceptions::PqlSemanticException(
-            messages::qps::parser::incompatibleComparisonMessage);
-}
-
-} // namespace qps::query
+}  // namespace qps::query
