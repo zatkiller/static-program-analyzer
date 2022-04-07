@@ -436,4 +436,31 @@ TEST_CASE("test evaluate pattern") {
     result14.sort();
     printEvaluatorResult(result14);
     REQUIRE(result14.empty());
+
+    TEST_LOG << "stmt s, s1; Select <s, s1> such that affects*(6, s) and affects*(s1, s)";
+    qps::evaluator::Evaluator evaluator15 = qps::evaluator::Evaluator(&pkb);
+    qps::query::Query query15{};
+    query15.addDeclaration("ifs", qps::query::DesignEntity::IF);
+    query15.addDeclaration("v", qps::query::DesignEntity::VARIABLE);
+
+    qps::query::Declaration d151 = qps::query::Declaration { "s", qps::query::DesignEntity::STMT };
+    qps::query::Declaration d152 = qps::query::Declaration { "s1", qps::query::DesignEntity::STMT };
+    std::vector<qps::query::Elem> tuple15 { qps::query::Elem::ofDeclaration(d151),
+                                            qps::query::Elem::ofDeclaration(d152) };
+    qps::query::ResultCl r15 = qps::query::ResultCl::ofTuple(tuple15);
+    query15.addResultCl(r15);
+
+    std::shared_ptr<qps::query::AffectsT> ptr151 = std::make_shared<qps::query::AffectsT>();
+    ptr151->affectingStmt = qps::query::StmtRef::ofLineNo(6);
+    ptr151->transitiveAffected = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
+    query15.addSuchthat(ptr151);
+
+    std::shared_ptr<qps::query::AffectsT> ptr152 = std::make_shared<qps::query::AffectsT>();
+    ptr152->affectingStmt = qps::query::StmtRef::ofDeclaration(Declaration{"s1", qps::query::DesignEntity::STMT});
+    ptr152->transitiveAffected = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
+    query15.addSuchthat(ptr152);
+    std::list<std::string> result15 = evaluator15.evaluate(query15);
+    result15.sort();
+    printEvaluatorResult(result15);
+    REQUIRE(result15 == std::list<std::string>{"4 6", "5 2", "5 4", "5 5", "5 6", "6 6"});
 }
