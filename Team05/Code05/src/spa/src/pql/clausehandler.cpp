@@ -91,6 +91,7 @@ namespace qps::evaluator {
     }
 
     void ClauseHandler::handlePatterns(std::vector<query::Pattern> patterns) {
+        using sp::design_extractor::PatternParam;
         for (auto pattern : patterns) {
             StatementType statementType = PKBTypeMatcher::getStatementType(pattern.getSynonymType());
             query::EntRef lhs = pattern.getEntRef();
@@ -108,7 +109,7 @@ namespace qps::evaluator {
                 isStrict = exp.isFullMatch();
             }
 
-            PKBResponse response = pkb->match(statementType, lhsParam, rhsParam, isStrict);
+            PKBResponse response = pkb->match(statementType, PatternParam(lhsParam), PatternParam(rhsParam, isStrict));
             if (!lhs.isDeclaration()) {
                 response = selectDeclaredValue(response, true);
             }

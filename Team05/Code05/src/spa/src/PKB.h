@@ -121,7 +121,7 @@ public:
     * statements, the variables will be the variables used in the conditional expression.
     */
     PKBResponse match(StatementType type, sp::design_extractor::PatternParam lhs,
-        sp::design_extractor::PatternParam rhs = std::nullopt, bool isStrict = false) const;
+        sp::design_extractor::PatternParam rhs = sp::design_extractor::PatternParam(std::nullopt)) const;
 
 private:
     std::unordered_map<PKBRelationship, std::shared_ptr<RelationshipTable>> relationshipTables;
@@ -220,7 +220,7 @@ private:
     * Helper method to extract assignments matching the patterns provided.
     */
     PKBResponse matchAssign(sp::design_extractor::PatternParam lhs,
-        sp::design_extractor::PatternParam rhs, bool isStrict) const;
+        sp::design_extractor::PatternParam rhs) const;
 
     /**
     * Helper method to extract ifs matching the pattern provided.

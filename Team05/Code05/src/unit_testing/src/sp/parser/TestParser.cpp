@@ -978,11 +978,85 @@ TEST_CASE("Testing Parser") {
         );
         REQUIRE(*parse(testCode2) == *parsedTestCode2);
     }
+}
+
+TEST_CASE("Testing Exceptions Thrown and Source Line") {
+    std::deque<Token> tokens;
+    using ast::make;
+    std::unique_ptr<ast::ASTNode> ast, expected;
+
+    SECTION("Testing Exceptions") {
+        // reset state
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
+        std::string badRelOpCode = R"(procedure a {
+            
+            
+            
+            while (c !! b) {
+                read c; 
+            }
+        })";
+        auto badRelOpTokens = Lexer(badRelOpCode).getTokens();
+        // Parser will expect the RelOp to be "!=" and the while stmt is on line 5.
+        REQUIRE_THROWS_MATCHES(
+            parseProgram(badRelOpTokens),
+            std::invalid_argument,
+            Catch::Message("'=' expected at line: 5")
+        );
+
+        // reset state
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
+        // Testing bad call stmt with inappropriate procedure name
+        std::string badCallCode = R"(procedure badCall {
+            call 12345;
+        })";
+        auto badCallTokens = Lexer(badCallCode).getTokens();
+        REQUIRE_THROWS_MATCHES(
+            parseProgram(badCallTokens),
+            std::invalid_argument,
+            Catch::Message("Procedure name expected at line: 2")
+        );
+
+        // reset state
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
+        // Testing bad stmtlst without statements
+        std::string badStmtCode = R"(procedure bad {
+            12345;
+        })";
+        auto badStmtTokens = Lexer(badStmtCode).getTokens();
+        REQUIRE_THROWS_MATCHES(
+            parseProgram(badStmtTokens),
+            std::invalid_argument,
+            Catch::Message("String expected at line: 2")
+        );
+
+        // reset state
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
+        // Testing empty token list parsing 
+        std::string emptyCode = "";
+        auto emptyTokens = Lexer(emptyCode).getTokens();
+        REQUIRE_THROWS_MATCHES(
+            parseProgram(emptyTokens),
+            std::invalid_argument,
+            Catch::Message("Empty program received")
+        );
+    }
 
     SECTION("Additional Constraints") {
+        // reset state
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
         // Same name procedures should not be allowed
-        std::string problemCode1 = R"(
-            procedure monke {
+        std::string problemCode1 = R"(procedure monke {
                 read v1;
                 print v1;
                 v2 = v1;
@@ -991,17 +1065,26 @@ TEST_CASE("Testing Parser") {
             procedure monke {
                 read v3;
                 v2 = v3;
-            }
-        )";
+        })";
         // The InvalidArgumentException will be thrown by parseProgram().
         auto tokens1 = Lexer(problemCode1).getTokens();
-        REQUIRE_THROWS_AS(parseProgram(tokens1), std::invalid_argument);
+        // It will catch the repeated procedure "monke" at the 7th line of the source code
+        REQUIRE_THROWS_MATCHES(
+            parseProgram(tokens1),
+            std::invalid_argument,
+            Catch::Message("Repeated procedure name: \"monke\" at line: 7")
+        );
         // It will be caught by the parse() method and return an empty Program.
+        // Note: Need to lex again since tokens are consumed when parsed.
+        tokens1 = Lexer(problemCode1).getTokens();
         REQUIRE(parse(problemCode1) == nullptr);
         
+        // reset state
+        lineCount = 1;
+        callStmts.clear();
+        procedures.clear();
         // Calling non-existent procedures should not be allowed
-        std::string problemCode2 = R"(
-            procedure main {
+        std::string problemCode2 = R"(procedure main {
                 read v1;
                 print v1;
                 v2 = v1;
@@ -1010,13 +1093,16 @@ TEST_CASE("Testing Parser") {
             procedure monke {
                 read v3;
                 v2 = v3;
-            }
-        )";
+        })";
         auto tokens2 = Lexer(problemCode2).getTokens();
-        REQUIRE_THROWS_AS(parseProgram(tokens2), std::invalid_argument);
+        // It will catch the call for non-existent procedure "noExist" at the 5th line of the source code
+        REQUIRE_THROWS_MATCHES(
+            parseProgram(tokens2),
+            std::invalid_argument,
+            Catch::Message("Calling a non-existent procedure: noExist at line: 5")
+        );
         REQUIRE(parse(problemCode2) == nullptr);
     }
 }
-
 }  // namespace parser
 }  // namespace sp

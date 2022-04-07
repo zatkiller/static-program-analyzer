@@ -12,10 +12,11 @@ struct VariableExtractorModule;
 struct ConstExtractorModule;
 struct ProcedureExtractorModule;
 
-struct EntityCollector : public TreeWalker {
-    std::set<Entry> entities;
-};
-
+/**
+ * @brief Extracts entities using collectors of type T.
+ * 
+ * @tparam T the type of collector to be used for extracting entities.
+ */
 template<typename T>
 class EntityExtractor : public Extractor<const ast::ASTNode*> {
 public:
@@ -23,7 +24,7 @@ public:
     std::set<Entry> extract(const ast::ASTNode* node) override {
         T collector;
         node->accept(&collector);
-        return collector.entities;
+        return collector.getEntries();
     }    
 };
 
@@ -34,9 +35,9 @@ public:
         ExtractorModule(std::make_unique<EntityExtractor<T>>(), pkb) {}
 };
 
-struct VariableCollector : public EntityCollector {
+struct VariableCollector : public Collector {
     void visit(const ast::Var& node) {
-        entities.insert(VAR_NAME{node.getVarName()});
+        entries.insert(VAR_NAME{node.getVarName()});
     }
 };
 
@@ -45,9 +46,9 @@ struct VariableExtractorModule : public EntityExtractorModule<VariableCollector>
         EntityExtractorModule(pkb) {}
 };
 
-struct ConstCollector : public EntityCollector {
+struct ConstCollector : public Collector {
     void visit(const ast::Const& node) {
-        entities.insert(CONST{node.getConstValue()});
+        entries.insert(CONST{node.getConstValue()});
     }
 };
 
@@ -57,9 +58,9 @@ struct ConstExtractorModule : public EntityExtractorModule<ConstCollector> {
 };
 
 
-struct ProcedureCollector : public EntityCollector {
+struct ProcedureCollector : public Collector {
     void visit(const ast::Procedure& node) {
-        entities.insert(PROC_NAME{node.getName()});
+        entries.insert(PROC_NAME{node.getName()});
     }
 };
 
@@ -68,29 +69,29 @@ struct ProcedureExtractorModule : public EntityExtractorModule<ProcedureCollecto
         EntityExtractorModule(pkb) {}
 };
 
-struct StatementCollector : public EntityCollector {
+struct StatementCollector : public Collector {
     void visit(const ast::Read& node) {
-        entities.insert(STMT_LO{node.getStmtNo(), StatementType::Read, node.getVar().getVarName()});
+        entries.insert(STMT_LO{node.getStmtNo(), StatementType::Read, node.getVar().getVarName()});
     }
 
     void visit(const ast::Print& node) {
-        entities.insert(STMT_LO{node.getStmtNo(), StatementType::Print, node.getVar().getVarName()});
+        entries.insert(STMT_LO{node.getStmtNo(), StatementType::Print, node.getVar().getVarName()});
     }
 
     void visit(const ast::While& node) {
-        entities.insert(STMT_LO{node.getStmtNo(), StatementType::While});
+        entries.insert(STMT_LO{node.getStmtNo(), StatementType::While});
     }
 
     void visit(const ast::If& node) {
-        entities.insert(STMT_LO{node.getStmtNo(), StatementType::If});
+        entries.insert(STMT_LO{node.getStmtNo(), StatementType::If});
     }
 
     void visit(const ast::Assign& node) {
-        entities.insert(STMT_LO{node.getStmtNo(), StatementType::Assignment});
+        entries.insert(STMT_LO{node.getStmtNo(), StatementType::Assignment});
     }
 
     void visit(const ast::Call& node) {
-        entities.insert(STMT_LO(node.getStmtNo(), StatementType::Call, node.getName()));
+        entries.insert(STMT_LO(node.getStmtNo(), StatementType::Call, node.getName()));
     }
 };
 

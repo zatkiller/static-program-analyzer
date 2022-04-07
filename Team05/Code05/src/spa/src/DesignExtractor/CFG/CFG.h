@@ -6,8 +6,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "PKB/PKBField.h"
 #include "DesignExtractor/TreeWalker.h"
+#include "PKB/PKBField.h"
 
 namespace sp {
 namespace cfg {

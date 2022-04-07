@@ -319,8 +319,8 @@ PKBResponse PKB::getConstants() {
 }
 
 PKBResponse PKB::matchAssign(sp::design_extractor::PatternParam lhs,
-    sp::design_extractor::PatternParam rhs, bool isStrict) const {
-    auto matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs, isStrict);
+    sp::design_extractor::PatternParam rhs) const {
+    auto matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs);
     FieldRowResponse res;
 
     for (auto& node : matchedStmts) {
@@ -350,9 +350,9 @@ PKBResponse PKB::matchIf(sp::design_extractor::PatternParam lhs) const {
 
         sp::design_extractor::VariableCollector vc;
         node.get().getCondExpr()->accept(&vc);
-        auto& vars = vc.entities;
+        auto vars = vc.getEntries();
 
-        for (auto& var : vars) {
+        for (auto var : vars) {
             stmtRes.emplace_back(PKBField::createConcrete(std::get<sp::design_extractor::Entity>(var)));
         }
 
@@ -374,9 +374,9 @@ PKBResponse PKB::matchWhile(sp::design_extractor::PatternParam lhs) const {
 
         sp::design_extractor::VariableCollector vc;
         node.get().getCondExpr()->accept(&vc);
-        auto& vars = vc.entities;
+        auto vars = vc.getEntries();
 
-        for (auto& var : vars) {
+        for (auto var : vars) {
             stmtRes.emplace_back(PKBField::createConcrete(std::get<sp::design_extractor::Entity>(var)));
         }
 
@@ -387,11 +387,11 @@ PKBResponse PKB::matchWhile(sp::design_extractor::PatternParam lhs) const {
 }
 
 PKBResponse PKB::match(StatementType type, sp::design_extractor::PatternParam lhs,
-    sp::design_extractor::PatternParam rhs, bool isStrict) const {
+    sp::design_extractor::PatternParam rhs) const {
 
     switch (type) {
     case StatementType::Assignment:
-        return matchAssign(lhs, rhs, isStrict);
+        return matchAssign(lhs, rhs);
     case StatementType::If:
         return matchIf(lhs);
     case StatementType::While:
