@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <queue>
+#include <climits>
 #include "pql/query.h"
 namespace qps::optimizer {
 
@@ -56,7 +57,7 @@ public:
 
 struct OrderedClauseHash {
 public:
-    size_t operator() (const OrderedClause&) const{};
+    size_t operator() (const OrderedClause&) const {};
 };
 
 
