@@ -3,6 +3,7 @@
 #include <memory>
 #include <type_traits>
 #include "query.h"
+#include "optimizer.h"
 #include "resulttable.h"
 #include "pkbtypematcher.h"
 #include "PKB/PKBCommons.h"
@@ -31,14 +32,6 @@ public:
     PKBResponse getAll(query::DesignEntity type);
 
     /**
-     * Processes statement declarations, create PKBField with StatementType.
-     *
-     * @param fields PKBFields returned from RelRef
-     * @param synonyms all of the synonyms in RelRef
-     */
-    void processStmtField(std::vector<PKBField> &fields, std::vector<query::Declaration> declarations);
-
-    /**
      * Selects the corresponding values of synonyms in the PKBResponse.
      *
      * @param response PKBResponse
@@ -58,27 +51,27 @@ public:
     /**
      * Handles all the clauses with synonyms.
      *
-     * @param clauses a group of relationship clauses with synonyms
+     * @param clause a relationship clauses with synonyms
      */
-    void handleSynClauses(std::vector<std::shared_ptr<query::RelRef>> clauses);
+    void handleSynRelRef(std::shared_ptr<query::RelRef> clause);
 
     /**
      * Handles all the clauses without synonyms.
      *
-     * @param noSynClauses a group of relationship clauses without synonyms
+     * @param noSynClause a relationship clauses without synonyms
      */
-    bool handleNoSynClauses(const std::vector<std::shared_ptr<query::RelRef>>& noSynClauses);
+    bool handleNoSynRelRef(const std::shared_ptr<query::RelRef>& noSynClause);
 
     /**
      * Handles pattern clauses
      *
      * @param patterns a group of pattern clauses
      */
-    void handlePatterns(std::vector<query::Pattern> patterns);
+    void handlePattern(query::Pattern pattern);
 
-    bool handleNoAttrRefWith(const std::vector<query::AttrCompare>& noAttrClauses);
+    bool handleNoAttrRefWith(const query::AttrCompare& noAttrClause);
 
-    void handleAttrRefWith(std::vector<query::AttrCompare> attrClauses);
+    void handleAttrRefWith(query::AttrCompare attrClause);
 
     void handleTwoAttrRef(query::AttrRef lhs, query::AttrRef rhs);
 
@@ -127,5 +120,9 @@ public:
     }
 
     void  handleResultCl(query::ResultCl resultCl);
+
+    bool handleNoSynGroup(optimizer::ClauseGroup group);
+
+    bool handleGroup(optimizer::ClauseGroup group);
 };
 }  // namespace qps::evaluator

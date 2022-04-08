@@ -745,10 +745,10 @@ TEST_CASE("PKB regression test") {
 
     SECTION("PKB regression test #148") {
         std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
-        pkb->insertEntity(STMT_LO{ 2, StatementType::Assignment });
+        pkb->insertEntity(STMT_LO{ 1, StatementType::Assignment });
 
-        PKBField field1 = PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment });
-        PKBField field2 = PKBField::createConcrete(STMT_LO{ 2 });
+        PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
+        PKBField field2 = PKBField::createConcrete(STMT_LO{ 1 });
         PKBField field3 = PKBField::createConcrete(VAR_NAME{ "a" });
 
         // Insert fails because "a" is not in variable table
