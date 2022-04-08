@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "TreeWalker.h"
-#include "Parser/ast.h"
+#include "Parser/AST.h"
 
 namespace sp {
 namespace design_extractor {
