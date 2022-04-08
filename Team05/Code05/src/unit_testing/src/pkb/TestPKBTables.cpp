@@ -1,5 +1,6 @@
 #include "PKB/PKBTables.h"
 #include "PKB/PKBRelationshipTables.h"
+#include "Parser/Parser.h"
 #include "catch.hpp"
 
 TEST_CASE("EntityRow::getVal") {
@@ -887,109 +888,33 @@ TEST_CASE("CallsRelationshipTable test 1") {
     }
 }
 
-TEST_CASE("AffectsEvaluator test") {
-    /**
-    *   procedure main {
-    * 1   x = 2 + a;
-    * 2   y = x + 3;
-    * 3   if (b == 3) then {
-    * 4     while (x == 2) {
-    * 5        x = x + 1;
-    *       }
-    *     } else {
-    * 6     a = x + c;
-    *     }
-    * 7   print x;
-    * 8   a = x - a;
-    * 9   y = a + x;
-    *   }
-    */
+TEST_CASE("AffectsEvaluator single-proc test 1") {
+    auto testCode = R"(procedure main {
+    x = 2 + a;
+    y = x + 3;
+    if (b == 3) then {
+        while (x == 2) {
+            x = x + 1;
+        }
+    } else {
+        a = x + c;
+    }
+    print x;
+    a = x - a;
+    y = a + x;
+    })";
+    auto cfgExtractor = sp::cfg::CFGExtractor();
+    auto cfgContainer = cfgExtractor.extract(sp::parser::parse(testCode).get());
+    auto affEval = std::unique_ptr<AffectsEvaluator>(new AffectsEvaluator());
+
     StatementType ASSIGN = StatementType::Assignment;
     StatementType IF = StatementType::If;
     StatementType WHILE = StatementType::While;
     StatementType PRINT = StatementType::Print;
 
-    auto affEval = std::unique_ptr<AffectsEvaluator>(new AffectsEvaluator());
-    auto root = std::make_shared<sp::cfg::CFGNode>();
-    auto stmt1 = std::make_shared<sp::cfg::CFGNode>(1, ASSIGN);
-    auto stmt2 = std::make_shared<sp::cfg::CFGNode>(2, ASSIGN);
-    auto stmt3 = std::make_shared<sp::cfg::CFGNode>(3, IF);
-    auto stmt4 = std::make_shared<sp::cfg::CFGNode>(4, WHILE);
-    auto stmt5 = std::make_shared<sp::cfg::CFGNode>(5, ASSIGN);
-    auto stmt6 = std::make_shared<sp::cfg::CFGNode>(6, ASSIGN);
-    auto stmt7 = std::make_shared<sp::cfg::CFGNode>(7, PRINT);
-    auto dummy = std::make_shared<sp::cfg::CFGNode>();
-    auto stmt8 = std::make_shared<sp::cfg::CFGNode>(8, ASSIGN);
-    auto stmt9 = std::make_shared<sp::cfg::CFGNode>(9, ASSIGN);
-    auto exit = std::make_shared<sp::cfg::CFGNode>();
-    
-    VAR_NAME x{ "x" };
-    VAR_NAME a{ "a" };
-    VAR_NAME b{ "b" };
-    VAR_NAME c{ "c" };
-    VAR_NAME y{ "y" };
-
-    root->insert(stmt1);
-    
-    stmt1->insert(stmt2);
-    stmt1->modifies.insert(x);
-    stmt1->uses.insert(a);
-    /*stmt1->modifies.emplace(stmt1->stmt.value(), std::unordered_set<VAR_NAME>({x}));
-    stmt1->uses.emplace(stmt1->stmt.value(), std::unordered_set<VAR_NAME>({ a }));*/
-
-    stmt2->insert(stmt3);
-    stmt2->modifies.insert(y);
-    stmt2->uses.insert(x);
-    /*stmt2->modifies.emplace(stmt2->stmt.value(), std::unordered_set<VAR_NAME>({ y }));
-    stmt2->uses.emplace(stmt2->stmt.value(), std::unordered_set<VAR_NAME>({ x }));*/
-
-    stmt3->insert(stmt4);
-    stmt3->insert(stmt6);
-    stmt3->uses.insert(b);
-    // stmt3->uses.emplace(stmt3->stmt.value(), std::unordered_set<VAR_NAME>({ b }));
-    
-    stmt4->insert(stmt5);
-    stmt4->insert(dummy);
-    stmt4->uses.insert(x);
-    // stmt4->uses.emplace(stmt4->stmt.value(), std::unordered_set<VAR_NAME>({ x }));
-
-    stmt5->insert(stmt4);
-    stmt5->modifies.insert(x);
-    stmt5->uses.insert(x);
-    /*stmt5->modifies.emplace(stmt5->stmt.value(), std::unordered_set<VAR_NAME>({ x }));
-    stmt5->uses.emplace(stmt5->stmt.value(), std::unordered_set<VAR_NAME>({ x }));*/
-
-    stmt6->insert(dummy);
-    stmt6->modifies.insert(a);
-    stmt6->uses.insert(x);
-    stmt6->uses.insert(c);
-    // stmt6->modifies.emplace(stmt6->stmt.value(), std::unordered_set<VAR_NAME>({ a }));
-    // stmt6->uses.emplace(stmt6->stmt.value(), std::unordered_set<VAR_NAME>({ x, c }));
-
-    dummy->insert(stmt7);
-    stmt7->insert(stmt8);
-    stmt7->uses.insert(x);
-    // stmt7->uses.emplace(stmt7->stmt.value(), std::unordered_set<VAR_NAME>({ x }));
-
-    stmt8->insert(stmt9);
-    stmt8->modifies.insert(a);
-    stmt8->uses.insert(x);
-    stmt8->uses.insert(a);
-    // stmt8->modifies.emplace(stmt8->stmt.value(), std::unordered_set<VAR_NAME>({ a }));
-    // stmt8->uses.emplace(stmt8->stmt.value(), std::unordered_set<VAR_NAME>({ x, a }));
-
-    stmt9->insert(exit);
-    stmt9->modifies.insert(y);
-    stmt9->uses.insert(b);
-    stmt9->uses.insert(a);
-    // stmt9->modifies.emplace(stmt9->stmt.value(), std::unordered_set<VAR_NAME>({ y }));
-    // stmt9->uses.emplace(stmt9->stmt.value(), std::unordered_set<VAR_NAME>({ b, a }));
-
-    ProcToCfgMap cfgRoots;
-    cfgRoots.emplace("main", root);
-
+   
     // Initialize affEval
-    affEval->initCFG(cfgRoots);
+    affEval->initCFG(cfgContainer);
 
     SECTION("AffectsEvaluator::contains (transitive and non-transitive)") {
         PKBField conc1 = PKBField::createConcrete(STMT_LO(1, ASSIGN));
@@ -1005,9 +930,46 @@ TEST_CASE("AffectsEvaluator test") {
 
         PKBField conc6 = PKBField::createConcrete(STMT_LO(9, ASSIGN));
         REQUIRE(affEval->contains(conc1, conc6, true));
-        REQUIRE_FALSE(affEval->contains(conc1, conc6));
+        REQUIRE(affEval->contains(conc1, conc6));
     }
     
+    SECTION("AffectsEvaluator::retrieve (non-transitive)") {
+        PKBField stmtDecl = PKBField::createDeclaration(StatementType::All);
+
+        PKBField conc1 = PKBField::createConcrete(STMT_LO(1, ASSIGN));
+        PKBField conc2 = PKBField::createConcrete(STMT_LO(2, ASSIGN));
+        PKBField conc5 = PKBField::createConcrete(STMT_LO(5, ASSIGN));
+        PKBField conc6 = PKBField::createConcrete(STMT_LO(6, ASSIGN));
+        PKBField conc8 = PKBField::createConcrete(STMT_LO(8, ASSIGN));
+        PKBField conc9 = PKBField::createConcrete(STMT_LO(9, ASSIGN));
+
+        // (Decl, Concrete)
+        FieldRowResponse expected1{ {conc1, conc8}, {conc5, conc8}, {conc6, conc8} };
+        REQUIRE(affEval->retrieve(stmtDecl, conc8) == expected1);
+        REQUIRE(affEval->retrieve(stmtDecl, conc1) == FieldRowResponse());
+
+        // (Concrete, Decl)
+        FieldRowResponse expected2{ {conc5, conc5}, {conc5, conc8}, {conc5, conc9} };
+        FieldRowResponse expected3{ {conc1, conc2}, {conc1, conc5}, {conc1, conc6}, {conc1, conc8}, {conc1, conc9} };
+        REQUIRE(affEval->retrieve(conc5, stmtDecl) == expected2);
+        REQUIRE(affEval->retrieve(conc1, stmtDecl) == expected3);
+
+        // (Decl, Decl)
+        FieldRowResponse expected4{
+            {conc1, conc2},
+            {conc1, conc5},
+            {conc1, conc6},
+            {conc1, conc8},
+            {conc1, conc9},
+            {conc5, conc5},
+            {conc5, conc8},
+            {conc5, conc9},
+            {conc6, conc8},
+            {conc8, conc9}
+        };
+        REQUIRE(affEval->retrieve(stmtDecl, stmtDecl) == expected4);
+    }
+
     SECTION("AffectsEvaluator::retrieve (transitive)") {
         PKBField stmtDecl = PKBField::createDeclaration(StatementType::All);
 
@@ -1042,5 +1004,90 @@ TEST_CASE("AffectsEvaluator test") {
             {field5, field6}
         };
         REQUIRE(affEval->retrieve(stmtDecl, stmtDecl, true) == expected3);
+    }
+}
+
+TEST_CASE("AffectsEvaluator multi-proc test") {
+    /**
+    *       procedure main {
+    * 1         x = a + b;
+    * 2         if (x > 0) then {
+    * 3             call second;
+    *           } else {
+    * 4             while (b > c) {
+    * 5                 call third;
+    * 6                 a = x + a;
+    *               }
+    *           }
+    * 7         x = x + a;          
+    *       }
+    * 
+    *       procedure second {
+    * 8         x = b;
+    * 9         a = c;
+    *       }
+    * 
+    *       procedure third {
+    * 10        while (y == x) {
+    * 11            x = x + y;
+    * 12            if (c > b) then {
+    * 13                a = 4 + c;
+    *               } else {
+    * 14                c = a + 4;
+    *               }
+    *           }
+    *       }
+    */
+    std::string sourceCode = R"(procedure main {
+        x = a + b;
+        if (x > 0) then {
+            call second;
+        } else {
+            while (b > c) {
+                call third;
+                a = x + a;
+            }
+        }
+    }
+    procedure second {
+        x = b;
+        a = c;
+    }
+    procedure third {
+        while (y == x) {
+            x = x + y;
+            if (c > b) then {
+                a = 4 + c;
+            } else {
+                c = a + 4;
+            }
+        }
+    })";
+    sp::cfg::CFGExtractor extractor;
+    auto affEval = std::unique_ptr<AffectsEvaluator>(new AffectsEvaluator());
+    auto cfg = extractor.extract(sp::parser::parse(sourceCode).get());
+    affEval->initCFG(cfg);
+
+    // Statement Types
+    StatementType ASSIGN = StatementType::Assignment;
+    StatementType ALL = StatementType::All;
+    StatementType CALL = StatementType::Call;
+    StatementType IF = StatementType::If;
+    StatementType WHILE = StatementType::While;
+
+    // Declarations for test case usage
+    PKBField stmtDecl = PKBField::createDeclaration(ALL);
+    PKBField assnDecl = PKBField::createDeclaration(ASSIGN);
+
+    SECTION("AffectsEvaluator::contains (transitive & non-transitive)") {
+
+    }
+
+    SECTION("AffectsEvaluator::retrieve (non-transitive)") {
+
+    }
+
+    SECTION("AffectsEvaluator::retrieve (transitive)") {
+
     }
 }
