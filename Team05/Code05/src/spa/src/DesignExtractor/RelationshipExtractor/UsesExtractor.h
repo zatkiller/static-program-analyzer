@@ -22,11 +22,11 @@ public:
 };
 
 /**
- * Extracts all Uses relationship from the AST and send them to the PKBStrategy
+ * Extracts all Uses relationship from the AST and send them to the PKB
  */
 class UsesExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    explicit UsesExtractorModule(PKBStrategy *pkb) : 
+    explicit UsesExtractorModule(PKB *pkb) : 
         ExtractorModule(std::make_unique<UsesExtractor>(), pkb) {}
 };
 

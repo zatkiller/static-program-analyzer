@@ -35,11 +35,11 @@ public:
 };
 
 /**
- * Extracts all Follows relationship from the AST and send them to the PKBStrategy
+ * Extracts all Follows relationship from the AST and send them to the PKB
  */
 class FollowsExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    explicit FollowsExtractorModule(PKBStrategy *pkb) : 
+    explicit FollowsExtractorModule(PKB *pkb) : 
         ExtractorModule(std::make_unique<FollowsExtractor>(), pkb) {}
 };
 }  // namespace design_extractor

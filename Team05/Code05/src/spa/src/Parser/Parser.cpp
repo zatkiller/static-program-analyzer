@@ -14,6 +14,7 @@
 #include "Parser.h"
 #include "logging.h"
 #include "AST.h"
+#include "Validator.h"
 
 namespace sp {
 namespace parser {
@@ -595,7 +596,12 @@ unique_ptr<ast::Program> parseProgram(deque<Token>& tokens) {
             throwInvalidArgError(os.str());
         }
     }
-    return make_unique<ast::Program>(move(res));
+
+    auto ast = make_unique<ast::Program>(move(res));
+    if (isCyclicCalls(ast.get())) {
+        throw invalid_argument("Cyclical call detected");
+    }
+    return ast;
 }
 
 unique_ptr<ast::Program> parse(const string& source) {
@@ -606,7 +612,7 @@ unique_ptr<ast::Program> parse(const string& source) {
     // we first tokenise the source code
     deque<Token> lexedTokens = Lexer(source).getTokens();
     try {
-        return parseProgram(lexedTokens);        
+        return parseProgram(lexedTokens);
     }
     catch (invalid_argument ex) {
         Logger(Level::ERROR) << "Exception caught: " << ex.what();

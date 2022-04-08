@@ -15,22 +15,22 @@ class DesignExtractor {
 private:
     std::list<std::shared_ptr<ExtractorModule<const ast::ASTNode*>>> astExtractors;
     std::list<std::shared_ptr<ExtractorModule<const cfg::PROC_CFG_MAP*>>> cfgExtractors;
-    PKBStrategy* pkbStrategy;
+    PKB* pkb;
     cfg::PROC_CFG_MAP cfgs;
 
 public:
-    explicit DesignExtractor(PKBStrategy* pkbStrategy) : pkbStrategy(pkbStrategy) {
-        astExtractors.push_back(std::make_shared<StatementExtractorModule>(pkbStrategy));
-        astExtractors.push_back(std::make_shared<VariableExtractorModule>(pkbStrategy));
-        astExtractors.push_back(std::make_shared<ConstExtractorModule>(pkbStrategy));
-        astExtractors.push_back(std::make_shared<ProcedureExtractorModule>(pkbStrategy));
-        astExtractors.push_back(std::make_shared<ModifiesExtractorModule>(pkbStrategy));
-        astExtractors.push_back(std::make_shared<UsesExtractorModule>(pkbStrategy));
-        astExtractors.push_back(std::make_shared<FollowsExtractorModule>(pkbStrategy));
-        astExtractors.push_back(std::make_shared<ParentExtractorModule>(pkbStrategy));
-        astExtractors.push_back(std::make_shared<CallsExtractorModule>(pkbStrategy));
+    explicit DesignExtractor(PKB* pkb) : pkb(pkb) {
+        astExtractors.push_back(std::make_shared<StatementExtractorModule>(pkb));
+        astExtractors.push_back(std::make_shared<VariableExtractorModule>(pkb));
+        astExtractors.push_back(std::make_shared<ConstExtractorModule>(pkb));
+        astExtractors.push_back(std::make_shared<ProcedureExtractorModule>(pkb));
+        astExtractors.push_back(std::make_shared<ModifiesExtractorModule>(pkb));
+        astExtractors.push_back(std::make_shared<UsesExtractorModule>(pkb));
+        astExtractors.push_back(std::make_shared<FollowsExtractorModule>(pkb));
+        astExtractors.push_back(std::make_shared<ParentExtractorModule>(pkb));
+        astExtractors.push_back(std::make_shared<CallsExtractorModule>(pkb));
 
-        cfgExtractors.push_back(std::make_shared<NextExtractorModule>(pkbStrategy));
+        cfgExtractors.push_back(std::make_shared<NextExtractorModule>(pkb));
     }
 
     void extract(ast::ASTNode* ast) {
