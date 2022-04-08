@@ -520,14 +520,11 @@ namespace qps::parser {
     bool Parser::isAttrCompareRefsComparable(const AttrCompareRef& lhs, const AttrCompareRef& rhs) const {
         if ((lhs.isString() && rhs.isString()) || (lhs.isNumber() && rhs.isNumber())) {
             return true;
-        }
-        else if (lhs.isAttrRef() && rhs.isAttrRef()) {
+        } else if (lhs.isAttrRef() && rhs.isAttrRef()) {
             return lhs.getAttrRef().canBeCompared(rhs.getAttrRef());
-        }
-        else if (lhs.isAttrRef()) {
+        } else if (lhs.isAttrRef()) {
             return (lhs.getAttrRef().isString() && rhs.isString()) || (lhs.getAttrRef().isNumber() && rhs.isNumber());
-        }
-        else if (rhs.isAttrRef()) {
+        } else if (rhs.isAttrRef()) {
             return (lhs.isString() && rhs.getAttrRef().isString()) || (lhs.isNumber() && rhs.getAttrRef().isNumber());
         }
         return false;

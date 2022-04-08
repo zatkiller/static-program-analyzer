@@ -24,8 +24,9 @@ struct MatchedNodes : public std::list<std::reference_wrapper<const T>>{};
  */
 struct PatternParam : public std::optional<std::string> {
     bool isStrict;
-    PatternParam(std::optional<std::string> value) : std::optional<std::string>(value), isStrict(true) {};
-    PatternParam(std::optional<std::string> value, bool isStrict) : std::optional<std::string>(value), isStrict(isStrict) {};
+    explicit PatternParam(std::optional<std::string> value) : std::optional<std::string>(value), isStrict(true) {}
+    PatternParam(std::optional<std::string> value, bool isStrict) :
+        std::optional<std::string>(value), isStrict(isStrict) {}
 };
 
 /**

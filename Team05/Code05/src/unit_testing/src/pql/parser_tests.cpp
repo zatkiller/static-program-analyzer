@@ -1530,13 +1530,26 @@ TEST_CASE("Parser parseAttrRef") {
 TEST_CASE("validateComparingTypes") {
     SECTION("Incompatible type matches") {
         Parser p;
-        REQUIRE_THROWS_MATCHES(p.validateComparingTypes(AttrCompareRef::ofAttrRef(AttrRef{ AttrName::STMTNUM, Declaration {
-            "rd", DesignEntity::READ } }), AttrCompareRef::ofString("v")), exceptions::PqlSemanticException,
-                Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
+        REQUIRE_THROWS_MATCHES(
+            p.validateComparingTypes(
+                AttrCompareRef::ofAttrRef(
+                    AttrRef{ AttrName::STMTNUM, Declaration {"rd", DesignEntity::READ } }), 
+                    AttrCompareRef::ofString("v")
+            ), 
+            exceptions::PqlSemanticException,
+            Catch::Message(messages::qps::parser::incompatibleComparisonMessage)
+        );
 
-        REQUIRE_THROWS_MATCHES(p.validateComparingTypes(AttrCompareRef::ofNumber(1), AttrCompareRef::ofAttrRef(
-            AttrRef{ AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE } })), exceptions::PqlSemanticException,
-                Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
+        REQUIRE_THROWS_MATCHES(
+            p.validateComparingTypes(
+                AttrCompareRef::ofNumber(1), 
+                AttrCompareRef::ofAttrRef(
+                    AttrRef{ AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE } }
+                )
+            ), 
+            exceptions::PqlSemanticException,
+            Catch::Message(messages::qps::parser::incompatibleComparisonMessage)
+        );
 
         REQUIRE_THROWS_MATCHES(p.validateComparingTypes(AttrCompareRef::ofString("v"), AttrCompareRef::ofNumber(1)), 
             exceptions::PqlSemanticException, Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
