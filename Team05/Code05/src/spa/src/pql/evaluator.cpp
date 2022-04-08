@@ -3,70 +3,60 @@
 #define DEBUG Logger(Level::DEBUG) << "evaluator.cpp "
 
 namespace qps::evaluator {
-    void Evaluator::processSuchthat(std::vector<std::shared_ptr<query::RelRef>> clauses,
-                                    std::vector<std::shared_ptr<query::RelRef>> &noSyn,
-                                    std::vector<std::shared_ptr<query::RelRef>> &hasSyn) {
-        for (auto r : clauses) {
-            query::RelRef *relRefPtr = r.get();
-            if (relRefPtr->getDecs().empty()) {
-                noSyn.push_back(r);
-            } else {
-                hasSyn.push_back(r);
+    std::vector<ResultTable> Evaluator::findResultRelatedGroup(std::vector<std::string> selectSyns) {
+        std::vector<ResultTable> resultRelatedGroups;
+        for (auto table : intermediateTables) {
+            for (auto s : selectSyns) {
+                if (table.synExists(s)) {
+                    table.filterColumns(selectSyns);
+                    resultRelatedGroups.push_back(table);
+                    break;
+                }
             }
         }
+        return resultRelatedGroups;
     }
 
-    void Evaluator::processWith(std::vector<query::AttrCompare> withClauses,
-                     std::vector<query::AttrCompare> &noAttrRef, std::vector<query::AttrCompare> &hasAttrRef) {
-        for (auto clause : withClauses) {
-            if (!clause.lhs.isAttrRef() && !clause.rhs.isAttrRef()) {
-                noAttrRef.push_back(clause);
-            } else {
-                hasAttrRef.push_back(clause);
-            }
+    ResultTable Evaluator::mergeGroupResults(std::vector<ResultTable> tables) {
+        ResultTable finalResultTable = tables[0];
+        for (int i = 1; i < tables.size(); i++) {
+            finalResultTable.crossJoin(tables[i]);
         }
+        return finalResultTable;
     }
 
     std::list<std::string> Evaluator::evaluate(query::Query query) {
-        // std::unordered_map<std::string, DesignEntity> declarations = query.getDeclarations();
         query::ResultCl resultcl = query.getResultCl();
         std::vector<query::AttrCompare> with = query.getWith();
-        std::vector<query::AttrCompare> noAttrRef;
-        std::vector<query::AttrCompare> hasAttrRef;
-
         std::vector<std::shared_ptr<query::RelRef>> suchthat = query.getSuchthat();
-        std::vector<std::shared_ptr<query::RelRef>> noSyn;
-        std::vector<std::shared_ptr<query::RelRef>> hasSyn;
-
         std::vector<query::Pattern> patterns = query.getPattern();
 
-        ClauseHandler handler = ClauseHandler(pkb, resultTable);
+        optimizer::Optimizer optimizer = optimizer::Optimizer(suchthat, with, patterns);
+        optimizer.optimize();
 
-        if (!with.empty()) {
-            processWith(with, noAttrRef, hasAttrRef);
-            if (!handler.handleNoAttrRefWith(noAttrRef))
+        while (optimizer.hasNextGroup()) {
+            optimizer::ClauseGroup group = optimizer.nextGroup();
+            ResultTable table = ResultTable();
+            ClauseHandler handler = ClauseHandler(pkb, table);
+            bool hasResult;
+            if (group.noSyn()) {
+                hasResult = handler.handleNoSynGroup(group);
+            } else {
+                hasResult = handler.handleGroup(group);
+                intermediateTables.push_back(table);
+            }
+
+            if (!hasResult)
                 return resultcl.isBoolean() ? std::list<std::string>{"FALSE"} : std::list<std::string>{};
-            handler.handleAttrRefWith(hasAttrRef);
         }
 
-        if (!suchthat.empty()) {
-            processSuchthat(suchthat, noSyn, hasSyn);
-            if (!handler.handleNoSynClauses(noSyn))
-                return resultcl.isBoolean() ? std::list<std::string>{"FALSE"} :std::list<std::string>{};
-            handler.handleSynClauses(hasSyn);
-        }
+        std::vector<ResultTable> resultRelatedTables = findResultRelatedGroup(resultcl.getSynAsList());
+        resultTable = resultRelatedTables.empty() ? ResultTable() : mergeGroupResults(resultRelatedTables);
 
-        if (!patterns.empty()) {
-            handler.handlePatterns(patterns);
-        }
-
+        ClauseHandler handler = ClauseHandler(pkb, resultTable);
         handler.handleResultCl(resultcl);
-        if (resultcl.isBoolean()) {
-            if (with.empty() && suchthat.empty() && patterns.empty()) return std::list<std::string>{"TRUE"};
-            return resultTable.hasResult() ? std::list<std::string>{"FALSE"} : std::list<std::string>{"TRUE"};
-        }
 
+        if (resultcl.isBoolean()) return std::list<std::string>{"TRUE"};
         return ResultProjector::projectResult(resultTable, resultcl);
-//        return getListOfResult(resultTable, resultcl);
     }
 }  // namespace qps::evaluator

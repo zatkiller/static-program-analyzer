@@ -26,35 +26,18 @@ namespace qps::evaluator {
  */
 class Evaluator {
     PKB *pkb;
+    std::vector<ResultTable> intermediateTables;
     ResultTable resultTable;
 
 public:
     /** Constructor for the evaluator. */
     explicit Evaluator(PKB *pkb) {
         this->pkb = pkb;
-        this->resultTable = ResultTable();
     }
 
-    /**
-     * Classifies the clauses in such that into clauses with synonyms and clauses without synonyms.
-     *
-     * @param clauses all clauses in such that
-     * @param noSyn group of clauses without synonyms
-     * @param hasSyn group of clauses with synonyms
-     */
-    void processSuchthat(std::vector<std::shared_ptr<query::RelRef>> clauses,
-                         std::vector<std::shared_ptr<query::RelRef>> &noSyn,
-                         std::vector<std::shared_ptr<query::RelRef>> &hasSyn);
+    std::vector<ResultTable> findResultRelatedGroup(std::vector<std::string> selectSyns);
 
-    /**
-     *
-     * @param withClauses
-     * @param noAttrRef
-     * @param hasAttrRef
-     */
-    void processWith(std::vector<query::AttrCompare> withClauses,
-                     std::vector<query::AttrCompare> &noAttrRef, std::vector<query::AttrCompare> &hasAttrRef);
-
+    ResultTable mergeGroupResults(std::vector<ResultTable> tables);
 
     /**
      * Evaluates the query object.

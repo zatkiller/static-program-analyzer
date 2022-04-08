@@ -355,3 +355,18 @@ TEST_CASE("Query getDeclarationDesignEntity") {
                            exceptions::PqlSyntaxException,
                            Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
 }
+
+TEST_CASE("RelRef equality check") {
+    Pattern p = Pattern::ofAssignPattern("a", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
+    Pattern p1 = Pattern::ofAssignPattern("a", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
+    REQUIRE(p == p1);
+    std::shared_ptr<ModifiesS> ptr1 = std::make_shared<ModifiesS>();
+    ptr1->modifiesStmt = StmtRef::ofLineNo(4);
+    ptr1->modified = EntRef::ofDeclaration( Declaration { "v", DesignEntity::VARIABLE });
+
+    std::shared_ptr<ModifiesS> ptr2 = std::make_shared<ModifiesS>();
+    ptr2->modifiesStmt = StmtRef::ofLineNo(4);
+    ptr2->modified = EntRef::ofDeclaration( Declaration { "v", DesignEntity::VARIABLE });
+
+    REQUIRE(*(ptr1) == *(ptr2));
+}

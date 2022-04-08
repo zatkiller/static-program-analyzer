@@ -99,6 +99,7 @@ struct Elem {
 
     Declaration getDeclaration() const { return declaration; }
     AttrRef getAttrRef() const { return ar; }
+    std::string getSyn() const;
 
     bool operator==(const Elem& o) const {
         if ((type == ElemType::ATTR_REF) && (o.type == ElemType::ATTR_REF)) {
@@ -122,6 +123,7 @@ struct ResultCl {
 
     bool isBoolean() const { return boolean; }
     std::vector<Elem> getTuple() const { return tuple; }
+    std::vector<std::string> getSynAsList() const;
 
     bool hasElem(const Elem& e) const;
 
@@ -366,7 +368,6 @@ struct ModifiesS : RelRef {
     std::vector<Declaration> getDecs() override;
 
     bool equalTo(const RelRef& r) const override;
-
     size_t getHash() const override;
 
     void checkFirstArg() override;
@@ -386,7 +387,6 @@ struct ModifiesP : RelRef {
     std::vector<Declaration> getDecs() override;
 
     bool equalTo(const RelRef& r) const override;
-
     size_t getHash() const override;
 
     void checkFirstArg() override;
@@ -439,7 +439,6 @@ struct Follows : RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
-
     bool equalTo(const RelRef& r) const override;
 
     size_t getHash() const override;
@@ -639,7 +638,7 @@ enum class AttrCompareRefType { NOT_INITIALIZED, NUMBER, STRING, ATTRREF };
 
 struct AttrCompareRef {
 private:
-    AttrRef ar;
+    AttrRef ar {};
     std::string str_value;
     AttrCompareRefType type = AttrCompareRefType::NOT_INITIALIZED;
     int number = -1;
@@ -656,6 +655,7 @@ public:
     bool isString() const { return type == AttrCompareRefType::STRING; }
     bool isNumber() const { return type == AttrCompareRefType::NUMBER; }
     bool isAttrRef() const { return type == AttrCompareRefType::ATTRREF; }
+
     bool operator==(const AttrCompareRef& o) const {
         if (isString() && o.isString()) {
             return str_value == o.getString();
@@ -673,10 +673,15 @@ struct AttrCompare {
     AttrCompareRef lhs;
     AttrCompareRef rhs;
 
+    AttrCompare() {}
     AttrCompare(AttrCompareRef lhs, AttrCompareRef rhs) : lhs(std::move(lhs)), rhs(std::move(rhs)) {}
 
     AttrCompareRef getLhs() const { return lhs; }
     AttrCompareRef getRhs() const { return rhs; }
+
+    bool operator==(const AttrCompare &o) const {
+        return (lhs == o.lhs) && (rhs == o.rhs);
+    }
 };
 
 /**
