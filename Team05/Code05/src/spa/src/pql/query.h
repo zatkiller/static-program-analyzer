@@ -351,20 +351,12 @@ protected:
         return synonyms;
     }
 
-<<<<<<< HEAD
-    template<typename T, typename F1, typename F2>
-    bool equalityCheckHelper(const F1 T::*f1, const F2 T::*f2, const RelRef* r ) const {
-        const auto derivedPtr1 = static_cast<const T *>(this);
-        const auto derivedPtr2 = static_cast<const T *>(r);
-        return (derivedPtr1->*f1 == derivedPtr2->*f1) && (derivedPtr1->*f2 == derivedPtr2->*f2);
-=======
     template <typename T, typename F1, typename F2>
     bool equalityCheckHelper(const F1 T::*f1, const F2 T::*f2, const RelRef* r) const {
         const auto derivedPtr1 = static_cast<const T*>(this);
         const auto derivedPtr2 = static_cast<const T*>(r);
         return (derivedPtr1->*f1 == derivedPtr2->*f1) &&
             (derivedPtr1->*f2 == derivedPtr2->*f2);
->>>>>>> ccceac5cbf383ed4a3cc8a96c883258a0551ad58
     }
 };
 
