@@ -12,11 +12,11 @@ struct CallsExtractor : public Extractor<const ast::ASTNode*> {
 };
 
 /**
- * Extracts all Calls relationship from the AST and send them to the PKBStrategy
+ * Extracts all Calls relationship from the AST and send them to the PKB
  */
 struct CallsExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    explicit CallsExtractorModule(PKBStrategy *pkb) : 
+    explicit CallsExtractorModule(PKB *pkb) : 
         ExtractorModule(std::make_unique<CallsExtractor>(), pkb) {}
 };
 

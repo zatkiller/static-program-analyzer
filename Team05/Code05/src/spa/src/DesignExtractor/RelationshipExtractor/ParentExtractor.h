@@ -31,11 +31,11 @@ public:
 };
 
 /**
- * Extracts all Parent relationship from the AST and send them to the PKBStrategy
+ * Extracts all Parent relationship from the AST and send them to the PKB
  */
 class ParentExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    explicit ParentExtractorModule(PKBStrategy *pkb) : 
+    explicit ParentExtractorModule(PKB *pkb) : 
         ExtractorModule(std::make_unique<ParentExtractor>(), pkb) {}
 };
 

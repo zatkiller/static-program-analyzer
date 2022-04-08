@@ -3,20 +3,6 @@
 
 namespace sp {
 namespace design_extractor {
-/**
- * Private strategy to only retrieve a local copy of variables.
- */
-class VariablePKBStrategy : public NullPKBStrategy {
-public:
-    std::set<VAR_NAME> variables;
-    void insertEntity(Content entity) override {
-        try {
-            variables.insert(std::get<VAR_NAME>(entity));
-        } catch (std::bad_variant_access &ex) {
-            Logger(Level::ERROR) << "Bad variant access in transitive relationship template extraction";
-        }
-    };
-};
 
 struct CallGraphPreProcessor {
     using AdjacencyList = std::map<std::string, std::vector<std::string>>;
@@ -74,11 +60,18 @@ struct CallGraphPreProcessor {
 
 
 std::set<VAR_NAME> RelExtractorTemplate::extractVars(const ast::ASTNode *part) {
-    VariablePKBStrategy vps;
-    VariableExtractorModule vem(&vps);
-    vem.extract(part);
-
-    return vps.variables;
+    EntityExtractor<VariableCollector> ve;
+    auto results = ve.extract(part);
+    std::set<VAR_NAME> vars;
+    std::transform(
+        results.begin(),
+        results.end(), 
+        std::inserter(vars, vars.begin()),
+        [](auto entry) {
+            return std::get<VAR_NAME>(std::get<Entity>(entry));
+        }
+    );
+    return vars;
 }
 
 void TransitiveRelationshipTemplate::visit(const ast::Call &node) {

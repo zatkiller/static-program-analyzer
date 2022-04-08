@@ -20,11 +20,11 @@ public:
 };
 
 /**
- * Extracts all Modifies relationship from the AST and send them to the PKBStrategy
+ * Extracts all Modifies relationship from the AST and send them to the PKB
  */
 class ModifiesExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    explicit ModifiesExtractorModule(PKBStrategy *pkb) : 
+    explicit ModifiesExtractorModule(PKB *pkb) : 
         ExtractorModule(std::make_unique<ModifiesExtractor>(), pkb) {}
 };
 }  // namespace design_extractor

@@ -3,10 +3,11 @@
 #include <cstdarg>
 #include <stdio.h>
 #include <set>
+#include <variant>
+#include <functional>
 
 #include "catch.hpp"
 #include "Parser/AST.h"
-#include "DesignExtractor/PKBStrategy.h"
 #include "DesignExtractor/DesignExtractor.h"
 #include "DesignExtractor/EntityExtractor/EntityExtractor.h"
 #include "DesignExtractor/RelationshipExtractor/RelationshipExtractor.h"
@@ -24,39 +25,18 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 namespace sp {
 namespace de = design_extractor;
 
-using de::VariableExtractorModule;
-using de::StatementExtractorModule;
-using de::ConstExtractorModule;
-using de::ProcedureExtractorModule;
-using de::UsesExtractorModule;
-using de::ModifiesExtractorModule;
-using de::ParentExtractorModule;
-using de::FollowsExtractorModule;
-using de::NextExtractorModule;
+using VariableExtractor = de::EntityExtractor<de::VariableCollector>;
+using StatementExtractor = de::EntityExtractor<de::StatementCollector>;
+using ConstExtractor = de::EntityExtractor<de::ConstCollector>;
+using ProcedureExtractor = de::EntityExtractor<de::ProcedureCollector>;
+using de::UsesExtractor;
+using de::ModifiesExtractor;
+using de::ParentExtractor;
+using de::FollowsExtractor;
+using de::NextExtractor;
 using de::PatternParam;
+using de::Entry;
 
-
-class TestPKBStrategy : public de::PKBStrategy {
-public:
-    std::set<STMT_LO> statements;
-    std::set<std::string> variables;
-    std::map<PKBEntityType, std::set<Content>> entities;
-    std::map<PKBRelationship, std::set<std::pair<Content, Content>>> relationships;
-
-    void insertEntity(Content entity) override {
-        std::visit(overloaded {
-            [&](VAR_NAME &item) { entities[PKBEntityType::VARIABLE].emplace(item); },
-            [&](STMT_LO &item) { entities[PKBEntityType::STATEMENT].emplace(item); },
-            [&](PROC_NAME &item) { entities[PKBEntityType::PROCEDURE].emplace(item); },
-            [&](CONST &item) { entities[PKBEntityType::CONST].emplace(item); },
-            [](auto &item) {}
-        }, entity);
-    };
-
-    void insertRelationship(PKBRelationship type, Content arg1, Content arg2) override {
-        relationships[type].insert(std::make_pair<>(arg1, arg2));
-    };
-};
 
 template <typename T>
 std::set<T> setDiff(std::set<T> set1, std::set<T> set2) {
@@ -69,43 +49,29 @@ std::set<T> setDiff(std::set<T> set1, std::set<T> set2) {
     return diff;
 }
 
-TEST_CASE("TestPKBStrategy Test") {
-    TestPKBStrategy pkbStrategy;
-    std::set<Content> stmts = {
-        STMT_LO{1, StatementType::Assignment},
-        STMT_LO{2, StatementType::Read},
-        STMT_LO{3, StatementType::Print},
-        STMT_LO{4, StatementType::If},
-        STMT_LO{5, StatementType::While},
-    };
-    for (auto stmt : stmts) {
-        pkbStrategy.insertEntity(stmt);
-    }
-    REQUIRE(pkbStrategy.entities[PKBEntityType::STATEMENT] == stmts);
+std::set<Content> transformContent(std::set<Entry> entries) {
+    std::set<Content> contents;
+    std::transform(
+        entries.begin(),
+        entries.end(),
+        std::inserter(contents, contents.begin()),
+        [](auto entry) { return std::get<Content>(entry); }
+    );
+    return contents;
+}
 
-    std::set<Content> vars = {
-        VAR_NAME{"x"},
-        VAR_NAME{"x123"},
-        VAR_NAME{"jaosidjfaoisdjfiaosdjfioasjd"}
-    };
-    for (auto var : vars) {
-        pkbStrategy.insertEntity(var);
-    }
-    REQUIRE(pkbStrategy.entities[PKBEntityType::VARIABLE] == vars);
-
-    
-    auto p = [](auto a1, auto a2) {
-        return std::make_pair<>(a1, a2);
-    };
-    std::set<std::pair<Content, Content>> relationships = {
-        p(STMT_LO{1, StatementType::Assignment}, VAR_NAME{"X"}),
-        p(STMT_LO{1, StatementType::Assignment}, STMT_LO{2, StatementType::Read}),
-        p(PROC_NAME{"main"}, VAR_NAME("x"))
-    };
-    for (auto relationship : relationships) {
-        pkbStrategy.insertRelationship(PKBRelationship::MODIFIES, relationship.first, relationship.second);
-    }
-    REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == relationships);
+std::set<std::pair<Content, Content>> transformRelationship(std::set<Entry> entries) {
+    std::set<std::pair<Content, Content>> relationships;
+    std::transform(
+        entries.begin(),
+        entries.end(),
+        std::inserter(relationships, relationships.begin()),
+        [](auto entry) {
+            de::Relationship rs = std::get<de::Relationship>(entry);
+            return std::make_pair<>(std::get<1>(rs), std::get<2>(rs));
+        }
+    );
+    return relationships;
 }
 
 namespace ast {
@@ -120,7 +86,6 @@ namespace ast {
          *
          */
 
-        TestPKBStrategy pkbStrategy;
         auto p = [] (auto p1, auto p2) {
             return std::make_pair<>(p1, p2);
         };  // Helper method to make pairs.
@@ -133,12 +98,10 @@ namespace ast {
                 make<Print>(3, make<Var>("v3"))
             );
             auto whileBlk = make<While>(1, std::move(relExpr), std::move(stmtlst));
-            auto ve = std::make_unique<VariableExtractorModule>(&pkbStrategy);
-            ve->extract(whileBlk.get());
-            // variable extractions
-            
+            auto ve = std::make_unique<VariableExtractor>();
+            // variable extraction           
             REQUIRE(
-                pkbStrategy.entities[PKBEntityType::VARIABLE] == std::set<Content>(
+                transformContent(ve->extract(whileBlk.get())) == std::set<Content>(
                     {VAR_NAME{"v1"}, VAR_NAME{"v3"}}
                 )
             );
@@ -189,7 +152,7 @@ namespace ast {
             auto program = makeProgram(std::move(procedure));
 
             SECTION("Variable extractor test") {
-                auto ve = std::make_unique<VariableExtractorModule>(&pkbStrategy);
+                auto ve = std::make_unique<VariableExtractor>();
                 ve->extract(program.get());
 
                 std::set<Content> expectedVars = {
@@ -199,27 +162,25 @@ namespace ast {
                     VAR_NAME{"sum"} 
                 };
                 
-                REQUIRE(pkbStrategy.entities[PKBEntityType::VARIABLE] == expectedVars);
+                REQUIRE(transformContent(ve->extract(program.get())) == expectedVars);
             }
 
             SECTION("Const extractor test") {
-                auto ce = std::make_unique<ConstExtractorModule>(&pkbStrategy);
-                ce->extract(program.get());
+                auto ce = std::make_unique<ConstExtractor>();
 
                 std::set<Content> expectedConsts = { CONST{0}, CONST{2}, CONST{10} };
-                REQUIRE(pkbStrategy.entities[PKBEntityType::CONST] == expectedConsts);
+                REQUIRE(transformContent(ce->extract(program.get())) == expectedConsts);
             }
 
             SECTION("Procedure extractor test") {
-                auto pe = std::make_unique<ProcedureExtractorModule>(&pkbStrategy);
-                pe->extract(program.get());
+                auto pe = std::make_unique<ProcedureExtractor>();
                 
                 std::set<Content> expectedProcs = { PROC_NAME{"main"} };
-                REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedProcs);
+                REQUIRE(transformContent(pe->extract(program.get())) == expectedProcs);
             }
 
             SECTION("Statement extractor test") {
-                auto se = std::make_unique<StatementExtractorModule>(&pkbStrategy);
+                auto se = std::make_unique<StatementExtractor>();
                 se->extract(program.get());
 
                 std::set<Content> expectedStatements = {
@@ -235,11 +196,11 @@ namespace ast {
                     STMT_LO{10, StatementType::Assignment},
                     STMT_LO{11, StatementType::Print, "sum"},
                 };
+                REQUIRE(transformContent(se->extract(program.get())) == expectedStatements);
             }
 
             SECTION("Modifies extractor test") {
-                auto me = std::make_unique<ModifiesExtractorModule>(&pkbStrategy);
-                me->extract(program.get());
+                auto me = std::make_unique<ModifiesExtractor>();
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(PROC_NAME{"main"}, VAR_NAME{"x"}),
@@ -259,12 +220,11 @@ namespace ast {
                     p(STMT_LO{8, StatementType::Assignment}, VAR_NAME{"sum"}),
                     p(STMT_LO{10, StatementType::Assignment}, VAR_NAME{"x"}),
                 };
-                REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
+                REQUIRE(transformRelationship(me->extract(program.get())) == expected);
             }
 
             SECTION("Uses extractor test") {
-                auto ue = std::make_unique<UsesExtractorModule>(&pkbStrategy);
-                ue->extract(program.get());
+                auto ue = std::make_unique<UsesExtractor>();
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(PROC_NAME{"main"}, VAR_NAME{"x"}),
@@ -289,13 +249,11 @@ namespace ast {
                     p(STMT_LO{10, StatementType::Assignment}, VAR_NAME{"x"}),
                     p(STMT_LO{11, StatementType::Print}, VAR_NAME{"sum"}),
                 };
-
-                REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
+                REQUIRE(transformRelationship(ue->extract(program.get())) == expected);
             }
         
             SECTION("Follows extractor test") {
-                auto fe = std::make_unique<FollowsExtractorModule>(&pkbStrategy);
-                fe->extract(program.get());
+                auto fe = std::make_unique<FollowsExtractor>();
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
@@ -306,12 +264,11 @@ namespace ast {
                     p(STMT_LO{6, StatementType::Assignment}, STMT_LO{7, StatementType::If}),
                     p(STMT_LO{7, StatementType::If}, STMT_LO{10, StatementType::Assignment}),
                 };
-                REQUIRE(pkbStrategy.relationships[PKBRelationship::FOLLOWS] == expected);
+                REQUIRE(transformRelationship(fe->extract(program.get())) == expected);
             }
 
             SECTION("Parents extractor test") {
-                auto pe = std::make_unique<ParentExtractorModule>(&pkbStrategy);
-                pe->extract(program.get());
+                auto pe = std::make_unique<ParentExtractor>();
 
                 std::set<std::pair<Content, Content>> expected = {
                     p(STMT_LO{3, StatementType::While}, STMT_LO{4, StatementType::Print}),
@@ -322,13 +279,12 @@ namespace ast {
                     p(STMT_LO{7, StatementType::If}, STMT_LO{9, StatementType::Print}),
                     p(STMT_LO{3, StatementType::While}, STMT_LO{10, StatementType::Assignment}),
                 };
-                REQUIRE(pkbStrategy.relationships[PKBRelationship::PARENT] == expected);
+                REQUIRE(transformRelationship(pe->extract(program.get())) == expected);
             }
 
             SECTION("Next extractor test") {
-                auto ne = std::make_unique<NextExtractorModule>(&pkbStrategy);
+                auto ne = std::make_unique<NextExtractor>();
                 auto cfg = std::make_unique<cfg::CFGExtractor>()->extract(program.get());
-                ne->extract(&cfg);
                 std::set<std::pair<Content, Content>> expected = {
                     p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
                     p(STMT_LO{2, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
@@ -343,7 +299,7 @@ namespace ast {
                     p(STMT_LO{10, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
                     p(STMT_LO{3, StatementType::While}, STMT_LO{11, StatementType::Print}),
                 };
-                REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
+                REQUIRE(transformRelationship(ne->extract(&cfg)) == expected);
             }
         }    
         
@@ -397,9 +353,7 @@ namespace ast {
             );
             std::set<std::pair<Content, Content>> expected;
 
-            ModifiesExtractorModule me(&pkbStrategy);
-            me.extract(program.get());
-
+            ModifiesExtractor me;
             expected = {
                 p(STMT_LO{1, StatementType::Call}, VAR_NAME{"x"}),
                 p(STMT_LO{2, StatementType::Call}, VAR_NAME{"x"}),
@@ -412,10 +366,9 @@ namespace ast {
                 p(PROC_NAME{"gee"}, VAR_NAME{"x"}),
                 p(PROC_NAME{"main"}, VAR_NAME{"x"})
             };
-            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
+            REQUIRE(transformRelationship(me.extract(program.get())) == expected);
             
-            UsesExtractorModule ue(&pkbStrategy);
-            ue.extract(program.get());
+            UsesExtractor ue;
 
             expected = {
                 p(STMT_LO{1, StatementType::Call}, VAR_NAME{"y"}),
@@ -429,23 +382,20 @@ namespace ast {
                 p(PROC_NAME{"gee"}, VAR_NAME{"y"}),
                 p(PROC_NAME{"main"}, VAR_NAME{"y"})
             };
-            REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
+            REQUIRE(transformRelationship(ue.extract(program.get())) == expected);
 
             // Regression test for #287.
-            FollowsExtractorModule fe(&pkbStrategy);
-            fe.extract(program.get());
+            FollowsExtractor fe;
             expected = {
                 p(STMT_LO{1, StatementType::Call}, STMT_LO{2, StatementType::Call}),
                 p(STMT_LO{4, StatementType::Call}, STMT_LO{5, StatementType::Call}),
                 p(STMT_LO{6, StatementType::Read}, STMT_LO{7, StatementType::Print}),
             };
 
-            auto diff = setDiff(pkbStrategy.relationships[PKBRelationship::FOLLOWS], expected);
-            REQUIRE(pkbStrategy.relationships[PKBRelationship::FOLLOWS] == expected);
+            REQUIRE(transformRelationship(fe.extract(program.get())) == expected);
 
 
-            de::CallsExtractorModule ce(&pkbStrategy);
-            ce.extract(program.get());
+            de::CallsExtractor ce;
             expected = {
                 p(PROC_NAME{"main"}, PROC_NAME{"foo"}),
                 p(PROC_NAME{"main"}, PROC_NAME{"bar"}),
@@ -454,18 +404,17 @@ namespace ast {
                 p(PROC_NAME{"bar"}, PROC_NAME{"foo"})
             };
 
-            REQUIRE(pkbStrategy.relationships[PKBRelationship::CALLS] == expected);
+            REQUIRE(transformRelationship(ce.extract(program.get())) == expected);
 
-            NextExtractorModule ne(&pkbStrategy);
+            NextExtractor ne;
             auto cfgs = cfg::CFGExtractor().extract(program.get());
-            ne.extract(&cfgs);
             expected = {
                 p(STMT_LO{1, StatementType::Call}, STMT_LO{2, StatementType::Call}),
                 p(STMT_LO{4, StatementType::Call}, STMT_LO{5, StatementType::Call}),
                 p(STMT_LO{6, StatementType::Read}, STMT_LO{7, StatementType::Print}),
             };
 
-            REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
+            REQUIRE(transformRelationship(ne.extract(&cfgs)) == expected);
         }
 
         /**
@@ -499,8 +448,7 @@ namespace ast {
                 PROC_NAME{"main"},
                 PROC_NAME{"foo"}
             };
-            ProcedureExtractorModule(&pkbStrategy).extract(program.get());
-            REQUIRE(pkbStrategy.entities[PKBEntityType::PROCEDURE] == expectedProcs);
+            REQUIRE(transformContent(ProcedureExtractor().extract(program.get())) == expectedProcs);
 
             std::set<Content> expectedStatements = {
                 STMT_LO{1, StatementType::While},
@@ -508,16 +456,14 @@ namespace ast {
                 STMT_LO{3, StatementType::Assignment},
                 STMT_LO{4, StatementType::Assignment},
             };
-            StatementExtractorModule(&pkbStrategy).extract(program.get());
-            auto extractedStatements = pkbStrategy.entities[PKBEntityType::STATEMENT];
+            auto extractedStatements = transformContent(StatementExtractor().extract(program.get()));
             REQUIRE(extractedStatements == expectedStatements);
             // If call statement without attribute, it's wrong.
             REQUIRE(extractedStatements.find(STMT_LO{2, StatementType::Call}) == extractedStatements.end());
             REQUIRE(extractedStatements.find(STMT_LO{2, StatementType::Call, "foo"}) != extractedStatements.end());
 
             std::set<std::pair<Content, Content>> expected;
-            ModifiesExtractorModule me(&pkbStrategy);
-            me.extract(program.get());
+            ModifiesExtractor me;
 
             expected = {
                 p(STMT_LO{1, StatementType::While}, VAR_NAME{"f1"}),
@@ -529,10 +475,9 @@ namespace ast {
                 p(PROC_NAME{"main"}, VAR_NAME{"f1"}),
                 p(PROC_NAME{"main"}, VAR_NAME{"m2"})
             };
-            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
+            REQUIRE(transformRelationship(me.extract(program.get())) == expected);
 
-            UsesExtractorModule ue(&pkbStrategy);
-            ue.extract(program.get());
+            UsesExtractor ue;
             expected = {
                 p(STMT_LO{1, StatementType::While}, VAR_NAME{"m1"}),
                 p(STMT_LO{1, StatementType::While}, VAR_NAME{"m3"}),
@@ -545,18 +490,17 @@ namespace ast {
                 p(PROC_NAME{"main"}, VAR_NAME{"m1"}),
                 p(PROC_NAME{"main"}, VAR_NAME{"m3"})
             };
-            REQUIRE(pkbStrategy.relationships[PKBRelationship::USES] == expected);
+            REQUIRE(transformRelationship(ue.extract(program.get())) == expected);
 
-            NextExtractorModule ne(&pkbStrategy);
+            NextExtractor ne;
             auto cfgs = cfg::CFGExtractor().extract(program.get());
-            ne.extract(&cfgs);
             expected = {
                 p(STMT_LO{1, StatementType::While}, STMT_LO{2, StatementType::Call}),
                 p(STMT_LO{2, StatementType::Call}, STMT_LO{3, StatementType::Assignment}),
                 p(STMT_LO{3, StatementType::Assignment}, STMT_LO{1, StatementType::While}),
             };
 
-            REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
+            REQUIRE(transformRelationship(ne.extract(&cfgs)) == expected);
         }
     
         /**
@@ -602,8 +546,7 @@ namespace ast {
             );
             std::set<std::pair<Content, Content>> expected;
 
-            ModifiesExtractorModule me(&pkbStrategy);
-            me.extract(program.get());
+            ModifiesExtractor me;
             expected = {
                 p(PROC_NAME{"a"}, VAR_NAME{"x"}),
                 p(PROC_NAME{"b"}, VAR_NAME{"x"}),
@@ -615,7 +558,7 @@ namespace ast {
                 p(STMT_LO{3, StatementType::Read}, VAR_NAME{"y"}),
                 p(STMT_LO{4, StatementType::Call}, VAR_NAME{"y"})
             };
-            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
+            REQUIRE(transformRelationship(me.extract(program.get())) == expected);
         }
 
         /**
@@ -662,9 +605,8 @@ namespace ast {
             );
             std::set<std::pair<Content, Content>> expected;
 
-            NextExtractorModule ne(&pkbStrategy);
+            NextExtractor ne;
             auto cfgs = cfg::CFGExtractor().extract(program.get());
-            ne.extract(&cfgs);
             
             expected = {
                 p(STMT_LO{1, StatementType::If}, STMT_LO{2, StatementType::Read}),
@@ -672,7 +614,7 @@ namespace ast {
                 p(STMT_LO{3, StatementType::If}, STMT_LO{4, StatementType::Read}),
                 p(STMT_LO{3, StatementType::If}, STMT_LO{5, StatementType::Read}),
             };
-            REQUIRE(pkbStrategy.relationships[PKBRelationship::NEXT] == expected);
+            REQUIRE(transformRelationship(ne.extract(&cfgs)) == expected);
         }
 
         /**
@@ -781,8 +723,7 @@ namespace ast {
             );
             std::set<std::pair<Content, Content>> expected;
 
-            ModifiesExtractorModule me(&pkbStrategy);
-            me.extract(program.get());
+            ModifiesExtractor me;
             expected = {
                 p(PROC_NAME{"a"}, VAR_NAME{"x"}),
                 p(PROC_NAME{"b"}, VAR_NAME{"x"}),
@@ -805,7 +746,7 @@ namespace ast {
                 p(STMT_LO{9, StatementType::Call}, VAR_NAME{"z"}),
                 p(STMT_LO{10, StatementType::Read}, VAR_NAME{"w"})
             };
-            REQUIRE(pkbStrategy.relationships[PKBRelationship::MODIFIES] == expected);
+            REQUIRE(transformRelationship(me.extract(program.get())) == expected);
         }
     }
 

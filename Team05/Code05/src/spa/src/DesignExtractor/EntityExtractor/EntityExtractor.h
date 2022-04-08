@@ -31,7 +31,7 @@ public:
 template<typename T>
 class EntityExtractorModule : public ExtractorModule<const ast::ASTNode*> {
 public:
-    explicit EntityExtractorModule(PKBStrategy *pkb) :
+    explicit EntityExtractorModule(PKB *pkb) :
         ExtractorModule(std::make_unique<EntityExtractor<T>>(), pkb) {}
 };
 
@@ -42,7 +42,7 @@ struct VariableCollector : public Collector {
 };
 
 struct VariableExtractorModule : public EntityExtractorModule<VariableCollector> {
-    explicit VariableExtractorModule(PKBStrategy *pkb) : 
+    explicit VariableExtractorModule(PKB *pkb) : 
         EntityExtractorModule(pkb) {}
 };
 
@@ -53,7 +53,7 @@ struct ConstCollector : public Collector {
 };
 
 struct ConstExtractorModule : public EntityExtractorModule<ConstCollector> {
-    explicit ConstExtractorModule(PKBStrategy *pkb) :
+    explicit ConstExtractorModule(PKB *pkb) :
         EntityExtractorModule(pkb) {}
 };
 
@@ -65,7 +65,7 @@ struct ProcedureCollector : public Collector {
 };
 
 struct ProcedureExtractorModule : public EntityExtractorModule<ProcedureCollector> {
-    explicit ProcedureExtractorModule(PKBStrategy *pkb) :
+    explicit ProcedureExtractorModule(PKB *pkb) :
         EntityExtractorModule(pkb) {}
 };
 
@@ -96,7 +96,7 @@ struct StatementCollector : public Collector {
 };
 
 struct StatementExtractorModule : public EntityExtractorModule<StatementCollector> {
-    explicit StatementExtractorModule(PKBStrategy *pkb) :
+    explicit StatementExtractorModule(PKB *pkb) :
         EntityExtractorModule(pkb) {}
 };
 
