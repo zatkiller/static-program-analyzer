@@ -136,8 +136,8 @@ TEST_CASE("test group clauses") {
 
     TEST_LOG << "Test group order";
     std::vector<qps::optimizer::ClauseGroup> orderedGroups;
-    while (opt.hasNext()) {
-        orderedGroups.push_back(opt.next());
+    while (opt.hasNextGroup()) {
+        orderedGroups.push_back(opt.nextGroup());
     }
     for (int i = 0; i < orderedGroups.size() - 1; i++) {
         REQUIRE(orderedGroups[i].syns.size() <= orderedGroups[i + 1].syns.size());
@@ -149,8 +149,8 @@ TEST_CASE("test group clauses") {
     for (auto group : orderedGroups) {
         std::vector<qps::optimizer::OrderedClause> orderedClause;
         TEST_LOG << " group id: " + std::to_string(group.groupId);
-        while (group.hasNext()) {
-            qps::optimizer::OrderedClause clause = group.next();
+        while (group.hasNextClause()) {
+            qps::optimizer::OrderedClause clause = group.nextClause();
             orderedClause.push_back(clause);
             int priority = clause.getPriority();
             TEST_LOG << " " + std::to_string(priority);

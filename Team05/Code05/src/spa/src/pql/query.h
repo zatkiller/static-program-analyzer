@@ -309,11 +309,6 @@ struct RelRef {
     virtual std::vector<PKBField> getField() = 0;
     virtual std::vector<Declaration> getDecs() = 0;
 
-    virtual bool equalTo(const RelRef& r) const = 0;
-
-    bool operator==(const RelRef& r) const {
-        return equalTo(r);
-    }
 protected:
     template <typename T, typename F1, typename F2>
     std::vector<PKBField> getFieldHelper(const F1 T::*f1, const F2 T::*f2) {
@@ -683,6 +678,10 @@ struct AttrCompare {
 
     AttrCompareRef getLhs() const { return lhs; }
     AttrCompareRef getRhs() const { return rhs; }
+
+    bool operator==(const AttrCompare &o) const {
+        return (lhs == o.lhs) && (rhs == o.rhs);
+    }
 };
 
 /**

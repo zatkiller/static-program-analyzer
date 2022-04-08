@@ -1,6 +1,7 @@
 #include "optimizer.h"
 namespace qps::optimizer {
     using query::RelRefType;
+    using utils::hash_combine;
 
     std::unordered_set<query::RelRefType> higherPriorityClause {
         RelRefType::MODIFIESS, RelRefType::MODIFIESP, RelRefType::USESP, RelRefType::USESS, RelRefType::FOLLOWS,
@@ -83,6 +84,15 @@ namespace qps::optimizer {
         else if (type == OrderedClauseType::WITH) return with == o.with;
         else
             return pattern == o.pattern;
+    }
+
+    size_t OrderedClause::getHash() const {
+        size_t seed = 0;
+        hash_combine(seed, type);
+        if (type == OrderedClauseType::SUCH_THAT) hash_combine(seed, suchthat);
+        if (type == OrderedClauseType::PATTERN) hash_combine(seed, pattern);
+        if (type == OrderedClauseType::WITH) hash_combine(seed, with);
+        return seed;
     }
 
     ClauseGroup ClauseGroup::ofNewGroup(int id) {

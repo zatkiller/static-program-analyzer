@@ -99,6 +99,12 @@ Elem Elem::ofAttrRef(AttrRef ar) {
     return e;
 }
 
+std::string Elem::getSyn() const {
+    if (isDeclaration()) return getDeclaration().getSynonym();
+    else
+        return getAttrRef().getDeclarationSynonym();
+}
+
 ResultCl ResultCl::ofBoolean() {
     ResultCl r;
     r.boolean = true;
@@ -113,6 +119,14 @@ ResultCl ResultCl::ofTuple(std::vector<Elem> tuple) {
 
 bool ResultCl::hasElem(const Elem& e) const {
     return std::find(tuple.begin(), tuple.end(), e) != tuple.end();
+}
+
+std::vector<std::string> ResultCl::getSynAsList() const {
+    std::vector<std::string> syns;
+    for (auto elem : getTuple()) {
+        syns.push_back(elem.getSyn());
+    }
+    return syns;
 }
 
 EntRef EntRef::ofVarName(std::string name) {

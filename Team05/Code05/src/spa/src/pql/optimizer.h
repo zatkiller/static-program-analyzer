@@ -30,6 +30,7 @@ struct OrderedClause {
     bool isPattern() { return type == OrderedClauseType::PATTERN; }
 
     bool operator==(const OrderedClause& o) const;
+    size_t getHash() const;
 
 private:
     std::shared_ptr<query::RelRef> suchthat {};
@@ -57,7 +58,7 @@ public:
 
 struct OrderedClauseHash {
 public:
-    size_t operator() (const OrderedClause&) const {};
+    size_t operator() (const OrderedClause& clause) const { return clause.getHash(); }
 };
 
 
