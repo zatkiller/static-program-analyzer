@@ -381,7 +381,7 @@ public:
 
 private:
     PKBRelationship type; /**< The type of relationships this Graph holds */
-    std::map<T, std::shared_ptr<Node<T>>> nodes; /**< The list of nodes in this Graph */
+    std::unordered_map<T, std::shared_ptr<Node<T>>> nodes; /**< The list of nodes in this Graph */
 
     /**
     * Add a node represented by program design entity to the list of nodes stored in the graph if it does not exist

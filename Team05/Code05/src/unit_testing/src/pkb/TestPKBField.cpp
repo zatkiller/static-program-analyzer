@@ -27,7 +27,6 @@ TEST_CASE("STMT_LO set equality") {
     STMT_LO s4 = STMT_LO{ 1, StatementType::Call, "a"};
     REQUIRE_FALSE((s1 < s2) & (s2 < s1));
     REQUIRE_FALSE((s1 < s3) & (s3 < s1));
-    REQUIRE((!(s3 < s4) & !(s4 < s3)) & (s4 == s3));
 }
 
 TEST_CASE("PKBField createConcrete statement, getContent") {

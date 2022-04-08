@@ -47,6 +47,7 @@ typedef struct STMT_LO {
     bool hasStatementType() const;
     bool hasAttribute() const;
     bool operator == (const STMT_LO&) const;
+    bool operator != (const STMT_LO&) const;
     bool operator < (const STMT_LO&) const;
 } STMT_LO;
 
