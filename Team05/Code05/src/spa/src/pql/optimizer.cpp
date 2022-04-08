@@ -59,31 +59,40 @@ namespace qps::optimizer {
 
     int OrderedClause::getPriority() {
         int priority;
-        if (isWith()) priority = 0;
-        else if (isPattern()) {
+        if (isWith()) {
+            priority = 0;
+        } else if (isPattern()) {
             query::Pattern p = getPattern();
             if (p.getSynonymType() == query::DesignEntity::IF || p.getSynonymType() == query::DesignEntity::WHILE) {
                 priority = 1;
-            }else if (p.getExpression().isFullMatch()) priority = 2;
-            else if (p.getExpression().isPartialMatch()) priority = 3;
-            else
+            } else if (p.getExpression().isFullMatch()) {
+                priority = 2;
+            } else if (p.getExpression().isPartialMatch()) {
+                priority = 3;
+            } else {
                 priority = 4;
+            }
         } else {
             std::shared_ptr<query::RelRef> s = getSuchThat();
             RelRefType type = s->getType();
-            if (higherPriorityClause.find(type) != higherPriorityClause.end()) priority = 5;
-            else
+            if (higherPriorityClause.find(type) != higherPriorityClause.end()) {
+                priority = 5;
+            } else {
                 priority = 6;
+            }
         }
         return priority;
     }
 
     bool OrderedClause::operator==(const OrderedClause &o) const {
         if (type != o.type) return false;
-        if (type == OrderedClauseType::SUCH_THAT) return *(suchthat) == *(o.suchthat);
-        else if (type == OrderedClauseType::WITH) return with == o.with;
-        else
+        if (type == OrderedClauseType::SUCH_THAT) {
+            return *(suchthat) == *(o.suchthat);
+        } else if (type == OrderedClauseType::WITH) {
+            return with == o.with;
+        } else {
             return pattern == o.pattern;
+        }
     }
 
     size_t OrderedClause::getHash() const {
@@ -173,4 +182,4 @@ namespace qps::optimizer {
     bool Optimizer::hasNextGroup() {
         return !pq.empty();
     }
-} // namespace qps::optimizer
+}  // namespace qps::optimizer

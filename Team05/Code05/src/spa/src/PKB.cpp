@@ -59,9 +59,9 @@ void PKB::insertAST(std::unique_ptr<sp::ast::Program> root) {
     this->root = std::move(root);
 }
 
-void PKB::insertCFG(ProcToCfgMap roots) {
-    this->cfgRoots = roots;
-    this->affectsEval->initCFG(roots);
+void PKB::insertCFG(const sp::cfg::CFG cfgContainer) {
+    this->cfgContainer = cfgContainer;
+    this->affectsEval->initCFG(cfgContainer);
 }
 
 bool PKB::validate(const PKBField field) const {

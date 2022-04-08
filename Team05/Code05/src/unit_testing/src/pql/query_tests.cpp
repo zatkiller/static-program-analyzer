@@ -34,7 +34,6 @@ using qps::query::Declaration;
 
 
 TEST_CASE("AttrRef") {
-
     SECTION("AttrRef correctness") {
         Declaration d("p", DesignEntity::PROCEDURE);
         AttrRef ar = AttrRef{ AttrName::PROCNAME, Declaration {"p", DesignEntity::PROCEDURE} };
@@ -233,7 +232,6 @@ TEST_CASE("ExpSpec") {
 }
 
 TEST_CASE("Pattern") {
-
     SECTION("Pattern correctness") {
         Pattern p = Pattern::ofAssignPattern("h", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
         REQUIRE(p.getSynonym() == "h");
@@ -296,7 +294,6 @@ TEST_CASE("Pattern") {
         pSet.insert(p9);
         REQUIRE(pSet.size() == 6);
     }
-
 }
 
 TEST_CASE("Query") {

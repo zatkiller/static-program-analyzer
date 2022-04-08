@@ -626,7 +626,11 @@ struct Pattern {
     EntRef getEntRef() const { return lhs; }
     ExpSpec getExpression() const;
 
-    bool operator==(const Pattern& o) const { return (declaration == o.declaration) && (lhs == o.lhs) && (expression == o.expression); }
+    bool operator==(const Pattern& o) const {
+        return (declaration == o.declaration) 
+            && (lhs == o.lhs)
+            && (expression == o.expression);
+    }
 
 private:
     EntRef lhs{};
@@ -725,7 +729,7 @@ public:
     */
     DesignEntity getDeclarationDesignEntity(const std::string& declaration) const;
 };
-} // namespace qps::query
+}  // namespace qps::query
 
 // Hash declarations
 namespace std {
@@ -792,11 +796,11 @@ template <> struct hash<EntRef> {
 };
 
 template <> struct hash<RelRef*> {
-    size_t operator()(RelRef* r) const { return r->getHash(); };
+    size_t operator()(RelRef* r) const { return r->getHash(); }
 };
 
 template <> struct equal_to<std::shared_ptr<RelRef>> {
-    bool operator()(std::shared_ptr<RelRef> lhs, std::shared_ptr<RelRef> rhs) const { return *lhs == *rhs; };
+    bool operator()(std::shared_ptr<RelRef> lhs, std::shared_ptr<RelRef> rhs) const { return *lhs == *rhs; }
 };
 
 template <> struct hash<ExpSpec> {
@@ -806,7 +810,7 @@ template <> struct hash<ExpSpec> {
         hash_combine(seed, e.isPartialMatch());
         hash_combine(seed, e.getPattern());
         return seed;
-    };
+    }
 };
 
 template <> struct hash<Pattern> {
@@ -820,7 +824,7 @@ template <> struct hash<Pattern> {
         }
 
         return seed;
-    };
+    }
 };
 
 template <> struct hash<AttrCompareRef> {
@@ -834,7 +838,7 @@ template <> struct hash<AttrCompareRef> {
             hash_combine(seed, a.getAttrRef());
         }
         return seed;
-    };
+    }
 };
 
 template <> struct hash<AttrCompare> {
@@ -843,7 +847,7 @@ template <> struct hash<AttrCompare> {
         hash_combine(seed, a.getLhs());
         hash_combine(seed, a.getRhs());
         return seed;
-    };
+    }
 };
 
-} // namespace std
+}  // namespace std

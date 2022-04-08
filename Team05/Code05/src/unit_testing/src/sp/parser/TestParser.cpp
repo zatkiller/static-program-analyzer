@@ -1051,7 +1051,6 @@ TEST_CASE("Testing Exceptions Thrown and Source Line") {
     }
 
     SECTION("Additional Constraints") {
-
         lineCount = 1;
         callStmts.clear();
         procedures.clear();
@@ -1162,7 +1161,6 @@ TEST_CASE("Testing Exceptions Thrown and Source Line") {
             );
             REQUIRE(parse(problemCode) == nullptr);
         }
-
     }
 }
 }  // namespace parser

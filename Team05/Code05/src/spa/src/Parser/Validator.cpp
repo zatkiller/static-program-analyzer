@@ -49,4 +49,4 @@ bool isCyclicCalls(sp::ast::ASTNode* root) {
     }
 
     return false;
-};
+}

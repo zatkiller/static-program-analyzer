@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "TreeWalker.h"
-#include "Parser/ast.h"
+#include "Parser/AST.h"
 
 namespace sp {
 namespace design_extractor {
@@ -13,7 +13,7 @@ namespace design_extractor {
 class CallGraph : public TreeWalker {
 public:
     using AdjacencyList = std::unordered_map<std::string, std::vector<std::string>>;
-    CallGraph(const ast::ASTNode* root) {
+    explicit CallGraph(const ast::ASTNode* root) {
         root->accept(this);
     }
 
@@ -22,7 +22,6 @@ public:
         callGraph["1"].push_back(node.getName());
         currentProc = node.getName();
         procMap[currentProc] = &node;
-
     }
 
     virtual void visit(const ast::Call& node) {
@@ -36,12 +35,11 @@ public:
     std::unordered_map<std::string, const ast::Procedure*> getProcMap() {
             return procMap;
     }
+
 protected:
     std::string currentProc = "";
     AdjacencyList callGraph;
     std::unordered_map<std::string, const ast::Procedure*> procMap;
-
 };
-
 }  // namespace design_extractor
 }  // namespace sp

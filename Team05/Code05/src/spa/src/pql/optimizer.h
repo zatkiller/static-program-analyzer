@@ -14,7 +14,6 @@ enum class OrderedClauseType {
 };
 
 struct OrderedClause {
-
     static OrderedClause ofWith(query::AttrCompare &);
     static OrderedClause ofSuchThat(std::shared_ptr<query::RelRef> &);
     static OrderedClause ofPattern(query::Pattern &);
@@ -44,8 +43,7 @@ private:
 
 struct ClausePriority {
 public:
-    bool operator()(OrderedClause& a,OrderedClause& b)
-    {
+    bool operator()(OrderedClause& a, OrderedClause& b) {
         if (a.getSynonyms().size() < b.getSynonyms().size()) {
             return false;
         } else if (a.getSynonyms().size() > b.getSynonyms().size()) {
@@ -102,8 +100,9 @@ struct ClauseGroup {
             else
                 subgroups[s] = std::vector<OrderedClause>{o};
 
-            if (s == startingPoint && subgroups[s].size() < minClauseNo) minClauseNo += 1;
-            else if (subgroups[s].size() < minClauseNo) {
+            if (s == startingPoint && subgroups[s].size() < minClauseNo) {
+                minClauseNo += 1;
+            } else if (subgroups[s].size() < minClauseNo) {
                 startingPoint = s;
                 minClauseNo = subgroups[s].size();
             }
@@ -120,8 +119,7 @@ struct ClauseGroup {
 
 struct GroupPriority {
 public:
-    bool operator()(ClauseGroup& a,ClauseGroup& b)
-    {
+    bool operator()(ClauseGroup& a, ClauseGroup& b) {
         if (a.syns.find("") != a.syns.end()) {
             return false;
         } else if (b.syns.find("") != b.syns.end()) {
@@ -182,8 +180,7 @@ public:
             }
             if (belongsToExistGroup) {
                 groups[groupId].addClause(clause, syns);
-            }
-            else {
+            } else {
                 ClauseGroup newGroup = ClauseGroup::ofNewGroup(groupId);
                 newGroup.addClause(clause, syns);
                 groups.push_back(newGroup);
@@ -200,4 +197,4 @@ public:
 
     ClauseGroup nextGroup();
 };
-}
+}  // namespace qps::optimizer
