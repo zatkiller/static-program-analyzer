@@ -16,7 +16,7 @@ private:
     std::list<std::shared_ptr<ExtractorModule<const ast::ASTNode*>>> astExtractors;
     std::list<std::shared_ptr<ExtractorModule<const cfg::PROC_CFG_MAP*>>> cfgExtractors;
     PKBStrategy* pkbStrategy;
-    ProcToCfgMap cfgs;
+    cfg::PROC_CFG_MAP cfgs;
 
 public:
     explicit DesignExtractor(PKBStrategy* pkbStrategy) : pkbStrategy(pkbStrategy) {
@@ -45,7 +45,7 @@ public:
         }
     }
 
-    void insert(const ProcToCfgMap &newCFGs) {
+    void insert(const cfg::PROC_CFG_MAP &newCFGs) {
         cfgs = newCFGs;
     }
 };

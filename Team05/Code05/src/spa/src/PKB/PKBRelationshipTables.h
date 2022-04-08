@@ -1087,8 +1087,8 @@ public:
 };
 
 using AffectsCache = std::unique_ptr<Graph<STMT_LO>>;
-using NodePtr = std::shared_ptr<sp::cfg::CFGNode>;
-using ProcToCfgMap = std::map<std::string, std::shared_ptr<sp::cfg::CFGNode>>;
+using NodePtr = std::weak_ptr<sp::cfg::CFGNode>;
+using ProcToCfgMap = sp::cfg::PROC_CFG_MAP;
 using CfgNodeSet = std::unordered_set<sp::cfg::CFGNode*>;
 
 /**
@@ -1106,7 +1106,7 @@ public:
     * 
     * @param cfgRoots A map of procedure names to roots of their CFGs.
     */
-    void initCFG(ProcToCfgMap cfgRoots);
+    void initCFG(sp::cfg::CFG cfgRoots);
 
     /**
     * Clears the internal cache of all Affects relationships.
@@ -1150,7 +1150,7 @@ private:
     bool isInit = false;
     bool isCacheActive = false;
 
-    ProcToCfgMap roots;
+    sp::cfg::CFG cfgContainer;
     AffectsCache affCache;
 
     /**

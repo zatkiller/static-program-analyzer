@@ -217,8 +217,8 @@ FieldRowResponse AffectsEvaluator::retrieve(PKBField field1, PKBField field2, bo
         : affCache->retrieve(field1, field2);
 }
 
-void AffectsEvaluator::initCFG(ProcToCfgMap cfgRoots) {
-    this->roots = cfgRoots;
+void AffectsEvaluator::initCFG(sp::cfg::CFG cfgContainer) {
+    this->cfgContainer = cfgContainer;
     this->isInit = true;
 }
 
@@ -264,11 +264,11 @@ void AffectsEvaluator::extractAndCacheAffects() {
     CfgNodeSet visited;
 
     // Traverse and extract relationships from each procedure's CFG
-    for (auto varCfgPair : roots) {
+    for (auto varCfgPair : cfgContainer.cfgs) {
         // Skip first dummy node
         auto root = varCfgPair.second;
         if (!root->stmt.has_value() && root->getChildren().size() != 0) {
-            root = root->getChildren().at(0);
+            root = root->getChildren().at(0).lock();
         }
 
         this->extractAndCacheFrom(root, &visited);
@@ -276,7 +276,7 @@ void AffectsEvaluator::extractAndCacheAffects() {
 }
 
 void AffectsEvaluator::extractAndCacheFrom(NodePtr start, CfgNodeSet* visited) {
-    auto curr = start.get();
+    auto curr = start.lock().get();
     
     // Case where node has already been visited
     if (visited->find(curr) != visited->end()) {
@@ -292,7 +292,7 @@ void AffectsEvaluator::extractAndCacheFrom(NodePtr start, CfgNodeSet* visited) {
         }
     } else {
         // Add to visited list
-        visited->insert(start.get());
+        visited->insert(curr);
 
         // Get statement at curr
         STMT_LO currStmt = curr->stmt.value();
@@ -324,10 +324,10 @@ void AffectsEvaluator::extractAndCacheFrom(NodePtr start, CfgNodeSet* visited) {
 void AffectsEvaluator::walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME> voi, 
     NodePtr src, CfgNodeSet* visited) {
     // Get children
-    auto children = curr->getChildren();
+    auto children = curr.lock()->getChildren();
     
     // Check if dummy node
-    if (!curr->stmt.has_value()) {
+    if (!curr.lock()->stmt.has_value()) {
         // If children exist walk them
         if (children.empty()) {
             return;
@@ -339,10 +339,10 @@ void AffectsEvaluator::walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME>
     }
 
     // Check for affects relationship
-    STMT_LO currStmt = curr->stmt.value();
+    STMT_LO currStmt = curr.lock()->stmt.value();
     bool isAssignNode = currStmt.type.value() == StatementType::Assignment;
     bool hasRs = false;
-    auto usedVars = curr->uses;
+    auto usedVars = curr.lock()->uses;
     for (auto var : voi) {
         if (usedVars.find(var) != usedVars.end()) {
             hasRs = true;
@@ -350,28 +350,28 @@ void AffectsEvaluator::walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME>
         }
     }
     if (hasRs && isAssignNode) {
-        STMT_LO srcStmt = src->stmt.value();
+        STMT_LO srcStmt = src.lock()->stmt.value();
         affCache->addEdge(srcStmt, currStmt);
     }
 
     // Check if node modifies voi
-    if (!curr->modifies.empty()) {
-        auto modVars = curr.get()->modifies;
+    if (!curr.lock()->modifies.empty()) {
+        auto modVars = curr.lock().get()->modifies;
         for (auto var : voi) {
             if (modVars.find(var) != modVars.end()) {
-                visited->insert(curr.get());
+                visited->insert(curr.lock().get());
                 return;
             }
         }
     }
 
     // Check if node already visited
-    if (visited->find(curr.get()) != visited->end()) {
+    if (visited->find(curr.lock().get()) != visited->end()) {
         return;
     }
 
     // Update visited list and continue traversal
-    visited->insert(curr.get());
+    visited->insert(curr.lock().get());
     for (auto child : children) {
         this->walkAndExtract(child, voi, src, visited);
     }

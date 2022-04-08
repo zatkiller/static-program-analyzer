@@ -249,9 +249,8 @@ TEST_CASE("CFG Test") {
 
         CFGExtractor extractor;
         auto result = extractor.extract(ast.get());
-        
-        REQUIRE(*result.at("test") == *testCFGRoot);
-        REQUIRE(*result.at("monke") == *monkeCFGRoot);
+        REQUIRE(*result.cfgs.at("test") == *testCFGRoot);
+        REQUIRE(*result.cfgs.at("monke") == *monkeCFGRoot);
     }
 
     SECTION("Test Relationship Info") {
@@ -278,25 +277,25 @@ TEST_CASE("CFG Test") {
         auto result = extractor.extract(ast.get());
         // There should be two procedures.
         // 1st procedure:
-        auto proc1 = result.at("test");
+        auto proc1 = result.cfgs.at("test");
 
         // Line 1: while statement
-        auto stmt1 = proc1->getChildren().at(0);
+        auto stmt1 = proc1->getChildren().at(0).lock();
         REQUIRE(stmt1->modifies.empty());
         REQUIRE(stmt1->uses.empty());
 
         // Line 2: print statement
-        auto stmt2 = stmt1->getChildren().at(0);  // print node is the first child of while node
+        auto stmt2 = stmt1->getChildren().at(0).lock();  // print node is the first child of while node
         REQUIRE(stmt2->modifies.empty());
         REQUIRE(stmt2->uses.empty());
 
         // Line 3: if statement
-        auto stmt3 = stmt1->getChildren().at(1);  // if node is the second child of while node
+        auto stmt3 = stmt1->getChildren().at(1).lock();  // if node is the second child of while node
         REQUIRE(stmt3->modifies.empty());
         REQUIRE(stmt3->uses.empty());
 
         // Line 4: read statement
-        auto stmt4 = stmt3->getChildren().at(0);  // statements inside then block of if first
+        auto stmt4 = stmt3->getChildren().at(0).lock();  // statements inside then block of if first
         auto stmt4lo = STMT_LO(4, StatementType::Read);
         // Should contain modifies
         std::unordered_set<VAR_NAME> expectedVars1 ({
@@ -306,7 +305,7 @@ TEST_CASE("CFG Test") {
         REQUIRE(stmt4->uses.empty());
 
         // Line 5: call statement
-        auto stmt5 = stmt3->getChildren().at(1);  // statements inside the else block of if
+        auto stmt5 = stmt3->getChildren().at(1).lock();  // statements inside the else block of if
         auto stmt5lo = STMT_LO(5, StatementType::Call);
         // Should contain modifies
         std::unordered_set<VAR_NAME> expectedVars2 ({
@@ -316,9 +315,9 @@ TEST_CASE("CFG Test") {
         REQUIRE(stmt5->uses.empty());
 
         // 2nd procedure:
-        auto proc2 = result.at("monke");
+        auto proc2 = result.cfgs.at("monke");
         // Line 6: assignment statement
-        auto stmt6 = proc2->getChildren().at(0);
+        auto stmt6 = proc2->getChildren().at(0).lock();
         auto stmt6lo = STMT_LO(6, StatementType::Assignment);
         // Should contain modifies and uses
         // modifies
