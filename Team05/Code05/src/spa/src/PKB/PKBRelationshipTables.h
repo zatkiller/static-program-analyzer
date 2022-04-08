@@ -10,6 +10,7 @@
 #include <memory>
 #include <type_traits>
 #include <memory>
+#include <functional>
 #include <cstdarg>
 #include "logging.h"
 #include "PKBField.h"
@@ -205,6 +206,7 @@ private:
 
 using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 
+
 /**
 * A bi-directional node inside a Graph, where there can be any number of next nodes and one previous node.
 *
@@ -213,7 +215,16 @@ using Result = std::unordered_set<std::vector<PKBField>, PKBFieldVectorHash>;
 */
 template<typename T>
 struct Node {
-    using NodeSet = std::unordered_set<std::shared_ptr<Node<T>>>;
+    struct NodeWeakPtrLess {
+        bool operator()(std::weak_ptr<Node<T>> ptr1, std::weak_ptr<Node<T>> ptr2) const {
+            auto ptr1Shared = ptr1.lock();
+            auto ptr2Shared = ptr2.lock();
+
+            return std::less<std::shared_ptr<Node<T>>>{}(ptr1Shared, ptr2Shared);
+        }
+    };
+
+    using NodeSet = std::set<std::weak_ptr<Node<T>>, NodeWeakPtrLess>;
 
     Node(T val, NodeSet prev, NodeSet next) : val(val), next(next), prev(prev) {}
 
@@ -271,11 +282,14 @@ public:
             return;
         }
 
+        std::weak_ptr<Node<T>> uNodePtr = uNode;
+        std::weak_ptr<Node<T>> vNodePtr = vNode;
+
         // Add the edge between uNode and vNode
-        uNode->next.insert(vNode);
+        uNode->next.insert(vNodePtr);
 
         // Add the edge between vNode and uNode
-        vNode->prev.insert(uNode);
+        vNode->prev.insert(uNodePtr);
     }
 
     /**
@@ -297,7 +311,7 @@ public:
             typename Node<T>::NodeSet filtered;
             std::copy_if(nextNodes.begin(), nextNodes.end(),
                 std::inserter(filtered, filtered.end()), [second](auto const& node) {
-                    return node->val == second;
+                    return node.lock()->val == second;
                 });
             return (filtered.size() == 1);
         }
@@ -448,7 +462,7 @@ private:
 
             // Recursive lookup for each node in the NodeSet
             for (auto node : nextNodes) {
-                T newVal = node->val;
+                T newVal = node.lock()->val;
                 PKBField newField1 = PKBField::createConcrete(Content{ newVal });
                 if (this->containsT(newField1, field2, visited)) {
                     return true;
@@ -489,18 +503,18 @@ private:
                 typename Node<T>::NodeSet nextNodes = curr->next;
                 typename Node<T>::NodeSet filtered;
                 std::copy_if(nextNodes.begin(), nextNodes.end(), std::inserter(filtered, filtered.end()),
-                    [&](auto const& node) {
+                    [&](auto const node) {
                         // filter for statements. for all other type no filtering is required.
                         if constexpr (std::is_same_v<T, STMT_LO>) {
                             StatementType targetType = field2.statementType.value();
-                            return (node->val.type.value() == targetType || targetType == StatementType::All);
+                            return (node.lock()->val.type.value() == targetType || targetType == StatementType::All);
                         }
                         return true;
                     });
 
                 for (auto node : filtered) {
                     std::vector<PKBField> temp;
-                    PKBField second = PKBField::createConcrete(Content{ node->val });
+                    PKBField second = PKBField::createConcrete(Content{ node.lock()->val });
                     temp.push_back(field1);
                     temp.push_back(second);
                     res.insert(temp);
@@ -565,21 +579,22 @@ private:
         typename Node<T>::NodeSet nextNodes = node->next;
 
         for (auto nextNode : nextNodes) {
+            auto nextNodePtr = nextNode.lock();
             // targetType is specified for statements
             if constexpr (std::is_same_v<T, STMT_LO>) {
-                if (std::count(found->begin(), found->end(), nextNode->val) > 0) {
+                if (std::count(found->begin(), found->end(), nextNodePtr->val) > 0) {
                     continue;
                 }
 
-                bool typeMatch = nextNode->val.type.value() == targetType || targetType == StatementType::All;
+                bool typeMatch = nextNodePtr->val.type.value() == targetType || targetType == StatementType::All;
                 if (typeMatch) {
-                    found->insert(nextNode->val);
+                    found->insert(nextNodePtr->val);
                 }
 
-                traverseStartT(found, nextNode, targetType);
+                traverseStartT(found, nextNodePtr, targetType);
             } else {
-                found->insert(nextNode->val);
-                traverseStartT(found, nextNode);
+                found->insert(nextNodePtr->val);
+                traverseStartT(found, nextNodePtr);
             }
         }
         return;
@@ -615,18 +630,18 @@ private:
                 typename Node<T>::NodeSet prevNodes = curr->prev;
                 typename Node<T>::NodeSet filtered;
                 std::copy_if(prevNodes.begin(), prevNodes.end(), std::inserter(filtered, filtered.end()),
-                    [&](auto const& node) {
+                    [&](auto const node) {
                         // filter for statements. for all other type no filtering is required.
                         if constexpr (std::is_same_v<T, STMT_LO>) {
                             StatementType targetType = field1.statementType.value();
-                            return (node->val.type.value() == targetType || targetType == StatementType::All);
+                            return (node.lock()->val.type.value() == targetType || targetType == StatementType::All);
                         }
                         return true;
                     });
 
                 for (auto node : filtered) {
                     std::vector<PKBField> temp;
-                    PKBField first = PKBField::createConcrete(Content{ node->val });
+                    PKBField first = PKBField::createConcrete(Content{ node.lock()->val});
                     temp.push_back(first);
                     temp.push_back(field2);
                     res.insert(temp);
@@ -690,21 +705,23 @@ private:
         typename Node<T>::NodeSet prevNodes = node->prev;
 
         for (auto prevNode : prevNodes) {
+            auto prevNodePtr = prevNode.lock();
+
             // targetType is specified for statements
             if constexpr (std::is_same_v<T, STMT_LO>) {
-                if (std::count(found->begin(), found->end(), prevNode->val) > 0) {
+                if (std::count(found->begin(), found->end(), prevNodePtr->val) > 0) {
                     continue;
                 }
 
-                bool typeMatch = prevNode->val.type.value() == targetType || targetType == StatementType::All;
+                bool typeMatch = prevNodePtr->val.type.value() == targetType || targetType == StatementType::All;
                 if (typeMatch) {
-                    found->insert(prevNode->val);
+                    found->insert(prevNodePtr->val);
                 }
 
-                traverseEndT(found, prevNode, targetType);
+                traverseEndT(found, prevNodePtr, targetType);
             } else {
-                found->insert(prevNode->val);
-                traverseEndT(found, prevNode);
+                found->insert(prevNodePtr->val);
+                traverseEndT(found, prevNodePtr);
             }
         }
         return;
@@ -742,9 +759,9 @@ private:
                 // Filter nodes that match second statement type
                 typename Node<T>::NodeSet filtered;
                 std::copy_if(nextNodes.begin(), nextNodes.end(), std::inserter(filtered, filtered.end()),
-                    [&](auto const& node) {
+                    [&](auto const nextNode) {
                         if constexpr (std::is_same_v<T, STMT_LO>) {
-                            return node->val.type.value() == field2.statementType.value() ||
+                            return nextNode.lock()->val.type.value() == field2.statementType.value() ||
                                 field2.statementType.value() == StatementType::All;
                         }
                         return true;
@@ -752,9 +769,9 @@ private:
 
                 // Populate result
                 std::transform(filtered.begin(), filtered.end(), std::insert_iterator<Result>(res, res.end()),
-                    [curr](auto const& node) {
+                    [curr](auto const filteredNode) {
                         PKBField first = PKBField::createConcrete(Content{ curr->val });
-                        PKBField second = PKBField::createConcrete(Content{ node->val });
+                        PKBField second = PKBField::createConcrete(Content{ filteredNode.lock()->val});
                         return std::vector<PKBField>{first, second};
                     });
             }
