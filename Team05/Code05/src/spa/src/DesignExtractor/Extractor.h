@@ -2,7 +2,6 @@
 
 #include <set>
 
-#include "DesignExtractor/PKBStrategy.h"
 #include "DesignExtractor/CFG/CFG.h"
 #include "Parser/AST.h"
 #include "PKB.h"
@@ -49,9 +48,9 @@ struct Extractor {
  */
 class PKBInserter {
 private:
-    PKBStrategy *pkb;
+    PKB *pkb;
 public:
-    explicit PKBInserter(PKBStrategy *pkb) : pkb(pkb) {}
+    explicit PKBInserter(PKB *pkb) : pkb(pkb) {}
     void insert(Entry entry);
 };
 
@@ -66,7 +65,7 @@ private:
     std::unique_ptr<Extractor<T>> extractor;
     PKBInserter inserter;
 public:
-    ExtractorModule(std::unique_ptr<Extractor<T>> extractor, PKBStrategy *pkb) : 
+    ExtractorModule(std::unique_ptr<Extractor<T>> extractor, PKB *pkb) : 
         extractor(std::move(extractor)), inserter(pkb) {}
     void extract(T info) {
         auto entries = extractor->extract(info);

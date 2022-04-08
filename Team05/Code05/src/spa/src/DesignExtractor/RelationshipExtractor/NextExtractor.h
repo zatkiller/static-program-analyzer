@@ -94,11 +94,11 @@ public:
 };
 
 /**
- * Extracts all Next relationship from the CFG and send them to the PKBStrategy
+ * Extracts all Next relationship from the CFG and send them to the PKB
  */
 struct NextExtractorModule : public ExtractorModule<const cfg::PROC_CFG_MAP*> {
 public:
-    explicit NextExtractorModule(PKBStrategy *pkb) : 
+    explicit NextExtractorModule(PKB *pkb) : 
         ExtractorModule(std::make_unique<NextExtractor>(), pkb) {}
 };
 

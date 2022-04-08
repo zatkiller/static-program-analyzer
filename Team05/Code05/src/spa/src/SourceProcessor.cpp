@@ -7,7 +7,6 @@
 #include "DesignExtractor/DesignExtractor.h"
 
 bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb) {
-    using sp::design_extractor::ActualPKBStrategy;
     using sp::design_extractor::DesignExtractor;
 
     // parsing source code and extracting AST
@@ -22,8 +21,7 @@ bool SourceProcessor::processSimple(const std::string& sourceCode, PKB *pkb) {
     sp::cfg::PROC_CFG_MAP cfgs = cfgExtractor.extract(ast.get());
 
     // setting up Design Extractor
-    ActualPKBStrategy actualPKBStrategy(pkb);
-    auto de = DesignExtractor(&actualPKBStrategy);
+    auto de = DesignExtractor(pkb);
     de.insert(cfgs);  // insert CFG to Design Extractor for Next Extractor
     
     // running extractors and inserting into PKB
