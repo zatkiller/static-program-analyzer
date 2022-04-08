@@ -373,3 +373,7 @@ PKBResponse PKB::match(sp::design_extractor::PatternParam lhs, sp::design_extrac
 
     return PKBResponse{ nodes.size() > 0, Response{res} };
 }
+
+void PKB::clearCache() {
+    affectsEval->clearCache();
+}
