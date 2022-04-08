@@ -128,6 +128,11 @@ public:
     PKBResponse match(StatementType type, sp::design_extractor::PatternParam lhs,
         sp::design_extractor::PatternParam rhs = sp::design_extractor::PatternParam(std::nullopt)) const;
 
+    /**
+    * Clears the cache for Affects. To be called at the end of every QPS query.
+    */
+    void clearCache();
+
 private:
     std::unordered_map<PKBRelationship, std::shared_ptr<RelationshipTable>> relationshipTables;
 
