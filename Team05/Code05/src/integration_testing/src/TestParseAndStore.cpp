@@ -683,6 +683,45 @@ TEST_CASE("CFG and affects Program 1") {
         };
         REQUIRE(response == expected);
     }
+
+    TEST_LOG << "Test affects with wildcards from PKB";
+    {
+        REQUIRE(pkb.isRelationshipPresent(PKBField::createConcrete(STMT_LO{ 8 }),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::AFFECTS) == false);
+
+        REQUIRE(pkb.isRelationshipPresent(PKBField::createConcrete(STMT_LO{ 8 }),
+            PKBField::createConcrete(STMT_LO{ 9 }), PKBRelationship::AFFECTS) == true);
+
+        REQUIRE(*(pkb.getRelationship(PKBField::createConcrete(STMT_LO{ 8 }),
+            PKBField::createConcrete(STMT_LO{ 9 }), PKBRelationship::AFFECTS)
+            .getResponse<FieldRowResponse>()) ==
+            FieldRowResponse{ row(STMT_LO(8, ASSIGN), STMT_LO(9, ASSIGN)) });
+
+        REQUIRE(*(pkb.getRelationship(PKBField::createConcrete(STMT_LO{ 8 }),
+            PKBField::createConcrete(STMT_LO{ 9 }), PKBRelationship::AFFECTST)
+            .getResponse<FieldRowResponse>()) ==
+            FieldRowResponse{ row(STMT_LO(8, ASSIGN), STMT_LO(9, ASSIGN)) });
+
+        REQUIRE(*(pkb.getRelationship(PKBField::createConcrete(STMT_LO{ 8 }),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::AFFECTS)
+            .getResponse<FieldRowResponse>()) ==
+            FieldRowResponse{ row(STMT_LO(8, ASSIGN), STMT_LO(9, ASSIGN)) });
+
+        REQUIRE(*(pkb.getRelationship(PKBField::createConcrete(STMT_LO{ 8 }),
+            PKBField::createWildcard(PKBEntityType::STATEMENT), PKBRelationship::AFFECTST)
+            .getResponse<FieldRowResponse>()) ==
+            FieldRowResponse{ row(STMT_LO(8, ASSIGN), STMT_LO(9, ASSIGN)) });
+
+        REQUIRE(*(pkb.getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createConcrete(STMT_LO{ 2 }), PKBRelationship::AFFECTST)
+            .getResponse<FieldRowResponse>()) ==
+            FieldRowResponse{ row(STMT_LO(1, ASSIGN), STMT_LO(2, ASSIGN)) });
+
+        REQUIRE(*(pkb.getRelationship(PKBField::createWildcard(PKBEntityType::STATEMENT),
+            PKBField::createConcrete(STMT_LO{ 2 }), PKBRelationship::AFFECTS)
+            .getResponse<FieldRowResponse>()) ==
+            FieldRowResponse{ row(STMT_LO(1, ASSIGN), STMT_LO(2, ASSIGN)) });
+    }
 }
 
 TEST_CASE("CFG and Affects Program 2") {

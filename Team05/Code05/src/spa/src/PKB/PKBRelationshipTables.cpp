@@ -162,6 +162,15 @@ CallsRelationshipTable::CallsRelationshipTable() : TransitiveRelationshipTable<P
 NextRelationshipTable::NextRelationshipTable() : TransitiveRelationshipTable<STMT_LO>{ PKBRelationship::NEXT } {}
 
 /** ========================AFFECTSEVALUATOR METHODS ==================================== */
+void convertWildcardToDeclaration(PKBField* field) {
+    if (field->fieldType == PKBFieldType::WILDCARD) {
+        field->fieldType = PKBFieldType::DECLARATION;
+
+        if (field->entityType == PKBEntityType::STATEMENT) {
+            field->statementType = StatementType::All;
+        }
+    }
+}
 
 bool AffectsEvaluator::contains(PKBField field1, PKBField field2, bool isTransitive) {
     // Check if CFG initialized
@@ -206,6 +215,9 @@ FieldRowResponse AffectsEvaluator::retrieve(PKBField field1, PKBField field2, bo
         Logger(Level::ERROR) << "An Affects relationship is only between assignment statements!";
         return res;
     }
+
+    convertWildcardToDeclaration(&field1);
+    convertWildcardToDeclaration(&field2);
 
     // If cache not populated compute and cache Affects
     if (!isCacheActive) {
