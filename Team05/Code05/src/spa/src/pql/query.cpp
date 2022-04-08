@@ -5,6 +5,7 @@
 #include "exceptions.h"
 #include "pql/lexer.h"
 #include "pql/query.h"
+#include "pkbtypematcher.h"
 
 namespace qps::query {
 std::unordered_map<std::string, DesignEntity> designEntityMap = {
@@ -238,7 +239,8 @@ PKBField PKBFieldTransformer::transformStmtRef(const StmtRef& s) {
     } else if (s.isWildcard()) {
         stmtField = PKBField::createWildcard(PKBEntityType::STATEMENT);
     } else if (s.isDeclaration()) {
-        stmtField = PKBField::createDeclaration(StatementType::All);
+        StatementType type = evaluator::PKBTypeMatcher::getStatementType(s.getDeclarationType());
+        stmtField = PKBField::createDeclaration(type);
     }
     return stmtField;
 }
