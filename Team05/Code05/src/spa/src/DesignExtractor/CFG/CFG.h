@@ -12,10 +12,9 @@
 namespace sp {
 namespace cfg {
 
-
-
 class CFGNode;
 using PROC_CFG_MAP = std::map<std::string, std::shared_ptr<cfg::CFGNode>>;
+using NODE_LIST = std::vector<std::shared_ptr<CFGNode>>;
 using VAR_NAMES = std::unordered_set<VAR_NAME>;
 using ContentToVarMap = std::unordered_map<Content, VAR_NAMES>;
 
@@ -26,7 +25,8 @@ using ContentToVarMap = std::unordered_map<Content, VAR_NAMES>;
  */
 class CFGNode {
 private:
-    std::vector<std::shared_ptr<CFGNode>> children;
+    std::vector<std::weak_ptr<CFGNode>> children;
+
 public:
     std::optional<STMT_LO> stmt;
     VAR_NAMES modifies;  // information on modifies relationship for current node
@@ -34,13 +34,23 @@ public:
     CFGNode () : stmt(std::nullopt) {}
     CFGNode(int stmtNo, StatementType stmtType) : stmt(STMT_LO(stmtNo, stmtType)) {}
 
-    void insert(std::shared_ptr<CFGNode> child);
+    void insert(std::weak_ptr<CFGNode> child);
     bool isParentOf(CFGNode* other);
     bool isAncestorOf(CFGNode* other);
     
     bool operator==(CFGNode const& o) const;
 
-    std::vector<std::shared_ptr<CFGNode>> getChildren() const { return children; }
+    std::vector<std::weak_ptr<CFGNode>> getChildren() const { return children; }
+};
+
+class CFG {
+private:
+    NODE_LIST nodes;
+public:
+    PROC_CFG_MAP cfgs;
+    CFG (NODE_LIST nodes, PROC_CFG_MAP cfgs)
+    : nodes(nodes), cfgs(cfgs) {}
+    CFG () {}  // Overloaded to preserve default constructor
 };
 
 using Depth = int;
@@ -62,12 +72,13 @@ using VarName = std::string;
  */
 class CFGExtractor: public design_extractor::TreeWalker {
 private:
-    std::map<std::string, std::shared_ptr<CFGNode>> procNameAndRoot;
+    PROC_CFG_MAP procNameAndRoot;
     std::shared_ptr<CFGNode> lastVisited;
     int containerCount = 0;  // keeps track of # of containers/stmtLst to enter for if or while stmts
     Bucket bucket, exitReference;  // keeps track parent and exit CFGnodes at different nesting levels
     Depth currentDepth = 0;  // keeps track of the depth of the current statement in the stmtLst
     ContentToVarMap modifiesMap, usesMap;  // reference for adding modifies and uses information to the CFG
+    NODE_LIST lst;
     void enterBucket(std::shared_ptr<CFGNode> node) {
         bucket.insert_or_assign(currentDepth, node);
     }
@@ -81,7 +92,7 @@ public:
     void visit(const ast::Call& node) override;
     void enterContainer(std::variant<int, std::string> containerId) override;
     void exitContainer() override;
-    std::map<std::string, std::shared_ptr<CFGNode>> extract(ast::ASTNode* node);
+    CFG extract(ast::ASTNode* node);
 };
 }  // namespace cfg
 }  // namespace sp

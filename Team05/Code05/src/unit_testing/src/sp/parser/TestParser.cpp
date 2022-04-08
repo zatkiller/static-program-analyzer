@@ -1051,57 +1051,116 @@ TEST_CASE("Testing Exceptions Thrown and Source Line") {
     }
 
     SECTION("Additional Constraints") {
-        // reset state
         lineCount = 1;
         callStmts.clear();
         procedures.clear();
-        // Same name procedures should not be allowed
-        std::string problemCode1 = R"(procedure monke {
-                read v1;
-                print v1;
-                v2 = v1;
-                call monke;
-            }
-            procedure monke {
-                read v3;
-                v2 = v3;
-        })";
-        // The InvalidArgumentException will be thrown by parseProgram().
-        auto tokens1 = Lexer(problemCode1).getTokens();
-        // It will catch the repeated procedure "monke" at the 7th line of the source code
-        REQUIRE_THROWS_MATCHES(
-            parseProgram(tokens1),
-            std::invalid_argument,
-            Catch::Message("Repeated procedure name: \"monke\" at line: 7")
-        );
-        // It will be caught by the parse() method and return an empty Program.
-        // Note: Need to lex again since tokens are consumed when parsed.
-        tokens1 = Lexer(problemCode1).getTokens();
-        REQUIRE(parse(problemCode1) == nullptr);
-        
-        // reset state
-        lineCount = 1;
-        callStmts.clear();
-        procedures.clear();
-        // Calling non-existent procedures should not be allowed
-        std::string problemCode2 = R"(procedure main {
-                read v1;
-                print v1;
-                v2 = v1;
-                call noExist;
-            }
-            procedure monke {
-                read v3;
-                v2 = v3;
-        })";
-        auto tokens2 = Lexer(problemCode2).getTokens();
-        // It will catch the call for non-existent procedure "noExist" at the 5th line of the source code
-        REQUIRE_THROWS_MATCHES(
-            parseProgram(tokens2),
-            std::invalid_argument,
-            Catch::Message("Calling a non-existent procedure: noExist at line: 5")
-        );
-        REQUIRE(parse(problemCode2) == nullptr);
+
+        SECTION("Same name procedures should not be allowed") {
+            // Same name procedures should not be allowed
+            std::string problemCode1 = R"(procedure monke {
+                    read v1;
+                    print v1;
+                    v2 = v1;
+                    call monke;
+                }
+                procedure monke {
+                    read v3;
+                    v2 = v3;
+            })";
+            // The InvalidArgumentException will be thrown by parseProgram().
+            auto tokens1 = Lexer(problemCode1).getTokens();
+            // It will catch the repeated procedure "monke" at the 7th line of the source code
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(tokens1),
+                std::invalid_argument,
+                Catch::Message("Repeated procedure name: \"monke\" at line: 7")
+            );
+            // It will be caught by the parse() method and return an empty Program.
+            // Note: Need to lex again since tokens are consumed when parsed.
+            tokens1 = Lexer(problemCode1).getTokens();
+            REQUIRE(parse(problemCode1) == nullptr);
+        }
+        SECTION("Calling non-existent procedures should not be allowed") {
+            // Calling non-existent procedures should not be allowed
+            std::string problemCode2 = R"(procedure main {
+                    read v1;
+                    print v1;
+                    v2 = v1;
+                    call noExist;
+                }
+                procedure monke {
+                    read v3;
+                    v2 = v3;
+            })";
+            auto tokens2 = Lexer(problemCode2).getTokens();
+            // It will catch the call for non-existent procedure "noExist" at the 5th line of the source code
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(tokens2),
+                std::invalid_argument,
+                Catch::Message("Calling a non-existent procedure: noExist at line: 5")
+            );
+            REQUIRE(parse(problemCode2) == nullptr);
+        }
+        SECTION("Simple Cyclical call should not be allowed") {
+            std::string problemCode = R"(
+                procedure a {
+                    call b;
+                }
+                procedure b {
+                    call c;
+                }
+                procedure c {
+                    call a;
+                }
+            )";
+            auto tokens = Lexer(problemCode).getTokens();
+            // It will catch the call for non-existent procedure "noExist" at the 5th line of the source code
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(tokens),
+                std::invalid_argument,
+                Catch::Message("Cyclical call detected")
+            );
+            REQUIRE(parse(problemCode) == nullptr);
+        }
+        SECTION("Recursive call should not be allowed") {
+            std::string problemCode = R"(
+                procedure a {
+                    call a;
+                }
+            )";
+            auto tokens = Lexer(problemCode).getTokens();
+            // It will catch the call for non-existent procedure "noExist" at the 5th line of the source code
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(tokens),
+                std::invalid_argument,
+                Catch::Message("Cyclical call detected")
+            );
+            REQUIRE(parse(problemCode) == nullptr);
+        }
+        SECTION("Cyclical call in disjoint graph should not be allowed") {
+            std::string problemCode = R"(
+                procedure a {
+                    call b;
+                }
+                procedure b {
+                    read x;
+                }
+                procedure c {
+                    read x;
+                }
+                procedure d {
+                    call d;
+                }
+            )";
+            auto tokens = Lexer(problemCode).getTokens();
+            // It will catch the call for non-existent procedure "noExist" at the 5th line of the source code
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(tokens),
+                std::invalid_argument,
+                Catch::Message("Cyclical call detected")
+            );
+            REQUIRE(parse(problemCode) == nullptr);
+        }
     }
 }
 }  // namespace parser

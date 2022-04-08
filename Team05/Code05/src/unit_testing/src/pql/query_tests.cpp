@@ -34,7 +34,6 @@ using qps::query::Declaration;
 
 
 TEST_CASE("AttrRef") {
-
     SECTION("AttrRef correctness") {
         Declaration d("p", DesignEntity::PROCEDURE);
         AttrRef ar = AttrRef{ AttrName::PROCNAME, Declaration {"p", DesignEntity::PROCEDURE} };
@@ -233,7 +232,6 @@ TEST_CASE("ExpSpec") {
 }
 
 TEST_CASE("Pattern") {
-
     SECTION("Pattern correctness") {
         Pattern p = Pattern::ofAssignPattern("h", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
         REQUIRE(p.getSynonym() == "h");
@@ -296,7 +294,6 @@ TEST_CASE("Pattern") {
         pSet.insert(p9);
         REQUIRE(pSet.size() == 6);
     }
-
 }
 
 TEST_CASE("Query") {
@@ -354,4 +351,19 @@ TEST_CASE("Query getDeclarationDesignEntity") {
     REQUIRE_THROWS_MATCHES(query.getDeclarationDesignEntity("b") ,
                            exceptions::PqlSyntaxException,
                            Catch::Message(messages::qps::parser::declarationDoesNotExistMessage));
+}
+
+TEST_CASE("RelRef equality check") {
+    Pattern p = Pattern::ofAssignPattern("a", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
+    Pattern p1 = Pattern::ofAssignPattern("a", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
+    REQUIRE(p == p1);
+    std::shared_ptr<ModifiesS> ptr1 = std::make_shared<ModifiesS>();
+    ptr1->modifiesStmt = StmtRef::ofLineNo(4);
+    ptr1->modified = EntRef::ofDeclaration( Declaration { "v", DesignEntity::VARIABLE });
+
+    std::shared_ptr<ModifiesS> ptr2 = std::make_shared<ModifiesS>();
+    ptr2->modifiesStmt = StmtRef::ofLineNo(4);
+    ptr2->modified = EntRef::ofDeclaration( Declaration { "v", DesignEntity::VARIABLE });
+
+    REQUIRE(*(ptr1) == *(ptr2));
 }

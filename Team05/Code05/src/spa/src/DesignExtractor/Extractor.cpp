@@ -15,7 +15,9 @@ void PKBInserter::insert(Entry entry) {
     std::visit(overloaded {
         [&](Entity &item) { pkb->insertEntity(item); },
         [&](Relationship &item) {
-            std::apply([&](auto& rs, auto& a1, auto& a2){ pkb->insertRelationship(rs, a1, a2); }, item);
+            std::apply([&](auto& rs, auto& a1, auto& a2){ 
+                pkb->insertRelationship(rs, PKBField::createConcrete(a1), PKBField::createConcrete(a2)); 
+            }, item);
         },
         [](auto &item) {}
     }, entry);

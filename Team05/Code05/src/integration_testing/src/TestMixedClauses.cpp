@@ -452,12 +452,16 @@ TEST_CASE("test evaluate pattern") {
 
     std::shared_ptr<qps::query::AffectsT> ptr151 = std::make_shared<qps::query::AffectsT>();
     ptr151->affectingStmt = qps::query::StmtRef::ofLineNo(6);
-    ptr151->transitiveAffected = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
+    ptr151->transitiveAffected = qps::query::StmtRef::ofDeclaration( 
+        Declaration { "s", qps::query::DesignEntity::STMT }
+    );
     query15.addSuchthat(ptr151);
 
     std::shared_ptr<qps::query::AffectsT> ptr152 = std::make_shared<qps::query::AffectsT>();
     ptr152->affectingStmt = qps::query::StmtRef::ofDeclaration(Declaration{"s1", qps::query::DesignEntity::STMT});
-    ptr152->transitiveAffected = qps::query::StmtRef::ofDeclaration( Declaration { "s", qps::query::DesignEntity::STMT });
+    ptr152->transitiveAffected = qps::query::StmtRef::ofDeclaration(
+        Declaration { "s", qps::query::DesignEntity::STMT }
+    );
     query15.addSuchthat(ptr152);
     std::list<std::string> result15 = evaluator15.evaluate(query15);
     result15.sort();

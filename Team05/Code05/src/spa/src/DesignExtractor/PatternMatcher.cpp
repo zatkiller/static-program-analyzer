@@ -183,7 +183,7 @@ MatchedNodes<ast::While> extractWhile(ast::ASTNode *root, PatternParam var) {
 
 MatchedNodes<ast::Assign> extractAssign(ast::ASTNode *root, PatternParam lhs, PatternParam rhs) {
     return extractPattern<ast::Assign>(root, makeAssignPredicate(lhs, rhs));
-};
+}
 
 }  // namespace design_extractor
 }  // namespace sp

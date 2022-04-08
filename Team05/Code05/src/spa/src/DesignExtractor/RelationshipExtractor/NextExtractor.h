@@ -51,7 +51,8 @@ public:
             auto curNode = queue.front();
             queue.pop();
 
-            for (auto child : curNode->getChildren()) {
+            for (auto c : curNode->getChildren()) {
+                auto child = c.lock();
                 // standard bfs stuff
                 if (!hasVisited(child.get())) {
                     visited.insert(child.get());
@@ -69,9 +70,9 @@ public:
                 // only can have 1 child. Walk the hierarchy until a 
                 // real node is found as child.
                 if (!child->stmt.has_value() && !child->getChildren().empty()) {
-                    auto realChild = child->getChildren()[0];
+                    auto realChild = child->getChildren()[0].lock();
                     while(!realChild->stmt.has_value() && !realChild->getChildren().empty()) {
-                        realChild = realChild->getChildren()[0];
+                        realChild = realChild->getChildren()[0].lock();
                     }
                     collect(curNode, realChild.get());
                 } else {
@@ -94,11 +95,11 @@ public:
 };
 
 /**
- * Extracts all Next relationship from the CFG and send them to the PKBStrategy
+ * Extracts all Next relationship from the CFG and send them to the PKB
  */
 struct NextExtractorModule : public ExtractorModule<const cfg::PROC_CFG_MAP*> {
 public:
-    explicit NextExtractorModule(PKBStrategy *pkb) : 
+    explicit NextExtractorModule(PKB *pkb) : 
         ExtractorModule(std::make_unique<NextExtractor>(), pkb) {}
 };
 

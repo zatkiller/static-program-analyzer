@@ -10,7 +10,7 @@
 namespace sp {
 namespace cfg {
 
-void CFGNode::insert(std::shared_ptr<CFGNode> child) {
+void CFGNode::insert(std::weak_ptr<CFGNode> child) {
     children.push_back(child);
 }
 
@@ -26,16 +26,18 @@ bool checkChildrenEquality(
         return false;
     }
     bool isEqual = true;
-    for (auto c : currChildren) {
+    for (auto child : currChildren) {
+        auto c = child.lock().get();
         // if the child has already been traversed, we ignore
-        if (reached.find(c.get()) == reached.end()) {
+        if (reached.find(c) == reached.end()) {
             continue;
         }
         bool isMatch = false;
-        for (auto o : otherChildren) {
+        for (auto other : otherChildren) {
             // if you find a matching statement, we can recurse down these two nodes
-            if (c.get()->stmt == o.get()->stmt) {
-                isMatch = checkChildrenEquality(c.get(), o.get(), reached);
+            auto o = other.lock().get();
+            if (c->stmt == o->stmt) {
+                isMatch = checkChildrenEquality(c, o, reached);
                 break;
             }
         }
@@ -56,7 +58,7 @@ bool CFGNode::operator==(CFGNode const& o) const {
 
 bool CFGNode::isParentOf(CFGNode* other) {
     for (auto c : this->children) {
-        if (*c == *other) {
+        if (*(c.lock()) == *other) {
             return true;
         }
     }
@@ -71,11 +73,11 @@ bool dfs(
         return true;
     } else {
         for (auto c : curr->getChildren()) {
-            if (reached.find(c.get()) != reached.end()) {
+            if (reached.find(c.lock().get()) != reached.end()) {
                 continue;
             }
             reached.insert(curr);
-            if (dfs(c.get(), other, reached)) {
+            if (dfs(c.lock().get(), other, reached)) {
                 return true;
             }
         }
@@ -86,7 +88,7 @@ bool dfs(
 bool CFGNode::isAncestorOf(CFGNode* other) {
     std::unordered_set<CFGNode*> reached;
     for (auto c : this->children) {
-        if (dfs(c.get(), other, reached)) {
+        if (dfs(c.lock().get(), other, reached)) {
             return true;
         }
     }
@@ -134,11 +136,13 @@ void CFGExtractor::visit(const ast::If& node) {
     containerCount += 2;
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::If);
     lastVisited->insert(newNode);
+    lst.push_back(newNode);  // updating the list of nodes
     lastVisited = newNode;
     // Whenever you enter an If/Else stmtLst, parent node should be the If node.
     enterBucket(newNode);
     // When you exit an If/Else stmtLst, the last statement should point to a dummy exit node.
     auto dummyExitNode = std::make_shared<CFGNode>();
+    lst.push_back(dummyExitNode);  // updating the list of nodes
     exitReference.insert_or_assign(currentDepth, dummyExitNode);
 }
 
@@ -146,6 +150,7 @@ void CFGExtractor::visit(const ast::While& node) {
     containerCount++;
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::While);
     lastVisited->insert(newNode);
+    lst.push_back(newNode);  // updating the list of nodes
     lastVisited = newNode;
     // When you enter a While stmtLst, the parent node should be the While node.
     enterBucket(newNode);
@@ -160,6 +165,7 @@ void CFGExtractor::visit(const ast::Read& node) {
     newNode->modifies = filterContentVarMap(modifiesMap, stmt);
 
     lastVisited->insert(newNode);
+    lst.push_back(newNode);  // updating the list of nodes
     lastVisited = newNode;
     enterBucket(newNode);
 }
@@ -168,6 +174,7 @@ void CFGExtractor::visit(const ast::Print& node) {
     auto newNode = std::make_shared<CFGNode>(node.getStmtNo(), StatementType::Print);
     lastVisited->insert(newNode);
     lastVisited = newNode;
+    lst.push_back(newNode);  // updating the list of nodes
     enterBucket(newNode);
 }
 
@@ -179,6 +186,7 @@ void CFGExtractor::visit(const ast::Assign& node) {
     newNode->uses = filterContentVarMap(usesMap, stmt);
 
     lastVisited->insert(newNode);
+    lst.push_back(newNode);  // updating the list of nodes
     lastVisited = newNode;
     enterBucket(newNode);
 }
@@ -190,6 +198,7 @@ void CFGExtractor::visit(const ast::Call& node) {
     newNode->modifies = filterContentVarMap(modifiesMap, stmt);
 
     lastVisited->insert(newNode);
+    lst.push_back(newNode);  // updating the list of nodes
     lastVisited = newNode;
     enterBucket(newNode);
 }
@@ -218,13 +227,14 @@ void CFGExtractor::exitContainer() {
     }
 }
 
-std::map<std::string, std::shared_ptr<CFGNode>> CFGExtractor::extract(ast::ASTNode* node) {
+CFG CFGExtractor::extract(ast::ASTNode* node) {
     auto modifiesEntrySet = design_extractor::ModifiesExtractor().extract(node);
     modifiesMap = createContentVarMap(modifiesEntrySet);
     auto usesEntrySet = design_extractor::UsesExtractor().extract(node);
     usesMap = createContentVarMap(usesEntrySet);
     node->accept(this);
-    return procNameAndRoot;
+    auto cfgContainer = CFG(lst, procNameAndRoot);
+    return cfgContainer;
 }
 
 }  // namespace cfg

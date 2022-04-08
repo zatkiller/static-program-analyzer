@@ -13,18 +13,6 @@ namespace qps::evaluator {
         }
     }
 
-    void ClauseHandler::processStmtField(std::vector<PKBField> &fields, std::vector<query::Declaration> declarations) {
-        if (fields[0].entityType == PKBEntityType::STATEMENT && fields[0].fieldType == PKBFieldType::DECLARATION) {
-            StatementType sType = PKBTypeMatcher::getStatementType(declarations[0].getType());
-            fields[0] = PKBField::createDeclaration(sType);
-        }
-        if (fields[1].entityType == PKBEntityType::STATEMENT && fields[1].fieldType == PKBFieldType::DECLARATION) {
-            query::Declaration d = declarations.size() == 2 ? declarations[1] : declarations[0];
-            StatementType sType = PKBTypeMatcher::getStatementType(d.getType());
-            fields[1] = PKBField::createDeclaration(sType);
-        }
-    }
-
     PKBResponse ClauseHandler::selectDeclaredValue(PKBResponse& response, bool isFirstSyn) {
         int erasePos = isFirstSyn ? 1 : 0;
         if (!response.hasResult) return response;
@@ -55,78 +43,69 @@ namespace qps::evaluator {
         }
     }
 
-    void ClauseHandler::handleSynClauses(std::vector<std::shared_ptr<query::RelRef>> clauses) {
-        for (auto c : clauses) {
-            query::RelRef *relRefPtr = c.get();
-            std::vector<query::Declaration> declarations = relRefPtr->getDecs();
-            std::vector<std::string> synonyms{};
-            for (auto d : declarations) {
-                synonyms.push_back(d.getSynonym());
-            }
-            std::vector<PKBField> fields = relRefPtr->getField();
-            processStmtField(fields, declarations);
-            PKBResponse response = pkb->getRelationship(fields[0], fields[1],
-                                                        PKBTypeMatcher::getPKBRelationship(relRefPtr->getType()));
-            bool isFirstSyn = fields[0].fieldType == PKBFieldType::DECLARATION;
-            bool isSecondSyn = fields[1].fieldType == PKBFieldType::DECLARATION;
-            if (!isFirstSyn || !isSecondSyn) {
-                response = selectDeclaredValue(response, isFirstSyn);
-            } else if (synonyms[0] == synonyms[1]) {
-                synonyms.pop_back();
-                filterPKBResponse(response);
-            }
-            tableRef.insert(response, synonyms);
+    void ClauseHandler::handleSynRelRef(std::shared_ptr<query::RelRef> clause) {
+        query::RelRef *relRefPtr = clause.get();
+        std::vector<query::Declaration> declarations = relRefPtr->getDecs();
+        std::vector<std::string> synonyms{};
+        for (auto d : declarations) {
+            synonyms.push_back(d.getSynonym());
         }
+        std::vector<PKBField> fields = relRefPtr->getField();
+        PKBResponse response = pkb->getRelationship(fields[0], fields[1],
+                                                    PKBTypeMatcher::getPKBRelationship(relRefPtr->getType()));
+        bool isFirstSyn = fields[0].fieldType == PKBFieldType::DECLARATION;
+        bool isSecondSyn = fields[1].fieldType == PKBFieldType::DECLARATION;
+        if (!isFirstSyn || !isSecondSyn) {
+            response = selectDeclaredValue(response, isFirstSyn);
+        } else if (synonyms[0] == synonyms[1]) {
+            synonyms.pop_back();
+            filterPKBResponse(response);
+        }
+        tableRef.insert(response, synonyms);
     }
 
-    bool ClauseHandler::handleNoSynClauses(const std::vector<std::shared_ptr<query::RelRef>>& noSynClauses) {
-        for (const auto& clause : noSynClauses) {
-            query::RelRef *relRefPtr = clause.get();
-            PKBField field1 = relRefPtr->getField()[0];
-            PKBField field2 = relRefPtr->getField()[1];
-            PKBRelationship relationship = PKBTypeMatcher::getPKBRelationship(relRefPtr->getType());
-            if (!pkb->getRelationship(field1, field2, relationship).hasResult) return false;
-        }
+    bool ClauseHandler::handleNoSynRelRef(const std::shared_ptr<query::RelRef>& noSynClauses) {
+        query::RelRef *relRefPtr = noSynClauses.get();
+        PKBField field1 = relRefPtr->getField()[0];
+        PKBField field2 = relRefPtr->getField()[1];
+        PKBRelationship relationship = PKBTypeMatcher::getPKBRelationship(relRefPtr->getType());
+        if (!pkb->getRelationship(field1, field2, relationship).hasResult) return false;
         return true;
     }
 
-    void ClauseHandler::handlePatterns(std::vector<query::Pattern> patterns) {
+    void ClauseHandler::handlePattern(query::Pattern pattern) {
         using sp::design_extractor::PatternParam;
-        for (auto pattern : patterns) {
-            StatementType statementType = PKBTypeMatcher::getStatementType(pattern.getSynonymType());
-            query::EntRef lhs = pattern.getEntRef();
-            std::vector<std::string> synonyms{pattern.getSynonym()};
-            if (lhs.isDeclaration()) synonyms.push_back(lhs.getDeclarationSynonym());
 
-            std::optional<std::string> lhsParam = {};
-            if (lhs.isVarName()) lhsParam = lhs.getVariableName();
+        StatementType statementType = PKBTypeMatcher::getStatementType(pattern.getSynonymType());
+        query::EntRef lhs = pattern.getEntRef();
+        std::vector<std::string> synonyms{pattern.getSynonym()};
+        if (lhs.isDeclaration()) synonyms.push_back(lhs.getDeclarationSynonym());
 
-            std::optional<std::string> rhsParam = {};
-            bool isStrict = false;
-            if (statementType == StatementType::Assignment) {
-                query::ExpSpec exp = pattern.getExpression();
-                if (exp.isPartialMatch() || exp.isFullMatch()) rhsParam = exp.getPattern();
-                isStrict = exp.isFullMatch();
-            }
+        std::optional<std::string> lhsParam = {};
+        if (lhs.isVarName()) lhsParam = lhs.getVariableName();
 
-            PKBResponse response = pkb->match(statementType, PatternParam(lhsParam), PatternParam(rhsParam, isStrict));
-            if (!lhs.isDeclaration()) {
-                response = selectDeclaredValue(response, true);
-            }
-            tableRef.insert(response, synonyms);
+        std::optional<std::string> rhsParam = {};
+        bool isStrict = false;
+        if (statementType == StatementType::Assignment) {
+            query::ExpSpec exp = pattern.getExpression();
+            if (exp.isPartialMatch() || exp.isFullMatch()) rhsParam = exp.getPattern();
+            isStrict = exp.isFullMatch();
         }
+
+        PKBResponse response = pkb->match(statementType, PatternParam(lhsParam), PatternParam(rhsParam, isStrict));
+        if (!lhs.isDeclaration()) {
+            response = selectDeclaredValue(response, true);
+        }
+        tableRef.insert(response, synonyms);
     }
 
-    bool ClauseHandler::handleNoAttrRefWith(const std::vector<query::AttrCompare>& noAttrClauses) {
-        for (const auto& clause : noAttrClauses) {
-            auto lhs = clause.lhs;
-            auto rhs = clause.rhs;
+    bool ClauseHandler::handleNoAttrRefWith(const query::AttrCompare& noAttrClause) {
+            auto lhs = noAttrClause.lhs;
+            auto rhs = noAttrClause.rhs;
 
-            if (lhs.isString() && rhs.isString() && lhs.getString() == rhs.getString()) continue;
-            else if (lhs.isNumber() && rhs.isNumber() && lhs.getNumber() == rhs.getNumber()) continue;
-            else
-                return false;
-        }
+        if (lhs.isString() && rhs.isString() && lhs.getString() != rhs.getString()) return false;
+        else if (lhs.isNumber() && rhs.isNumber() && lhs.getNumber() != rhs.getNumber()) return false;
+
         return true;
     }
 
@@ -156,17 +135,15 @@ namespace qps::evaluator {
         tableRef.insert(attrResult, std::vector<std::string>{attr.getDeclarationSynonym()});
     }
 
-    void ClauseHandler::handleAttrRefWith(std::vector<query::AttrCompare> attrClauses) {
-        for (auto clause : attrClauses) {
-            auto lhs = clause.lhs;
-            auto rhs = clause.rhs;
-            if (lhs.isAttrRef() && rhs.isAttrRef()) {
-                handleTwoAttrRef(lhs.getAttrRef(), rhs.getAttrRef());
-            } else {
-                if (!lhs.isAttrRef())  handleOneAttrRef(rhs.getAttrRef(), lhs);
-                else
-                    handleOneAttrRef(lhs.getAttrRef(), rhs);
-            }
+    void ClauseHandler::handleAttrRefWith(query::AttrCompare attrClause) {
+        auto lhs = attrClause.lhs;
+        auto rhs = attrClause.rhs;
+        if (lhs.isAttrRef() && rhs.isAttrRef()) {
+            handleTwoAttrRef(lhs.getAttrRef(), rhs.getAttrRef());
+        } else {
+            if (!lhs.isAttrRef())  handleOneAttrRef(rhs.getAttrRef(), lhs);
+            else
+                handleOneAttrRef(lhs.getAttrRef(), rhs);
         }
     }
 
@@ -182,5 +159,36 @@ namespace qps::evaluator {
                 tableRef.insert(r, std::vector<std::string>{dec.getSynonym()});
             }
         }
+    }
+
+
+    bool ClauseHandler::handleGroup(optimizer::ClauseGroup group) {
+        while (group.hasNextClause()) {
+            optimizer::OrderedClause clause = group.nextClause();
+            if (clause.isSuchThat()) {
+                handleSynRelRef(clause.getSuchThat());
+            } else if (clause.isWith()) {
+                handleAttrRefWith(clause.getWith());
+            } else {
+                handlePattern(clause.getPattern());
+            }
+
+            if (!tableRef.hasResult()) return false;
+        }
+        return true;
+    }
+
+    bool ClauseHandler::handleNoSynGroup(optimizer::ClauseGroup group) {
+        while (group.hasNextClause()) {
+            optimizer::OrderedClause clause = group.nextClause();
+            bool isHold;
+            if (clause.isSuchThat()) {
+                isHold = handleNoSynRelRef(clause.getSuchThat());
+            } else {
+                isHold = handleNoAttrRefWith(clause.getWith());
+            }
+            if (!isHold) return false;
+        }
+        return true;
     }
 }  // namespace qps::evaluator

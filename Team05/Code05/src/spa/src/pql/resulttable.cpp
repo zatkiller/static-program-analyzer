@@ -38,7 +38,7 @@ namespace qps::evaluator {
     }
 
     bool ResultTable::hasResult() {
-        return table.empty() && !synSequenceMap.empty();
+        return !table.empty() && !synSequenceMap.empty();
     }
 
     VectorResponse ResultTable::transToVectorResponse(SingleResponse response) {
@@ -155,5 +155,28 @@ namespace qps::evaluator {
         } else {
             innerJoin(other);
         }
+    }
+
+    void ResultTable::filterColumns(std::vector<std::string> selectSyns) {
+        std::vector<int> selectedColumn;
+        std::unordered_map<std::string, int> map;
+        int columnNo = 0;
+        for (auto s : selectSyns) {
+            if (synExists(s)) {
+                selectedColumn.push_back(getSynLocation(s));
+                map[s] = columnNo;
+                columnNo++;
+            }
+        }
+        this->synSequenceMap = map;
+        Table newTable;
+        for (auto row : table) {
+            std::vector<PKBField> newRow;
+            for (auto pos : selectedColumn) {
+                newRow.push_back(row[pos]);
+            }
+            newTable.insert(newRow);
+        }
+        this->table = newTable;
     }
 }  // namespace qps::evaluator

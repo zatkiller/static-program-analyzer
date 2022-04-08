@@ -35,7 +35,7 @@ void PKB::insertEntity(Content entity) {
         [&](PROC_NAME& item) { insertProcedure(item); },
         [&](CONST& item) { insertConstant(item); },
         [](auto& item) { Logger(Level::ERROR) << "PKB.cpp " << "Unsupported entity type"; }
-    }, entity);
+        }, entity);
 }
 
 void PKB::insertStatement(STMT_LO stmt) {
@@ -59,9 +59,9 @@ void PKB::insertAST(std::unique_ptr<sp::ast::Program> root) {
     this->root = std::move(root);
 }
 
-void PKB::insertCFG(ProcToCfgMap roots) {
-    this->cfgRoots = roots;
-    this->affectsEval->initCFG(roots);
+void PKB::insertCFG(const sp::cfg::CFG cfgContainer) {
+    this->cfgContainer = cfgContainer;
+    this->affectsEval->initCFG(cfgContainer);
 }
 
 bool PKB::validate(const PKBField field) const {
@@ -262,7 +262,7 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
         return extracted.size() != 0
             ? PKBResponse{ true, Response{extracted} }
         : PKBResponse{ false, Response{extracted} };
-    } 
+    }
 
     auto relationshipTablePtr = getRelationshipTable(rs);
     if (isTransitiveRelationship(rs)) {
@@ -318,86 +318,62 @@ PKBResponse PKB::getConstants() {
     return createResponseFromTable<CONST>(constantTable->getAllEntity());
 }
 
-PKBResponse PKB::matchAssign(sp::design_extractor::PatternParam lhs,
-    sp::design_extractor::PatternParam rhs) const {
-    auto matchedStmts = sp::design_extractor::extractAssign(root.get(), lhs, rhs);
-    FieldRowResponse res;
-
-    for (auto& node : matchedStmts) {
-        std::vector<PKBField> stmtRes;
-        int statementNumber = node.get().getStmtNo();
-        stmtRes.emplace_back(PKBField::createConcrete(
-            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() }));
-
-        auto varName = node.get().getLHS()->getVarName();
-        stmtRes.emplace_back(PKBField::createConcrete(VAR_NAME{ varName }));
-
-        res.insert(stmtRes);
-    }
-
-    return PKBResponse{ matchedStmts.size() > 0, Response{res} };
-}
-
-PKBResponse PKB::matchIf(sp::design_extractor::PatternParam lhs) const {
-    auto matchedStmts = sp::design_extractor::extractIf(root.get(), lhs);
-    FieldRowResponse res;
-
-    for (auto& node : matchedStmts) {
-        std::vector<PKBField> stmtRes;
-        int statementNumber = node.get().getStmtNo();
-        stmtRes.emplace_back(PKBField::createConcrete(
-            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() }));
-
-        sp::design_extractor::VariableCollector vc;
-        node.get().getCondExpr()->accept(&vc);
-        auto vars = vc.getEntries();
-
-        for (auto var : vars) {
-            stmtRes.emplace_back(PKBField::createConcrete(std::get<sp::design_extractor::Entity>(var)));
-        }
-
-        res.insert(stmtRes);
-    }
-
-    return PKBResponse{ matchedStmts.size() > 0, Response{res} };
-}
-
-PKBResponse PKB::matchWhile(sp::design_extractor::PatternParam lhs) const {
-    auto matchedStmts = sp::design_extractor::extractWhile(root.get(), lhs);
-    FieldRowResponse res;
-
-    for (auto& node : matchedStmts) {
-        std::vector<PKBField> stmtRes;
-        int statementNumber = node.get().getStmtNo();
-        stmtRes.emplace_back(PKBField::createConcrete(
-            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() }));
-
-        sp::design_extractor::VariableCollector vc;
-        node.get().getCondExpr()->accept(&vc);
-        auto vars = vc.getEntries();
-
-        for (auto var : vars) {
-            stmtRes.emplace_back(PKBField::createConcrete(std::get<sp::design_extractor::Entity>(var)));
-        }
-
-        res.insert(stmtRes);
-    }
-
-    return PKBResponse{ matchedStmts.size() > 0, Response{res} };
-}
-
 PKBResponse PKB::match(StatementType type, sp::design_extractor::PatternParam lhs,
     sp::design_extractor::PatternParam rhs) const {
-
+    
     switch (type) {
     case StatementType::Assignment:
-        return matchAssign(lhs, rhs);
+        return match<sp::ast::Assign>(lhs, rhs);
     case StatementType::If:
-        return matchIf(lhs);
+        return match<sp::ast::If>(lhs, rhs);
     case StatementType::While:
-        return matchWhile(lhs);
+        return match<sp::ast::While>(lhs, rhs);
     default:
         Logger(Level::ERROR) << "No pattern matching available for the provided statement type.";
         throw std::invalid_argument("No pattern matching available for the provided statement type.");
     }
+}
+
+template <typename T>
+PKBResponse PKB::match(sp::design_extractor::PatternParam lhs, sp::design_extractor::PatternParam rhs) const {
+    FieldRowResponse res;
+    sp::design_extractor::MatchedNodes<T> nodes;
+
+    if constexpr (std::is_same_v<T, sp::ast::Assign>) {
+        nodes = sp::design_extractor::extractAssign(root.get(), lhs, rhs);
+    } else if constexpr (std::is_same_v<T, sp::ast::If>) {
+        nodes = sp::design_extractor::extractIf(root.get(), lhs);
+    } else {
+        nodes = sp::design_extractor::extractWhile(root.get(), lhs);
+    }
+
+    for (auto& node : nodes) {
+        std::vector<PKBField> stmtRes;
+        int statementNumber = node.get().getStmtNo();
+        stmtRes.emplace_back(PKBField::createConcrete(
+            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() }));
+
+        // Handles assignments
+        if constexpr (std::is_same_v<T, sp::ast::Assign>) {
+            auto varName = node.get().getLHS()->getVarName();
+            stmtRes.emplace_back(PKBField::createConcrete(VAR_NAME{ varName }));
+        } else {
+            // Handles container statements
+            sp::design_extractor::VariableCollector vc;
+            node.get().getCondExpr()->accept(&vc);
+            auto vars = vc.getEntries();
+
+            for (auto var : vars) {
+                stmtRes.emplace_back(PKBField::createConcrete(std::get<sp::design_extractor::Entity>(var)));
+            }
+        }
+     
+        res.insert(stmtRes);
+    }
+
+    return PKBResponse{ nodes.size() > 0, Response{res} };
+}
+
+void PKB::clearCache() {
+    affectsEval->clearCache();
 }

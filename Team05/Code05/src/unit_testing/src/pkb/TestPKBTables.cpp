@@ -910,9 +910,8 @@ TEST_CASE("AffectsEvaluator single-proc test 1") {
     StatementType ASSIGN = StatementType::Assignment;
     StatementType IF = StatementType::If;
     StatementType WHILE = StatementType::While;
-    StatementType PRINT = StatementType::Print;
+    StatementType PRINT = StatementType::Print;    
 
-   
     // Initialize affEval
     affEval->initCFG(cfgContainer);
 
