@@ -39,6 +39,7 @@ public:
     }
 
     ~Logger() {
+        #ifdef _DEBUG
         // Using stdout for now. May consider log file later.
         switch (this->level) {
         case Level::ERROR:
@@ -48,6 +49,7 @@ public:
             std::cout << this->oss.str() << std::endl;
             break;
         }        
+        #endif
     }
 
 private:
