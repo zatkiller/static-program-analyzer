@@ -1,62 +1,92 @@
 #include "PKBTables.h"
 #include "logging.h"
+#include <algorithm>
 
-/* --------------------------------- StatementMap Methods ----------------------------------------*/
-bool StatementMap::contains(STMT_LO val) const {
-    auto search = entities.find(val.statementNum);
-    if (search != entities.end() && search->second == val) {
-        return true;
-    } 
+/* --------------------------------- StatementVector Methods ----------------------------------------*/
+STMT_LO NULL_STMT_LO = STMT_LO{ 0, StatementType::None };
 
-    return false;
+
+bool isStatementNull(STMT_LO stmt) {
+    return stmt == NULL_STMT_LO;
 }
 
-void StatementMap::insert(STMT_LO val) {
-    entities.emplace(val.statementNum, val);
-}
-
-int StatementMap::getSize() const {
-    return entities.size();
-}
-
-std::vector<STMT_LO> StatementMap::getAllEntities() const {
-    std::vector<STMT_LO> res;
-    for (auto it = entities.begin(); it != entities.end(); ++it) {
-        res.push_back(it->second);
+bool StatementVector::contains(STMT_LO val) const {
+    if (val.statementNum >= entities.size()) {
+        return false;
     }
+
+    auto stmt = entities.at(val.statementNum);
+    return stmt == val;
+}
+
+void StatementVector::insert(STMT_LO val) {
+    while (val.statementNum >= entities.size()) {
+        // fills empty elements with NULL_STMT_LO
+        if (entities.size() == 0) {
+            entities.resize(2, NULL_STMT_LO);
+        } else {
+            entities.resize(entities.size() * 2, NULL_STMT_LO);
+        }
+    }
+
+    // existing entry is not replaced
+    if (isStatementNull(entities.at(val.statementNum))) {
+        entities.at(val.statementNum) = val;
+    }
+}
+
+int StatementVector::getSize() const {
+    return getAllEntities().size();
+}
+
+std::vector<STMT_LO> StatementVector::getAllEntities() const {
+    std::vector<STMT_LO> res;
+
+    std::copy_if(entities.begin(), entities.end(), std::inserter(res, res.end()),
+        [](auto const& stmt) {
+            return stmt != NULL_STMT_LO;
+    });
+
     return res;
 }
 
-bool StatementMap::contains(int statementNumber) const {
-    return entities.count(statementNumber) != 0;
+bool StatementVector::contains(int statementNumber) const {
+    if (statementNumber >= entities.size()) {
+        return false;
+    }
+
+    return !isStatementNull(entities.at(statementNumber));
 }
 
-bool StatementMap::contains(StatementType type, int statementNumber) const {
+bool StatementVector::contains(StatementType type, int statementNumber) const {
     auto stmt = getStmt(statementNumber);
-    if (stmt.has_value()) {
+    if (stmt.has_value() && !isStatementNull(stmt.value())) {
         return stmt.value().type.value() == type;
     }
     
     return false;
 }
 
-std::optional<STMT_LO> StatementMap::getStmt(int statementNumber) const {
-    auto search = entities.find(statementNumber);
-    if (search != entities.end()) {
-        return search->second;
+std::optional<STMT_LO> StatementVector::getStmt(int statementNumber) const {
+    if (statementNumber >= entities.size()) {
+        return false;
     }
 
-    return std::nullopt;
+    STMT_LO stmt = entities.at(statementNumber);
+    if (isStatementNull(stmt)) {
+        return std::nullopt;
+    }
+
+    return stmt;
 }
 
-std::vector<STMT_LO> StatementMap::getStmtsOfType(StatementType type) const {
+std::vector<STMT_LO> StatementVector::getStmtsOfType(StatementType type) const {
     std::vector<STMT_LO> res;
 
-    for (auto it = entities.begin(); it != entities.end(); ++it) {
-        if (it->second.type.value() == type) {
-            res.push_back(it->second);
-        }
-    }
+    std::copy_if(entities.begin(), entities.end(), std::inserter(res, res.end()),
+        [type](auto const& stmt) {
+            return stmt != NULL_STMT_LO && stmt.type.value() == type;
+    });
 
     return res;
 }
@@ -71,16 +101,16 @@ ConstantTable::ConstantTable() : EntityTable(EntitySet<CONST>{}) {}
 VariableTable::VariableTable() : EntityTable(EntitySet<VAR_NAME>{}) {}
 
 /* --------------------------------- StatementTable Methods ----------------------------------------*/
-StatementTable::StatementTable() : EntityTable(StatementMap{}) {}
+StatementTable::StatementTable() : EntityTable(StatementVector{}) {}
 
 bool StatementTable::contains(int statementNumber) const {
-    auto statementMap = std::get<StatementMap>(entities);
-    return statementMap.contains(statementNumber);
+    auto statementVector = std::get<StatementVector>(entities);
+    return statementVector.contains(statementNumber);
 }
 
 bool StatementTable::contains(StatementType type, int statementNumber) const {
-    auto statementMap = std::get<StatementMap>(entities);
-    auto stmt = statementMap.getStmt(statementNumber);
+    auto statementVector = std::get<StatementVector>(entities);
+    auto stmt = statementVector.getStmt(statementNumber);
     if (stmt.has_value()) {
         return stmt.value().type.value() == type;
     }
@@ -89,8 +119,8 @@ bool StatementTable::contains(StatementType type, int statementNumber) const {
 }
 
 std::vector<STMT_LO> StatementTable::getStmtOfType(StatementType type) const {
-    auto statementMap = std::get<StatementMap>(entities);
-    return statementMap.getStmtsOfType(type);
+    auto statementVector = std::get<StatementVector>(entities);
+    return statementVector.getStmtsOfType(type);
 }
 
 std::optional<StatementType> StatementTable::getStmtTypeOfLine(int statementNumber) const {
@@ -105,6 +135,6 @@ std::optional<StatementType> StatementTable::getStmtTypeOfLine(int statementNumb
 }
 
 std::optional<STMT_LO> StatementTable::getStmt(int statementNumber) const {
-    auto statementMap = std::get<StatementMap>(entities);
-    return statementMap.getStmt(statementNumber);
+    auto statementVector = std::get<StatementVector>(entities);
+    return statementVector.getStmt(statementNumber);
 }

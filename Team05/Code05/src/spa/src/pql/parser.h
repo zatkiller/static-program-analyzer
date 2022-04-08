@@ -339,6 +339,21 @@ struct Parser {
     void parseAttrCompare(Query &query);
 
     /**
+     * returns true if 2 AttrCompareRef can be compared
+     *
+     * @param lhs the first attrcompareref to be compared
+     * @param rhs the second attrcompareref to be compared
+     * @return boolean result of true if they can be compared
+     */
+    bool isAttrCompareRefsComparable(const AttrCompareRef& lhs, const AttrCompareRef& rhs) const;
+
+
+    /**
+     * Throws an error if 2 AttrCompareRef cannot be compared
+     */
+    void validateComparingTypes(const AttrCompareRef& lhs, const AttrCompareRef& rhs);
+
+    /**
      * Returns a ExpSpec belonging to an assign pattern
      */
     ExpSpec parseExpSpec();

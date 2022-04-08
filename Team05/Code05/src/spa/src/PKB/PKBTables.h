@@ -149,7 +149,7 @@ protected:
 /**
 * A map to store statements (STMT_LO) in an EntityTable. Inherits EntityDataStructure.
 */
-class StatementMap : public EntityDataStructure<STMT_LO> {
+class StatementVector : public EntityDataStructure<STMT_LO> {
 public:
     /**
     * Checks whether the map contains the given statement.
@@ -213,7 +213,7 @@ public:
 
 private:
     // unordered_map to get O(1) average, assumes that query will always have result
-    std::unordered_map<int, STMT_LO> entities;
+    std::vector<STMT_LO> entities;
 };
 
 /**
@@ -222,7 +222,7 @@ private:
 template <typename T>
 class EntityTable {
 public:
-    explicit EntityTable(std::variant<StatementMap, EntitySet<T>> entities): entities(entities) {}
+    explicit EntityTable(std::variant<StatementVector, EntitySet<T>> entities): entities(entities) {}
 
     /**
     * Returns all entities stored in the EntityTable
@@ -231,7 +231,7 @@ public:
     */
     std::vector<T> getAllEntity() const {
         if constexpr (std::is_same_v<T, STMT_LO>) {
-            return std::get<StatementMap>(entities).getAllEntities();
+            return std::get<StatementVector>(entities).getAllEntities();
         } else {
             return std::get<EntitySet<T>>(entities).getAllEntities();
         }
@@ -244,7 +244,7 @@ public:
     */
     int getSize() const {
         if constexpr (std::is_same_v<T, STMT_LO>) {
-            return std::get<StatementMap>(entities).getSize();
+            return std::get<StatementVector>(entities).getSize();
         } else {
             return std::get<EntitySet<T>>(entities).getSize();
         }
@@ -258,7 +258,7 @@ public:
     */
     bool contains(T val) const {
         if constexpr (std::is_same_v<T, STMT_LO>) {
-            return std::get<StatementMap>(entities).contains(val);
+            return std::get<StatementVector>(entities).contains(val);
         } else {
             return std::get<EntitySet<T>>(entities).contains(val);
         }
@@ -269,14 +269,14 @@ public:
     */
     void insert(T val) {
         if constexpr (std::is_same_v<T, STMT_LO>) {
-            std::get<StatementMap>(entities).insert(val);
+            std::get<StatementVector>(entities).insert(val);
         } else {
             std::get<EntitySet<T>>(entities).insert(val);
         }
     }
 
 protected:
-    std::variant<StatementMap, EntitySet<T>> entities;
+    std::variant<StatementVector, EntitySet<T>> entities;
 };
 
 /**

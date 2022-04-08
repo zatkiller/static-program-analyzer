@@ -3,6 +3,9 @@
 
 #include "exceptions.h"
 
+#include <unordered_set>
+#include <memory>
+
 using qps::query::Query;
 using qps::query::Elem;
 using qps::query::ResultCl;
@@ -28,41 +31,85 @@ using qps::query::AttrCompareRef;
 using qps::query::AttrCompareRefType;
 using qps::query::Declaration;
 
+
+
 TEST_CASE("AttrRef") {
-    Declaration d("p", DesignEntity::PROCEDURE);
-    AttrRef ar = AttrRef { AttrName::PROCNAME, Declaration {"p", DesignEntity::PROCEDURE} };
-    REQUIRE(ar.getAttrName() == AttrName::PROCNAME);
-    REQUIRE(ar.getDeclaration() == d);
 
-    AttrRef ar2 = AttrRef { AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE } };
-    AttrRef ar3 = AttrRef { AttrName::STMTNUM, Declaration { "s", DesignEntity::STMT} };
-    AttrRef ar4 = AttrRef { AttrName::VALUE, Declaration {"c", DesignEntity::CONSTANT} };
+    SECTION("AttrRef correctness") {
+        Declaration d("p", DesignEntity::PROCEDURE);
+        AttrRef ar = AttrRef{ AttrName::PROCNAME, Declaration {"p", DesignEntity::PROCEDURE} };
+        REQUIRE(ar.getAttrName() == AttrName::PROCNAME);
+        REQUIRE(ar.getDeclaration() == d);
 
-    REQUIRE(ar.compatbileComparison(ar2));
-    REQUIRE(ar3.compatbileComparison(ar4));
+        AttrRef ar2 = AttrRef{ AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE } };
+        AttrRef ar3 = AttrRef{ AttrName::STMTNUM, Declaration { "s", DesignEntity::STMT} };
+        AttrRef ar4 = AttrRef{ AttrName::VALUE, Declaration {"c", DesignEntity::CONSTANT} };
 
-    REQUIRE(!ar.compatbileComparison(ar3));
-    REQUIRE(!ar.compatbileComparison(ar4));
+    REQUIRE(ar.canBeCompared(ar2));
+    REQUIRE(ar3.canBeCompared(ar4));
 
-    REQUIRE(!ar2.compatbileComparison(ar3));
-    REQUIRE(!ar2.compatbileComparison(ar4));
+    REQUIRE(!ar.canBeCompared(ar3));
+    REQUIRE(!ar.canBeCompared(ar4));
+
+    REQUIRE(!ar2.canBeCompared(ar3));
+    REQUIRE(!ar2.canBeCompared(ar4));
+}
+
+    SECTION("AttrRef Hash") {
+        AttrRef ar1 = AttrRef{ AttrName::PROCNAME, Declaration {"p", DesignEntity::PROCEDURE} };
+        AttrRef ar2 = AttrRef{ AttrName::PROCNAME, Declaration {"p", DesignEntity::PROCEDURE} };
+        std::unordered_set<AttrRef> aSet;
+        aSet.insert(ar1);
+        aSet.insert(ar2);
+        REQUIRE(aSet.size() == 1);
+    }
 }
 
 TEST_CASE("AttrCompareRef") {
-    AttrCompareRef acr = AttrCompareRef::ofString("p");
-    REQUIRE(acr.isString());
-    REQUIRE(acr.getString() == "p");
+    SECTION("AttrCompareRef correctness") {
+        AttrCompareRef acr = AttrCompareRef::ofString("p");
+        REQUIRE(acr.isString());
+        REQUIRE(acr.getString() == "p");
 
-    acr = AttrCompareRef::ofNumber(1);
-    REQUIRE(acr.isNumber());
-    REQUIRE(acr.getNumber() == 1);
+        acr = AttrCompareRef::ofNumber(1);
+        REQUIRE(acr.isNumber());
+        REQUIRE(acr.getNumber() == 1);
 
-    Declaration d("p", DesignEntity::PROCEDURE);
-    acr = AttrCompareRef::ofAttrRef(AttrRef { AttrName::PROCNAME, d });
-    REQUIRE(acr.isAttrRef());
-    AttrRef ar = acr.getAttrRef();
-    REQUIRE(ar.getAttrName() == AttrName::PROCNAME);
-    REQUIRE(ar.getDeclaration() == d);
+        Declaration d("p", DesignEntity::PROCEDURE);
+        acr = AttrCompareRef::ofAttrRef(AttrRef{ AttrName::PROCNAME, d });
+        REQUIRE(acr.isAttrRef());
+        AttrRef ar = acr.getAttrRef();
+        REQUIRE(ar.getAttrName() == AttrName::PROCNAME);
+        REQUIRE(ar.getDeclaration() == d);
+    }
+
+    SECTION("AttrCompareRef Hash") {
+        std::unordered_set<AttrCompareRef> aSet;
+        AttrCompareRef acr1 = AttrCompareRef::ofString("p");
+        AttrCompareRef acr2 = AttrCompareRef::ofString("p");
+
+        aSet.insert(acr1);
+        aSet.insert(acr2);
+
+        REQUIRE(aSet.size() == 1);
+
+        AttrCompareRef acr3 = AttrCompareRef::ofNumber(1);
+        AttrCompareRef acr4 = AttrCompareRef::ofNumber(1);
+
+        aSet.insert(acr3);
+        aSet.insert(acr4);
+
+        REQUIRE(aSet.size() == 2);
+
+        Declaration d("p", DesignEntity::PROCEDURE);
+        AttrCompareRef acr5 = AttrCompareRef::ofAttrRef(AttrRef{ AttrName::PROCNAME, d });
+        AttrCompareRef acr6 = AttrCompareRef::ofAttrRef(AttrRef{ AttrName::PROCNAME, d });
+
+        aSet.insert(acr5);
+        aSet.insert(acr6);
+
+        REQUIRE(aSet.size() == 3);
+    }
 }
 
 TEST_CASE("AttrCompare") {
@@ -71,7 +118,6 @@ TEST_CASE("AttrCompare") {
         AttrCompare ac(AttrCompareRef::ofAttrRef( AttrRef { AttrName::VARNAME, d }),
                        AttrCompareRef::ofString("v"));
 
-        REQUIRE_NOTHROW(ac.validateComparingTypes());
         AttrCompareRef lhs = ac.getLhs();
         AttrCompareRef rhs = ac.getRhs();
 
@@ -83,58 +129,6 @@ TEST_CASE("AttrCompare") {
 
         REQUIRE(rhs.isString());
         REQUIRE(rhs.getString() == "v");
-    }
-
-    SECTION ("AttrCompare validateComparingTypes") {
-        SECTION ("Incompatible type matches") {
-            AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, Declaration {
-                "rd", DesignEntity::READ } }), AttrCompareRef::ofString("v"));
-
-            REQUIRE_THROWS_MATCHES(ac1.validateComparingTypes(), exceptions::PqlSemanticException,
-                                   Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
-
-            AttrCompare ac2(AttrCompareRef::ofNumber(1), AttrCompareRef::ofAttrRef(
-                    AttrRef {AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE }}));
-
-            REQUIRE_THROWS_MATCHES(ac2.validateComparingTypes(), exceptions::PqlSemanticException,
-                                   Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
-
-            AttrCompare ac3(AttrCompareRef::ofString("v"), AttrCompareRef::ofNumber(1));
-
-            REQUIRE_THROWS_MATCHES(ac3.validateComparingTypes(), exceptions::PqlSemanticException,
-                                   Catch::Message(messages::qps::parser::incompatibleComparisonMessage));
-        }
-
-        SECTION ("Compatible type matches") {
-            AttrCompare ac1(AttrCompareRef::ofAttrRef( AttrRef {AttrName::PROCNAME, Declaration {
-                "p", DesignEntity::PROCEDURE }}), AttrCompareRef::ofString("v"));
-            REQUIRE_NOTHROW(ac1.validateComparingTypes());
-
-            AttrCompare ac2(AttrCompareRef::ofString("v"), AttrCompareRef::ofAttrRef(
-                    AttrRef {AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE, }}));
-            REQUIRE_NOTHROW(ac2.validateComparingTypes());
-
-
-            AttrCompare ac3(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM,  Declaration {
-                "cl", DesignEntity::CALL}}), AttrCompareRef::ofNumber(200));
-            REQUIRE_NOTHROW(ac3.validateComparingTypes());
-
-            AttrCompare ac4(AttrCompareRef::ofNumber(99), AttrCompareRef::ofAttrRef(
-                    AttrRef {AttrName::VALUE, Declaration { "c", DesignEntity::CONSTANT }}));
-            REQUIRE_NOTHROW(ac4.validateComparingTypes());
-
-            AttrCompare ac5(AttrCompareRef::ofAttrRef( AttrRef {AttrName::PROCNAME, Declaration {
-                "p", DesignEntity::PROCEDURE }}), AttrCompareRef::ofAttrRef( AttrRef {
-                    AttrName::VARNAME, Declaration { "v", DesignEntity::VARIABLE }}));
-
-            REQUIRE_NOTHROW(ac5.validateComparingTypes());
-
-            AttrCompare ac6(AttrCompareRef::ofAttrRef( AttrRef {AttrName::STMTNUM, Declaration {
-                "cl", DesignEntity::CALL }}), AttrCompareRef::ofAttrRef(AttrRef {
-                    AttrName::VALUE, Declaration { "c", DesignEntity::CONSTANT }}));
-
-            REQUIRE_NOTHROW(ac6.validateComparingTypes());
-        }
     }
 }
 
@@ -182,56 +176,127 @@ TEST_CASE("EntRef") {
     REQUIRE(!(entRef1 == entRef2));
 }
 
-TEST_CASE("Modifies") {
-    ModifiesS modifies;
-    REQUIRE(modifies.getType() == RelRefType::MODIFIESS);
+TEST_CASE("RelRef Hash") {
+    std::unordered_set<std::shared_ptr<RelRef>> rSet;
+
+    Follows f1;
+    f1.follower = StmtRef::ofLineNo(1);
+    f1.followed = StmtRef::ofLineNo(2);
+
+    std::shared_ptr<RelRef> fPtr1 = std::make_shared<Follows>(f1);
+
+    Follows f2;
+    f2.follower = StmtRef::ofLineNo(1);
+    f2.followed = StmtRef::ofLineNo(2);
+
+    std::shared_ptr<RelRef> fPtr2 = std::make_shared<Follows>(f2);
+
+    rSet.insert(fPtr1);
+    REQUIRE(rSet.size() == 1);
+    rSet.insert(fPtr2);
+    REQUIRE(rSet.size() == 1);
+
+    Follows f3;
+    f3.follower = StmtRef::ofLineNo(1);
+    f3.followed = StmtRef::ofWildcard();
+
+    std::shared_ptr<RelRef> fPtr3 = std::make_shared<Follows>(f3);
+
+    rSet.insert(fPtr3);
+    REQUIRE(rSet.size() == 2);
+
+    FollowsT f4;
+    f4.follower = StmtRef::ofLineNo(1);
+    f4.transitiveFollowed = StmtRef::ofWildcard();
+
+    std::shared_ptr<RelRef> fPtr4 = std::make_shared<FollowsT>(f4);
+
+    rSet.insert(fPtr4);
+    REQUIRE(rSet.size() == 3);
 }
 
-TEST_CASE("Uses") {
-    UsesS uses;
-    REQUIRE(uses.getType() == RelRefType::USESS);
-}
+TEST_CASE("ExpSpec") {
+    ExpSpec e1 = ExpSpec::ofFullMatch("x");
+    REQUIRE(e1.isFullMatch());
+    REQUIRE(!e1.isPartialMatch());
+    REQUIRE(!e1.isWildcard());
 
-TEST_CASE("Follows") {
-    Follows follows;
-    REQUIRE(follows.getType() == RelRefType::FOLLOWS);
-}
+    ExpSpec e2 = ExpSpec::ofPartialMatch("x");
+    REQUIRE(!e2.isFullMatch());
+    REQUIRE(e2.isPartialMatch());
+    REQUIRE(!e2.isWildcard());
 
-TEST_CASE("Follows*") {
-    FollowsT follows;
-    REQUIRE(follows.getType() == RelRefType::FOLLOWST);
-}
-
-TEST_CASE("Parent") {
-    Parent p;
-    REQUIRE(p.getType() == RelRefType::PARENT);
-}
-
-TEST_CASE("Parent*") {
-    ParentT p;
-    REQUIRE(p.getType() == RelRefType::PARENTT);
+    ExpSpec e3 = ExpSpec::ofWildcard();
+    REQUIRE(!e3.isFullMatch());
+    REQUIRE(!e3.isPartialMatch());
+    REQUIRE(e3.isWildcard());
 }
 
 TEST_CASE("Pattern") {
-    Pattern p = Pattern::ofAssignPattern("h", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
-    REQUIRE(p.getSynonym() == "h");
-    REQUIRE(p.getSynonymType() == DesignEntity::ASSIGN);
-    REQUIRE(p.getEntRef().getType() == EntRefType::WILDCARD);
-    REQUIRE(p.getExpression() == ExpSpec::ofFullMatch("x"));
 
-    Pattern p2 = Pattern::ofAssignPattern("g", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
-    REQUIRE(!(p == p2));
-    REQUIRE(p2 == p2);
+    SECTION("Pattern correctness") {
+        Pattern p = Pattern::ofAssignPattern("h", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
+        REQUIRE(p.getSynonym() == "h");
+        REQUIRE(p.getSynonymType() == DesignEntity::ASSIGN);
+        REQUIRE(p.getEntRef().getType() == EntRefType::WILDCARD);
+        REQUIRE(p.getExpression() == ExpSpec::ofFullMatch("x"));
 
-    Pattern p3 = Pattern::ofWhilePattern("x", EntRef::ofWildcard());
-    REQUIRE(p3.getSynonym() == "x");
-    REQUIRE(p3.getSynonymType() == DesignEntity::WHILE);
-    REQUIRE(p3.getEntRef().getType() == EntRefType::WILDCARD);
+        Pattern p2 = Pattern::ofAssignPattern("g", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
+        REQUIRE(!(p == p2));
+        REQUIRE(p2 == p2);
 
-    Pattern p4 = Pattern::ofIfPattern("y", EntRef::ofWildcard());
-    REQUIRE(p4.getSynonym() == "y");
-    REQUIRE(p4.getSynonymType() == DesignEntity::IF);
-    REQUIRE(p4.getEntRef().getType() == EntRefType::WILDCARD);
+        Pattern p3 = Pattern::ofWhilePattern("x", EntRef::ofWildcard());
+        REQUIRE(p3.getSynonym() == "x");
+        REQUIRE(p3.getSynonymType() == DesignEntity::WHILE);
+        REQUIRE(p3.getEntRef().getType() == EntRefType::WILDCARD);
+
+        Pattern p4 = Pattern::ofIfPattern("y", EntRef::ofWildcard());
+        REQUIRE(p4.getSynonym() == "y");
+        REQUIRE(p4.getSynonymType() == DesignEntity::IF);
+        REQUIRE(p4.getEntRef().getType() == EntRefType::WILDCARD);
+    }
+
+    SECTION("Pattern Hash") {
+        std::unordered_set<Pattern> pSet;
+        Pattern p1 = Pattern::ofAssignPattern("h", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
+        Pattern p2 = Pattern::ofAssignPattern("h", EntRef::ofWildcard(), ExpSpec::ofFullMatch("x"));
+
+        pSet.insert(p1);
+        REQUIRE(pSet.size() == 1);
+
+        pSet.insert(p2);
+        REQUIRE(pSet.size() == 1);
+
+        Pattern p3 = Pattern::ofAssignPattern("h", EntRef::ofWildcard(), ExpSpec::ofFullMatch("y"));
+        pSet.insert(p3);
+
+        REQUIRE(pSet.size() == 2);
+
+        Pattern p4 = Pattern::ofWhilePattern("x", EntRef::ofWildcard());
+        Pattern p5 = Pattern::ofWhilePattern("x", EntRef::ofWildcard());
+        Pattern p6 = Pattern::ofWhilePattern("y", EntRef::ofWildcard());
+
+        pSet.insert(p4);
+        REQUIRE(pSet.size() == 3);
+
+        pSet.insert(p5);
+        REQUIRE(pSet.size() == 3);
+
+        pSet.insert(p6);
+        REQUIRE(pSet.size() == 4);
+
+        Pattern p7 = Pattern::ofIfPattern("y", EntRef::ofWildcard());
+        Pattern p8 = Pattern::ofIfPattern("y", EntRef::ofWildcard());
+        Pattern p9 = Pattern::ofIfPattern("z", EntRef::ofWildcard());
+
+        pSet.insert(p7);
+        REQUIRE(pSet.size() == 5);
+        pSet.insert(p8);
+        REQUIRE(pSet.size() == 5);
+        pSet.insert(p9);
+        REQUIRE(pSet.size() == 6);
+    }
+
 }
 
 TEST_CASE("Query") {

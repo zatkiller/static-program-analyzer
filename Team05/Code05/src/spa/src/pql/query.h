@@ -1,17 +1,20 @@
 #pragma once
 
-#include <unordered_map>
+#include "PKB/PKBField.h"
+#include "exceptions.h"
+#include "logging.h"
+#include "utils.h"
+
 #include <algorithm>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
-#include <string>
-#include <memory>
-#include <unordered_set>
-#include "PKB/PKBField.h"
-#include "logging.h"
-#include "exceptions.h"
 
 namespace qps::query {
+using utils::hash_combine;
 
 enum class DesignEntity {
     STMT,
@@ -40,7 +43,7 @@ enum class StmtRefType {
 
 struct Declaration {
     std::string synonym;
-    DesignEntity type {};
+    DesignEntity type{};
 
     Declaration() {}
     Declaration(std::string synonym, DesignEntity type) : synonym(std::move(synonym)), type(type) {}
@@ -48,7 +51,9 @@ struct Declaration {
     std::string getSynonym() const { return synonym; }
     DesignEntity getType() const { return type; }
 
-    bool operator==(const Declaration &o) const { return synonym == o.synonym && type == o.type; }
+    bool operator==(const Declaration& o) const {
+        return synonym == o.synonym && type == o.type;
+    }
 };
 
 enum class AttrName {
@@ -65,9 +70,9 @@ struct AttrRef {
 
     bool isString() const { return attrName == AttrName::VARNAME || attrName == AttrName::PROCNAME; }
     bool isNumber() const { return attrName == AttrName::VALUE || attrName == AttrName::STMTNUM; }
-    bool compatbileComparison(const AttrRef &o) const;
+    bool canBeCompared(const AttrRef &o) const;
 
-    bool operator==(const AttrRef &o) const { return (attrName == o.attrName) && (declaration == o.declaration); }
+    bool operator==(const AttrRef& o) const { return (attrName == o.attrName) && (declaration == o.declaration); }
 
     AttrName getAttrName() const { return attrName; }
     std::string getDeclarationSynonym() const { return declaration.getSynonym(); }
@@ -75,7 +80,7 @@ struct AttrRef {
     Declaration getDeclaration() const { return declaration; }
 
 private:
-    Declaration declaration {};
+    Declaration declaration{};
     AttrName attrName = AttrName::INVALID;
 };
 
@@ -96,7 +101,7 @@ struct Elem {
     AttrRef getAttrRef() const { return ar; }
     std::string getSyn() const;
 
-    bool operator==(const Elem &o) const {
+    bool operator==(const Elem& o) const {
         if ((type == ElemType::ATTR_REF) && (o.type == ElemType::ATTR_REF)) {
             return ar == o.ar;
         } else if ((type == ElemType::DECLARATION) && (o.type == ElemType::DECLARATION)) {
@@ -108,7 +113,7 @@ struct Elem {
 
 private:
     AttrRef ar;
-    Declaration declaration {};
+    Declaration declaration{};
     ElemType type = ElemType::NOT_INITIALIZED;
 };
 
@@ -122,7 +127,6 @@ struct ResultCl {
 
     bool hasElem(const Elem& e) const;
 
-
 private:
     std::vector<Elem> tuple;
     bool boolean = false;
@@ -133,32 +137,32 @@ private:
 */
 struct StmtRef {
 private:
-    Declaration declaration {};
+    Declaration declaration{};
     int lineNo = -1;
     StmtRefType type = StmtRefType::NOT_INITIALIZED;
 
 public:
     /**
-        * Returns a StmtRef of type Declaration
-        *
-        * @param declaration the declaration
-        * @return StmtRef of type declaration and declaration name
-        */
+    * Returns a StmtRef of type Declaration
+    *
+    * @param declaration the declaration
+    * @return StmtRef of type declaration and declaration name
+    */
     static StmtRef ofDeclaration(Declaration d);
 
     /**
-        * Returns a StmtRef of type LineNo
-        *
-        * @param lineNo the line number of the StmtRef
-        * @return StmtRef of type lineNo and specified LineNo
-        */
+    * Returns a StmtRef of type LineNo
+    *
+    * @param lineNo the line number of the StmtRef
+    * @return StmtRef of type lineNo and specified LineNo
+    */
     static StmtRef ofLineNo(int lineNo);
 
     /**
-        * Returns a StmtRef of type Wildcard
-        *
-        * @return StmtRef of type wildcard
-        */
+    * Returns a StmtRef of type Wildcard
+    *
+    * @return StmtRef of type wildcard
+    */
     static StmtRef ofWildcard();
 
     StmtRefType getType() const;
@@ -172,39 +176,35 @@ public:
     bool isLineNo() const;
     bool isWildcard() const;
 
-    bool operator==(const StmtRef &o) const {
-        if (type == StmtRefType::DECLARATION && o.type == StmtRefType::DECLARATION)
+    bool operator==(const StmtRef& o) const {
+        if (type == StmtRefType::DECLARATION && o.type == StmtRefType::DECLARATION) {
             return declaration == o.declaration;
-        else if (type == StmtRefType::LINE_NO && o.type == StmtRefType::LINE_NO)
+        } else if (type == StmtRefType::LINE_NO && o.type == StmtRefType::LINE_NO) {
             return lineNo == o.lineNo;
+        }
 
         return type == StmtRefType::WILDCARD && o.type == StmtRefType::WILDCARD;
     }
 };
 
-enum class EntRefType {
-    NOT_INITIALIZED,
-    DECLARATION,
-    VARIABLE_NAME,
-    WILDCARD
-};
+enum class EntRefType { NOT_INITIALIZED, DECLARATION, VARIABLE_NAME, WILDCARD };
 
 /**
 * Struct used to store information on a EntRef
 */
 struct EntRef {
 private:
-    Declaration declaration {};
+    Declaration declaration{};
     std::string variable;
     EntRefType type = EntRefType::NOT_INITIALIZED;
 
 public:
     /**
-        * Returns a EntRef of type Declaration
-        *
-        * @param d the declaration
-        * @return EntRef of type declaration and declaration name
-        */
+    * Returns a EntRef of type Declaration
+    *
+    * @param d the declaration
+    * @return EntRef of type declaration and declaration name
+    */
     static EntRef ofDeclaration(Declaration d);
 
     /**
@@ -216,30 +216,29 @@ public:
     static EntRef ofVarName(std::string name);
 
     /**
-        * Returns a EntRef of type Wildcard
-        *
-        * @return EntRef of type wildcard
-        */
+    * Returns a EntRef of type Wildcard
+    *
+    * @return EntRef of type wildcard
+    */
     static EntRef ofWildcard();
 
-    EntRefType getType();
+    EntRefType getType() const;
 
     std::string getDeclarationSynonym() const;
     DesignEntity getDeclarationType() const;
     Declaration getDeclaration() const;
 
-    std::string getVariableName();
+    std::string getVariableName() const;
 
     bool isDeclaration() const;
+    bool isVarName() const;
+    bool isWildcard() const;
 
-    bool isVarName();
-
-    bool isWildcard();
-
-    bool operator==(const EntRef &o) const {
+    bool operator==(const EntRef& o) const {
         if (type == EntRefType::DECLARATION && o.type == EntRefType::DECLARATION)
             return declaration == o.declaration;
-        else if (type == EntRefType::VARIABLE_NAME && o.type == EntRefType::VARIABLE_NAME)
+        else if (type == EntRefType::VARIABLE_NAME &&
+            o.type == EntRefType::VARIABLE_NAME)
             return variable == o.variable;
 
         return type == EntRefType::WILDCARD && o.type == EntRefType::WILDCARD;
@@ -248,24 +247,25 @@ public:
 
 struct PKBFieldTransformer {
     /**
-     * Transforms a entRef into a PKBField.
-     *
-     * @param entRef
-     * @return a PKBField of the given entRef
-     */
+    * Transforms a entRef into a PKBField.
+    *
+    * @param entRef
+    * @return a PKBField of the given entRef
+    */
     static PKBField transformEntRefVar(EntRef e);
 
     static PKBField transformEntRefProc(EntRef e);
     /**
-     * Transforms a stmtRef into a PKBField.
-     *
-     * @param stmtRef
-     * @return a PKBField of the given stmtRef
-     */
+    * Transforms a stmtRef into a PKBField.
+    *
+    * @param stmtRef
+    * @return a PKBField of the given stmtRef
+    */
     static PKBField transformStmtRef(const StmtRef& s);
 };
 
-//  Following grammar rules naming convention: https://github.com/nus-cs3203/project-wiki/wiki/Iteration-1-Scope
+//  Following grammar rules naming convention:
+//  https://github.com/nus-cs3203/project-wiki/wiki/Iteration-1-Scope
 enum class RelRefType {
     INVALID,
     FOLLOWS,
@@ -295,11 +295,16 @@ struct RelRef {
     explicit RelRef(RelRefType type) : type(type) {}
 
     virtual ~RelRef() {}
+    virtual size_t getHash() const = 0;
 
     virtual RelRefType getType() const { return type; }
 
     virtual void checkFirstArg() {}
     virtual void checkSecondArg() {}
+
+    virtual bool equalTo(const RelRef& r) const = 0;
+
+    bool operator==(const RelRef& r) const { return equalTo(r); }
 
     virtual std::vector<PKBField> getField() = 0;
     virtual std::vector<Declaration> getDecs() = 0;
@@ -310,18 +315,18 @@ struct RelRef {
         return equalTo(r);
     }
 protected:
-    template<typename T, typename F1, typename F2>
+    template <typename T, typename F1, typename F2>
     std::vector<PKBField> getFieldHelper(const F1 T::*f1, const F2 T::*f2) {
-        const auto derivedPtr = static_cast<T *>(this);
+        const auto derivedPtr = static_cast<T*>(this);
         PKBField field1 = [&]() {
-            if constexpr(std::is_same_v<F1, StmtRef>) {
+            if constexpr (std::is_same_v<F1, StmtRef>) {
                 return PKBFieldTransformer::transformStmtRef(derivedPtr->*f1);
             } else {
                 return PKBFieldTransformer::transformEntRefVar(derivedPtr->*f1);
             }
         }();
         PKBField field2 = [&]() {
-            if constexpr(std::is_same_v<F2, StmtRef>) {
+            if constexpr (std::is_same_v<F2, StmtRef>) {
                 return PKBFieldTransformer::transformStmtRef(derivedPtr->*f2);
             } else {
                 return PKBFieldTransformer::transformEntRefVar(derivedPtr->*f2);
@@ -331,10 +336,10 @@ protected:
         return std::vector<PKBField>{field1, field2};
     }
 
-    template<typename T, typename F1, typename F2>
+    template <typename T, typename F1, typename F2>
     std::vector<Declaration> getDecsHelper(const F1 T::*f1, const F2 T::*f2) {
         std::vector<Declaration> synonyms;
-        const auto derivedPtr = static_cast<T *>(this);
+        const auto derivedPtr = static_cast<T*>(this);
         if ((derivedPtr->*f1).isDeclaration()) {
             synonyms.push_back((derivedPtr->*f1).getDeclaration());
         }
@@ -346,11 +351,20 @@ protected:
         return synonyms;
     }
 
+<<<<<<< HEAD
     template<typename T, typename F1, typename F2>
     bool equalityCheckHelper(const F1 T::*f1, const F2 T::*f2, const RelRef* r ) const {
         const auto derivedPtr1 = static_cast<const T *>(this);
         const auto derivedPtr2 = static_cast<const T *>(r);
         return (derivedPtr1->*f1 == derivedPtr2->*f1) && (derivedPtr1->*f2 == derivedPtr2->*f2);
+=======
+    template <typename T, typename F1, typename F2>
+    bool equalityCheckHelper(const F1 T::*f1, const F2 T::*f2, const RelRef* r) const {
+        const auto derivedPtr1 = static_cast<const T*>(this);
+        const auto derivedPtr2 = static_cast<const T*>(r);
+        return (derivedPtr1->*f1 == derivedPtr2->*f1) &&
+            (derivedPtr1->*f2 == derivedPtr2->*f2);
+>>>>>>> ccceac5cbf383ed4a3cc8a96c883258a0551ad58
     }
 };
 
@@ -367,6 +381,8 @@ struct ModifiesS : RelRef {
     std::vector<Declaration> getDecs() override;
 
     bool equalTo(const RelRef& r) const override;
+    size_t getHash() const override;
+
     void checkFirstArg() override;
     void checkSecondArg() override;
 };
@@ -384,6 +400,8 @@ struct ModifiesP : RelRef {
     std::vector<Declaration> getDecs() override;
 
     bool equalTo(const RelRef& r) const override;
+    size_t getHash() const override;
+
     void checkFirstArg() override;
     void checkSecondArg() override;
 };
@@ -398,9 +416,11 @@ struct UsesS : RelRef {
     StmtRef useStmt;
 
     std::vector<PKBField> getField() override;
-
     std::vector<Declaration> getDecs() override;
+
     bool equalTo(const RelRef& r) const override;
+    size_t getHash() const override;
+
     void checkFirstArg() override;
     void checkSecondArg() override;
 };
@@ -415,7 +435,11 @@ struct UsesP : RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
+
     bool equalTo(const RelRef& r) const override;
+
+    size_t getHash() const override;
+
     void checkFirstArg() override;
     void checkSecondArg() override;
 };
@@ -427,9 +451,10 @@ struct Follows : RelRef {
     StmtRef followed;
 
     std::vector<PKBField> getField() override;
-
     std::vector<Declaration> getDecs() override;
     bool equalTo(const RelRef& r) const override;
+
+    size_t getHash() const override;
 };
 
 struct FollowsT : RelRef {
@@ -439,9 +464,11 @@ struct FollowsT : RelRef {
     StmtRef transitiveFollowed;
 
     std::vector<PKBField> getField() override;
-
     std::vector<Declaration> getDecs() override;
+
     bool equalTo(const RelRef& r) const override;
+
+    size_t getHash() const override;
 };
 
 struct Parent : RelRef {
@@ -451,9 +478,11 @@ struct Parent : RelRef {
     StmtRef child;
 
     std::vector<PKBField> getField() override;
-
     std::vector<Declaration> getDecs() override;
+
     bool equalTo(const RelRef& r) const override;
+
+    size_t getHash() const override;
 };
 
 struct ParentT : RelRef {
@@ -463,10 +492,11 @@ struct ParentT : RelRef {
     StmtRef transitiveChild;
 
     std::vector<PKBField> getField() override;
-
     std::vector<Declaration> getDecs() override;
 
     bool equalTo(const RelRef& r) const override;
+
+    size_t getHash() const override;
 };
 
 struct Calls : RelRef {
@@ -482,9 +512,11 @@ struct Calls : RelRef {
 
     void checkFirstArg() override;
     void checkSecondArg() override;
+
+    size_t getHash() const override;
 };
 
-struct CallsT: RelRef {
+struct CallsT : RelRef {
     CallsT() : RelRef(RelRefType::CALLST) {}
 
     EntRef caller;
@@ -497,6 +529,8 @@ struct CallsT: RelRef {
 
     void checkFirstArg() override;
     void checkSecondArg() override;
+
+    size_t getHash() const override;
 };
 
 struct Next : RelRef {
@@ -507,7 +541,10 @@ struct Next : RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
+
     bool equalTo(const RelRef& r) const override;
+
+    size_t getHash() const override;
 };
 
 struct NextT : RelRef {
@@ -518,7 +555,10 @@ struct NextT : RelRef {
 
     std::vector<PKBField> getField() override;
     std::vector<Declaration> getDecs() override;
+
     bool equalTo(const RelRef& r) const override;
+
+    size_t getHash() const override;
 };
 
 struct Affects : RelRef {
@@ -534,6 +574,8 @@ struct Affects : RelRef {
 
     void checkFirstArg() override;
     void checkSecondArg() override;
+
+    size_t getHash() const override;
 };
 
 struct AffectsT : RelRef {
@@ -549,6 +591,8 @@ struct AffectsT : RelRef {
 
     void checkFirstArg() override;
     void checkSecondArg() override;
+
+    size_t getHash() const override;
 };
 
 /**
@@ -567,13 +611,13 @@ struct ExpSpec {
 
     std::string getPattern() const;
 
-    bool operator==(const ExpSpec &o) const {
+    bool operator==(const ExpSpec& o) const {
         return (wildCard == o.wildCard) && (partialMatch == o.partialMatch) && (pattern == o.pattern);
     }
 
 private:
-    ExpSpec(bool wildCard, bool partialMatch, std::string pattern) : wildCard(wildCard), partialMatch(partialMatch),
-                                                                    pattern(std::move(pattern)) {}
+    ExpSpec(bool wildCard, bool partialMatch, std::string pattern)
+        : wildCard(wildCard), partialMatch(partialMatch), pattern(std::move(pattern)) {}
 
     std::string pattern;
     bool wildCard = false;
@@ -590,27 +634,20 @@ struct Pattern {
 
     std::string getSynonym() const { return declaration.getSynonym(); }
     DesignEntity getSynonymType() const { return declaration.getType(); }
+    Declaration getDeclaration() const { return declaration; }
 
     EntRef getEntRef() const { return lhs; }
     ExpSpec getExpression() const;
 
-    bool operator==(const Pattern &o) const {
-        return (declaration == o.declaration) && (lhs == o.lhs) &&
-            (expression == o.expression);
-    }
+    bool operator==(const Pattern& o) const { return (declaration == o.declaration) && (lhs == o.lhs) && (expression == o.expression); }
 
 private:
-    EntRef lhs {};
-    Declaration declaration {};
-    ExpSpec expression {};
+    EntRef lhs{};
+    Declaration declaration{};
+    ExpSpec expression{};
 };
 
-enum class AttrCompareRefType {
-    NOT_INITIALIZED,
-    NUMBER,
-    STRING,
-    ATTRREF
-};
+enum class AttrCompareRefType { NOT_INITIALIZED, NUMBER, STRING, ATTRREF };
 
 struct AttrCompareRef {
 private:
@@ -631,13 +668,19 @@ public:
     bool isString() const { return type == AttrCompareRefType::STRING; }
     bool isNumber() const { return type == AttrCompareRefType::NUMBER; }
     bool isAttrRef() const { return type == AttrCompareRefType::ATTRREF; }
-    bool validComparison(const AttrCompareRef&  o) const;
 
-    bool operator==(const AttrCompareRef &o) const {
-        return (type == o.type) && (str_value == o.str_value) && (ar == o.ar) && (number == o.number);
+    bool operator==(const AttrCompareRef& o) const {
+        if (isString() && o.isString()) {
+            return str_value == o.getString();
+        } else if (isNumber() && o.isNumber()) {
+            return number == o.getNumber();
+        } else if (isAttrRef() && o.isAttrRef()) {
+            return ar == o.getAttrRef();
+        }
+
+        return false;
     }
 };
-
 
 struct AttrCompare {
     AttrCompareRef lhs;
@@ -648,11 +691,6 @@ struct AttrCompare {
 
     AttrCompareRef getLhs() const { return lhs; }
     AttrCompareRef getRhs() const { return rhs; }
-    void validateComparingTypes() const;
-
-    bool operator==(const AttrCompare &o) const {
-        return (lhs == o.lhs) && (rhs == o.rhs);
-    }
 };
 
 /**
@@ -675,14 +713,13 @@ public:
     std::vector<Pattern> getPattern() const;
     std::vector<AttrCompare> getWith() const;
 
-
     bool isValid() const;
     void setValid(bool);
 
     bool hasDeclaration(const std::string&) const;
-    bool hasSelectElem(const Elem &e) const;
+    bool hasSelectElem(const Elem& e) const;
 
-    void addDeclaration(const std::string &, DesignEntity);
+    void addDeclaration(const std::string&, DesignEntity);
     void addResultCl(const ResultCl& resultCl);
 
     void addSuchthat(const std::shared_ptr<RelRef>&);
@@ -690,12 +727,132 @@ public:
     void addWith(const AttrCompare&);
 
     /**
-        * Returns the DesignEntity of the specified declaration
-        *
-        * @param declaration the name of the declaration
-        * @return DesignEntity of the specified declaration
-        */
-    DesignEntity getDeclarationDesignEntity(const std::string &declaration) const;
+    * Returns the DesignEntity of the specified declaration
+    *
+    * @param declaration the name of the declaration
+    * @return DesignEntity of the specified declaration
+    */
+    DesignEntity getDeclarationDesignEntity(const std::string& declaration) const;
+};
+} // namespace qps::query
+
+// Hash declarations
+namespace std {
+using qps::query::AttrCompare;
+using qps::query::AttrCompareRef;
+using qps::query::AttrRef;
+using qps::query::Declaration;
+using qps::query::DesignEntity;
+using qps::query::EntRef;
+using qps::query::ExpSpec;
+using qps::query::ModifiesS;
+using qps::query::Pattern;
+using qps::query::RelRef;
+using qps::query::StmtRef;
+
+using utils::hash_combine;
+
+template <> struct hash<Declaration> {
+    size_t operator()(const Declaration& d) const {
+        size_t seed = 0;
+        hash_combine(seed, d.getSynonym());
+        hash_combine(seed, d.getType());
+        return seed;
+    }
 };
 
-}  // namespace qps::query
+template <> struct hash<AttrRef> {
+    size_t operator()(const AttrRef& a) const {
+        size_t seed = 0;
+        hash_combine(seed, a.getAttrName());
+        hash_combine(seed, a.getDeclaration());
+        return seed;
+    }
+};
+
+template <> struct hash<StmtRef> {
+    size_t operator()(const StmtRef& s) const {
+        size_t seed = 0;
+        hash_combine(seed, s.getType());
+
+        if (s.isDeclaration()) {
+            hash_combine(seed, s.getDeclaration());
+        } else if (s.isLineNo()) {
+            hash_combine(seed, s.getLineNo());
+        }
+
+        return seed;
+    }
+};
+
+template <> struct hash<EntRef> {
+    size_t operator()(const EntRef& e) const {
+        size_t seed = 0;
+        hash_combine(seed, e.getType());
+
+        if (e.isDeclaration()) {
+            hash_combine(seed, e.getDeclaration());
+        } else if (e.isVarName()) {
+            hash_combine(seed, e.getVariableName());
+        }
+
+        return seed;
+    }
+};
+
+template <> struct hash<RelRef*> {
+    size_t operator()(RelRef* r) const { return r->getHash(); };
+};
+
+template <> struct equal_to<std::shared_ptr<RelRef>> {
+    bool operator()(std::shared_ptr<RelRef> lhs, std::shared_ptr<RelRef> rhs) const { return *lhs == *rhs; };
+};
+
+template <> struct hash<ExpSpec> {
+    size_t operator()(const ExpSpec& e) const {
+        size_t seed = 0;
+        hash_combine(seed, e.isWildcard());
+        hash_combine(seed, e.isPartialMatch());
+        hash_combine(seed, e.getPattern());
+        return seed;
+    };
+};
+
+template <> struct hash<Pattern> {
+    size_t operator()(const Pattern& p) const {
+        size_t seed = 0;
+        hash_combine(seed, p.getDeclaration());
+        hash_combine(seed, p.getEntRef());
+
+        if (p.getSynonymType() == DesignEntity::ASSIGN) {
+            hash_combine(seed, p.getExpression());
+        }
+
+        return seed;
+    };
+};
+
+template <> struct hash<AttrCompareRef> {
+    size_t operator()(const AttrCompareRef& a) const {
+        size_t seed = 0;
+        if (a.isString()) {
+            hash_combine(seed, a.getString());
+        } else if (a.isNumber()) {
+            hash_combine(seed, a.getNumber());
+        } else if (a.isAttrRef()) {
+            hash_combine(seed, a.getAttrRef());
+        }
+        return seed;
+    };
+};
+
+template <> struct hash<AttrCompare> {
+    size_t operator()(const AttrCompare& a) const {
+        size_t seed = 0;
+        hash_combine(seed, a.getLhs());
+        hash_combine(seed, a.getRhs());
+        return seed;
+    };
+};
+
+} // namespace std
