@@ -14,6 +14,7 @@
 #include "Parser.h"
 #include "logging.h"
 #include "AST.h"
+#include "Validator.h"
 
 namespace sp {
 namespace parser {

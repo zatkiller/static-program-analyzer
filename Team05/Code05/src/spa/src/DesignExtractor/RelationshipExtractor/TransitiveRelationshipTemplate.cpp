@@ -1,3 +1,4 @@
+#include "DesignExtractor/CallGraph.h"
 #include "DesignExtractor/EntityExtractor/EntityExtractor.h"
 #include "TransitiveRelationshipTemplate.h"
 
@@ -19,30 +20,11 @@ public:
 };
 
 struct CallGraphPreProcessor {
-    using AdjacencyList = std::map<std::string, std::vector<std::string>>;
     std::vector<std::string> topolst;
-    std::map<std::string, const ast::Procedure*> procMap;
-    struct CallGraphWalker : public TreeWalker {
-        std::string currentProc = "";
-        AdjacencyList callGraph;
-        std::map<std::string, const ast::Procedure*> procMap;
-
-        void visit(const ast::Procedure& node) {
-            // unified starting point 1 which is a procedure name that cannot exist.
-            callGraph["1"].push_back(node.getName());
-            currentProc = node.getName();
-            procMap[currentProc] = &node;
-        }
-
-        void visit(const ast::Call& node) {
-            callGraph[currentProc].push_back(node.getName());
-        }
-    };
-
-
+    std::unordered_map<std::string, const ast::Procedure*> procMap;
     void processReverseTopoOrder(
         std::string node, 
-        const AdjacencyList& lst, 
+        const CallGraph::AdjacencyList& lst,
         std::map<std::string, bool>& visited
     ) {
         if (visited[node]) {
@@ -60,15 +42,15 @@ struct CallGraphPreProcessor {
     }
 
     void preprocess(const ast::ASTNode *node) {
-        CallGraphWalker cgw;
-        node->accept(&cgw);
+        CallGraph grapher(node);
+        
         std::map<std::string, bool> visited;
-        processReverseTopoOrder("1", cgw.callGraph, visited);
+        processReverseTopoOrder("1", grapher.getCallGraph(), visited);
 
         // remove the place holder 
         topolst.pop_back();
 
-        procMap = cgw.procMap;
+        procMap = grapher.getProcMap();
     }
 };
 
