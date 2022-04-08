@@ -910,7 +910,7 @@ TEST_CASE("AffectsEvaluator single-proc test 1") {
     StatementType ASSIGN = StatementType::Assignment;
     StatementType IF = StatementType::If;
     StatementType WHILE = StatementType::While;
-    StatementType PRINT = StatementType::Print;    
+    StatementType PRINT = StatementType::Print;
 
     // Initialize affEval
     affEval->initCFG(cfgContainer);
@@ -1050,13 +1050,20 @@ TEST_CASE("AffectsEvaluator multi-proc test") {
     }
     procedure second {
         x = b;
-        a = c;
+        while (a > b) {
+            y = y + 1;
+            if (c > 4) then {
+                x = b + y;
+            } else {
+                b = y * 3;
+            }
+        }
     }
     procedure third {
         while (y == x) {
             x = x + y;
             if (c > b) then {
-                a = 4 + c;
+                b = 4 + c;
             } else {
                 c = a + 4;
             }
@@ -1076,17 +1083,45 @@ TEST_CASE("AffectsEvaluator multi-proc test") {
 
     // Declarations for test case usage
     PKBField stmtDecl = PKBField::createDeclaration(ALL);
-    PKBField assnDecl = PKBField::createDeclaration(ASSIGN);
 
-    SECTION("AffectsEvaluator::contains (transitive & non-transitive)") {
+    PKBField conc1 = PKBField::createConcrete(STMT_LO(1, ASSIGN));
+    PKBField conc6 = PKBField::createConcrete(STMT_LO(6, ASSIGN));
+    PKBField conc7 = PKBField::createConcrete(STMT_LO(7, ASSIGN));
+    PKBField conc9 = PKBField::createConcrete(STMT_LO(9, ASSIGN));
+    PKBField conc11 = PKBField::createConcrete(STMT_LO(11, ASSIGN));
+    PKBField conc12 = PKBField::createConcrete(STMT_LO(12, ASSIGN));
+    PKBField conc14 = PKBField::createConcrete(STMT_LO(14, ASSIGN));
+    PKBField conc16 = PKBField::createConcrete(STMT_LO(16, ASSIGN));
+    PKBField conc17 = PKBField::createConcrete(STMT_LO(17, ASSIGN));
 
+    SECTION("AffectsEvaluator::contains") {
+        REQUIRE(affEval->contains(conc17, conc16));
+        REQUIRE(affEval->contains(conc9, conc9));
+        REQUIRE_FALSE(affEval->contains(conc1, conc6));
+        REQUIRE_FALSE(affEval->contains(conc6, conc17, true));
     }
 
-    SECTION("AffectsEvaluator::retrieve (non-transitive)") {
+    SECTION("AffectsEvaluator::retrieve") {
+        // (Declaration, Concrete)
+        FieldRowResponse expected1{ {conc9, conc11}, {conc12, conc11} };
+        REQUIRE(affEval->retrieve(stmtDecl, conc11) == expected1);
+        REQUIRE(affEval->retrieve(stmtDecl, conc7) == FieldRowResponse());
 
-    }
+        // (Concrete, Declaration)
+        FieldRowResponse expected2{ {conc9, conc9}, {conc9, conc11}, {conc9, conc12} };
+        REQUIRE(affEval->retrieve(conc9, stmtDecl) == expected2);
+        REQUIRE(affEval->retrieve(conc16, stmtDecl) == FieldRowResponse());
 
-    SECTION("AffectsEvaluator::retrieve (transitive)") {
-
+        // (Declaration, Declaration)
+        FieldRowResponse expected3{
+            {conc6, conc6},
+            {conc9, conc9},
+            {conc9, conc11},
+            {conc9, conc12},
+            {conc12, conc11},
+            {conc14, conc14},
+            {conc17, conc16}
+        };
+        REQUIRE(affEval->retrieve(stmtDecl, stmtDecl) == expected3);
     }
 }
