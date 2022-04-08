@@ -284,7 +284,8 @@ namespace ast {
 
             SECTION("Next extractor test") {
                 auto ne = std::make_unique<NextExtractor>();
-                auto cfg = std::make_unique<cfg::CFGExtractor>()->extract(program.get()).cfgs;
+                auto cfgContainer = std::make_unique<cfg::CFGExtractor>()->extract(program.get());
+                auto cfgs = cfgContainer.cfgs;
                 std::set<std::pair<Content, Content>> expected = {
                     p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
                     p(STMT_LO{2, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
@@ -299,7 +300,7 @@ namespace ast {
                     p(STMT_LO{10, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
                     p(STMT_LO{3, StatementType::While}, STMT_LO{11, StatementType::Print}),
                 };
-                REQUIRE(transformRelationship(ne->extract(&cfg)) == expected);
+                REQUIRE(transformRelationship(ne->extract(&cfgs)) == expected);
             }
         }    
         
@@ -407,7 +408,8 @@ namespace ast {
             REQUIRE(transformRelationship(ce.extract(program.get())) == expected);
 
             NextExtractor ne;
-            auto cfgs = cfg::CFGExtractor().extract(program.get()).cfgs;
+            auto cfgContainer = cfg::CFGExtractor().extract(program.get());
+            auto cfgs = cfgContainer.cfgs;
             expected = {
                 p(STMT_LO{1, StatementType::Call}, STMT_LO{2, StatementType::Call}),
                 p(STMT_LO{4, StatementType::Call}, STMT_LO{5, StatementType::Call}),
@@ -492,7 +494,8 @@ namespace ast {
             REQUIRE(transformRelationship(ue.extract(program.get())) == expected);
 
             NextExtractor ne;
-            auto cfgs = cfg::CFGExtractor().extract(program.get()).cfgs;
+            auto cfgContainer = cfg::CFGExtractor().extract(program.get());
+            auto cfgs = cfgContainer.cfgs;
             expected = {
                 p(STMT_LO{1, StatementType::While}, STMT_LO{2, StatementType::Call}),
                 p(STMT_LO{2, StatementType::Call}, STMT_LO{3, StatementType::Assignment}),
@@ -605,7 +608,8 @@ namespace ast {
             std::set<std::pair<Content, Content>> expected;
 
             NextExtractor ne;
-            auto cfgs = cfg::CFGExtractor().extract(program.get()).cfgs;
+            auto cfgContainer = cfg::CFGExtractor().extract(program.get());
+            auto cfgs = cfgContainer.cfgs;
             expected = {
                 p(STMT_LO{1, StatementType::If}, STMT_LO{2, StatementType::Read}),
                 p(STMT_LO{1, StatementType::If}, STMT_LO{3, StatementType::If}),
