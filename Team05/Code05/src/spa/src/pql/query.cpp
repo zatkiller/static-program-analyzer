@@ -123,10 +123,11 @@ bool ResultCl::hasElem(const Elem& e) const {
 }
 
 std::vector<std::string> ResultCl::getSynAsList() const {
-    std::vector<std::string> syns;
+    std::unordered_set<std::string> distinctSyn;
     for (auto elem : getTuple()) {
-        syns.push_back(elem.getSyn());
+        distinctSyn.insert(elem.getSyn());
     }
+    std::vector<std::string> syns(distinctSyn.begin(), distinctSyn.end());
     return syns;
 }
 
