@@ -62,7 +62,6 @@ namespace qps::evaluator {
             filterPKBResponse(response);
         }
         tableRef.insert(response, synonyms);
-
     }
 
     bool ClauseHandler::handleNoSynRelRef(const std::shared_ptr<query::RelRef>& noSynClauses) {
@@ -98,7 +97,6 @@ namespace qps::evaluator {
             response = selectDeclaredValue(response, true);
         }
         tableRef.insert(response, synonyms);
-
     }
 
     bool ClauseHandler::handleNoAttrRefWith(const query::AttrCompare& noAttrClause) {
