@@ -21,15 +21,6 @@ struct ExprFlattener : public TreeWalker {
     void visit(const ast::BinExpr& node) override {
         nodes.emplace_back(node);
     };
-    void visit(const ast::RelExpr& node) override {
-        nodes.emplace_back(node);
-    };
-    void visit(const ast::CondBinExpr& node) override {
-        nodes.emplace_back(node);
-    };
-    void visit(const ast::NotCondExpr& node) override {
-        nodes.emplace_back(node);
-    };
 };
 
 /**
