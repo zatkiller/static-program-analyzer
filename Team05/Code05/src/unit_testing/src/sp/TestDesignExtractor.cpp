@@ -983,6 +983,7 @@ namespace ast {
             );
 
             REQUIRE(extractAssignHelper(ast.get(), "z", "_").size() == 1);
+            REQUIRE(extractAssignHelper(ast.get(), "x", "_").size() == 0);
             REQUIRE(extractAssignHelper(ast.get(), "_", "y").size() == 1);
             REQUIRE(extractAssignHelper(ast.get(), "_", "x-1").size() == 0);
             REQUIRE(extractAssignHelper(ast.get(), "_", "1 +   x - 2 + y").size() == 1);
