@@ -66,8 +66,6 @@ namespace qps::evaluator {
                                         : PKBFieldToString(fld));
                 if (i != elem.size() - 1) result +=  " ";
             }
-            result.erase(std::find_if(result.rbegin(), result.rend(), [](unsigned char ch) {
-                return !std::isspace(ch);}).base(), result.end());
             resultSet.insert(result);
         }
 
