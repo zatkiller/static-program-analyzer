@@ -42,10 +42,9 @@ namespace qps::evaluator {
         return res;
     }
 
-    std::list<std::string> ResultProjector::projectResult(ResultTable &table, query::ResultCl resultCl) {
-        std::list<std::string> listResult{};
+    std::list<std::string> ResultProjector::projectResult(ResultTable &table, query::ResultCl resultCl) {›››
         if (!table.hasResult()) {
-            return listResult;
+            return std::list<std::string>{};
         }
         std::vector<query::Elem> tuple = resultCl.getTuple();
         std::vector<SelectElemInfo> elem{};
@@ -61,19 +60,17 @@ namespace qps::evaluator {
         std::unordered_set<std::string> resultSet;
         for (auto record : table.getTable()) {
             std::string result;
-            for (auto e : elem) {
-                PKBField fld = record[e.columnNo];
-                result += (e.isAttr ? PKBFieldAttrToString(fld, e.attrName)
-                                    : PKBFieldToString(fld)) + " ";
+            for (int i = 0; i  < elem.size(); i++) {
+                PKBField fld = record[elem[i].columnNo];
+                    result += (elem[i].isAttr ? PKBFieldAttrToString(fld, elem[i].attrName)
+                                        : PKBFieldToString(fld));
+                if (i != elem.size() - 1) result +=  " ";
             }
             result.erase(std::find_if(result.rbegin(), result.rend(), [](unsigned char ch) {
                 return !std::isspace(ch);}).base(), result.end());
-            if (resultSet.find(result) == resultSet.end()) {
-                listResult.push_back(result);
-                resultSet.insert(result);
-            }
+            resultSet.insert(result);
         }
 
-        return listResult;
+        return std::list<std::string>{resultSet.begin(), resultSet.end()};
     }
 }  // namespace qps::evaluator
