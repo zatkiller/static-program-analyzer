@@ -56,6 +56,8 @@ namespace qps::evaluator {
         ClauseHandler handler = ClauseHandler(pkb, resultTable);
         handler.handleResultCl(resultcl);
 
+        pkb->clearCache();
+
         if (resultcl.isBoolean()) return std::list<std::string>{"TRUE"};
         return ResultProjector::projectResult(resultTable, resultcl);
     }

@@ -62,9 +62,6 @@ namespace qps::evaluator {
             filterPKBResponse(response);
         }
         tableRef.insert(response, synonyms);
-
-        if (relRefPtr->getType() == query::RelRefType::AFFECTS || relRefPtr->getType() == query::RelRefType::AFFECTST)
-            pkb->clearCache();
     }
 
     bool ClauseHandler::handleNoSynRelRef(const std::shared_ptr<query::RelRef>& noSynClauses) {
