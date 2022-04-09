@@ -595,14 +595,17 @@ TEST_CASE("Test parse and store for multi procedure package 2") {
         REQUIRE(pkb.match(StatementType::If, PatternParam(std::nullopt)) ==
             expectedResponse(FieldRowResponse{
                 row(STMT_LO{ 3, StatementType::If }, VAR_NAME{"x"}) }));
+
         REQUIRE(pkb.match(StatementType::While, sp::design_extractor::PatternParam(std::nullopt)) ==
             expectedResponse(FieldRowResponse{
                 std::vector<PKBField>{PKBField::createConcrete(STMT_LO{ 1, StatementType::While }),
                     PKBField::createConcrete(VAR_NAME{"x"})},
                 std::vector<PKBField>{
                     PKBField::createConcrete(STMT_LO{ 7, StatementType::While }),
-                    PKBField::createConcrete(VAR_NAME{"y"}),
-                    PKBField::createConcrete(VAR_NAME{"z"}) },
+                    PKBField::createConcrete(VAR_NAME{"y"})},
+                std::vector<PKBField>{
+                    PKBField::createConcrete(STMT_LO{ 7, StatementType::While }),
+                    PKBField::createConcrete(VAR_NAME{"z"})},
                 std::vector<PKBField>{PKBField::createConcrete(STMT_LO{ 15, StatementType::While }),
                     PKBField::createConcrete(VAR_NAME{"x2"})} }));
     }
