@@ -8,16 +8,28 @@
 
 #include "PKBCommons.h"
 
+/**
+* An enum for the program design entities.
+*/
 enum class PKBEntityType {
     STATEMENT, VARIABLE, PROCEDURE, CONST
 };
 
+/**
+* An enum for the types of fields in PQL queries.
+*/
 enum class PKBFieldType {
     CONCRETE, DECLARATION, WILDCARD
 };
 
+/**
+* A data type that maps to constants in SIMPLE.
+*/
 typedef int CONST;
 
+/**
+* A data type that maps to variables in SIMPLE.
+*/
 typedef struct VAR_NAME {
     VAR_NAME(std::string str) : name(str) {}
     std::string name;
@@ -26,6 +38,9 @@ typedef struct VAR_NAME {
     bool operator < (const VAR_NAME&) const;
 } VAR_NAME;
 
+/**
+* A data type that maps to variables in SIMPLE.
+*/
 typedef struct PROC_NAME {
     PROC_NAME(std::string str) : name(str) {}
     std::string name;
@@ -34,9 +49,14 @@ typedef struct PROC_NAME {
     bool operator < (const PROC_NAME&) const;
 } PROC_NAME;
 
+/**
+* A data type that maps to statements in SIMPLE.
+*/
 typedef struct STMT_LO {
     STMT_LO(int statementNum) : statementNum(statementNum), type(std::nullopt), attribute(std::nullopt) {}
+
     STMT_LO(int statementNum, StatementType type) : statementNum(statementNum), type(type), attribute(std::nullopt) {}
+
     STMT_LO(int statementNum, StatementType type, std::string attribute) :
         statementNum(statementNum), type(type), attribute(attribute) {}
 
@@ -44,8 +64,16 @@ typedef struct STMT_LO {
     std::optional<StatementType> type;
     std::optional<std::string> attribute;
 
+    /**
+    * Checks whether this STMT_LO has a statement type appended.
+    */
     bool hasStatementType() const;
+
+    /**
+    * Checks whether this STMT_LO has an attribute appended.
+    */
     bool hasAttribute() const;
+
     bool operator == (const STMT_LO&) const;
     bool operator != (const STMT_LO&) const;
     bool operator < (const STMT_LO&) const;

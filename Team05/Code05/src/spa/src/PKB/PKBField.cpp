@@ -3,6 +3,8 @@
 
 #include "PKBField.h"
 
+/** ==================================== STMT_LO METHODS ==================================== */
+
 bool STMT_LO::operator == (const STMT_LO& other) const {
     return statementNum == other.statementNum && type == other.type && attribute == other.attribute;
 }
@@ -22,6 +24,8 @@ bool STMT_LO::hasAttribute() const {
     return attribute.has_value();
 }
 
+/** ==================================== VAR_NAME METHODS ==================================== */
+
 bool VAR_NAME::operator == (const VAR_NAME& other) const {
     return name == other.name;
 }
@@ -30,6 +34,8 @@ bool VAR_NAME::operator < (const VAR_NAME& other) const {
     return name < other.name;
 }
 
+/** ==================================== PROC_NAME METHODS ==================================== */
+
 bool PROC_NAME::operator == (const PROC_NAME& other) const {
     return name == other.name;
 }
@@ -37,6 +43,8 @@ bool PROC_NAME::operator == (const PROC_NAME& other) const {
 bool PROC_NAME::operator < (const PROC_NAME& other) const {
     return name < other.name;
 }
+
+/** ==================================== PKBField METHODS ==================================== */
 
 bool PKBField::operator == (const PKBField& other) const {
     if (entityType == other.entityType && (fieldType == PKBFieldType::CONCRETE && fieldType == other.fieldType)) {

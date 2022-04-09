@@ -2,7 +2,8 @@
 #include "logging.h"
 #include <algorithm>
 
-/* --------------------------------- StatementVector Methods ----------------------------------------*/
+/** ================================ STATEMENTVECTOR METHODS ================================ */
+
 STMT_LO NULL_STMT_LO = STMT_LO{ 0, StatementType::None };
 
 
@@ -91,16 +92,20 @@ std::vector<STMT_LO> StatementVector::getStmtsOfType(StatementType type) const {
     return res;
 }
 
-/* --------------------------------- ProcedureTable Methods ----------------------------------------*/
+/** ================================ PROCEDURETABLE METHODS ================================ */
+
 ProcedureTable::ProcedureTable() : EntityTable(EntitySet<PROC_NAME>{}) {}
 
-/* --------------------------------- ConstantTable Methods ----------------------------------------*/
+/** ================================ CONSTANTTABLE METHODS ================================ */
+
 ConstantTable::ConstantTable() : EntityTable(EntitySet<CONST>{}) {}
 
-/* --------------------------------- VariableTable Methods ----------------------------------------*/
+/** ================================ VARIABLETABLE METHODS ================================ */
+
 VariableTable::VariableTable() : EntityTable(EntitySet<VAR_NAME>{}) {}
 
-/* --------------------------------- StatementTable Methods ----------------------------------------*/
+/** ================================ STATEMENTTABLE METHODS ================================ */
+
 StatementTable::StatementTable() : EntityTable(StatementVector{}) {}
 
 bool StatementTable::contains(int statementNumber) const {

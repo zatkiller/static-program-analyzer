@@ -153,15 +153,16 @@ FollowsRelationshipTable::FollowsRelationshipTable() :
 
 ParentRelationshipTable::ParentRelationshipTable() : TransitiveRelationshipTable<STMT_LO>{ PKBRelationship::PARENT } {}
 
-/** ========================= CALLSRELATIONSHIPTABLE METHODS =========================== */
+/** =========================== CALLSRELATIONSHIPTABLE METHODS =========================== */
 
 CallsRelationshipTable::CallsRelationshipTable() : TransitiveRelationshipTable<PROC_NAME>{ PKBRelationship::CALLS } {}
 
-/** =========================NEXTRELATIONSHIPTABLE METHODS ============================== */
+/** ========================= NEXTRELATIONSHIPTABLE METHODS ============================== */
 
 NextRelationshipTable::NextRelationshipTable() : TransitiveRelationshipTable<STMT_LO>{ PKBRelationship::NEXT } {}
 
-/** ========================AFFECTSEVALUATOR METHODS ==================================== */
+/** ======================== AFFECTSEVALUATOR METHODS ==================================== */
+
 void convertWildcardToDeclaration(PKBField* field) {
     if (field->fieldType == PKBFieldType::WILDCARD) {
         field->fieldType = PKBFieldType::DECLARATION;
