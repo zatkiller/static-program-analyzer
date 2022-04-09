@@ -42,7 +42,7 @@ namespace qps::evaluator {
         return res;
     }
 
-    std::list<std::string> ResultProjector::projectResult(ResultTable &table, query::ResultCl resultCl) {›››
+    std::list<std::string> ResultProjector::projectResult(ResultTable &table, query::ResultCl resultCl) {
         if (!table.hasResult()) {
             return std::list<std::string>{};
         }
