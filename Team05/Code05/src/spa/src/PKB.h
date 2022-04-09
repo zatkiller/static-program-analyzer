@@ -115,9 +115,9 @@ public:
     * @param lhs The optional PatternParam of LHS variable. Use std::nullopt if LHS is wildcard or synonym.
     * @param rhs The optional PatternParam of RHS expression. Use std::nullopt if RHS is wildcard. Defaults to 
     * std::nullopt.
-    * @return PKBResponse, where the first element of each vector<PKBField> is the statement and subsequent elements
-    * are the variables. E.g., for assignments, the variable will be the variable modified, and for container 
-    * statements, the variables will be the variables used in the conditional expression.
+    * @return PKBResponse containing vectors of 2 PKBFields, where the first element of each vector<PKBField> is the statement 
+    * and the second element is a variable. E.g., for assignments, the variable will be the variable modified, and 
+    * for container statements, the variables will be the variables used in the conditional expression.
     * 
     * @see PatternParam
     */

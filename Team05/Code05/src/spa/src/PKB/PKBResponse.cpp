@@ -1,5 +1,7 @@
 #include "PKBResponse.h"
 
+/** =================================== PKBRESPONSE METHODS =================================== */
+
 bool PKBResponse::operator == (const PKBResponse& other) const {
     if (hasResult != other.hasResult) {
         return false;
