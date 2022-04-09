@@ -348,15 +348,17 @@ PKBResponse PKB::match(sp::design_extractor::PatternParam lhs, sp::design_extrac
     }
 
     for (auto& node : nodes) {
-        std::vector<PKBField> stmtRes;
         int statementNumber = node.get().getStmtNo();
-        stmtRes.emplace_back(PKBField::createConcrete(
-            STMT_LO{ statementNumber, statementTable->getStmtTypeOfLine(statementNumber).value() }));
+        auto stmt = PKBField::createConcrete(STMT_LO{ statementNumber, 
+            statementTable->getStmtTypeOfLine(statementNumber).value() });
 
         // Handles assignments
         if constexpr (std::is_same_v<T, sp::ast::Assign>) {
             auto varName = node.get().getLHS()->getVarName();
+            std::vector<PKBField> stmtRes;
+            stmtRes.emplace_back(stmt);
             stmtRes.emplace_back(PKBField::createConcrete(VAR_NAME{ varName }));
+            res.insert(stmtRes);
         } else {
             // Handles container statements
             sp::design_extractor::VariableCollector vc;
@@ -364,11 +366,12 @@ PKBResponse PKB::match(sp::design_extractor::PatternParam lhs, sp::design_extrac
             auto vars = vc.getEntries();
 
             for (auto var : vars) {
+                std::vector<PKBField> stmtRes;
+                stmtRes.emplace_back(stmt);
                 stmtRes.emplace_back(PKBField::createConcrete(std::get<sp::design_extractor::Entity>(var)));
+                res.insert(stmtRes);
             }
         }
-     
-        res.insert(stmtRes);
     }
 
     return PKBResponse{ nodes.size() > 0, Response{res} };
