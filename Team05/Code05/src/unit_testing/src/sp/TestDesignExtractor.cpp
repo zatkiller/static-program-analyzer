@@ -36,6 +36,7 @@ using de::FollowsExtractor;
 using de::NextExtractor;
 using de::PatternParam;
 using de::Entry;
+using PKBRelationshipEntry = std::pair<Content, Content>;
 
 
 template <typename T>
@@ -74,8 +75,42 @@ std::set<std::pair<Content, Content>> transformRelationship(std::set<Entry> entr
     return relationships;
 }
 
+struct PKBStub : public PKB {
+
+    std::map<PKBRelationship, std::set<PKBRelationshipEntry>> relationships;
+    std::map<PKBEntityType, std::set<Content>> entities;
+    
+    PKBStub() {
+        relationships.emplace(PKBRelationship::MODIFIES, std::set<PKBRelationshipEntry>());
+        relationships.emplace(PKBRelationship::USES, std::set<PKBRelationshipEntry>());
+        relationships.emplace(PKBRelationship::FOLLOWS, std::set<PKBRelationshipEntry>());
+        relationships.emplace(PKBRelationship::PARENT, std::set<PKBRelationshipEntry>());
+        relationships.emplace(PKBRelationship::CALLS, std::set<PKBRelationshipEntry>());
+        relationships.emplace(PKBRelationship::NEXT, std::set<PKBRelationshipEntry>());
+
+        entities.emplace(PKBEntityType::VARIABLE, std::set<Content>());
+        entities.emplace(PKBEntityType::CONST, std::set<Content>());
+        entities.emplace(PKBEntityType::STATEMENT, std::set<Content>());
+        entities.emplace(PKBEntityType::PROCEDURE, std::set<Content>());
+    }
+
+    void insertRelationship(PKBRelationship type, PKBField field1, PKBField field2) {
+        relationships[type].insert(std::make_pair<>(field1.content, field2.content));
+    }
+    void insertEntity(Content entity) {
+        std::visit(overloaded{
+            [&](VAR_NAME& item) { entities[PKBEntityType::VARIABLE].insert(item); },
+            [&](STMT_LO& item) { entities[PKBEntityType::STATEMENT].insert(item); },
+            [&](PROC_NAME& item) { entities[PKBEntityType::PROCEDURE].insert(item); },
+            [&](CONST& item) { entities[PKBEntityType::CONST].insert(item); },
+            [](auto& item) { Logger(Level::ERROR) << "Unsupported entity type"; }
+        }, entity);
+    }
+};
+
 namespace ast {
-    TEST_CASE("Design extractor Test") {
+
+    TEST_CASE("Individual Extractors Test") {
         TEST_LOG << "Testing Design Extractor";
         // Construct a simple AST;
         /**
@@ -750,6 +785,175 @@ namespace ast {
             };
             REQUIRE(transformRelationship(me.extract(program.get())) == expected);
         }
+    }
+
+        /**
+         *      procedure main {
+         *    1      read x;
+         *    2      sum = 0;
+         *    3      while (x > 0) {
+         *    4          print x;
+         *    5          remainder = x % 2;
+         *    6          digit = x % 10;
+         *    7          if (remainder == 0) then {
+         *    8              sum = sum + digit
+         *               } else {
+         *    9               print x;
+         *               }
+         *   10          x = x / 10;
+         *           }
+         *   11      print sum;
+         *   12      call a2;
+         *      }
+         *      procedure a2 {
+         *   13      read a;
+         *      }
+         */
+    TEST_CASE("Overall Design Extractor Test") {
+        auto p = [](auto a1, auto a2) {return std::make_pair<>(a1, a2);};
+        PKBStub pkb;
+        de::DesignExtractor designExtractor(&pkb);
+        auto procedure = makeProgram(
+            make<Procedure>("main", makeStmts(
+                make<Read>(1, make<Var>("x")),
+                make<Assign>(2, make<Var>("sum"), make<Const>(0)),
+                make<While>(3, make<RelExpr>(RelOp::GT, make<Var>("x"), make<Const>(0)), makeStmts(
+                    make<Print>(4, make<Var>("x")),
+                    make<Assign>(5, make<Var>("remainder"), make<BinExpr>(BinOp::MOD, make<Var>("x"), make<Const>(2))),
+                    make<Assign>(6, make<Var>("digit"), make<BinExpr>(BinOp::MOD, make<Var>("x"), make<Const>(10))),
+                    make<If>(7, make<RelExpr>(RelOp::EQ, make<Var>("remainder"), make<Const>(0)), makeStmts(
+                        make<Assign>(8, make<Var>("sum"), 
+                            make<BinExpr>(BinOp::PLUS, make<Var>("sum"), make<Var>("digit")))
+                    ), makeStmts(
+                        make<Print>(9, make<Var>("x"))
+                    )),
+                    make<Assign>(10, make<Var>("x"), make<BinExpr>(BinOp::DIVIDE, make<Var>("x"), make<Const>(10)))
+                )),
+                make<Print>(11, make<Var>("sum")),
+                make<Call>(12, "a2")
+            )),
+            make<Procedure>("a2", makeStmts(
+                make<Read>(13, make<Var>("a"))
+            ))
+        );
+        designExtractor.extract(procedure.get());
+        REQUIRE(pkb.entities[PKBEntityType::VARIABLE] == std::set<Content>({
+            VAR_NAME("x"),
+            VAR_NAME("sum"),
+            VAR_NAME("remainder"),
+            VAR_NAME("digit"),
+            VAR_NAME("a")
+        }));
+        REQUIRE(pkb.entities[PKBEntityType::CONST] == std::set<Content>({
+            CONST{0}, CONST{2}, CONST{10}
+        }));
+        REQUIRE(pkb.entities[PKBEntityType::PROCEDURE] == std::set<Content>({
+            PROC_NAME{"main"}, PROC_NAME{"a2"}
+        }));
+        REQUIRE(pkb.entities[PKBEntityType::STATEMENT] == std::set<Content>({
+            STMT_LO{1, StatementType::Read, "x"},
+            STMT_LO{2, StatementType::Assignment},
+            STMT_LO{3, StatementType::While},
+            STMT_LO{4, StatementType::Print, "x"},
+            STMT_LO{5, StatementType::Assignment},
+            STMT_LO{6, StatementType::Assignment},
+            STMT_LO{7, StatementType::If},
+            STMT_LO{8, StatementType::Assignment},
+            STMT_LO{9, StatementType::Print, "x"},
+            STMT_LO{10, StatementType::Assignment},
+            STMT_LO{11, StatementType::Print, "sum"},
+            STMT_LO{12, StatementType::Call, "a2"},
+            STMT_LO{13, StatementType::Read, "a"},
+        }));
+
+        REQUIRE(pkb.relationships[PKBRelationship::MODIFIES] == 
+        std::set<PKBRelationshipEntry>({
+            p(PROC_NAME{"main"}, VAR_NAME{"x"}),
+            p(PROC_NAME{"main"}, VAR_NAME{"sum"}),
+            p(PROC_NAME{"main"}, VAR_NAME{"remainder"}),
+            p(PROC_NAME{"main"}, VAR_NAME{"digit"}),
+            p(PROC_NAME{"main"}, VAR_NAME{"a"}),
+            p(PROC_NAME{"a2"}, VAR_NAME{"a"}),
+
+            p(STMT_LO{1, StatementType::Read}, VAR_NAME{"x"}),
+            p(STMT_LO{2, StatementType::Assignment}, VAR_NAME{"sum"}),
+            p(STMT_LO{3, StatementType::While}, VAR_NAME{"digit"}),
+            p(STMT_LO{3, StatementType::While}, VAR_NAME{"remainder"}),
+            p(STMT_LO{3, StatementType::While}, VAR_NAME{"sum"}),
+            p(STMT_LO{3, StatementType::While}, VAR_NAME{"x"}),
+            p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"remainder"}),
+            p(STMT_LO{6, StatementType::Assignment}, VAR_NAME{"digit"}),
+            p(STMT_LO{7, StatementType::If}, VAR_NAME{"sum"}),
+            p(STMT_LO{8, StatementType::Assignment}, VAR_NAME{"sum"}),
+            p(STMT_LO{10, StatementType::Assignment}, VAR_NAME{"x"}),
+            p(STMT_LO{12, StatementType::Call}, VAR_NAME{"a"}),
+            p(STMT_LO{13, StatementType::Read}, VAR_NAME{"a"})
+        }));
+        REQUIRE(pkb.relationships[PKBRelationship::USES] == 
+        std::set<PKBRelationshipEntry>({
+            p(PROC_NAME{"main"}, VAR_NAME{"x"}),
+            p(PROC_NAME{"main"}, VAR_NAME{"sum"}),
+            p(PROC_NAME{"main"}, VAR_NAME{"remainder"}),
+            p(PROC_NAME{"main"}, VAR_NAME{"digit"}),
+
+            p(STMT_LO{3, StatementType::While}, VAR_NAME{"digit"}),
+            p(STMT_LO{3, StatementType::While}, VAR_NAME{"remainder"}),
+            p(STMT_LO{3, StatementType::While}, VAR_NAME{"sum"}),
+            p(STMT_LO{3, StatementType::While}, VAR_NAME{"x"}),
+            p(STMT_LO{4, StatementType::Print}, VAR_NAME{"x"}),
+            p(STMT_LO{5, StatementType::Assignment}, VAR_NAME{"x"}),
+            p(STMT_LO{6, StatementType::Assignment}, VAR_NAME{"x"}),
+            p(STMT_LO{7, StatementType::If}, VAR_NAME{"digit"}),
+            p(STMT_LO{7, StatementType::If}, VAR_NAME{"remainder"}),
+            p(STMT_LO{7, StatementType::If}, VAR_NAME{"sum"}),
+            p(STMT_LO{7, StatementType::If}, VAR_NAME{"x"}),
+            p(STMT_LO{8, StatementType::Assignment}, VAR_NAME{"sum"}),
+            p(STMT_LO{8, StatementType::Assignment}, VAR_NAME{"digit"}),
+            p(STMT_LO{9, StatementType::Print}, VAR_NAME{"x"}),
+            p(STMT_LO{10, StatementType::Assignment}, VAR_NAME{"x"}),
+            p(STMT_LO{11, StatementType::Print}, VAR_NAME{"sum"}),
+        }));
+        REQUIRE(pkb.relationships[PKBRelationship::FOLLOWS] == 
+        std::set<PKBRelationshipEntry>({
+            p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
+            p(STMT_LO{2, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
+            p(STMT_LO{3, StatementType::While}, STMT_LO{11, StatementType::Print}),
+            p(STMT_LO{4, StatementType::Print}, STMT_LO{5, StatementType::Assignment}),
+            p(STMT_LO{5, StatementType::Assignment}, STMT_LO{6, StatementType::Assignment}),
+            p(STMT_LO{6, StatementType::Assignment}, STMT_LO{7, StatementType::If}),
+            p(STMT_LO{7, StatementType::If}, STMT_LO{10, StatementType::Assignment}),
+            p(STMT_LO{11, StatementType::Print}, STMT_LO{12, StatementType::Call}),
+        }));
+        REQUIRE(pkb.relationships[PKBRelationship::PARENT] == 
+        std::set<PKBRelationshipEntry>({
+            p(STMT_LO{3, StatementType::While}, STMT_LO{4, StatementType::Print}),
+            p(STMT_LO{3, StatementType::While}, STMT_LO{5, StatementType::Assignment}),
+            p(STMT_LO{3, StatementType::While}, STMT_LO{6, StatementType::Assignment}),
+            p(STMT_LO{3, StatementType::While}, STMT_LO{7, StatementType::If}),
+            p(STMT_LO{7, StatementType::If}, STMT_LO{8, StatementType::Assignment}),
+            p(STMT_LO{7, StatementType::If}, STMT_LO{9, StatementType::Print}),
+            p(STMT_LO{3, StatementType::While}, STMT_LO{10, StatementType::Assignment}),
+        }));
+        REQUIRE(pkb.relationships[PKBRelationship::CALLS] == 
+        std::set<PKBRelationshipEntry>({
+            p(PROC_NAME("main"), PROC_NAME("a2")),
+        }));
+        REQUIRE(pkb.relationships[PKBRelationship::NEXT] == 
+        std::set<PKBRelationshipEntry>({
+            p(STMT_LO{1, StatementType::Read}, STMT_LO{2, StatementType::Assignment}),
+            p(STMT_LO{2, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
+            p(STMT_LO{3, StatementType::While}, STMT_LO{4, StatementType::Print}),
+            p(STMT_LO{4, StatementType::Print}, STMT_LO{5, StatementType::Assignment}),
+            p(STMT_LO{5, StatementType::Assignment}, STMT_LO{6, StatementType::Assignment}),
+            p(STMT_LO{6, StatementType::Assignment}, STMT_LO{7, StatementType::If}),
+            p(STMT_LO{7, StatementType::If}, STMT_LO{8, StatementType::Assignment}),
+            p(STMT_LO{7, StatementType::If}, STMT_LO{9, StatementType::Print}),
+            p(STMT_LO{8, StatementType::Assignment}, STMT_LO{10, StatementType::Assignment}),
+            p(STMT_LO{9, StatementType::Print}, STMT_LO{10, StatementType::Assignment}),
+            p(STMT_LO{10, StatementType::Assignment}, STMT_LO{3, StatementType::While}),
+            p(STMT_LO{3, StatementType::While}, STMT_LO{11, StatementType::Print}),
+            p(STMT_LO{11, StatementType::Print}, STMT_LO{12, StatementType::Call}),
+        }));
     }
 
     TEST_CASE("Assign Pattern matcher test") {
