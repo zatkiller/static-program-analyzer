@@ -61,8 +61,11 @@ bool StatementVector::contains(int statementNumber) const {
 
 bool StatementVector::contains(StatementType type, int statementNumber) const {
     auto stmt = getStmt(statementNumber);
+
     if (stmt.has_value() && !isStatementNull(stmt.value())) {
-        return stmt.value().type.value() == type;
+        if (stmt.value().type.has_value()) {
+            return stmt.value().type.value() == type;
+        }
     }
     
     return false;

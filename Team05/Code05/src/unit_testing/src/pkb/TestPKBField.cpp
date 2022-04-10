@@ -29,6 +29,15 @@ TEST_CASE("STMT_LO set equality") {
     REQUIRE_FALSE((s1 < s3) & (s3 < s1));
 }
 
+TEST_CASE("STMT_LO attribute") {
+    STMT_LO s1 = STMT_LO{ 1, StatementType::Call, "a" };
+    STMT_LO s2 = STMT_LO{ 1, StatementType::Call, "" };
+    STMT_LO s3 = STMT_LO{ 1, StatementType::Call };
+    REQUIRE(s1.hasAttribute() == true);
+    REQUIRE(s2.hasAttribute() == true);
+    REQUIRE(s3.hasAttribute() == false);
+}
+
 TEST_CASE("PKBField createConcrete statement, getContent") {
     PKBField field = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     REQUIRE(*(field.getContent<STMT_LO>()) == STMT_LO{ 1, StatementType::Assignment });
