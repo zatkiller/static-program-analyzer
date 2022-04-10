@@ -1,6 +1,7 @@
 #include <list>
 #include <string_view>
 
+#include "exceptions.h"
 #include "pql/qps.h"
 #include "pql/query.h"
 #include "pql/evaluator.h"
@@ -12,6 +13,10 @@ namespace qps {
             return;
 
         qps::evaluator::Evaluator evaluator(pkbPtr);
-        results = evaluator.evaluate(query);
+        try {
+            results = evaluator.evaluate(query);
+        } catch (exceptions::PqlException) {
+            return;
+        }
     }
 }  // namespace qps

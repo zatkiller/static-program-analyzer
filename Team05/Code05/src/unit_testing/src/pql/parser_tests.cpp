@@ -843,22 +843,6 @@ TEST_CASE("Parser parseExpSpec") {
                            Catch::Message(messages::qps::parser::notExpectingTokenMessage));
 }
 
-TEST_CASE("Parser validateExpr") {
-    Parser parser;
-
-    REQUIRE_NOTHROW(parser.validateExpr("1"));
-    REQUIRE_NOTHROW(parser.validateExpr("x"));
-    REQUIRE_NOTHROW(parser.validateExpr("1+2-3"));
-    REQUIRE_NOTHROW(parser.validateExpr("1+3*x"));
-    REQUIRE_NOTHROW(parser.validateExpr("3/(1+x)"));
-    REQUIRE_NOTHROW(parser.validateExpr("(1+x)%3"));
-
-    REQUIRE_THROWS_MATCHES(parser.validateExpr("+temp"), exceptions::PqlSyntaxException,
-                           Catch::Message(messages::qps::parser::expressionInvalidGrammarMessage));
-
-    REQUIRE_THROWS_MATCHES(parser.validateExpr("temp-"), exceptions::PqlSyntaxException,
-                           Catch::Message(messages::qps::parser::expressionUnexpectedEndMessage));
-}
 
 TEST_CASE("Parser parsePatternLhs") {
     SECTION("Invalid Pattern semantics") {

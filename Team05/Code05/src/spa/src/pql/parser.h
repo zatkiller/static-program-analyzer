@@ -397,40 +397,6 @@ struct Parser {
      * Returns a ExpSpec belonging to an assign pattern
      */
     ExpSpec parseExpSpec();
-
-    /**
-     * Validate the expression in Pattern using Pratt parsing, which is an enhancement of recursive descent algorithm
-     * but with precedence and associativity
-     *
-     * @param expr expression under pattern to be parsed
-     */
-    static void validateExpr(const std::string& expr);
-
-    /**
-     * The base function to start the Pratt parsing
-     */
-    void parseExpr();
-
-    /**
-     * Parses the current expression
-     */
-    void parseCurrentExpr();
-
-    /**
-     * Parses the next expression. Expressions can be considered different if they have different operator precedence
-     *
-     * @param priority - priority the next expression holds
-     *
-     */
-    void parseNextExpr(int priority);
-
-    /**
-     * get priority of operator token
-     *
-     * @param token token to get priority
-     * @return the operator priority
-     */
-    static int getOperatorPriority(const Token& token);
 };
 
 }  // namespace qps::parser
