@@ -1113,6 +1113,8 @@ TEST_CASE("AffectsEvaluator multi-proc test") {
         REQUIRE(affEval->contains(conc9, conc9));
         REQUIRE_FALSE(affEval->contains(conc1, conc6));
         REQUIRE_FALSE(affEval->contains(conc6, conc17, true));
+        REQUIRE_FALSE(affEval->contains(conc1, PKBField::createConcrete(STMT_LO(1, StatementType::Call))));
+        REQUIRE_FALSE(affEval->contains(conc1, PKBField::createDeclaration(StatementType::Call)));
     }
 
     SECTION("AffectsEvaluator::retrieve") {
