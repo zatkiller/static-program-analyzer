@@ -44,61 +44,61 @@ bool hasSameContents(std::vector<T>* v1, std::vector<T>* v2) {
     return *v1 == *v2;
 }
 TEST_CASE("ConstantTable") {
-    ConstantTable* constTable = new ConstantTable();
+    ConstantTable constTable{};
     std::vector<CONST> expected{};
-    REQUIRE(constTable->getAllEntity() == expected);
+    REQUIRE(constTable.getAllEntity() == expected);
 
-    constTable->insert(5);
-    constTable->insert(6);
+    constTable.insert(5);
+    constTable.insert(6);
 
-    REQUIRE(constTable->contains(5));
-    REQUIRE_FALSE(constTable->contains(7));
+    REQUIRE(constTable.contains(5));
+    REQUIRE_FALSE(constTable.contains(7));
 
     expected = { CONST{5}, CONST{6} };
-    auto actual = constTable->getAllEntity();
+    auto actual = constTable.getAllEntity();
     REQUIRE(hasSameContents<CONST>(&actual, &expected));
-    REQUIRE(constTable->getSize() == 2);
+    REQUIRE(constTable.getSize() == 2);
 }
 
 TEST_CASE("ProcedureTable") {
-    ProcedureTable* procTable = new ProcedureTable();
-    REQUIRE(procTable->getAllEntity() == std::vector<PROC_NAME>());
+    ProcedureTable procTable{};
+    REQUIRE(procTable.getAllEntity() == std::vector<PROC_NAME>());
 
-    procTable->insert(PROC_NAME{ "monke1" });
-    procTable->insert(PROC_NAME{ "monke2" });
+    procTable.insert(PROC_NAME{ "monke1" });
+    procTable.insert(PROC_NAME{ "monke2" });
 
-    REQUIRE(procTable->contains(PROC_NAME{ "monke1" }));
-    REQUIRE_FALSE(procTable->contains(PROC_NAME{ "monke3" }));
+    REQUIRE(procTable.contains(PROC_NAME{ "monke1" }));
+    REQUIRE_FALSE(procTable.contains(PROC_NAME{ "monke3" }));
 
     std::vector<PROC_NAME> expected = std::vector<PROC_NAME>{ PROC_NAME("monke1"), PROC_NAME("monke2") };
-    auto actual = procTable->getAllEntity();
+    auto actual = procTable.getAllEntity();
     std::sort(expected.begin(), expected.end());
     std::sort(actual.begin(), actual.end());
     REQUIRE(hasSameContents<PROC_NAME>(&actual, &expected));
-    REQUIRE(procTable->getSize() == 2);
+    REQUIRE(procTable.getSize() == 2);
 }
 
 TEST_CASE("VariableTable") {
-    VariableTable* varTable = new VariableTable();
-    REQUIRE(varTable->getAllEntity() == std::vector<VAR_NAME>());
+    VariableTable varTable{};
+    REQUIRE(varTable.getAllEntity() == std::vector<VAR_NAME>());
 
-    varTable->insert(VAR_NAME{ "monke1" });
-    varTable->insert(VAR_NAME{ "monke2" });
+    varTable.insert(VAR_NAME{ "monke1" });
+    varTable.insert(VAR_NAME{ "monke2" });
 
-    REQUIRE(varTable->contains(VAR_NAME{ "monke1" }));
-    REQUIRE_FALSE(varTable->contains(VAR_NAME{ "monke3" }));
+    REQUIRE(varTable.contains(VAR_NAME{ "monke1" }));
+    REQUIRE_FALSE(varTable.contains(VAR_NAME{ "monke3" }));
 
     std::vector<VAR_NAME> expected = std::vector<VAR_NAME>{ VAR_NAME("monke1"), VAR_NAME("monke2") };
-    auto actual = varTable->getAllEntity();
+    auto actual = varTable.getAllEntity();
     std::sort(expected.begin(), expected.end());
     std::sort(actual.begin(), actual.end());
     REQUIRE(hasSameContents<VAR_NAME>(&actual, &expected));
-    REQUIRE(varTable->getSize() == 2);
+    REQUIRE(varTable.getSize() == 2);
 }
 
 TEST_CASE("StatementTable") {
-    StatementTable* stmtTable = new StatementTable();
-    REQUIRE(stmtTable->getAllEntity() == std::vector<STMT_LO>());
+    StatementTable stmtTable{};
+    REQUIRE(stmtTable.getAllEntity() == std::vector<STMT_LO>());
 
     STMT_LO stmt1{ 1, StatementType::Assignment };
     STMT_LO stmt2{ 2, StatementType::Call, "foo" };
@@ -109,31 +109,31 @@ TEST_CASE("StatementTable") {
     STMT_LO stmt6{ 3, StatementType::If };
     STMT_LO stmt7{ 4, StatementType::Print, "z" };
 
-    stmtTable->insert(STMT_LO{ 1, StatementType::Assignment });
-    stmtTable->insert(STMT_LO{ 2, StatementType::Call, "foo" });
-    stmtTable->insert(STMT_LO{ 3, StatementType::Print, "x" });
-    stmtTable->insert(STMT_LO{ 4, StatementType::Assignment });
+    stmtTable.insert(STMT_LO{ 1, StatementType::Assignment });
+    stmtTable.insert(STMT_LO{ 2, StatementType::Call, "foo" });
+    stmtTable.insert(STMT_LO{ 3, StatementType::Print, "x" });
+    stmtTable.insert(STMT_LO{ 4, StatementType::Assignment });
 
-    REQUIRE(stmtTable->contains(1));
-    REQUIRE(stmtTable->contains(StatementType::Assignment, 1));
-    REQUIRE_FALSE(stmtTable->contains(5));
-    REQUIRE_FALSE(stmtTable->contains(StatementType::If, 3));
-    REQUIRE_FALSE(stmtTable->contains(StatementType::Print, 4));
+    REQUIRE(stmtTable.contains(1));
+    REQUIRE(stmtTable.contains(StatementType::Assignment, 1));
+    REQUIRE_FALSE(stmtTable.contains(5));
+    REQUIRE_FALSE(stmtTable.contains(StatementType::If, 3));
+    REQUIRE_FALSE(stmtTable.contains(StatementType::Print, 4));
 
     std::vector<STMT_LO> expected = std::vector<STMT_LO>{ stmt1, stmt2, stmt3, stmt4 };
-    auto actual = stmtTable->getAllEntity();
+    auto actual = stmtTable.getAllEntity();
     std::sort(expected.begin(), expected.end());
     std::sort(actual.begin(), actual.end());
     REQUIRE(hasSameContents<STMT_LO>(&actual, &expected));
 
-    actual = stmtTable->getStmtOfType(StatementType::Assignment);
+    actual = stmtTable.getStmtOfType(StatementType::Assignment);
     expected = std::vector<STMT_LO>{ stmt1, stmt4 };
     REQUIRE(hasSameContents<STMT_LO>(&actual, &expected));
 
-    REQUIRE(stmtTable->getSize() == 4);
-    stmtTable->insert(STMT_LO{4, StatementType::Print });
-    REQUIRE(stmtTable->getSize() == 4);
-    REQUIRE_FALSE(stmtTable->contains(StatementType::Print, 4));
+    REQUIRE(stmtTable.getSize() == 4);
+    stmtTable.insert(STMT_LO{4, StatementType::Print });
+    REQUIRE(stmtTable.getSize() == 4);
+    REQUIRE_FALSE(stmtTable.contains(StatementType::Print, 4));
 }
 
 TEST_CASE("ReationshipRow ==") {
@@ -216,7 +216,7 @@ TEST_CASE("ModifiesRelationshipTable::insert, ModifiesRelationshipTable::contain
 }
 
 TEST_CASE("ModifiesRelationshipTable::getSize") {
-    auto table = std::unique_ptr<ModifiesRelationshipTable>(new ModifiesRelationshipTable());
+    auto table = std::make_unique<ModifiesRelationshipTable>();
     PKBField field1 = PKBField::createConcrete(PROC_NAME{ "main" });
     PKBField field2 = PKBField::createConcrete(VAR_NAME{ "a" });
     PKBField field3 = PKBField::createConcrete(VAR_NAME{ "a" });
@@ -227,12 +227,12 @@ TEST_CASE("ModifiesRelationshipTable::getSize") {
 }
 
 TEST_CASE("UsesRelationshipTable::getType") {
-    auto table = std::unique_ptr<UsesRelationshipTable>(new UsesRelationshipTable());
+    auto table = std::make_unique<UsesRelationshipTable>();
     REQUIRE(table->getType() == PKBRelationship::USES);
 }
 
 TEST_CASE("UsesRelationshipTable::insert, UsesRelationshipTable::contains valid") {
-    auto table = std::unique_ptr<UsesRelationshipTable>(new UsesRelationshipTable());
+    auto table = std::make_unique<UsesRelationshipTable>();
     PKBField field1 = PKBField::createConcrete(PROC_NAME{ "main" });
     PKBField field2 = PKBField::createConcrete(VAR_NAME{ "a" });
     PKBField field3 = PKBField::createConcrete(VAR_NAME{ "a" });
@@ -247,7 +247,7 @@ TEST_CASE("UsesRelationshipTable::insert, UsesRelationshipTable::contains valid"
 }
 
 TEST_CASE("UsesRelationshipTable::insert, UsesRelationshipTable::contains invalid") {
-    auto table = std::unique_ptr<UsesRelationshipTable>(new UsesRelationshipTable());
+    auto table = std::make_unique<UsesRelationshipTable>();
     PKBField validStmt = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     PKBField invalidStmt = PKBField::createConcrete(STMT_LO{ 2 });
     PKBField field1 = PKBField::createConcrete(VAR_NAME{ "invalid" });
@@ -280,7 +280,7 @@ TEST_CASE("UsesRelationshipTable::insert, UsesRelationshipTable::contains invali
 
 TEST_CASE("UsesRelationshipTable regression test") {
     SECTION("UsesRelationshipTable regression test #140") {
-        auto table = std::unique_ptr<UsesRelationshipTable>(new UsesRelationshipTable());
+        auto table = std::make_unique<UsesRelationshipTable>();
         table->retrieve(PKBField::createDeclaration(StatementType::All),
             PKBField::createDeclaration(PKBEntityType::VARIABLE));
 
@@ -291,7 +291,7 @@ TEST_CASE("UsesRelationshipTable regression test") {
     }
 
     SECTION("UsesRelationshipTable regression test #142") {
-        auto table = std::unique_ptr<UsesRelationshipTable>(new UsesRelationshipTable());
+        auto table = std::make_unique<UsesRelationshipTable>();
         PKBField stmt1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Print });
         PKBField stmt2 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
         PKBField var1 = PKBField::createConcrete(VAR_NAME{ "x" });
@@ -310,13 +310,13 @@ TEST_CASE("UsesRelationshipTable regression test") {
 }
 
 TEST_CASE("FollowsRelationshipTable getType") {
-    auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
+    auto table = std::make_unique<FollowsRelationshipTable>();
     PKBRelationship type = table->getType();
     REQUIRE(type == PKBRelationship::FOLLOWS);
 }
 
 TEST_CASE("FollowsRelationshipTable::insert, FollowsRelationshipTable::contains") {
-    auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
+    auto table = std::make_unique<FollowsRelationshipTable>();
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::If });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Print });
@@ -355,7 +355,7 @@ TEST_CASE("FollowsRelationshipTable::insert, FollowsRelationshipTable::contains"
 }
 
 TEST_CASE("FollowsRelationshipTable::retrieve") {
-    auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
+    auto table = std::make_unique<FollowsRelationshipTable>();
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::If });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Print });
@@ -400,7 +400,7 @@ TEST_CASE("FollowsRelationshipTable::retrieve") {
 }
 
 TEST_CASE("FollowsRelationshipTable::containsT") {
-    auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
+    auto table = std::make_unique<FollowsRelationshipTable>();
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::Assignment });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
@@ -428,7 +428,7 @@ TEST_CASE("FollowsRelationshipTable::containsT") {
 }
 
 TEST_CASE("FollowsRelationshipTable::retrieveT case 1") {
-    auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
+    auto table = std::make_unique<FollowsRelationshipTable>();
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::While });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
@@ -469,7 +469,7 @@ TEST_CASE("FollowsRelationshipTable::retrieveT case 1") {
 }
 
 TEST_CASE("FollowsRelationshipTable::retrieveT case 2") {
-    auto table = std::unique_ptr<FollowsRelationshipTable>(new FollowsRelationshipTable());
+    auto table = std::make_unique<FollowsRelationshipTable>();
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::While });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
@@ -532,12 +532,12 @@ TEST_CASE("FollowsRelationshipTable::retrieveT case 2") {
 }
 
 TEST_CASE("ParentRelationshipTable::getType") {
-    auto table = std::unique_ptr<ParentRelationshipTable>(new ParentRelationshipTable());
+    auto table = std::make_unique<ParentRelationshipTable>();
     REQUIRE(table->getType() == PKBRelationship::PARENT);
 }
 
 TEST_CASE("ParentRelationshipTable::insert, ParentRelationshipTable::contains") {
-    auto table = std::unique_ptr<ParentRelationshipTable>(new ParentRelationshipTable());
+    auto table = std::make_unique<ParentRelationshipTable>();
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::If });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::While });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
@@ -574,7 +574,7 @@ TEST_CASE("ParentRelationshipTable::insert, ParentRelationshipTable::contains") 
 }
 
 TEST_CASE("ParentRelationshipTable::retrieve") {
-    auto table = std::unique_ptr<ParentRelationshipTable>(new ParentRelationshipTable());
+    auto table = std::make_unique<ParentRelationshipTable>();
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::While });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::If });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
@@ -650,7 +650,7 @@ TEST_CASE("ParentRelationshipTable::retrieve") {
 }
 
 TEST_CASE("ParentRelationshipTable::containsT") {
-    auto table = std::unique_ptr<ParentRelationshipTable>(new ParentRelationshipTable());
+    auto table = std::make_unique<ParentRelationshipTable>();
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::While });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::If });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Assignment });
@@ -682,7 +682,7 @@ TEST_CASE("ParentRelationshipTable::containsT") {
 }
 
 TEST_CASE("ParentRelationshipTable::retrieveT") {
-    auto table = std::unique_ptr<ParentRelationshipTable>(new ParentRelationshipTable());
+    auto table = std::make_unique<ParentRelationshipTable>();
     PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::While });
     PKBField field2 = PKBField::createConcrete(STMT_LO{ 2, StatementType::If });
     PKBField field3 = PKBField::createConcrete(STMT_LO{ 3, StatementType::Call });
@@ -759,12 +759,12 @@ TEST_CASE("ParentRelationshipTable::retrieveT") {
 }
 
 TEST_CASE("CallsRelationshipTable::getType") {
-    auto table = std::unique_ptr<CallsRelationshipTable>(new CallsRelationshipTable());
+    auto table = std::make_unique<CallsRelationshipTable>();
     REQUIRE(table->getType() == PKBRelationship::CALLS);
 }
 
 TEST_CASE("CallsRelationshipTable test 1") {
-    auto table = std::unique_ptr<CallsRelationshipTable>(new CallsRelationshipTable());
+    auto table = std::make_unique<CallsRelationshipTable>();
 
     /*
     procedure main {
@@ -905,7 +905,7 @@ TEST_CASE("AffectsEvaluator single-proc test 1") {
     })";
     auto cfgExtractor = sp::cfg::CFGExtractor();
     auto cfgContainer = cfgExtractor.extract(sp::parser::parse(testCode).get());
-    auto affEval = std::unique_ptr<AffectsEvaluator>(new AffectsEvaluator());
+    auto affEval = std::make_unique<AffectsEvaluator>();
 
     StatementType ASSIGN = StatementType::Assignment;
     StatementType IF = StatementType::If;
@@ -1070,7 +1070,7 @@ TEST_CASE("AffectsEvaluator multi-proc test") {
         }
     })";
     sp::cfg::CFGExtractor extractor;
-    auto affEval = std::unique_ptr<AffectsEvaluator>(new AffectsEvaluator());
+    auto affEval = std::make_unique<AffectsEvaluator>();
     auto cfg = extractor.extract(sp::parser::parse(sourceCode).get());
     affEval->initCFG(cfg);
 
