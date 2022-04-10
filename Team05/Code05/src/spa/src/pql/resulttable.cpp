@@ -24,7 +24,7 @@ namespace qps::evaluator {
         synSequenceMap.insert({name, size});
         columns.push_back(name);
     }
-
+    
     Table ResultTable::getTable() {
         return this->table;
     }
@@ -87,10 +87,10 @@ namespace qps::evaluator {
                 auto newRow = thisRow;
                 auto rowCopy = row;
                 std::move(rowCopy.begin(), rowCopy.end(), std::back_inserter(newRow));
-                newTable.insert(newRow);
+                newTable.emplace(std::move(newRow));
             }
         }
-        this->table = newTable;
+        this->table = std::move(newTable);
     }
 
     bool ResultTable::isJoinable(std::vector<PKBField> row1, std::vector<PKBField> row2,
@@ -134,10 +134,10 @@ namespace qps::evaluator {
                         newRow.push_back(row[i]);
                     }
                 }
-                newTable.insert(newRow);
+                newTable.emplace(std::move(newRow));
             }
         }
-        this->table = newTable;
+        this->table = std::move(newTable);
     }
 
     void ResultTable::join(ResultTable& other) {
@@ -175,8 +175,8 @@ namespace qps::evaluator {
             for (auto pos : selectedColumn) {
                 newRow.push_back(row[pos]);
             }
-            newTable.insert(newRow);
+            newTable.emplace(std::move(newRow));
         }
-        this->table = newTable;
+        this->table = std::move(newTable);
     }
 }  // namespace qps::evaluator

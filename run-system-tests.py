@@ -8,7 +8,7 @@ keep_output_files = argv[2].lower() == "true"
 
 # Switch to top level directory
 main_path = os.getcwd()
-os.chdir(os.path.dirname(__file__) + "/Team05/Tests05")
+os.chdir(main_path + "/Team05/Tests05")
 f = open("results.txt", "w")
 
 dic = defaultdict(list)
@@ -57,7 +57,7 @@ for dirpath, dirnames, filenames in os.walk(os.getcwd()):
 
             dic[shortened_path].append((file, queries_match_file, prefix))
 
-os.chdir(os.path.dirname(__file__))
+os.chdir(main_path )
 
 output_files = []
 
