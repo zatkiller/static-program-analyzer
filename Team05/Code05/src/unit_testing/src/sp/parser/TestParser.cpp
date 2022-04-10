@@ -990,64 +990,208 @@ TEST_CASE("Testing Exceptions Thrown and Source Line") {
         lineCount = 1;
         callStmts.clear();
         procedures.clear();
-        std::string badRelOpCode = R"(procedure a {
-            
-            
-            
-            while (c !! b) {
-                read c; 
-            }
-        })";
-        auto badRelOpTokens = Lexer(badRelOpCode).getTokens();
-        // Parser will expect the RelOp to be "!=" and the while stmt is on line 5.
-        REQUIRE_THROWS_MATCHES(
-            parseProgram(badRelOpTokens),
-            std::invalid_argument,
-            Catch::Message("'=' expected at line: 5")
-        );
 
-        // reset state
-        lineCount = 1;
-        callStmts.clear();
-        procedures.clear();
-        // Testing bad call stmt with inappropriate procedure name
-        std::string badCallCode = R"(procedure badCall {
-            call 12345;
-        })";
-        auto badCallTokens = Lexer(badCallCode).getTokens();
-        REQUIRE_THROWS_MATCHES(
-            parseProgram(badCallTokens),
-            std::invalid_argument,
-            Catch::Message("Procedure name expected at line: 2")
-        );
+        SECTION("Bad RelOp") {
+            std::string badRelOpCode = R"(procedure a {
+                
+                
+                
+                while (c !! b) {
+                    read c; 
+                }
+            })";
+            auto badRelOpTokens = Lexer(badRelOpCode).getTokens();
+            // Parser will expect the RelOp to be "!=" and the while stmt is on line 5.
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(badRelOpTokens),
+                std::invalid_argument,
+                Catch::Message("CondExpr fails to parse at line: 5")
+            );
+        }
 
-        // reset state
-        lineCount = 1;
-        callStmts.clear();
-        procedures.clear();
-        // Testing bad stmtlst without statements
-        std::string badStmtCode = R"(procedure bad {
-            12345;
-        })";
-        auto badStmtTokens = Lexer(badStmtCode).getTokens();
-        REQUIRE_THROWS_MATCHES(
-            parseProgram(badStmtTokens),
-            std::invalid_argument,
-            Catch::Message("String expected at line: 2")
-        );
+        SECTION("Bad call stmt") {
+            // Testing bad call stmt with inappropriate procedure name
+            std::string badCallCode = R"(procedure badCall {
+                call 12345;
+            })";
+            auto badCallTokens = Lexer(badCallCode).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(badCallTokens),
+                std::invalid_argument,
+                Catch::Message("Procedure name expected at line: 2")
+            );
+        }
 
-        // reset state
-        lineCount = 1;
-        callStmts.clear();
-        procedures.clear();
-        // Testing empty token list parsing 
-        std::string emptyCode = "";
-        auto emptyTokens = Lexer(emptyCode).getTokens();
-        REQUIRE_THROWS_MATCHES(
-            parseProgram(emptyTokens),
-            std::invalid_argument,
-            Catch::Message("Empty program received")
-        );
+        SECTION("Empty stmtlst") {
+            // Testing bad stmtlst without statements
+            std::string badStmtCode = R"(procedure bad {
+                12345;
+            })";
+            auto badStmtTokens = Lexer(badStmtCode).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(badStmtTokens),
+                std::invalid_argument,
+                Catch::Message("String expected at line: 2")
+            );
+        }
+
+        SECTION("Empty program") {
+            // Testing empty token list parsing 
+            std::string emptyCode = "";
+            auto emptyTokens = Lexer(emptyCode).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(emptyTokens),
+                std::invalid_argument,
+                Catch::Message("Empty program received")
+            );
+        }
+
+        SECTION("Bad keywords stmt") {
+            // Testing possible bad keywords such as then and else
+            std::string badKeywordCode = R"(procedure bad {
+                if (x == y) notthenlol {
+                    print ooga;
+                } else {
+                    print booga;
+                }
+            })";
+            auto badKeywordTokens = Lexer(badKeywordCode).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(badKeywordTokens),
+                std::invalid_argument,
+                Catch::Message("then expected at line: 2")
+            );
+        }
+    
+        SECTION("Missing variable stmt") {
+            // Testing possible missing variables
+            std::string noVarCode = R"(procedure bad {
+                read;
+            })";
+            auto noVarTokens = Lexer(noVarCode).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(noVarTokens),
+                std::invalid_argument,
+                Catch::Message("Name expected at line: 2")
+            );
+        }
+
+        SECTION("parseRelOp exceptions") {
+            // Testing case where the second '=' is missing
+            std::string badRelOpCode = R"(procedure bad {
+                while (1234 =monke= 1234) {
+                    read monke;
+                }
+            })";
+            auto badRelOpTokens = Lexer(badRelOpCode).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(badRelOpTokens),
+                std::invalid_argument,
+                Catch::Message("CondExpr fails to parse at line: 2")
+            );
+
+            // reset state
+            lineCount = 1;
+            callStmts.clear();
+            procedures.clear();
+            // case where relOp is missing
+            std::string badRelOpCode2 = R"(procedure bad {
+                while (1234 )";
+            auto badRelOpTokens2 = Lexer(badRelOpCode2).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(badRelOpTokens2),
+                std::invalid_argument,
+                Catch::Message("CondExpr fails to parse at line: 2")
+            );
+
+            // reset state
+            lineCount = 1;
+            callStmts.clear();
+            procedures.clear();
+            // case where relOp is not recognised
+            std::string badRelOpCode3 = R"(procedure bad {
+                while (1234 ?? lol) {
+                    read monke;
+            })";
+            auto badRelOpTokens3 = Lexer(badRelOpCode3).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(badRelOpTokens3),
+                std::invalid_argument,
+                Catch::Message("CondExpr fails to parse at line: 2")
+            );
+        }
+
+        SECTION("parseCondOp exceptions") {
+            // Testing case where the second '&' is missing
+            std::string badCondOpCode = R"(procedure bad {
+                while ((1234 == 1234) &)";
+            auto badCondOpTokens = Lexer(badCondOpCode).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(badCondOpTokens),
+                std::invalid_argument,
+                Catch::Message("CondExpr fails to parse at line: 2")
+            );
+
+            // reset state
+            lineCount = 1;
+            callStmts.clear();
+            procedures.clear();
+            // Testing case where the second '|' is missing
+            std::string badCondOpCode2 = R"(procedure bad {
+                while ((1234 == 1234) |)";
+            auto badCondOpTokens2 = Lexer(badCondOpCode2).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(badCondOpTokens2),
+                std::invalid_argument,
+                Catch::Message("CondExpr fails to parse at line: 2")
+            );
+
+            // reset state
+            lineCount = 1;
+            callStmts.clear();
+            procedures.clear();
+            // Testing case where the condOp is missing
+            std::string badCondOpCode3 = R"(procedure bad {
+                while ((1234 == 1234) ?? (monke == monke)) {
+                    read ooga;
+            })";
+            auto badCondOpTokens3 = Lexer(badCondOpCode3).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(badCondOpTokens3),
+                std::invalid_argument,
+                Catch::Message("CondExpr fails to parse at line: 2")
+            );
+
+            // 2nd test case where the condOp is missing
+            std::string badCondOpCode4 = R"(procedure bad {
+                while ((1 + 2 + 3) && (monke == monke)) {
+                    read ooga;
+            })";
+            auto badCondOpTokens4 = Lexer(badCondOpCode4).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                parseProgram(badCondOpTokens4),
+                std::invalid_argument,
+                Catch::Message("CondExpr fails to parse at line: 2")
+            );
+        }
+
+        SECTION("expr parsing exceptions") {
+            std::string emptyCode = "";
+            auto emptyTokens = Lexer(emptyCode).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                expr_parser::parse(emptyTokens),
+                std::invalid_argument,
+                Catch::Message("More tokens (for Expr Parsing) expected at line: 1")
+            );
+
+            std::string missingOperandCode = "123 +";
+            auto missingOperandTokens = Lexer(missingOperandCode).getTokens();
+            REQUIRE_THROWS_MATCHES(
+                expr_parser::parse(missingOperandTokens),
+                std::invalid_argument,
+                Catch::Message("More tokens (for Expr Parsing) expected")
+            );
+        }
     }
 
     SECTION("Additional Constraints") {
@@ -1080,6 +1224,7 @@ TEST_CASE("Testing Exceptions Thrown and Source Line") {
             tokens1 = Lexer(problemCode1).getTokens();
             REQUIRE(parse(problemCode1) == nullptr);
         }
+        
         SECTION("Calling non-existent procedures should not be allowed") {
             // Calling non-existent procedures should not be allowed
             std::string problemCode2 = R"(procedure main {
@@ -1101,6 +1246,7 @@ TEST_CASE("Testing Exceptions Thrown and Source Line") {
             );
             REQUIRE(parse(problemCode2) == nullptr);
         }
+
         SECTION("Simple Cyclical call should not be allowed") {
             std::string problemCode = R"(
                 procedure a {
@@ -1122,6 +1268,7 @@ TEST_CASE("Testing Exceptions Thrown and Source Line") {
             );
             REQUIRE(parse(problemCode) == nullptr);
         }
+
         SECTION("Recursive call should not be allowed") {
             std::string problemCode = R"(
                 procedure a {
@@ -1137,6 +1284,7 @@ TEST_CASE("Testing Exceptions Thrown and Source Line") {
             );
             REQUIRE(parse(problemCode) == nullptr);
         }
+
         SECTION("Cyclical call in disjoint graph should not be allowed") {
             std::string problemCode = R"(
                 procedure a {

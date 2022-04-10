@@ -29,7 +29,7 @@ bool checkChildrenEquality(
     for (auto child : currChildren) {
         auto c = child.lock().get();
         // if the child has already been traversed, we ignore
-        if (reached.find(c) == reached.end()) {
+        if (reached.find(c) != reached.end()) {
             continue;
         }
         bool isMatch = false;
@@ -44,7 +44,7 @@ bool checkChildrenEquality(
         isEqual = isEqual && isMatch;
         // if the previously checks nodes where not equal, terminate and return false
         if (!isEqual) {
-            return isEqual;
+            return false;
         }
     }
     // after successfully comparing and recursing down the children, return
