@@ -161,7 +161,7 @@ ast::CondOp parseCondOp(deque<Token>& tokens) {
     }
     char currOp = get<char>(condOpToken.value);
 
-    if (tokens.size() < 1) {
+    if (tokens.size() < 2) {
         throwUnexpectedToken("More tokens (for CondOp Parsing)", condOpToken.sourceline);
     }
     condOpToken = tokens.front();

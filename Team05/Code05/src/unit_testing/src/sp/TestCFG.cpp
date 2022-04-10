@@ -92,8 +92,9 @@ TEST_CASE("CFG Test") {
             REQUIRE(*nullNode1 == *nullNode2);
             REQUIRE_FALSE(*nodeTest == *nullNode1);
         }
-        /* ==================== children test ================== */
+
         SECTION("Children nodes test") {
+            /* ================== STMT NODES ================== */
             auto nodeTest1 = std::make_shared<CFGNode>(1, StatementType::While);
             auto childNode1 = std::make_shared<CFGNode>(2, StatementType::Assignment);
             auto childNode2 = std::make_shared<CFGNode>(3, StatementType::Print);
@@ -115,9 +116,38 @@ TEST_CASE("CFG Test") {
             auto childNode7 = std::make_shared<CFGNode>(3, StatementType::Print);
             nodeTest4->insert(childNode6);
             nodeTest4->insert(childNode7);
+
             REQUIRE_FALSE(*nodeTest1 == *nodeTest2);
             REQUIRE_FALSE(*nodeTest1 == *nodeTest3);
+            REQUIRE(*nodeTest1 == *nodeTest1);
             REQUIRE(*nodeTest1 == *nodeTest4);
+
+            /* =================== NULL NODES =================== */
+            // Null node 1
+            auto nodeTest5 = std::make_shared<CFGNode>();
+            auto childNode8 = std::make_shared<CFGNode>(2, StatementType::Assignment);
+            auto childNode9 = std::make_shared<CFGNode>(3, StatementType::Print);
+            nodeTest5->insert(childNode8);
+            nodeTest5->insert(childNode9);
+            // The same null node            
+            auto nodeTest6 = std::make_shared<CFGNode>();
+            auto childNode10 = std::make_shared<CFGNode>(2, StatementType::Assignment);
+            auto childNode11 = std::make_shared<CFGNode>(3, StatementType::Print);
+            nodeTest6->insert(childNode10);
+            nodeTest6->insert(childNode11);
+            // Null node with different children
+            auto nodeTest7 = std::make_shared<CFGNode>();
+            auto childNode12 = std::make_shared<CFGNode>(2, StatementType::Assignment);
+            auto childNode13 = std::make_shared<CFGNode>(3, StatementType::Read);
+            nodeTest7->insert(childNode12);
+            nodeTest7->insert(childNode13);
+
+            REQUIRE_FALSE(*nodeTest1 == *nodeTest5);
+            REQUIRE_FALSE(*nodeTest5 == *nodeTest7);
+            REQUIRE(*nodeTest5 == *nodeTest5);
+            REQUIRE(*nodeTest5 == *nodeTest6);
+
+
         }
     }
 
