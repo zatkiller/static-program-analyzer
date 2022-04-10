@@ -82,16 +82,16 @@ struct ClauseGroup {
     static ClauseGroup ofNewGroup(int id);
 
     template<typename T>
-    void addClause(T clause, std::vector<std::string> syns) {
+    void addClause(T& clause, std::vector<std::string> syns) {
         OrderedClause o;
         if constexpr(std::is_same_v<T, std::shared_ptr<query::RelRef>>) {
-            suchthatGroup.emplace(std::move(clause));
+            suchthatGroup.emplace(clause);
             o = OrderedClause::ofSuchThat(clause);
         } else if constexpr(std::is_same_v<T, query::AttrCompare>) {
-            withGroup.emplace(std::move(clause));
+            withGroup.emplace(clause);
             o = OrderedClause::ofWith(clause);
         } else if constexpr(std::is_same_v<T, query::Pattern>) {
-            patternGroup.emplace(std::move(clause));
+            patternGroup.emplace(clause);
             o = OrderedClause::ofPattern(clause);
         }
         addSyn(syns);
