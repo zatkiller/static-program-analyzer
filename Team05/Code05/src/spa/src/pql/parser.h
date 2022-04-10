@@ -49,8 +49,20 @@ struct Parser {
             throw exceptions::PqlSyntaxException(messages::qps::parser::unexpectedWhitespaceMessage);
     }
 
-    static void checkType(Token &, TokenType);
-    static void checkDesignEntityAndAttrNameMatch(DesignEntity, AttrName);
+    /**
+     * Checks if the token is of a specific type, if not, it throws an error
+     * @param Token to check
+     * @param type expected token type
+     */
+    static void checkType(Token &token, TokenType type);
+
+    /**
+     * Checks if the design entity can possess an AttrName. If not, it throws an erorr
+     *
+     * @param de the Design Entity
+     * @param an the AttrName
+     */
+    static void checkDesignEntityAndAttrNameMatch(DesignEntity de, AttrName an);
 
     /**
      * Returns the next token from the lexified query
@@ -196,9 +208,10 @@ struct Parser {
     void parseSelectFields(Query &query);
 
     /**
-     * Parses the such that clauses and adds them to the query object
+     * Parses the such that clauses andall following such that clauses
+     * adds them to the query ADT
      *
-     * @param query the query object
+     * @param query the query ADT
      */
     void parseSuchThatClause(Query &query);
 
@@ -255,7 +268,7 @@ struct Parser {
             ptr.get()->*f1 = parseEntRef(query);
         }
 
-        ptr.get()->checkFirstArg();
+        ptr.get()->validateFirstArg();
 
         getAndCheckNextToken(TokenType::COMMA);
 
@@ -265,7 +278,7 @@ struct Parser {
             ptr.get()->*f2 = parseEntRef(query);
         }
 
-        ptr.get()->checkSecondArg();
+        ptr.get()->validateSecondArg();
 
         return ptr;
     }
@@ -295,19 +308,45 @@ struct Parser {
      */
     EntRef parseEntRef(Query &query);
 
+    /**
+     * Returns a EntRef that has been parsed as the LHS of a pattern clause
+     *
+     * @param query the query object
+     * @return EntRef representing the LHS of a pattern that has been parsed
+     */
     EntRef parsePatternLhs(Query &query);
 
+    /**
+     * Returns a Pattern after parsing the Pattern variables
+     *
+     * @param query the query object
+     * @param the declaration of the pattern
+     * @return Pattern representing the parseed pattern
+     */
     Pattern parsePatternVariables(Query &query, const Declaration& d);
-
-    void parsePattern(Query &query);
 
     /**
      * Parses a Pattern and adds them to a query object
      *
      * @param query the query object
      */
+    void parsePattern(Query &query);
+
+    /**
+     * Parses a Pattern and all following pattern clauses 
+     * adds them to a query object
+     *
+     * @param query the query object
+     */
     void parsePatternClause(Query &query);
 
+    /**
+     * Returns after parsing an AttrName
+     *
+     * @param query the query ADT
+     * @param declaration the declaration the attrName belongs to
+     * @return AttrName the attrname
+     */
     AttrName parseAttrName(Query &query, const Declaration& declaration);
 
     /**
@@ -325,7 +364,8 @@ struct Parser {
     AttrCompareRef parseAttrCompareRef(Query &query);
 
     /**
-     * Parses a with clause and adds them to the query ADT
+     * Parses a with clause and all following with clauses
+     * adds them to the query ADT
      *
      * @param query the query ADT
      */
@@ -357,40 +397,6 @@ struct Parser {
      * Returns a ExpSpec belonging to an assign pattern
      */
     ExpSpec parseExpSpec();
-
-    /**
-     * Validate the expression in Pattern using Pratt parsing, which is an enhancement of recursive descent algorithm
-     * but with precedence and associativity
-     *
-     * @param expr expression under pattern to be parsed
-     */
-    static void validateExpr(const std::string& expr);
-
-    /**
-     * The base function to start the Pratt parsing
-     */
-    void parseExpr();
-
-    /**
-     * Parses the current expression
-     */
-    void parseCurrentExpr();
-
-    /**
-     * Parses the next expression. Expressions can be considered different if they have different operator precedence
-     *
-     * @param priority - priority the next expression holds
-     *
-     */
-    void parseNextExpr(int priority);
-
-    /**
-     * get priority of operator token
-     *
-     * @param token token to get priority
-     * @return the operator priority
-     */
-    static int getOperatorPriority(const Token& token);
 };
 
 }  // namespace qps::parser

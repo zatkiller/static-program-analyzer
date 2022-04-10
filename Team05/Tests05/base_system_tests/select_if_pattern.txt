@@ -1,6 +1,6 @@
 1 - Select statement with pattern with LHS being variable name and RHS being a wildcard
 if ifs; stmt s;
-Select s pattern ifs("x", _ , _)
+Select s pattern ifs("v1", _ , _)
 <answer>
 5000
 2 - Select statement with pattern with LHS being synonym and RHS being a wildcard

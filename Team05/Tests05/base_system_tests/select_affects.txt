@@ -1,0 +1,57 @@
+1 - select statement with Affects where affecting stmt is line no and affected is line no
+stmt s; assign a;
+Select s such that Affects(1, 2)
+<answer>
+5000
+2 - select statement with Affects where affecting stmt is assign synonym and affected is line no
+stmt s; assign a;
+Select s such that Affects(a, 3)
+<answer>
+5000
+3 - select statement with Affects where affecting stmt is assign synonym and affected is line no
+stmt s; assign a;
+Select s such that Affects(_, 3)
+<answer>
+5000
+4 - select statement with Affects where affecting stmt is line no and affected is assign synonym
+stmt s; assign a;
+Select s such that Affects(1, a)
+<answer>
+5000
+5 - select statement with Affects where affecting stmt is assign synonym and affected is assign synonym
+stmt s; assign a, a1;
+Select s such that Affects(a, a1)
+<answer>
+5000
+6 - select statement with Affects where affecting stmt is wildcard and affected is assign synonym
+stmt s; assign a;
+Select s such that Affects(_, a)
+<answer>
+5000
+7 - select statement with Affects where affecting stmt is wildcard and affected is procedure name
+stmt s; assign a;
+Select s such that Affects(1, _)
+<answer>
+5000
+8 - select statement with Affects where affecting stmt is wildcard and affected is assign synonym
+stmt s; assign a;
+Select s such that Affects(a, _)
+<answer>
+5000
+9 - select statement with Affects where affecting stmt is wildcard and affected is wildcard
+stmt s; assign a;
+Select s such that Affects(_, _)
+<answer>
+5000
+10 - select assign synonym where synonym selected is 1st argument in Affects is assign and 2nd argument is assign
+assign a, a2;
+Select a such that Affects(a, a2)
+<answer>
+5000
+11 - select assign synonym where synonym selected is 2nd argument in Affects is assign and 1st argument is assign
+assign a, a2;
+Select a2 such that Affects(a, a2)
+<answer>
+5000
+
+

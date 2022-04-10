@@ -34,8 +34,10 @@ public:
     }
 
     void extract(ast::ASTNode* ast) {
+        sp::cfg::CFG cfgContainer;
         if (cfgs.empty()) {
-            auto cfgs = cfg::CFGExtractor().extract(ast);
+            cfgContainer = cfg::CFGExtractor().extract(ast);
+            cfgs = cfgContainer.cfgs;
         }
         for (auto extractor : astExtractors) {
             extractor->extract(ast);

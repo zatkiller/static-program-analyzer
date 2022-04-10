@@ -1,3 +1,4 @@
+#include "exceptions.h"
 #include "clausehandler.h"
 
 namespace qps::evaluator {
@@ -91,8 +92,13 @@ namespace qps::evaluator {
             if (exp.isPartialMatch() || exp.isFullMatch()) rhsParam = exp.getPattern();
             isStrict = exp.isFullMatch();
         }
-
-        PKBResponse response = pkb->match(statementType, PatternParam(lhsParam), PatternParam(rhsParam, isStrict));
+        PKBResponse response;
+        try {
+            response = pkb->match(statementType, PatternParam(lhsParam), PatternParam(rhsParam, isStrict));
+        } catch (std::invalid_argument) {
+            throw exceptions::PqlSyntaxException("Syntax Error has occured!");
+        }
+        
         if (!lhs.isDeclaration()) {
             response = selectDeclaredValue(response, true);
         }
