@@ -1,0 +1,13 @@
+procedure p1 {
+    read v1;
+    print v2;
+}
+
+procedure p2 {
+    print v3;
+    call p1;
+    while (v1 > v3) {
+        read v4;
+        call p1;
+    }
+}

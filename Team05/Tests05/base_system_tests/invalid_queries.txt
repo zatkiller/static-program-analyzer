@@ -85,11 +85,22 @@ none
 5000
 18 - Invalid semantic query - While pattern LHS if synonym has to be variable
 stmt s; while w;
-Select s pattern w(s, "_")
+Select s pattern w(s, _)
 none
 5000
 19 - Invalid semantic query - If pattern LHS if synonym has to be variable
 stmt s; if ifs;
-Select s pattern ifs(s, "_")
+Select s pattern ifs(s, _, _)
 none
 5000
+20 - Invalid syntax query - assign pattern with 3 parameters
+stmt s; assign a; variable v;
+Select s pattern a(v, _, _)
+none
+5000
+21 - Invalid syntax query - while pattern with 3 parameters
+stmt s; while w; variable v;
+Select s pattern w(v, _, _)
+none
+5000
+

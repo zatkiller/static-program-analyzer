@@ -1,0 +1,30 @@
+1 - select BOOLEAN
+procedure p;
+Select BOOLEAN
+<answer>
+5000
+2 - select BOOLEAN with clauses
+stmt s;
+Select BOOLEAN such that Parent(1, 2)
+<answer>
+5000
+3 - select tuple with 1 element
+stmt s;
+Select < s >
+<answer>
+5000
+4 - select tuple with 2 elements (same synonym)
+stmt s;
+Select < s, s >
+<answer>
+5000
+5 - select tuple with attRef
+stmt s; variable v;
+Select < s.stmt#, s, v, v.varName >
+<answer>
+5000
+6 - select tuple with shared synonyms with clauses
+stmt s; variable v;
+Select < s.stmt#, s, v, v.varName > with v.varName = "v1" such that Follows(s, 2)
+<answer>
+5000

@@ -1,0 +1,24 @@
+procedure p1 {
+    while (v1 > v2) {
+        read v1;
+        if ((v1 != 0) && (v2 != v1)) then {
+            call p2;
+        } else {
+            print v1;
+        }
+    }
+    print v2;
+}
+
+procedure p2 {
+    print v2;
+    if (v3 < v1) then {
+        read v2;
+    } else {
+        print v3;
+        v2 = v3 + v1;
+        while (v3 != v4) {
+            read v4;
+        }
+    }
+}
