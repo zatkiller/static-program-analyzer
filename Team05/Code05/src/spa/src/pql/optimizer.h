@@ -70,9 +70,9 @@ struct BFS {
 struct ClauseGroup {
     int groupId;
     std::unordered_set<std::string> syns;
-    std::vector<std::shared_ptr<query::RelRef>> suchthatGroup;
-    std::vector<query::AttrCompare> withGroup;
-    std::vector<query::Pattern> patternGroup;
+    std::unordered_set<std::shared_ptr<query::RelRef>> suchthatGroup;
+    std::unordered_set<query::AttrCompare> withGroup;
+    std::unordered_set<query::Pattern> patternGroup;
 
     std::unordered_map<std::string, std::vector<OrderedClause>> subgroups;
     std::string startingPoint;
@@ -85,13 +85,13 @@ struct ClauseGroup {
     void addClause(T clause, std::vector<std::string> syns) {
         OrderedClause o;
         if constexpr(std::is_same_v<T, std::shared_ptr<query::RelRef>>) {
-            suchthatGroup.push_back(clause);
+            suchthatGroup.insert(clause);
             o = OrderedClause::ofSuchThat(clause);
         } else if constexpr(std::is_same_v<T, query::AttrCompare>) {
-            withGroup.push_back(clause);
+            withGroup.insert(clause);
             o = OrderedClause::ofWith(clause);
         } else if constexpr(std::is_same_v<T, query::Pattern>) {
-            patternGroup.push_back(clause);
+            patternGroup.insert(clause);
             o = OrderedClause::ofPattern(clause);
         }
         addSyn(syns);
