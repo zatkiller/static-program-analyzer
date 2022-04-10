@@ -3,6 +3,7 @@
 #include "logging.h"
 #include "PKB.h"
 #include "PKB/PKBField.h"
+#include "Parser/Parser.h"
 #include "catch.hpp"
 
 #define TEST_LOG Logger() << "TestPKB.cpp "
@@ -679,9 +680,291 @@ TEST_CASE("PKB sample source program test - Iteration 1") {
     }
 }
 
+TEST_CASE("PKB Affects Testing - Single Proc") {
+    auto testCode = R"(procedure main {
+    x = 2 + a;
+    y = x + 3;
+    if (b == 3) then {
+        while (x == 2) {
+            x = x + 1;
+        }
+    } else {
+        a = x + c;
+    }
+    print x;
+    a = x - a;
+    y = a + x;
+    })";
+    auto cfgExtractor = sp::cfg::CFGExtractor();
+    auto cfgContainer = cfgExtractor.extract(sp::parser::parse(testCode).get());
+    std::unique_ptr<PKB> pkb = std::make_unique<PKB>();
+    pkb->insertCFG(cfgContainer);
+    
+    StatementType ASSIGN = StatementType::Assignment;
+    StatementType IF = StatementType::If;
+    StatementType WHILE = StatementType::While;
+    StatementType PRINT = StatementType::Print;
+
+    // Insert statements into stmtTable
+    pkb->insertEntity(STMT_LO(1, ASSIGN));
+    pkb->insertEntity(STMT_LO(2, ASSIGN));
+    pkb->insertEntity(STMT_LO(3, IF));
+    pkb->insertEntity(STMT_LO(4, WHILE));
+    pkb->insertEntity(STMT_LO(5, ASSIGN));
+    pkb->insertEntity(STMT_LO(6, ASSIGN));
+    pkb->insertEntity(STMT_LO(7, PRINT));
+    pkb->insertEntity(STMT_LO(8, ASSIGN));
+    pkb->insertEntity(STMT_LO(9, ASSIGN));
+
+    PKBRelationship aff = PKBRelationship::AFFECTS;
+    PKBRelationship affT = PKBRelationship::AFFECTST;
+
+    SECTION("AffectsEvaluator::contains (transitive and non-transitive)") {
+        PKBField conc1 = PKBField::createConcrete(STMT_LO(1, ASSIGN));
+        PKBField conc2 = PKBField::createConcrete(STMT_LO(8, ASSIGN));
+        REQUIRE(pkb->isRelationshipPresent(conc1, conc2, aff));
+
+        PKBField conc3 = PKBField::createConcrete(STMT_LO(5, ASSIGN));
+        PKBField conc4 = PKBField::createConcrete(STMT_LO(5, ASSIGN));
+        REQUIRE(pkb->isRelationshipPresent(conc3, conc4, aff));
+
+        PKBField conc5 = PKBField::createConcrete(STMT_LO(2, ASSIGN));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(conc5, conc3, aff));
+
+        PKBField conc6 = PKBField::createConcrete(STMT_LO(9, ASSIGN));
+        REQUIRE(pkb->isRelationshipPresent(conc1, conc6, affT));
+        REQUIRE(pkb->isRelationshipPresent(conc1, conc6, aff));
+    }
+
+    SECTION("AffectsEvaluator::retrieve (non-transitive)") {
+        PKBField stmtDecl = PKBField::createDeclaration(StatementType::All);
+
+        PKBField conc1 = PKBField::createConcrete(STMT_LO(1, ASSIGN));
+        PKBField conc2 = PKBField::createConcrete(STMT_LO(2, ASSIGN));
+        PKBField conc5 = PKBField::createConcrete(STMT_LO(5, ASSIGN));
+        PKBField conc6 = PKBField::createConcrete(STMT_LO(6, ASSIGN));
+        PKBField conc8 = PKBField::createConcrete(STMT_LO(8, ASSIGN));
+        PKBField conc9 = PKBField::createConcrete(STMT_LO(9, ASSIGN));
+
+        // (Decl, Concrete)
+        FieldRowResponse expected1{ {conc1, conc8}, {conc5, conc8}, {conc6, conc8} };
+        REQUIRE(*(pkb->getRelationship(stmtDecl, conc8, aff)
+            .getResponse<FieldRowResponse>()) == expected1);
+        REQUIRE(!pkb->getRelationship(stmtDecl, conc1, aff).hasResult);
+
+        // (Concrete, Decl)
+        FieldRowResponse expected2{ {conc5, conc5}, {conc5, conc8}, {conc5, conc9} };
+        FieldRowResponse expected3{ {conc1, conc2}, {conc1, conc5}, {conc1, conc6}, {conc1, conc8}, {conc1, conc9} };
+        REQUIRE(*(pkb->getRelationship(conc5, stmtDecl, aff)
+            .getResponse<FieldRowResponse>()) == expected2);
+        REQUIRE(*(pkb->getRelationship(conc1, stmtDecl, aff)
+            .getResponse<FieldRowResponse>()) == expected3);
+
+        // (Decl, Decl)
+        FieldRowResponse expected4{
+            {conc1, conc2},
+            {conc1, conc5},
+            {conc1, conc6},
+            {conc1, conc8},
+            {conc1, conc9},
+            {conc5, conc5},
+            {conc5, conc8},
+            {conc5, conc9},
+            {conc6, conc8},
+            {conc8, conc9}
+        };
+        REQUIRE(*(pkb->getRelationship(stmtDecl, stmtDecl, aff)
+            .getResponse<FieldRowResponse>()) == expected4);
+    }
+
+    SECTION("AffectsEvaluator::retrieve (transitive)") {
+        PKBField stmtDecl = PKBField::createDeclaration(StatementType::All);
+
+        PKBField field1 = PKBField::createConcrete(STMT_LO(1, ASSIGN));
+        PKBField field2 = PKBField::createConcrete(STMT_LO(2, ASSIGN));
+        PKBField field3 = PKBField::createConcrete(STMT_LO(5, ASSIGN));
+        PKBField field4 = PKBField::createConcrete(STMT_LO(6, ASSIGN));
+        PKBField field5 = PKBField::createConcrete(STMT_LO(8, ASSIGN));
+        PKBField field6 = PKBField::createConcrete(STMT_LO(9, ASSIGN));
+
+        // (Decl, Concrete)
+        FieldRowResponse expected1{ {field1, field6}, {field3, field6},
+            {field4, field6}, {field5, field6} };
+        REQUIRE(*(pkb->getRelationship(stmtDecl, field6, affT)
+            .getResponse<FieldRowResponse>()) == expected1);
+
+        // (Concrete, Decl)
+        FieldRowResponse expected2{ {field3, field3}, {field3, field5}, {field3, field6} };
+        REQUIRE(*(pkb->getRelationship(field3, stmtDecl, affT)
+            .getResponse<FieldRowResponse>()) == expected2);
+
+        // (Decl, Decl)
+        FieldRowResponse expected3{
+            {field1, field2},
+            {field1, field3},
+            {field1, field4},
+            {field1, field5},
+            {field1, field6},
+            {field3, field3},
+            {field3, field5},
+            {field3, field6},
+            {field4, field5},
+            {field4, field6},
+            {field5, field6}
+        };
+        REQUIRE(*(pkb->getRelationship(stmtDecl, stmtDecl, affT)
+            .getResponse<FieldRowResponse>()) == expected3);
+    }
+}
+
+TEST_CASE("AffectsEvaluator multi-proc test") {
+    /**
+    *       procedure main {
+    * 1         x = a + b;
+    * 2         if (x > 0) then {
+    * 3             call second;
+    *           } else {
+    * 4             while (b > c) {
+    * 5                 call third;
+    * 6                 a = x + a;
+    *               }
+    *           }
+    * 7         x = x + a;          
+    *       }
+    * 
+    *       procedure second {
+    * 8         x = b;
+    * 9         a = c;
+    *       }
+    * 
+    *       procedure third {
+    * 10        while (y == x) {
+    * 11            x = x + y;
+    * 12            if (c > b) then {
+    * 13                a = 4 + c;
+    *               } else {
+    * 14                c = a + 4;
+    *               }
+    *           }
+    *       }
+    */
+    std::string sourceCode = R"(procedure main {
+        x = a + b;
+        if (x > 0) then {
+            call second;
+        } else {
+            while (b > c) {
+                call third;
+                a = x + a;
+            }
+        }
+    }
+    procedure second {
+        x = b;
+        while (a > b) {
+            y = y + 1;
+            if (c > 4) then {
+                x = b + y;
+            } else {
+                b = y * 3;
+            }
+        }
+    }
+    procedure third {
+        while (y == x) {
+            x = x + y;
+            if (c > b) then {
+                b = 4 + c;
+            } else {
+                c = a + 4;
+            }
+        }
+    })";
+    sp::cfg::CFGExtractor extractor;
+    auto pkb = std::make_unique<PKB>();
+    auto cfg = extractor.extract(sp::parser::parse(sourceCode).get());
+    pkb->insertCFG(cfg);
+
+    // Statement Types
+    StatementType ASSIGN = StatementType::Assignment;
+    StatementType ALL = StatementType::All;
+    StatementType CALL = StatementType::Call;
+    StatementType IF = StatementType::If;
+    StatementType WHILE = StatementType::While;
+
+    // Insert statements to stmtTable
+    pkb->insertEntity(STMT_LO(1, ASSIGN));
+    pkb->insertEntity(STMT_LO(2, IF));
+    pkb->insertEntity(STMT_LO(3, CALL));
+    pkb->insertEntity(STMT_LO(4, WHILE));
+    pkb->insertEntity(STMT_LO(5, CALL));
+    pkb->insertEntity(STMT_LO(6, ASSIGN));
+    pkb->insertEntity(STMT_LO(7, ASSIGN));
+    pkb->insertEntity(STMT_LO(8, WHILE));
+    pkb->insertEntity(STMT_LO(9, ASSIGN));
+    pkb->insertEntity(STMT_LO(10, IF));
+    pkb->insertEntity(STMT_LO(11, ASSIGN));
+    pkb->insertEntity(STMT_LO(12, ASSIGN));
+    pkb->insertEntity(STMT_LO(13, WHILE));
+    pkb->insertEntity(STMT_LO(14, ASSIGN));
+    pkb->insertEntity(STMT_LO(15, IF));
+    pkb->insertEntity(STMT_LO(16, ASSIGN));
+    pkb->insertEntity(STMT_LO(17, ASSIGN));
+
+    // Declarations for test case usage
+    PKBField stmtDecl = PKBField::createDeclaration(ALL);
+
+    PKBField conc1 = PKBField::createConcrete(STMT_LO(1, ASSIGN));
+    PKBField conc6 = PKBField::createConcrete(STMT_LO(6, ASSIGN));
+    PKBField conc7 = PKBField::createConcrete(STMT_LO(7, ASSIGN));
+    PKBField conc9 = PKBField::createConcrete(STMT_LO(9, ASSIGN));
+    PKBField conc11 = PKBField::createConcrete(STMT_LO(11, ASSIGN));
+    PKBField conc12 = PKBField::createConcrete(STMT_LO(12, ASSIGN));
+    PKBField conc14 = PKBField::createConcrete(STMT_LO(14, ASSIGN));
+    PKBField conc16 = PKBField::createConcrete(STMT_LO(16, ASSIGN));
+    PKBField conc17 = PKBField::createConcrete(STMT_LO(17, ASSIGN));
+
+    PKBRelationship aff = PKBRelationship::AFFECTS;
+    PKBRelationship affT = PKBRelationship::AFFECTST;
+
+    SECTION("AffectsEvaluator::contains") {
+        REQUIRE(pkb->isRelationshipPresent(conc17, conc16, aff));
+        REQUIRE(pkb->isRelationshipPresent(conc9, conc9, aff));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(conc1, conc6, aff));
+        REQUIRE_FALSE(pkb->isRelationshipPresent(conc6, conc17, affT));
+    }
+
+    SECTION("AffectsEvaluator::retrieve") {
+        // (Declaration, Concrete)
+        FieldRowResponse expected1{ {conc9, conc11}, {conc12, conc11} };
+        REQUIRE(*(pkb->getRelationship(stmtDecl, conc11, aff)
+            .getResponse<FieldRowResponse>()) == expected1);
+        REQUIRE(!pkb->getRelationship(stmtDecl, conc7, aff).hasResult);
+
+        // (Concrete, Declaration)
+        FieldRowResponse expected2{ {conc9, conc9}, {conc9, conc11}, {conc9, conc12} };
+        REQUIRE(*(pkb->getRelationship(conc9, stmtDecl, aff)
+            .getResponse<FieldRowResponse>()) == expected2);
+        REQUIRE(!pkb->getRelationship(conc16, stmtDecl, aff).hasResult);
+
+        // (Declaration, Declaration)
+        FieldRowResponse expected3{
+            {conc6, conc6},
+            {conc9, conc9},
+            {conc9, conc11},
+            {conc9, conc12},
+            {conc12, conc11},
+            {conc14, conc14},
+            {conc17, conc16}
+        };
+        REQUIRE(*(pkb->getRelationship(stmtDecl, stmtDecl, aff)
+            .getResponse<FieldRowResponse>()) == expected3);
+    }
+}
+
 TEST_CASE("PKB regression test") {
     SECTION("PKB regression test #140.1") {
-        std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+        std::unique_ptr<PKB> pkb = std::make_unique<PKB>();
         pkb->getRelationship(
             PKBField::createDeclaration(StatementType::All),
             PKBField::createDeclaration(PKBEntityType::VARIABLE),
@@ -689,7 +972,7 @@ TEST_CASE("PKB regression test") {
         );
     }
     SECTION("PKB regression test #140.2") {
-        std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+        std::unique_ptr<PKB> pkb = std::make_unique<PKB>();
         pkb->insertRelationship(PKBRelationship::USES,
             PKBField::createConcrete(STMT_LO{ 1, StatementType::Print }),
             PKBField::createConcrete(VAR_NAME("x"))
@@ -702,7 +985,7 @@ TEST_CASE("PKB regression test") {
     }
 
     SECTION("PKB regression test #142.1") {
-        std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+        std::unique_ptr<PKB> pkb = std::make_unique<PKB>();
         pkb->insertRelationship(PKBRelationship::USES,
             PKBField::createConcrete(STMT_LO{ 1, StatementType::Print }),
             PKBField::createConcrete(VAR_NAME("x"))
@@ -723,7 +1006,7 @@ TEST_CASE("PKB regression test") {
     }
 
     SECTION("PKB regression test #142.2") {
-        std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+        std::unique_ptr<PKB> pkb = std::make_unique<PKB>();
         pkb->insertRelationship(PKBRelationship::MODIFIES,
             PKBField::createConcrete(STMT_LO{ 1, StatementType::Print }),
             PKBField::createConcrete(VAR_NAME("x"))
@@ -744,7 +1027,7 @@ TEST_CASE("PKB regression test") {
     }
 
     SECTION("PKB regression test #148") {
-        std::unique_ptr<PKB> pkb = std::unique_ptr<PKB>(new PKB());
+        std::unique_ptr<PKB> pkb = std::make_unique<PKB>();
         pkb->insertEntity(STMT_LO{ 1, StatementType::Assignment });
 
         PKBField field1 = PKBField::createConcrete(STMT_LO{ 1, StatementType::Assignment });

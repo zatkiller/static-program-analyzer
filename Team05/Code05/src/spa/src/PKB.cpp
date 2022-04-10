@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "logging.h"
 #include "PKB.h"
@@ -11,6 +12,146 @@ template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 // explicit deduction guide (not needed as of C++20)
 template<class... Ts> overloaded(Ts...)->overloaded<Ts...>;
 
+/**
+* Class that extracts Affects relationships provided a CFG 
+*/
+class AffectsCacher {
+public:
+    /**
+    * Extracts all Affects relationships from the provided CFG
+    * 
+    * @param cfgContainer The CFG from which to extract Affects relationships
+    * @return A set of pairs of STMT_LOs, representing the result of the extraction
+    * @see CFG
+    */
+    CacheResults evalAffects(const sp::cfg::CFG cfgContainer) {
+        // Initialize visited set for main traversal
+        CfgNodeSet visited;
+
+        // Traverse and extract relationships from each procedure's CFG
+        for (auto varCfgPair : cfgContainer.cfgs) {
+            // Skip first dummy node
+            auto root = varCfgPair.second;
+            if (!root->stmt.has_value() && root->getChildren().size() != 0) {
+                root = root->getChildren().at(0).lock();
+            }
+
+            extractAndCacheFrom(root, &visited);
+        }
+        return res;
+    }
+
+private:
+    CacheResults res;
+
+    void extractAndCacheFrom(NodePtr start, CfgNodeSet* visited) {
+        auto curr = start.lock().get();
+
+        // Case where node has already been visited
+        if (visited->find(curr) != visited->end()) {
+            return;
+        }
+
+        // Deal with case where node is dummy
+        if (!curr->stmt.has_value()) {
+            // Get children
+            std::vector<NodePtr> children = curr->getChildren();
+            for (auto child : children) {
+                extractAndCacheFrom(child, visited);
+            }
+        } else {
+            // Add to visited list
+            visited->insert(curr);
+
+            // Get statement at curr
+            STMT_LO currStmt = curr->stmt.value();
+
+            // Check type of stmt
+            bool isAssignNode = currStmt.type.value() == StatementType::Assignment;
+
+            // Do secondary traversal if node is assignment statement
+            if (isAssignNode) {
+                // Extract variable of interest (i.e. var being modified)
+                auto voi = curr->modifies;
+
+                // Get children
+                std::vector<NodePtr> nextNodes = curr->getChildren();
+                for (auto nextNode : nextNodes) {
+                    CfgNodeSet secVisited;
+                    walkAndExtract(nextNode, voi, start, &secVisited);
+                }
+            }
+
+            // Continue traversal
+            std::vector<NodePtr> children = curr->getChildren();
+            for (auto child : children) {
+                extractAndCacheFrom(child, visited);
+            }
+        }
+    }
+
+    void walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME> voi, NodePtr src,
+        CfgNodeSet* visited) {
+        // Get children
+        auto children = curr.lock()->getChildren();
+
+        // Check if dummy node
+        if (!curr.lock()->stmt.has_value()) {
+            // If children exist walk them
+            if (children.empty()) {
+                return;
+            }
+            for (auto child : children) {
+                walkAndExtract(child, voi, src, visited);
+            }
+            return;
+        }
+
+        // Check for affects relationship
+        STMT_LO currStmt = curr.lock()->stmt.value();
+        bool isAssignNode = currStmt.type.value() == StatementType::Assignment;
+        bool hasRs = false;
+        auto usedVars = curr.lock()->uses;
+        for (auto var : voi) {
+            if (usedVars.find(var) != usedVars.end()) {
+                hasRs = true;
+                break;
+            }
+        }
+        if (hasRs && isAssignNode) {
+            STMT_LO srcStmt = src.lock()->stmt.value();
+            std::pair stmtPair = std::make_pair(srcStmt, currStmt);
+            res.insert(stmtPair);
+        }
+
+        // Check if node modifies voi
+        if (!curr.lock()->modifies.empty()) {
+            auto modVars = curr.lock().get()->modifies;
+            for (auto var : voi) {
+                if (modVars.find(var) != modVars.end()) {
+                    visited->insert(curr.lock().get());
+                    return;
+                }
+            }
+        }
+
+        // Check if node already visited
+        if (visited->find(curr.lock().get()) != visited->end()) {
+            return;
+        }
+
+        // Update visited list and continue traversal
+        visited->insert(curr.lock().get());
+        for (auto child : children) {
+            walkAndExtract(child, voi, src, visited);
+        }
+    }
+
+    bool isAssignment(PKBField field) {
+        return field.getContent<STMT_LO>()->type.value() == StatementType::Assignment;
+    }
+};
+
 PKB::PKB() {
     relationshipTables.emplace(PKBRelationship::FOLLOWS, std::make_shared<FollowsRelationshipTable>());
     relationshipTables.emplace(PKBRelationship::MODIFIES, std::make_shared<ModifiesRelationshipTable>());
@@ -18,13 +159,12 @@ PKB::PKB() {
     relationshipTables.emplace(PKBRelationship::NEXT, std::make_shared<NextRelationshipTable>());
     relationshipTables.emplace(PKBRelationship::PARENT, std::make_shared<ParentRelationshipTable>());
     relationshipTables.emplace(PKBRelationship::USES, std::make_shared<UsesRelationshipTable>());
+    relationshipTables.emplace(PKBRelationship::AFFECTS, std::make_shared<AffectsRelationshipTable>());
 
     statementTable = std::make_unique<StatementTable>();
     variableTable = std::make_unique<VariableTable>();
     constantTable = std::make_unique<ConstantTable>();
     procedureTable = std::make_unique<ProcedureTable>();
-
-    affectsEval = std::make_unique<AffectsEvaluator>();
 }
 
 // INSERT API
@@ -61,7 +201,6 @@ void PKB::insertAST(std::unique_ptr<sp::ast::Program> root) {
 
 void PKB::insertCFG(const sp::cfg::CFG cfgContainer) {
     this->cfgContainer = cfgContainer;
-    this->affectsEval->initCFG(cfgContainer);
 }
 
 bool PKB::validate(const PKBField field) const {
@@ -147,12 +286,6 @@ void PKB::insertRelationship(PKBRelationship type, PKBField field1, PKBField fie
     appendStatementInformation(&field1);
     appendStatementInformation(&field2);
 
-    // Currently a hack to support Affects
-    if (type == PKBRelationship::AFFECTS || type == PKBRelationship::AFFECTST) {
-        Logger(Level::ERROR) << "Cannot insert Affects relationships!";
-        return;
-    }
-
     getRelationshipTable(type)->insert(field1, field2);
 }
 
@@ -166,7 +299,8 @@ bool isTransitiveRelationship(PKBRelationship relationship) {
     return relationship == PKBRelationship::FOLLOWST ||
         relationship == PKBRelationship::PARENTT ||
         relationship == PKBRelationship::CALLST ||
-        relationship == PKBRelationship::NEXTT;
+        relationship == PKBRelationship::NEXTT ||
+        relationship == PKBRelationship::AFFECTST;
 }
 
 /**
@@ -185,6 +319,8 @@ PKBRelationship getNonTransitiveRelationship(PKBRelationship relationship) {
         return PKBRelationship::CALLS;
     } else if (relationship == PKBRelationship::NEXTT) {
         return PKBRelationship::NEXT;
+    } else if (relationship == PKBRelationship::AFFECTST) {
+        return PKBRelationship::AFFECTS;
     } else {
         return relationship;
     }
@@ -212,14 +348,7 @@ bool PKB::isRelationshipPresent(PKBField field1, PKBField field2, PKBRelationshi
     appendStatementInformation(&field1);
     appendStatementInformation(&field2);
 
-    // Currently a hack to support Affects
-    if (rs == PKBRelationship::AFFECTS) {
-        return affectsEval->contains(field1, field2);
-    }
-
-    if (rs == PKBRelationship::AFFECTST) {
-        return affectsEval->contains(field1, field2, true);
-    }
+    this->populateAffCache(rs);
 
     auto relationshipTablePtr = getRelationshipTable(rs);
     if (isTransitiveRelationship(rs)) {
@@ -247,22 +376,7 @@ PKBResponse PKB::getRelationship(PKBField field1, PKBField field2, PKBRelationsh
 
     FieldRowResponse extracted;
 
-    // Currently a hack to support Affects
-    if (rs == PKBRelationship::AFFECTS) {
-        extracted = affectsEval->retrieve(field1, field2);
-
-        return extracted.size() != 0
-            ? PKBResponse{ true, Response{extracted} }
-        : PKBResponse{ false, Response{extracted} };
-    }
-
-    if (rs == PKBRelationship::AFFECTST) {
-        extracted = affectsEval->retrieve(field1, field2, true);
-
-        return extracted.size() != 0
-            ? PKBResponse{ true, Response{extracted} }
-        : PKBResponse{ false, Response{extracted} };
-    }
+    this->populateAffCache(rs);
 
     auto relationshipTablePtr = getRelationshipTable(rs);
     if (isTransitiveRelationship(rs)) {
@@ -378,5 +492,19 @@ PKBResponse PKB::match(sp::design_extractor::PatternParam lhs, sp::design_extrac
 }
 
 void PKB::clearCache() {
-    affectsEval->clearCache();
+    relationshipTables.at(PKBRelationship::AFFECTS).reset(new AffectsRelationshipTable());
+    this->isAffCacheActive = false;
+}
+
+void PKB::populateAffCache(PKBRelationship rs) {
+    bool isAffectsRs = rs == PKBRelationship::AFFECTS || rs == PKBRelationship::AFFECTST;
+    if (isAffectsRs && !isAffCacheActive) {
+        AffectsCacher affCacher;
+        CacheResults res = affCacher.evalAffects(cfgContainer);
+        for (auto item : res) {
+            this->insertRelationship(rs, PKBField::createConcrete(item.first), 
+                PKBField::createConcrete(item.second));
+        }
+        this->isAffCacheActive = true;
+    }
 }

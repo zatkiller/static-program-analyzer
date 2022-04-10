@@ -88,7 +88,7 @@ public:
     *
     * @see PKBField
     */
-    virtual FieldRowResponse retrieve(PKBField field1, PKBField field2) const = 0;
+    virtual FieldRowResponse retrieve(PKBField field1, PKBField field2) = 0;
 
     /**
     * Retrieves the type of relationships the RelationshipTable stores.
@@ -168,7 +168,7 @@ public:
     *
     * @see PKBField
     */
-    FieldRowResponse retrieve(PKBField field1, PKBField field2) const override;
+    FieldRowResponse retrieve(PKBField field1, PKBField field2) override;
 
     /**
     * Retrieves the number of relationships in the table.
@@ -343,7 +343,7 @@ public:
     * that satisfy rs(field1, field2)
     * @see PKBField
     */
-    Result retrieve(PKBField field1, PKBField field2) const {
+    Result retrieve(PKBField field1, PKBField field2) {
         bool isConcreteFirst = field1.fieldType == PKBFieldType::CONCRETE;
         bool isConcreteSec = field2.fieldType == PKBFieldType::CONCRETE;
 
@@ -729,8 +729,7 @@ private:
 
     /**
     * Gets all pairs (field1, field2) of PKBFields that satisfy the provided relationship, rs(field1, field2).
-    *
-    * Internally, iterates through the nodes in the graph calls traverseStart with each node.
+    * Internally iterates through the nodes in the graph and calls traverseStart on each node.
     *
     * @param field1 the first field
     * @param field2 the second field
@@ -739,7 +738,7 @@ private:
     * each item in each pair satisfies the parameters.
     * @see PKBField
     */
-    Result traverseAll(PKBField field1, PKBField field2) const {
+    Result traverseAll(PKBField field1, PKBField field2) {
         Result res{};
 
         for (auto const& [key, node] : nodes) {
@@ -781,8 +780,7 @@ private:
 
     /**
     * Gets all pairs (field1, field2) of PKBFields that satisfy the provided transitive relationship.
-    *
-    * Internally, iterates through the nodes in the graph and calls traverseStart on each node.
+    * Internally iterates through the nodes in the graph and calls traverseStartT on each node.
     *
     * @param type1 the first field
     * @param type2 the second field
@@ -792,7 +790,7 @@ private:
     *
     * @see PKBField
     */
-    Result traverseAllT(PKBField field1, PKBField field2) const {
+    Result traverseAllT(PKBField field1, PKBField field2) {
         Result res;
 
         std::set<T> found;
@@ -820,7 +818,6 @@ private:
                     return std::vector<PKBField>{first, second};
                 });
         }
-
         return res;
     }
 };
@@ -898,7 +895,7 @@ public:
     *
     * @see PKBField
     */
-    FieldRowResponse retrieve(PKBField field1, PKBField field2) const override {
+    FieldRowResponse retrieve(PKBField field1, PKBField field2) override {
         // Both fields have to be a statement type
         if (!isRetrieveValid(field1, field2)) {
             Logger(Level::ERROR) <<
@@ -952,7 +949,7 @@ public:
     *
     * @see PKBField
     */
-    FieldRowResponse retrieveT(PKBField field1, PKBField field2) const {
+    FieldRowResponse retrieveT(PKBField field1, PKBField field2) {
         // Both fields have to be a statement type
         if (!isRetrieveValid(field1, field2)) {
             Logger(Level::ERROR) <<
@@ -1103,140 +1100,14 @@ public:
     NextRelationshipTable();
 };
 
-using AffectsCache = std::unique_ptr<Graph<STMT_LO>>;
-using NodePtr = std::weak_ptr<sp::cfg::CFGNode>;
-using ProcToCfgMap = sp::cfg::PROC_CFG_MAP;
-using CfgNodeSet = std::unordered_set<sp::cfg::CFGNode*>;
-
 /**
-* An evaluator class to evaluate Affects and Affects* design abstraction using a CFG.
-* Internally computes all direct Affects relations and caches them in a Graph<STMT_LO>.
-* 
-* @see CFGNode, Graph
+* A data structure to cache Affects and Affects* program design abstractions as Nodes<STMT_LO> in a Graph<STMT_LO>.
+* Inherits from TransitiveRelationshipTable
+*
+* @see Node, Graph, TransitiveRelationshipTable
 */
-class AffectsEvaluator {
+
+class AffectsRelationshipTable : public TransitiveRelationshipTable<STMT_LO> {
 public:
-    AffectsEvaluator() {}
-
-    /**
-    * Initializes the evaluator with a map of procedure names to roots of their CFGs.
-    * 
-    * @param cfgRoots A map of procedure names to roots of their CFGs.
-    */
-    void initCFG(sp::cfg::CFG cfgRoots);
-
-    /**
-    * Clears the internal cache of all Affects relationships.
-    * To be called after each query.
-    */
-    void clearCache();
-
-    /**
-    * Checks if the relationship Affects(field1, field2) or Affects*(field1, field2) is true,
-    * depending on the flag provided. By default, will check for Affects(field1, field2).
-    * Internally utilizes the cached results of Affects. If no cached results are found, 
-    * extracts all Affects relationships and caches them.
-    * 
-    * @param field1 the first program design entity in a Affects/Affects*(u,v) query wrapped in a PKBField
-    * @param field2 the second program design entity in a Affects/Affects*(u,v) query wrapped in a PKBField
-    * @param isTransitive flag that indicates if the evaluator will check for an Affects or an Affects* relationship.
-    *   Defaults to false i.e. checks Affects by default
-    * 
-    * @return bool true if the relationship is satisfied and false otherwise
-    * @see PKBField
-    */
-    bool contains(PKBField field1, PKBField field2, bool isTransitive = false);
-
-    /**
-    * Retrieves all rows of PKBFields that satisfy an Affects(field1, field2) or Affects*(field1, field2) relationship,
-    * depending on the flag provided. Retrieves fields for Affects(field1, field2) by default.
-    * Internally utilizes the cached results of Affects. If no cached results are found,
-    * extracts all Affects relationships and caches them.
-    *
-    * @param field1 the first program design entity in a Affects/Affects*(u,v) query wrapped in a PKBField
-    * @param field2 the second program design entity in a Affects/Affects*(u,v) query wrapped in a PKBField
-    * @param isTransitive flag that indicates if the evaluator will check for an Affects or an Affects* relationship.
-    *   Defaults to false i.e. checks Affects by default
-    *
-    * @return FieldRowResponse A set of rows of PKBFields that obey the provided relationship.
-    * @see PKBField
-    */
-    FieldRowResponse retrieve(PKBField field1, PKBField field2, bool isTransitive = false);
-
-private:
-    bool isInit = false;
-    bool isCacheActive = false;
-
-    sp::cfg::CFG cfgContainer;
-    AffectsCache affCache;
-
-    /**
-    * Checks whether the two PKBFields can be used for a contains query.
-    * The two fields must be concrete statements.
-    * 
-    * @param field1 The first field in the Affects relationship
-    * @param field2 The second field in the Affects relationship
-    * 
-    * @return bool true if the fields are valid and false otherwise
-    * @see PKBField
-    */
-    bool isContainsValid(PKBField field1, PKBField field2) const;
-
-    /**
-    * Checks whether the two PKBFields can be used for a retrieve query.
-    * The two fields must be statements. If they are concrete, they should also
-    * be assignments.
-    * 
-    * @param field1 The first field in the Affects relationship
-    * @param field2 The second field in the Affects relationship
-    * 
-    * @return bool true if the fields are valid and false otherwsie
-    * @see PKBField
-    */
-    bool isRetrieveValid(PKBField field1, PKBField field2) const;
-
-    /**
-    * Computes all Affects relationships for all procedures using the CFG of each
-    * procedure as provided in initCFG. Only direct Affects relationships will be
-    * extracted (i.e. Affects* relationships are not explicitly extracted)
-    */
-    void extractAndCacheAffects();
-
-    /**
-    * Extracts all Affects relationship starting from a given node, using a provided
-    * variable of interest (variable that was modified at the source node) to extract
-    * Affects relationships. Internally done through a Depth-First Search.
-    * 
-    * @param curr A pointer to the current CFGNode
-    * @param voi An unordered set of VAR_NAME that indicates variables that were modified at curr
-    * @param src A pointer to the source CFGNode where the method was initially called on
-    * @param visited A pointer to an unordered set of CFGNodes that indicates which CFGNodes have been 
-    *   visited by the algorithm
-    * 
-    * @see CFGNode, VAR_NAME
-    */
-    void walkAndExtract(NodePtr curr, std::unordered_set<VAR_NAME> voi, 
-        NodePtr src, CfgNodeSet* visited);
-
-    /**
-    * Extracts all Affects relationships when provided a starting root node for the CFG.
-    * Extraction is done through a Depth-First Search.
-    * 
-    * @param start A pointer to the root of the CFG
-    * @param visited A pointer to an unordered set of CFGNodes that have already been visited
-    *   by the algorithm
-    * 
-    * @see CFGNode
-    */
-    void extractAndCacheFrom(NodePtr start, CfgNodeSet *visited);
-
-    /**
-    * A helper function to check if the provided PKBField is an unassignment statement.
-    * 
-    * @param field The PKBField of interest
-    * @return bool true if the PKBField represents an assignment statement and false otherwise
-    * 
-    * @see PKBField
-    */
-    bool isAssignment(PKBField field) const;
+    AffectsRelationshipTable();
 };

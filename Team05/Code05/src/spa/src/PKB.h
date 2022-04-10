@@ -15,6 +15,11 @@
 #include "DesignExtractor/PatternMatcher.h"
 #include "DesignExtractor/CFG/CFG.h"
 
+using CacheResults = std::set<std::pair<STMT_LO, STMT_LO>>;
+using NodePtr = std::weak_ptr<sp::cfg::CFGNode>;
+using ProcToCfgMap = sp::cfg::PROC_CFG_MAP;
+using CfgNodeSet = std::unordered_set<sp::cfg::CFGNode*>;
+
 class PKB {
 public:
     PKB();
@@ -137,10 +142,9 @@ private:
     std::unique_ptr<ProcedureTable> procedureTable;
     std::unique_ptr<ConstantTable> constantTable;
 
-    std::unique_ptr<AffectsEvaluator> affectsEval;
-
     sp::cfg::CFG cfgContainer;
     std::unique_ptr<sp::ast::ASTNode> root;
+    bool isAffCacheActive = false;
     
     /**
     * Returns a pointer to the relationship table corresponding to the given relationship. Transitive
@@ -221,6 +225,15 @@ private:
     * @param field
     */
     void appendStatementInformation(PKBField* field);
+
+    /**
+    * Checks if the current query type is for an Affects/Affects* relationship.
+    * If so, populates the Affects cache if it is not already populated.
+    * 
+    * @param rs The provided relationship type to check against
+    * @see PKBRelationship
+    */
+    void populateAffCache(PKBRelationship rs);
 
     /**
     * Helper template method to extract the patterns from the AST node indicated in the type T.
