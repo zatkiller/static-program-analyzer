@@ -47,6 +47,6 @@ TEST_CASE("PKBResponse ==") {
     REQUIRE(response1 == response2);
     REQUIRE_FALSE(response1 == response3);
 
-    PKBResponse response4{ true, Response{ FieldRowResponse{{stmt2, var1}, {stmt1, var1}  }} };
-    PKBResponse response5{ true, Response{ FieldRowResponse{{stmt1, var1}, {stmt2, var1} }} };
+    REQUIRE_FALSE(response1 == PKBResponse{ false, Response{} });
+    REQUIRE_FALSE(response1 == PKBResponse{ true, Response{FieldRowResponse{std::vector<PKBField>{stmt1, var1}}} });
 }
