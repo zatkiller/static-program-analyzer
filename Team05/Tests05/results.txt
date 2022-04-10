@@ -1,0 +1,216 @@
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter1_easy_1_source.txt
+Queries file: /Team05/Tests05/iter1_easy_1_queries.txt
+Expected TC: 126
+Number of completed TC runs: 126
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter1_hard_1_source.txt
+Queries file: /Team05/Tests05/iter1_hard_1_queries.txt
+Expected TC: 126
+Number of completed TC runs: 126
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter1_hard_2_source.txt
+Queries file: /Team05/Tests05/iter1_hard_2_queries.txt
+Expected TC: 126
+Number of completed TC runs: 126
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter1_medium_1_source.txt
+Queries file: /Team05/Tests05/iter1_medium_1_queries.txt
+Expected TC: 126
+Number of completed TC runs: 126
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter1_source.txt
+Queries file: /Team05/Tests05/iter1_queries.txt
+Expected TC: 6
+Number of completed TC runs: 6
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter2_easy_1_source.txt
+Queries file: /Team05/Tests05/iter2_easy_1_queries.txt
+Expected TC: 8
+Number of completed TC runs: 8
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter2_easy_2_proc_1_nest_source.txt
+Queries file: /Team05/Tests05/iter2_easy_2_proc_1_nest_queries.txt
+Expected TC: 311
+Number of completed TC runs: 311
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter2_easy_2_proc_2_nest_source.txt
+Queries file: /Team05/Tests05/iter2_easy_2_proc_2_nest_queries.txt
+Expected TC: 311
+Number of completed TC runs: 311
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter2_easy_2_source.txt
+Queries file: /Team05/Tests05/iter2_easy_2_queries.txt
+Expected TC: 143
+Number of completed TC runs: 143
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter2_easy_3_proc_1_nest_source.txt
+Queries file: /Team05/Tests05/iter2_easy_3_proc_1_nest_queries.txt
+Expected TC: 311
+Number of completed TC runs: 311
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter2_hard_3_proc_3_nest_source.txt
+Queries file: /Team05/Tests05/iter2_hard_3_proc_3_nest_queries.txt
+Expected TC: 311
+Number of completed TC runs: 311
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter2_hard_5_proc_4_nest_source.txt
+Queries file: /Team05/Tests05/iter2_hard_5_proc_4_nest_queries.txt
+Expected TC: 311
+Number of completed TC runs: 311
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter2_medium_2_proc_3_nest_source.txt
+Queries file: /Team05/Tests05/iter2_medium_2_proc_3_nest_queries.txt
+Expected TC: 311
+Number of completed TC runs: 311
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter2_medium_3_proc_2_nest_source.txt
+Queries file: /Team05/Tests05/iter2_medium_3_proc_2_nest_queries.txt
+Expected TC: 311
+Number of completed TC runs: 311
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter2_medium_4_proc_2_nest_source.txt
+Queries file: /Team05/Tests05/iter2_medium_4_proc_2_nest_queries.txt
+Expected TC: 311
+Number of completed TC runs: 311
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter2_medium_7_proc_1_nest_source.txt
+Queries file: /Team05/Tests05/iter2_medium_7_proc_1_nest_queries.txt
+Expected TC: 311
+Number of completed TC runs: 311
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter3_easy_1_source.txt
+Queries file: /Team05/Tests05/iter3_easy_1_queries.txt
+Expected TC: 40
+Number of completed TC runs: 40
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter3_easy_2_proc_1_nest_source.txt
+Queries file: /Team05/Tests05/iter3_easy_2_proc_1_nest_queries.txt
+Expected TC: 40
+Number of completed TC runs: 40
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter3_easy_2_proc_2_nest_source.txt
+Queries file: /Team05/Tests05/iter3_easy_2_proc_2_nest_queries.txt
+Expected TC: 40
+Number of completed TC runs: 40
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter3_easy_3_proc_1_nest_source.txt
+Queries file: /Team05/Tests05/iter3_easy_3_proc_1_nest_queries.txt
+Expected TC: 40
+Number of completed TC runs: 40
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter3_hard_3_proc_3_nest_source.txt
+Queries file: /Team05/Tests05/iter3_hard_3_proc_3_nest_queries.txt
+Expected TC: 40
+Number of completed TC runs: 40
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter3_hard_5_proc_4_nest_source.txt
+Queries file: /Team05/Tests05/iter3_hard_5_proc_4_nest_queries.txt
+Expected TC: 40
+Number of completed TC runs: 40
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter3_medium_2_proc_3_nest_source.txt
+Queries file: /Team05/Tests05/iter3_medium_2_proc_3_nest_queries.txt
+Expected TC: 40
+Number of completed TC runs: 40
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter3_medium_3_proc_2_nest_source.txt
+Queries file: /Team05/Tests05/iter3_medium_3_proc_2_nest_queries.txt
+Expected TC: 40
+Number of completed TC runs: 40
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter3_medium_4_proc_2_nest_source.txt
+Queries file: /Team05/Tests05/iter3_medium_4_proc_2_nest_queries.txt
+Expected TC: 40
+Number of completed TC runs: 40
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter3_medium_7_proc_1_nest_source.txt
+Queries file: /Team05/Tests05/iter3_medium_7_proc_1_nest_queries.txt
+Expected TC: 40
+Number of completed TC runs: 40
+All test cases passed
+Number of Failed TC: 0
+
+Directory path: /Team05/Tests05
+Source file: /Team05/Tests05/iter3_stress_sample_source.txt
+Queries file: /Team05/Tests05/iter3_stress_sample_queries.txt
+Expected TC: 7
+Number of completed TC runs: 7
+All test cases passed
+Number of Failed TC: 0
+

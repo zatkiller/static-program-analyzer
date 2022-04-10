@@ -42,17 +42,9 @@ namespace qps::parser {
             DesignEntity::PRINT, DesignEntity::READ, DesignEntity::CALL
     };
 
-    const std::unordered_set<DesignEntity> entityTypes {
+    const std::unordered_set<DesignEntity> entityTypes{
             DesignEntity::PROCEDURE, DesignEntity::VARIABLE
     };
-
-    bool Parser::hasLeadingWhitespace() {
-        return lexer.hasLeadingWhitespace();
-    }
-
-    std::string Parser::getParsedText() const {
-        return std::string { lexer.text };
-    }
 
     Token Parser::getNextToken() {
         return lexer.getNextToken();

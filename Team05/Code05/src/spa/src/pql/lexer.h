@@ -128,6 +128,15 @@ struct Lexer {
     Token peekNextReservedToken();
 
     /*
+    * returns true if the current PQL string has leading whitespace
+    * @return boolean value if the lexer text has leading whiesapce
+    */
+    bool hasLeadingWhitespace();
+
+    bool operator==(const Lexer &o) const { return text == o.text; }
+
+private:
+    /*
     * Returns tokentype of the special character
     * @param ch char of the special char
     * @return TokenType of the special char
@@ -161,14 +170,6 @@ struct Lexer {
     * @return Token of the reserved keyword
     */
     Token getReservedToken(std::string keyword);
-
-    /*
-    * returns true if the current PQL string has leading whitespace
-    * @return boolean value if the lexer text has leading whiesapce
-    */
-    bool hasLeadingWhitespace();
-
-    bool operator==(const Lexer &o) const { return text == o.text; }
 };
 
 }  // namespace qps::parser
