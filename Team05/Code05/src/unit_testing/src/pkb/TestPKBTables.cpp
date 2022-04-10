@@ -966,6 +966,7 @@ TEST_CASE("AffectsEvaluator single-proc test 1") {
         FieldRowResponse expected3{ {conc1, conc2}, {conc1, conc5}, {conc1, conc6}, {conc1, conc8}, {conc1, conc9} };
         REQUIRE(affEval->retrieve(conc5, stmtDecl) == expected2);
         REQUIRE(affEval->retrieve(conc1, stmtDecl) == expected3);
+        REQUIRE(affEval->retrieve(conc5, conc5) == FieldRowResponse{{conc5, conc5}});
 
         // (Decl, Decl)
         FieldRowResponse expected4{
@@ -997,6 +998,8 @@ TEST_CASE("AffectsEvaluator single-proc test 1") {
         FieldRowResponse expected1{ {field1, field6}, {field3, field6}, 
             {field4, field6}, {field5, field6} };
         REQUIRE(affEval->retrieve(stmtDecl, field6, true) == expected1);
+
+        REQUIRE(affEval->retrieve(field1, field6, true) == FieldRowResponse{ {field1, field6} });
 
         // (Concrete, Decl)
         FieldRowResponse expected2{ {field3, field3}, {field3, field5}, {field3, field6} };
