@@ -219,6 +219,9 @@ std::unordered_map<char, int> binOpPrecedence = {
  * @param operators a reference to a stack of operators
  */
 void popAndPush(std::stack<std::unique_ptr<ast::Expr>>& operands, std::stack<char>& operators) {
+    if (operands.size() < 2) {
+        throwInvalidArgError("More tokens (for Expr Parsing) expected");
+    }
     char top = operators.top();
     auto expr1 = move(operands.top());
     operands.pop();
@@ -328,7 +331,7 @@ unique_ptr<ast::Expr> shuntingYardParser(deque<Token>& tokens) {
     }
 
     if (operands.size() != 1) {
-        throwInvalidArgError("Error parsing Expr at line: " + lastLineCount);
+        throwInvalidArgError("Error parsing Expr at line: " + std::to_string(lastLineCount));
     }
 
     return move(operands.top());
@@ -386,43 +389,47 @@ bool isCondExpr(deque<Token>& tokens) {
 unique_ptr<ast::CondExpr> parse(deque<Token>& tokens) {
     Token currToken = tokens.front();
     unique_ptr<ast::CondExpr> condExprResult;
-    if (currToken.type == TokenType::special) {
-        // we have to "unwrap" the "(...)" or "!(...)"
-        auto tokenVal = get<char>(currToken.value);
-        if (tokenVal == '!') {
-            // This means: "!(condExpr)"
-            tokens.pop_front();  // consume the '!'
-            checkAndConsume('(', tokens);
-            condExprResult = make_unique<ast::NotCondExpr>(move(parse(tokens)));
-            checkAndConsume(')', tokens);
-        } else if (tokenVal == '(') {
-            if (isCondExpr(tokens)) {
-                checkAndConsume('(', tokens);  // consume the '('
-                condExprResult = move(parse(tokens));  // consume condExpr
+    try {
+        if (currToken.type == TokenType::special) {
+            // we have to "unwrap" the "(...)" or "!(...)"
+            auto tokenVal = get<char>(currToken.value);
+            if (tokenVal == '!') {
+                // This means: "!(condExpr)"
+                tokens.pop_front();  // consume the '!'
+                checkAndConsume('(', tokens);
+                condExprResult = make_unique<ast::NotCondExpr>(move(parse(tokens)));
                 checkAndConsume(')', tokens);
+            } else if (tokenVal == '(') {
+                if (isCondExpr(tokens)) {
+                    checkAndConsume('(', tokens);  // consume the '('
+                    condExprResult = move(parse(tokens));  // consume condExpr
+                    checkAndConsume(')', tokens);
+                } else {
+                    return move(parseRelExpr(tokens));
+                }
             } else {
-                return move(parseRelExpr(tokens));
+                throwInvalidArgError("Symbol not recognised at line: " + std::to_string(currToken.sourceline));
             }
         } else {
-            throwInvalidArgError("Symbol not recognised at line: " + currToken.sourceline);
+            // here, we parse rel_expr
+            return move(parseRelExpr(tokens));
         }
-    } else {
-        // here, we parse rel_expr
-        return move(parseRelExpr(tokens));
-    }
 
-    // Peek and check if we have another cond_expr,
-    // i.e. '(' cond_expr ')' '&&' '(' cond_expr ')' or '(' cond_expr ')' '||' '(' cond_expr ')'
-    Token checkNextCond = tokens.front();
-    char* condSymbol = get_if<char>(&checkNextCond.value);
-    if (!condSymbol || (*condSymbol != '&' && *condSymbol != '|')) {
-        // if so we are done.
-        return condExprResult;
+        // Peek and check if we have another cond_expr,
+        // i.e. '(' cond_expr ')' '&&' '(' cond_expr ')' or '(' cond_expr ')' '||' '(' cond_expr ')'
+        Token checkNextCond = tokens.front();
+        char* condSymbol = get_if<char>(&checkNextCond.value);
+        if (!condSymbol || (*condSymbol != '&' && *condSymbol != '|')) {
+            // if so we are done.
+            return condExprResult;
+        }
+        // otherwise, we still need to handle the other clause.
+        auto condOp = move(AtomicParser::parseCondOp(tokens));
+        auto rhsCondExprResult = move(parse(tokens));
+        return make_unique<ast::CondBinExpr>(condOp, move(condExprResult), move(rhsCondExprResult));
+    } catch (std::exception e) {
+        throwInvalidArgError("CondExpr fails to parse at line: " + std::to_string(currToken.sourceline));
     }
-    // otherwise, we still need to handle the other clause.
-    auto condOp = move(AtomicParser::parseCondOp(tokens));
-    auto rhsCondExprResult = move(parse(tokens));
-    return make_unique<ast::CondBinExpr>(condOp, move(condExprResult), move(rhsCondExprResult));
 }
 }  // namespace cond_expr_parser
 

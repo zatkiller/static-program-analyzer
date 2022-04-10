@@ -44,7 +44,7 @@ bool checkChildrenEquality(
         isEqual = isEqual && isMatch;
         // if the previously checks nodes where not equal, terminate and return false
         if (!isEqual) {
-            return isEqual;
+            return false;
         }
     }
     // after successfully comparing and recursing down the children, return
