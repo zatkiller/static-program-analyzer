@@ -241,16 +241,10 @@ struct Node {
 * @tparam T the type each node in the graph stores
 * @see Node
 */
-using FieldToResultMap = std::unordered_map<std::vector<PKBField>, Result, PKBFieldVectorHash>;
-using Cache = std::unordered_map<std::string, FieldToResultMap>;
 template<typename T>
 class Graph {
 public:
-    Graph<T>(PKBRelationship type) {
-        this->type = type;
-        cache.emplace("traverseAll", FieldToResultMap());
-        cache.emplace("traverseAllT", FieldToResultMap());
-    }
+    explicit Graph<T>(PKBRelationship type) : type(type) {}
 
     /**
     * Adds an edge between two nodes to represent a relationship. Initialises Nodes for
@@ -402,7 +396,6 @@ public:
 private:
     PKBRelationship type; /**< The type of relationships this Graph holds */
     std::unordered_map<T, std::shared_ptr<Node<T>>> nodes; /**< The list of nodes in this Graph */
-    Cache cache; /**< A cache to cache the result of traverseAll and traverseAllT */
 
     /**
     * Add a node represented by program design entity to the list of nodes stored in the graph if it does not exist
@@ -736,8 +729,7 @@ private:
 
     /**
     * Gets all pairs (field1, field2) of PKBFields that satisfy the provided relationship, rs(field1, field2).
-    * Checks the cache to see if result has already been commputed before, and returns the result if so. 
-    * Otherwise, internally iterates through the nodes in the graph and calls traverseStart on each node.
+    * Internally iterates through the nodes in the graph and calls traverseStart on each node.
     *
     * @param field1 the first field
     * @param field2 the second field
@@ -748,13 +740,6 @@ private:
     */
     Result traverseAll(PKBField field1, PKBField field2) {
         Result res{};
-
-        std::vector<PKBField> query{ field1, field2 };
-        FieldToResultMap activeCache = cache.at("traverseAll");
-
-        if (activeCache.count(query) == 1) {
-            return activeCache.at(query);
-        }
 
         for (auto const& [key, node] : nodes) {
             auto curr = node;
@@ -790,14 +775,12 @@ private:
                     });
             }
         }
-        activeCache.emplace(query, res);
         return res;
     }
 
     /**
     * Gets all pairs (field1, field2) of PKBFields that satisfy the provided transitive relationship.
-    * Checks the cache to see if result has already been commputed before, and returns the result if so. 
-    * Otherwise, internally iterates through the nodes in the graph and calls traverseStartT on each node.
+    * Internally iterates through the nodes in the graph and calls traverseStartT on each node.
     *
     * @param type1 the first field
     * @param type2 the second field
@@ -809,13 +792,6 @@ private:
     */
     Result traverseAllT(PKBField field1, PKBField field2) {
         Result res;
-
-        std::vector<PKBField> query{ field1, field2 };
-        FieldToResultMap activeCache = cache.at("traverseAllT");
-
-        if (activeCache.count(query) == 1) {
-            return activeCache.at(query);
-        }
 
         std::set<T> found;
 
@@ -842,7 +818,6 @@ private:
                     return std::vector<PKBField>{first, second};
                 });
         }
-        activeCache.emplace(query, res);
         return res;
     }
 };
