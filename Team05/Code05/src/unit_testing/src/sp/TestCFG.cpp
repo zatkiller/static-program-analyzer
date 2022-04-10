@@ -24,7 +24,7 @@ TEST_CASE("CFG Test") {
     auto node8 = std::make_shared<CFGNode>(8, StatementType::Read);
     auto node9 = std::make_shared<CFGNode>(9, StatementType::Print);
     auto node10 = std::make_shared<CFGNode>(10, StatementType::Read);
-    auto node11 = std::make_shared<CFGNode>(10, StatementType::Read);
+    auto node11 = std::make_shared<CFGNode>(11, StatementType::Read);
 
     auto testCFGRoot = std::make_shared<CFGNode>();
     auto dummyNode2 = std::make_shared<CFGNode>();
@@ -34,7 +34,7 @@ TEST_CASE("CFG Test") {
     procedure test {
         dummyNode1 start
         while (x < 420) {        1
-            while (x > 69)) {    2
+            while (x > 69) {    2
                 x = x + 1;       3
                 print x;         4
             }
@@ -73,22 +73,52 @@ TEST_CASE("CFG Test") {
     monkeCFGRoot->insert(node11);
 
     SECTION("Equals Test") {
-        // Same as node1
-        auto nodeTest = std::make_shared<CFGNode>(1, StatementType::While);
-        nodeTest->insert(node2);
-        nodeTest->insert(node10);
-        // Different statement number
-        auto nodeTest1 = std::make_shared<CFGNode>(420, StatementType::While);
-        nodeTest1->insert(node2);
-        nodeTest1->insert(node10);
-        // Different StatementType        
-        auto nodeTest2 = std::make_shared<CFGNode>(1, StatementType::If);
-        nodeTest2->insert(node2);
-        nodeTest2->insert(node10);
-        REQUIRE(*node1 == *nodeTest);
-        REQUIRE_FALSE(*node1 == *nodeTest1);
-        REQUIRE_FALSE(*node1 == *nodeTest2);
-        // auto dummyNodeTest = std::make_shared<CFGNode>();
+        SECTION("Simple nodes test") {
+            auto nodeTest = std::make_shared<CFGNode>(1, StatementType::While);
+            // Same as nodeTest
+            auto nodeTest1 = std::make_shared<CFGNode>(1, StatementType::While);
+            // Different statement number
+            auto nodeTest2 = std::make_shared<CFGNode>(42, StatementType::While);
+            // Different StatementType        
+            auto nodeTest3 = std::make_shared<CFGNode>(1, StatementType::If);
+            // null node 1
+            auto nullNode1 = std::make_shared<CFGNode>();
+            // null node 2
+            auto nullNode2 = std::make_shared<CFGNode>();
+            REQUIRE(*nodeTest == *nodeTest1);
+            REQUIRE(*nodeTest == *nodeTest1);
+            REQUIRE_FALSE(*nodeTest == *nodeTest2);
+            REQUIRE_FALSE(*nodeTest == *nodeTest3);
+            REQUIRE(*nullNode1 == *nullNode2);
+            REQUIRE_FALSE(*nodeTest == *nullNode1);
+        }
+        /* ==================== children test ================== */
+        SECTION("Children nodes test") {
+            auto nodeTest1 = std::make_shared<CFGNode>(1, StatementType::While);
+            auto childNode1 = std::make_shared<CFGNode>(2, StatementType::Assignment);
+            auto childNode2 = std::make_shared<CFGNode>(3, StatementType::Print);
+            nodeTest1->insert(childNode1);
+            nodeTest1->insert(childNode2);
+            // Same statement but different children count
+            auto nodeTest2 = std::make_shared<CFGNode>(1, StatementType::While);
+            auto childNode3 = std::make_shared<CFGNode>(2, StatementType::Assignment);
+            nodeTest2->insert(childNode3);
+            // Same statement but different children
+            auto nodeTest3 = std::make_shared<CFGNode>(1, StatementType::While);
+            auto childNode4 = std::make_shared<CFGNode>(3, StatementType::Assignment);
+            auto childNode5 = std::make_shared<CFGNode>(4, StatementType::Print);
+            nodeTest3->insert(childNode4);
+            nodeTest3->insert(childNode5);
+            // Same statement and same children
+            auto nodeTest4 = std::make_shared<CFGNode>(1, StatementType::While);
+            auto childNode6 = std::make_shared<CFGNode>(2, StatementType::Assignment);
+            auto childNode7 = std::make_shared<CFGNode>(3, StatementType::Print);
+            nodeTest4->insert(childNode6);
+            nodeTest4->insert(childNode7);
+            REQUIRE_FALSE(*nodeTest1 == *nodeTest2);
+            REQUIRE_FALSE(*nodeTest1 == *nodeTest3);
+            REQUIRE(*nodeTest1 == *nodeTest4);
+        }
     }
 
     SECTION("Traversal Test") {
@@ -242,7 +272,7 @@ TEST_CASE("CFG Test") {
             ast::make<ast::Procedure>(
                 "monke", 
                 ast::makeStmts(
-                    ast::make<ast::Read>(1, ast::make<ast::Var>("y"))
+                    ast::make<ast::Read>(11, ast::make<ast::Var>("y"))
                 )
             )
         );
