@@ -9,7 +9,7 @@
 namespace qps {
 
 /**
- * Struct used to the QPS component
+ * Struct used to represent the QPS component
  */
 struct QPS {
     qps::parser::Parser parser;

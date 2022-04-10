@@ -13,6 +13,7 @@ namespace parser {
 
     // Parsing syntax error messages
     inline constexpr char leadingZeroMessage[] = "Leading zero detected!";
+    inline constexpr char keywordDoesNotExist[] = "Keyword does not exist in map";
     inline constexpr char notExpectingTokenMessage[] = "Not expecting this token type!";
     inline constexpr char unexpectedWhitespaceMessage[] = "Unexpected whitespace";
     inline constexpr char invalidStmtRefMessage[] = "Not a valid StmtRef!";
@@ -22,6 +23,7 @@ namespace parser {
     // Parsing validation error messages
     inline constexpr char synonymNotStatementTypeMessage[] = "synonym not a valid statement";
     inline constexpr char synonymNotEntityTypeMessage[] = "synonym not a valid entity";
+    inline constexpr char declarationAlreadyExists[] = "Declaration already exists!";
 
     // Declaration error messages
     inline constexpr char noSuchDesignEntityMessage[] = "No such design entity!";
@@ -34,7 +36,7 @@ namespace parser {
     inline constexpr char notVariableSynonymMessage[] = "synonym has to be of variable design entity";
     inline constexpr char notProcedureSynonymMessage[] = "synonym has to be of procedure design entity";
     inline constexpr char notAssignSynonymMessage[] = "synonym has to be of assign design entity";
-    inline constexpr char notValidPatternType[] = "Not an valid pattern type";
+    inline constexpr char parsesModifiesOrUsesErrorMessage[] = "Satisfy none of the modifies and uses relref variants";
 
     // With clause error messages
     inline constexpr char invalidAttrCompRefMessage[] = "Invalid token appeared when parsing AttrCompareRef";
@@ -45,6 +47,8 @@ namespace parser {
     inline constexpr char expressionInvalidGrammarMessage[] = "Pattern expr has invalid grammar!";
     inline constexpr char expressionUnexpectedEndMessage[] = "Pattern expr has unexpectedly reached end of expression!";
     inline constexpr char notAnAssignPatternMessage[] = "Not an assign pattern!";
+    inline constexpr char notValidPatternType[] = "Not an valid pattern type";
+    inline constexpr char unableToParsePatternMessage[] = "Unable to parse pattern";
 
 }  //  namespace parser
 

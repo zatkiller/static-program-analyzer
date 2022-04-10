@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "messages.h"
 #include "exceptions.h"
 #include "pql/lexer.h"
 
@@ -59,7 +60,7 @@ namespace qps::parser {
     Token Lexer::getReservedToken(std::string keyword) {
         auto pos = keywordsToTokenTypeMap.find(keyword);
         if (pos == keywordsToTokenTypeMap.end()) {
-            throw exceptions::PqlException("Keyword does not exist in map");
+            throw exceptions::PqlSyntaxException(messages::qps::parser::keywordDoesNotExist);
         }
         return Token { keyword, pos->second };
     }

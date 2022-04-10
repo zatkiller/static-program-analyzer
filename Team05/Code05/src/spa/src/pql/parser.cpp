@@ -269,7 +269,7 @@ namespace qps::parser {
         } else if (!isPVariant && tt == TokenType::USES) {
             return parseRelRefVariables<UsesS>(query, &UsesS::useStmt, &UsesS::used);
         } else {
-            throw exceptions::PqlSyntaxException("Satisfy none of the modifies and uses relref variants");
+            throw exceptions::PqlSyntaxException(messages::qps::parser::parsesModifiesOrUsesErrorMessage);
         }
     }
 
@@ -353,7 +353,7 @@ namespace qps::parser {
         if (hasString)
             return ExpSpec::ofFullMatch(value);
 
-        throw exceptions::PqlSyntaxException("Unable to parse pattern");
+        throw exceptions::PqlSyntaxException(messages::qps::parser::unableToParsePatternMessage);
     }
 
     void Parser::validateExpr(const std::string& expr) {
