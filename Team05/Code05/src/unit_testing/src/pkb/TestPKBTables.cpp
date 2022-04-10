@@ -96,6 +96,18 @@ TEST_CASE("VariableTable") {
     REQUIRE(varTable.getSize() == 2);
 }
 
+TEST_CASE("StatementVector") {
+    StatementVector v{};
+
+    REQUIRE(v.contains(1) == false);
+    v.insert(STMT_LO{ 1 });
+    REQUIRE(v.contains(1) == true);
+    
+    REQUIRE(v.contains(StatementType::Read, 2) == false);
+    v.insert(STMT_LO{ 2, StatementType::Read });
+    REQUIRE(v.contains(StatementType::Read, 2) == true);
+}
+
 TEST_CASE("StatementTable") {
     StatementTable stmtTable{};
     REQUIRE(stmtTable.getAllEntity() == std::vector<STMT_LO>());
@@ -134,6 +146,8 @@ TEST_CASE("StatementTable") {
     stmtTable.insert(STMT_LO{4, StatementType::Print });
     REQUIRE(stmtTable.getSize() == 4);
     REQUIRE_FALSE(stmtTable.contains(StatementType::Print, 4));
+    auto x = stmtTable.getStmtTypeOfLine(1).value();
+    REQUIRE(stmtTable.getStmtTypeOfLine(1) == StatementType::Assignment);
 }
 
 TEST_CASE("ReationshipRow ==") {
