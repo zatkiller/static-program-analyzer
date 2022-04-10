@@ -1,10 +1,9 @@
-#include <stdio.h>
 #include <unordered_map>
 #include <vector>
 
 #include "messages.h"
 #include "exceptions.h"
-#include "pql/lexer.h"
+#include "QPS/Lexer.h"
 
 namespace qps::parser {
     std::unordered_map<char, TokenType> specialCharToTokenTypeMap {

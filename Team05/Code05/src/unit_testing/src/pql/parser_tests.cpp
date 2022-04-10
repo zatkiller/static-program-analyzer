@@ -1,4 +1,4 @@
-#include "pql/parser.h"
+#include "QPS/Parser.h"
 #include "catch.hpp"
 #include <memory>
 #include <vector>
@@ -1642,7 +1642,7 @@ TEST_CASE("Parser parseWithClause") {
 }
 
 TEST_CASE("Parser parsePql") {
-    SECTION ("Valid pql query") {
+    SECTION ("Valid QPS query") {
         std::string testQuery = "assign a, a1; variable v; Select a such that Modifies (a, _) pattern a (v, _\"x\"_) "
                                 "with \"Monke\" = v.varName";
 
@@ -1690,7 +1690,7 @@ TEST_CASE("Parser parsePql") {
         REQUIRE(with.getRhs().isAttrRef());
     }
 
-    SECTION ("Valid pql query with different order of clauses") {
+    SECTION ("Valid QPS query with different order of clauses") {
         std::string testQuery = "assign a, a1; variable v; Select a pattern a (v, _\"x\"_) "
                                 "with \"Monke\" = v.varName such that Modifies (a, _)";
 

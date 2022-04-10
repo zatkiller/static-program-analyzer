@@ -3,9 +3,9 @@
 #include <utility>
 
 #include "exceptions.h"
-#include "pql/lexer.h"
-#include "pql/query.h"
-#include "pkbtypematcher.h"
+#include "QPS/Lexer.h"
+#include "QPS/Query.h"
+#include "PKBTypeMatcher.h"
 
 namespace qps::query {
 std::unordered_map<std::string, DesignEntity> designEntityMap = {

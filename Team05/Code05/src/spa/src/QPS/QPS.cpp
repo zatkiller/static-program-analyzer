@@ -2,9 +2,9 @@
 #include <string_view>
 
 #include "exceptions.h"
-#include "pql/qps.h"
-#include "pql/query.h"
-#include "pql/evaluator.h"
+#include "QPS/QPS.h"
+#include "QPS/Query.h"
+#include "QPS/Evaluator.h"
 
 namespace qps {
     void QPS::evaluate(const std::string& query_str, std::list<std::string> &results, PKB *pkbPtr) {

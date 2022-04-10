@@ -11,7 +11,7 @@
 #include "SourceProcessor.h"
 
 #include "PKB.h"
-#include "pql/qps.h"
+#include "QPS/QPS.h"
 
 class TestWrapper : public AbstractWrapper {
 public:

@@ -3,7 +3,7 @@
 #include <utility>
 #include <queue>
 #include <climits>
-#include "pql/query.h"
+#include "QPS/Query.h"
 namespace qps::optimizer {
 
 enum class OrderedClauseType {
@@ -12,7 +12,9 @@ enum class OrderedClauseType {
     WITH,
     PATTERN
 };
-
+/**
+ * Struct to wrap a clause with it's priority score
+ */
 struct OrderedClause {
     static OrderedClause ofWith(query::AttrCompare &);
     static OrderedClause ofSuchThat(std::shared_ptr<query::RelRef> &);
@@ -41,6 +43,9 @@ private:
     OrderedClauseType type = OrderedClauseType::INVALID;
 };
 
+/**
+ * Customized comparator of OrderedClause
+ */
 struct ClausePriority {
 public:
     bool operator()(OrderedClause& a, OrderedClause& b) {
@@ -54,12 +59,17 @@ public:
     }
 };
 
+/**
+ * Customized hash function of OrderedClause
+ */
 struct OrderedClauseHash {
 public:
     size_t operator() (const OrderedClause& clause) const { return clause.getHash(); }
 };
 
-
+/**
+ * Struct contains data used for BFS on OrderedClauses
+ */
 struct BFS {
     bool initialized = false;
     std::priority_queue<OrderedClause, std::vector<OrderedClause>, ClausePriority> pq;
@@ -67,6 +77,9 @@ struct BFS {
     std::unordered_set<std::string> visitedSyn;
 };
 
+/**
+ * Struct used to store information on a group of clause
+ */
 struct ClauseGroup {
     int groupId;
     std::unordered_set<std::string> syns;
@@ -109,14 +122,43 @@ struct ClauseGroup {
         }
     }
 
+    /**
+     * Returns whether the group of clause does not contain any synonym
+     */
     bool noSyn();
+
+    /**
+     * Adds synonyms to the group
+     *
+     * @param s list of synonyms to add
+     */
     void addSyn(std::vector<std::string> s);
+
+    /**
+     * Insert clauses containing synonym s into the priority queue
+     *
+     * @param s synonym name
+     */
     void insertToPQ(std::string s);
+
+    /**
+     * Returns whether there is clause to evaluate
+     *
+     * @return true if there is any clause not evaluated, false otherwise
+     */
     bool hasNextClause();
+
+    /**
+     * Returns next clause to evaluate
+     *
+     * @return the next OrderedClause waiting for evaluation
+     */
     OrderedClause nextClause();
 };
 
-
+/**
+ * Customized comparator of ClauseGroup
+ */
 struct GroupPriority {
 public:
     bool operator()(ClauseGroup& a, ClauseGroup& b) {
@@ -130,6 +172,9 @@ public:
     }
 };
 
+/**
+ * Struct used to represent an optimizer
+ */
 class Optimizer {
 std::vector<ClauseGroup> groups;
 std::unordered_map<std::string, int> synToGroup;
@@ -166,6 +211,11 @@ public:
 
     void addSynsToMap(std::vector<std::string> syns, int groupId);
 
+    /**
+     * Divides clauses with type T into groups
+     * @tparam T type of the clause
+     * @param clauses
+     */
     template<typename T>
     void groupClauses(std::vector<T>& clauses) {
         for (auto clause : clauses) {
@@ -189,12 +239,25 @@ public:
         }
     }
 
+    /**
+     * Optimize the clauses
+     */
     void optimize();
 
     std::vector<ClauseGroup> getGroups();
 
+    /**
+     * Returns whether there is group to evaluate
+     *
+     * @return true if there is any group not evaluated, false otherwise
+     */
     bool hasNextGroup();
 
+    /**
+     * Returns next group to evaluate
+     *
+     * @return the next ClauseGroup waiting for evaluation
+     */
     ClauseGroup nextGroup();
 };
 }  // namespace qps::optimizer

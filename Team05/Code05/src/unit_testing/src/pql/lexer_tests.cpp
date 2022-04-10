@@ -1,4 +1,4 @@
-#include "pql/lexer.h"
+#include "QPS/Lexer.h"
 #include "exceptions.h"
 #include "catch.hpp"
 

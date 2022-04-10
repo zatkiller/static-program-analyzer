@@ -1,4 +1,4 @@
-#include "optimizer.h"
+#include "Optimizer.h"
 namespace qps::optimizer {
     using query::RelRefType;
     using utils::hash_combine;

@@ -4,8 +4,8 @@
 #include <unordered_set>
 
 #include "exceptions.h"
-#include "pql/query.h"
-#include "pql/lexer.h"
+#include "QPS/Query.h"
+#include "QPS/Lexer.h"
 
 namespace qps::parser {
 
@@ -86,7 +86,7 @@ struct Parser {
     std::vector<Elem> parseTuple(Query &query);
 
     /**
-     * Parses the select fields of a pql query into a ResultCl
+     * Parses the select fields of a QPS query into a ResultCl
      * and adds them to the query object
      *
      * @param query the query object
@@ -292,7 +292,7 @@ private:
     EntRef parsePatternLhs(Query& query);
 
     /**
-      * Parses the query section of the pql query
+      * Parses the query section of the QPS query
       * and adds them to the query object
       *
       * @param query the query object

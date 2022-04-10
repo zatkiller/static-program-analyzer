@@ -1,5 +1,5 @@
 #include "exceptions.h"
-#include "clausehandler.h"
+#include "ClauseHandler.h"
 
 namespace qps::evaluator {
     PKBResponse ClauseHandler::getAll(query::DesignEntity type) {

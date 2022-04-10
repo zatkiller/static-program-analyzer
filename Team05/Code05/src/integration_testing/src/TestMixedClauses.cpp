@@ -1,4 +1,4 @@
-#include "pql/evaluator.h"
+#include "QPS/Evaluator.h"
 #include "SourceProcessor.h"
 #include "PKB.h"
 #include "catch.hpp"

@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include "pql/parser.h"
+#include "QPS/Parser.h"
 
 namespace qps::parser {
     using qps::query::designEntityMap;

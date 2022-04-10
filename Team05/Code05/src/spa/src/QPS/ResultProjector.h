@@ -1,9 +1,9 @@
 #pragma once
 
 #include <list>
-#include "resulttable.h"
-#include "query.h"
-#include "clausehandler.h"
+#include "ResultTable.h"
+#include "Query.h"
+#include "ClauseHandler.h"
 
 namespace qps::evaluator {
 /**
