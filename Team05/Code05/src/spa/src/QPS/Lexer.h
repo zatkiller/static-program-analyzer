@@ -81,6 +81,9 @@ struct Lexer {
 
     explicit Lexer(const std::string_view input) : text(input) {}
 
+    /**
+     * Removes all preceding whitespace in the lexer text
+     */
     void eatWhitespace();
 
     /**
@@ -124,18 +127,49 @@ struct Lexer {
      */
     Token peekNextReservedToken();
 
-    TokenType getSpecialCharTokenType(char ch);
-
-    Token getString();
-    Token getIdentifier();
-    Token getNumber();
-    Token getSpecialChar();
-
-    Token getReservedToken(std::string keyword);
-
+    /*
+    * returns true if the current PQL string has leading whitespace
+    * @return boolean value if the lexer text has leading whiesapce
+    */
     bool hasLeadingWhitespace();
 
     bool operator==(const Lexer &o) const { return text == o.text; }
+
+private:
+    /*
+    * Returns tokentype of the special character
+    * @param ch char of the special char
+    * @return TokenType of the special char
+    */
+    TokenType getSpecialCharTokenType(char ch);
+
+    /*
+    * Returns Token representing the parsed String
+    * @return Token representing the parsed String
+    */
+    Token getString();
+    /*
+    * Returns Token representing the parsed Identifier
+    * @return Token representing the parsed Identifier
+    */
+    Token getIdentifier();
+    /*
+    * Returns Token representing the parsed Number
+    * @return Token representing the parsed Number
+    */
+    Token getNumber();
+    /*
+    * Returns Token representing the parsed special char
+    * @return Token representing the parsed special char
+    */
+    Token getSpecialChar();
+
+    /*
+    * Returns Token based on the provided keyword
+    * @param keyword the reserved keyword
+    * @return Token of the reserved keyword
+    */
+    Token getReservedToken(std::string keyword);
 };
 
 }  // namespace qps::parser

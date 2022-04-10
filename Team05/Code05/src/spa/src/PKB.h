@@ -29,7 +29,7 @@ public:
     *
     * @param entity a STMT_LO, PROC_NAME, VAR_NAME, or CONST
     */
-    void insertEntity(Content entity);
+    virtual void insertEntity(Content entity);
 
     /**
     * Inserts a relationship into the PKB.
@@ -38,7 +38,7 @@ public:
     * @param field1 the first program design entity in the relationship
     * @param field2 the second program design entity in the relationship
     */
-    void insertRelationship(PKBRelationship type, PKBField field1, PKBField field2);
+    virtual void insertRelationship(PKBRelationship type, PKBField field1, PKBField field2);
 
     /**
     * Stores the AST parsed by the source processor.

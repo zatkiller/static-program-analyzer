@@ -2,10 +2,10 @@
 
 #include <memory>
 #include <type_traits>
-#include "query.h"
-#include "optimizer.h"
-#include "resulttable.h"
-#include "pkbtypematcher.h"
+#include "Query.h"
+#include "Optimizer.h"
+#include "ResultTable.h"
+#include "PKBTypeMatcher.h"
 #include "PKB/PKBCommons.h"
 #include "PKB/PKBField.h"
 #include "PKB/PKBResponse.h"
@@ -49,34 +49,63 @@ public:
     void filterPKBResponse(PKBResponse& response);
 
     /**
-     * Handles all the clauses with synonyms.
+     * Handles a RelRef clause with synonyms.
      *
-     * @param clause a relationship clauses with synonyms
+     * @param clause a relationship clause with synonyms
      */
     void handleSynRelRef(std::shared_ptr<query::RelRef> clause);
 
     /**
-     * Handles all the clauses without synonyms.
+     * Handles a RelRef clause without synonyms.
      *
-     * @param noSynClause a relationship clauses without synonyms
+     * @param noSynClause a relationship clause without synonyms
      */
     bool handleNoSynRelRef(const std::shared_ptr<query::RelRef>& noSynClause);
 
     /**
-     * Handles pattern clauses
+     * Handles a pattern clause
      *
      * @param patterns a group of pattern clauses
      */
     void handlePattern(query::Pattern pattern);
 
+    /**
+     * Handles a with clause without attribute reference
+     *
+     * @param noAttrClause a with clause without attribute reference
+     * @return true if the with clause holds, false otherwise
+     */
     bool handleNoAttrRefWith(const query::AttrCompare& noAttrClause);
 
+    /**
+     * Handles a with clause with attribute reference
+     *
+     * @param attrClause a with clause with attribute reference
+     */
     void handleAttrRefWith(query::AttrCompare attrClause);
 
+    /**
+     * Handles a with clause whose lhs and rhs are both attRef
+     *
+     * @param lhs lhs attribute reference
+     * @param rhs rhs attribute reference
+     */
     void handleTwoAttrRef(query::AttrRef lhs, query::AttrRef rhs);
 
+    /**
+     * Handles a with clause only contains one attRef
+     * @param attr attribute reference
+     * @param concrete string or int value of a parameter of the with clause
+     */
     void handleOneAttrRef(query::AttrRef attr, query::AttrCompareRef concrete);
 
+    /**
+     * Retrieves the attribute value from a PKBField
+     *
+     * @tparam T type of the attribute value
+     * @param field pkbField
+     * @return attribute value
+     */
     template<typename T>
     static T getPKBFieldAttr(PKBField field) {
         T value;
@@ -91,6 +120,14 @@ public:
         return value;
     }
 
+    /**
+     * Filters the PKBResponse so that the attribute value in PKBResponse is equal to value
+     *
+     * @tparam T type of the value
+     * @param response PKBResponse
+     * @param value value to compare with
+     * @return filtered PKBResponse
+     */
     template<typename T>
     PKBResponse filterAttrValue(PKBResponse response, T value) {
         PKBResponse newResponse;
@@ -105,6 +142,13 @@ public:
         return newResponse;
     }
 
+    /**
+     * Merges two PKBResponse by the same attribute value
+     * @tparam T type of the attribute value
+     * @param lhsResponse PKBResponse of lhs param in with clause
+     * @param rhsResponse PKBResponse of rhs param in with clause
+     * @return merged PKBResponse
+     */
     template<typename T>
     PKBResponse twoAttrMerge(SingleResponse &lhsResponse, SingleResponse &rhsResponse) {
         VectorResponse res;
@@ -119,10 +163,27 @@ public:
         return PKBResponse{hasResult, Response{res}};
     }
 
+    /**
+     * Handles the ResultCl in query ADT
+     *
+     * @param resultCl
+     */
     void  handleResultCl(query::ResultCl resultCl);
 
+    /**
+     * Handles a group of clause without synonyms
+     *
+     * @param group the group of clause without synonyms
+     * @return true if every clause inside the group holds, false otherwise
+     */
     bool handleNoSynGroup(optimizer::ClauseGroup group);
 
+    /**
+     * Handles a group of clause with synonyms
+     *
+     * @param group the group of clause with synonyms
+     * @return true if every clause inside the group has result, false otherwise
+     */
     bool handleGroup(optimizer::ClauseGroup group);
 };
 }  // namespace qps::evaluator

@@ -3,9 +3,9 @@
 #include <utility>
 
 #include "exceptions.h"
-#include "pql/lexer.h"
-#include "pql/query.h"
-#include "pkbtypematcher.h"
+#include "QPS/Lexer.h"
+#include "QPS/Query.h"
+#include "PKBTypeMatcher.h"
 
 namespace qps::query {
 std::unordered_map<std::string, DesignEntity> designEntityMap = {
@@ -67,7 +67,7 @@ std::vector<AttrCompare> Query::getWith() const { return with; }
 
 void Query::addDeclaration(const std::string& var, DesignEntity de) {
     if (declarations.find(var) != declarations.end())
-        throw exceptions::PqlSyntaxException("Declaration already exists!");
+        throw exceptions::PqlSyntaxException(messages::qps::parser::declarationAlreadyExists);
 
     declarations.emplace(var, de);
 }
@@ -315,13 +315,13 @@ bool ModifiesS::equalTo(const RelRef& r) const {
                                &r);
 }
 
-void ModifiesS::checkFirstArg() {
+void ModifiesS::validateFirstArg() {
     if (modifiesStmt.isWildcard())
         throw exceptions::PqlSemanticException(
                 messages::qps::parser::cannotBeWildcardMessage);
 }
 
-void ModifiesS::checkSecondArg() {
+void ModifiesS::validateSecondArg() {
     if (modified.isDeclaration() &&
         modified.getDeclarationType() != DesignEntity::VARIABLE)
         throw exceptions::PqlSemanticException(
@@ -353,13 +353,13 @@ bool ModifiesP::equalTo(const RelRef& r) const {
                                &r);
 }
 
-void ModifiesP::checkFirstArg() {
+void ModifiesP::validateFirstArg() {
     if (modifiesProc.isWildcard())
         throw exceptions::PqlSemanticException(
                 messages::qps::parser::cannotBeWildcardMessage);
 }
 
-void ModifiesP::checkSecondArg() {
+void ModifiesP::validateSecondArg() {
     if (modified.isDeclaration() &&
         modified.getDeclarationType() != DesignEntity::VARIABLE)
         throw exceptions::PqlSemanticException(
@@ -398,13 +398,13 @@ size_t UsesP::getHash() const {
     return seed;
 }
 
-void UsesP::checkFirstArg() {
+void UsesP::validateFirstArg() {
     if (useProc.isWildcard())
         throw exceptions::PqlSemanticException(
                 messages::qps::parser::cannotBeWildcardMessage);
 }
 
-void UsesP::checkSecondArg() {
+void UsesP::validateSecondArg() {
     if (used.isDeclaration() &&
         used.getDeclarationType() != DesignEntity::VARIABLE)
         throw exceptions::PqlSemanticException(
@@ -433,13 +433,13 @@ size_t UsesS::getHash() const {
     return seed;
 }
 
-void UsesS::checkFirstArg() {
+void UsesS::validateFirstArg() {
     if (useStmt.isWildcard())
         throw exceptions::PqlSemanticException(
                 messages::qps::parser::cannotBeWildcardMessage);
 }
 
-void UsesS::checkSecondArg() {
+void UsesS::validateSecondArg() {
     if (used.isDeclaration() &&
         used.getDeclarationType() != DesignEntity::VARIABLE)
         throw exceptions::PqlSemanticException(
@@ -560,7 +560,7 @@ size_t Calls::getHash() const {
     return seed;
 }
 
-void Calls::checkFirstArg() {
+void Calls::validateFirstArg() {
     if (caller.isDeclaration() &&
         caller.getDeclarationType() != DesignEntity::PROCEDURE) {
         throw exceptions::PqlSemanticException(
@@ -568,7 +568,7 @@ void Calls::checkFirstArg() {
     }
 }
 
-void Calls::checkSecondArg() {
+void Calls::validateSecondArg() {
     if (callee.isDeclaration() &&
         callee.getDeclarationType() != DesignEntity::PROCEDURE) {
         throw exceptions::PqlSemanticException(
@@ -600,7 +600,7 @@ size_t CallsT::getHash() const {
     return seed;
 }
 
-void CallsT::checkFirstArg() {
+void CallsT::validateFirstArg() {
     if (caller.isDeclaration() &&
         caller.getDeclarationType() != DesignEntity::PROCEDURE) {
         throw exceptions::PqlSemanticException(
@@ -608,7 +608,7 @@ void CallsT::checkFirstArg() {
     }
 }
 
-void CallsT::checkSecondArg() {
+void CallsT::validateSecondArg() {
     if (transitiveCallee.isDeclaration() &&
         transitiveCallee.getDeclarationType() != DesignEntity::PROCEDURE) {
         throw exceptions::PqlSemanticException(
@@ -682,7 +682,7 @@ size_t Affects::getHash() const {
     return seed;
 }
 
-void Affects::checkFirstArg() {
+void Affects::validateFirstArg() {
     if (affectingStmt.isDeclaration() &&
         affectingStmt.getDeclarationType() != DesignEntity::ASSIGN) {
         throw exceptions::PqlSemanticException(
@@ -690,7 +690,7 @@ void Affects::checkFirstArg() {
     }
 }
 
-void Affects::checkSecondArg() {
+void Affects::validateSecondArg() {
     if (affected.isDeclaration() &&
         affected.getDeclarationType() != DesignEntity::ASSIGN) {
         throw exceptions::PqlSemanticException(
@@ -722,7 +722,7 @@ size_t AffectsT::getHash() const {
     return seed;
 }
 
-void AffectsT::checkFirstArg() {
+void AffectsT::validateFirstArg() {
     if (affectingStmt.isDeclaration() &&
         affectingStmt.getDeclarationType() != DesignEntity::ASSIGN) {
         throw exceptions::PqlSemanticException(
@@ -730,7 +730,7 @@ void AffectsT::checkFirstArg() {
     }
 }
 
-void AffectsT::checkSecondArg() {
+void AffectsT::validateSecondArg() {
     if (transitiveAffected.isDeclaration() &&
         transitiveAffected.getDeclarationType() != DesignEntity::ASSIGN) {
         throw exceptions::PqlSemanticException(

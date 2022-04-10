@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include "pql/parser.h"
+#include "QPS/Parser.h"
 
 namespace qps::parser {
     using qps::query::designEntityMap;
@@ -42,17 +42,9 @@ namespace qps::parser {
             DesignEntity::PRINT, DesignEntity::READ, DesignEntity::CALL
     };
 
-    const std::unordered_set<DesignEntity> entityTypes {
+    const std::unordered_set<DesignEntity> entityTypes{
             DesignEntity::PROCEDURE, DesignEntity::VARIABLE
     };
-
-    bool Parser::hasLeadingWhitespace() {
-        return lexer.hasLeadingWhitespace();
-    }
-
-    std::string Parser::getParsedText() const {
-        return std::string { lexer.text };
-    }
 
     Token Parser::getNextToken() {
         return lexer.getNextToken();
@@ -269,7 +261,7 @@ namespace qps::parser {
         } else if (!isPVariant && tt == TokenType::USES) {
             return parseRelRefVariables<UsesS>(query, &UsesS::useStmt, &UsesS::used);
         } else {
-            throw exceptions::PqlSyntaxException("Satisfy none of the modifies and uses relref variants");
+            throw exceptions::PqlSyntaxException(messages::qps::parser::parsesModifiesOrUsesErrorMessage);
         }
     }
 
@@ -339,7 +331,6 @@ namespace qps::parser {
             hasString = true;
             Token token = getAndCheckNextToken(TokenType::STRING);
             value = token.getText();
-            validateExpr(value);
         }
 
         if (hasString && hasWildcard) {
@@ -353,67 +344,7 @@ namespace qps::parser {
         if (hasString)
             return ExpSpec::ofFullMatch(value);
 
-        throw exceptions::PqlSyntaxException("Unable to parse pattern");
-    }
-
-    void Parser::validateExpr(const std::string& expr) {
-        Parser expParser;
-        expParser.addInput(expr);
-        expParser.parseExpr();
-    }
-
-    void Parser::parseExpr() {
-        parseCurrentExpr();
-        parseNextExpr(0);
-    }
-
-    void Parser::parseCurrentExpr() {
-        Token token = getNextToken();
-        TokenType tt = token.getTokenType();
-
-        if (tt == TokenType::END_OF_FILE) {
-            throw exceptions::PqlSyntaxException(messages::qps::parser::expressionUnexpectedEndMessage);
-        } else if ((tt == TokenType::NUMBER) || (tt == TokenType::IDENTIFIER)) {
-            return;
-        } else if (tt == TokenType::OPENING_PARAN) {
-            parseExpr();
-            getAndCheckNextToken(TokenType::CLOSING_PARAN);
-        } else {
-            throw exceptions::PqlSyntaxException(messages::qps::parser::expressionInvalidGrammarMessage);
-        }
-    }
-
-    int Parser::getOperatorPriority(const Token& token) {
-        TokenType type = token.getTokenType();
-        if ((type == TokenType::MULTIPLY) || (type == TokenType::DIVIDE) || (type == TokenType::MODULO)) {
-            return 20;
-        } else if ((type == TokenType::PLUS) || (type == TokenType::MINUS)) {
-            return 10;
-        } else {
-            return -10;
-        }
-    }
-
-    void Parser::parseNextExpr(int priority) {
-        if (priority == -10) {
-            return;
-        }
-
-        while (true) {
-            int currPriority = getOperatorPriority(peekNextToken());
-
-            if (currPriority < priority) {
-                break;
-            }
-
-            Token op = getNextToken();
-            parseCurrentExpr();
-
-            int nextPriority = getOperatorPriority(peekNextToken());
-            if (nextPriority > currPriority) {
-                parseNextExpr(priority + 10);
-            }
-        }
+        throw exceptions::PqlSyntaxException(messages::qps::parser::unableToParsePatternMessage);
     }
 
     void Parser::parseRelRef(Query &query) {

@@ -5,19 +5,35 @@ from sys import argv
 
 run_test_suites = argv[1].lower() == "true"
 keep_output_files = argv[2].lower() == "true"
+specified_iter = argv[3] if len(argv) > 3 else "iter"
 
 # Switch to top level directory
 main_path = os.getcwd()
-os.chdir(os.path.dirname(__file__) + "/Team05/Tests05")
+os.chdir(main_path + "/Team05/Tests05")
 f = open("results.txt", "w")
 
 dic = defaultdict(list)
 
-def getFailedTC(text, dir_path, source, queries):
+def getExpectedTC(text):
+    text_arr = text.splitlines()
+    return len(text_arr) // 5
+
+def getFailedTC(text, dir_path, source, queries, expectedTC):
     text = text.splitlines()
+    ranTC = 0
     count = 0
     failed_tcs = []
     for i, x in enumerate(text):
+        if x.find("</id>") != -1:
+            pos = x.find("</id>") - 1
+            res = ""
+            while x[pos].isdigit():
+                res += x[pos]
+                pos -= 1
+
+            res = res[::-1]
+            ranTC = max(ranTC, int(res))
+            continue
         if x == "<failed>":
             y = text[i-4]
             pos = y.find("</id>") - 1
@@ -36,6 +52,8 @@ def getFailedTC(text, dir_path, source, queries):
     f.write("Directory path: " + dir_path + "\n")
     f.write("Source file: " + source + "\n")
     f.write("Queries file: " + queries + "\n")
+    f.write("Expected TC: " + str(expectedTC) + "\n")
+    f.write("Number of completed TC runs: " + str(ranTC) + "\n")
     f.write(res + "\n")
     f.write(failed_count + "\n\n")
 
@@ -43,7 +61,7 @@ def getFailedTC(text, dir_path, source, queries):
 for dirpath, dirnames, filenames in os.walk(os.getcwd()):
     filenames.sort()
     for file in filenames:
-        if file.startswith("iter") and file.endswith("_source.txt"):
+        if file.startswith(specified_iter) and file.endswith("_source.txt"):
             print(file)
             prefix = file[:-len("_source.txt")]
             queries_match_file = prefix + "_queries.txt"
@@ -57,7 +75,7 @@ for dirpath, dirnames, filenames in os.walk(os.getcwd()):
 
             dic[shortened_path].append((file, queries_match_file, prefix))
 
-os.chdir(os.path.dirname(__file__))
+os.chdir(main_path)
 
 output_files = []
 
@@ -66,13 +84,18 @@ if run_test_suites:
         for source, queries, prefix in dic[k]:
             dirpath = k + "/"
             source_input, queries_input, output_input = dirpath + source, dirpath + queries, dirpath + prefix + "_out.txt"
+            f1 = open(queries_input[1:], "r")
+            queries_text = f1.read()
+            expectedTc = getExpectedTC(queries_text)
+            f1.close()
             source_flag, queries_flag, output_flag = "source=" + source_input, "query=" + queries_input, "out=" + output_input
+
             print(source, queries, prefix)
             os.system(" ".join(["make", "autotester", source_flag, queries_flag, output_flag]))
             f2 = open(output_input[1:], "r")
             text = f2.read()
             f2.close()
-            getFailedTC(text, k, source_input, queries_input)
+            getFailedTC(text, k, source_input, queries_input, expectedTc)
             output_files.append(output_input)
 
 if not keep_output_files:

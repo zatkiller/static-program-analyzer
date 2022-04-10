@@ -3,7 +3,7 @@
 #include "catch.hpp"
 
 #include "PKB.h"
-#include "pql/qps.h"
+#include "QPS/QPS.h"
 
 TEST_CASE("QPS") {
     SECTION("QPS- evaluate invalid syntax query") {

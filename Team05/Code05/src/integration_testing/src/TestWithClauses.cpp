@@ -1,5 +1,5 @@
-#include "pql/evaluator.h"
-#include "pql/query.h"
+#include "QPS/Evaluator.h"
+#include "QPS/Query.h"
 #include "catch.hpp"
 #include "logging.h"
 

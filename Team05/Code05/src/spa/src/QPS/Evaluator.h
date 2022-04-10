@@ -13,8 +13,8 @@
 #include <list>
 #include <utility>
 
-#include "pql/query.h"
-#include "pql/resultprojector.h"
+#include "QPS/Query.h"
+#include "QPS/ResultProjector.h"
 #include "PKB/PKBField.h"
 #include "PKB/PKBResponse.h"
 #include "PKB.h"
@@ -35,8 +35,18 @@ public:
         this->pkb = pkb;
     }
 
+    /**
+     * Finds the result table stores value of synonyms in selectedSyns
+     * @param selectSyns synonyms in select clause
+     * @return A list of result table containing synonym in selectSyns
+     */
     std::vector<ResultTable> findResultRelatedGroup(std::vector<std::string> selectSyns);
 
+    /**
+     * Merges tables into a single table
+     * @param tables tables waiting for merging
+     * @return The table merged by tables
+     */
     ResultTable mergeGroupResults(std::vector<ResultTable> tables);
 
     /**

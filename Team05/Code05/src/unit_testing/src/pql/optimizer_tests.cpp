@@ -1,6 +1,6 @@
 #include <memory>
-#include "pql/optimizer.h"
-#include "pql/query.h"
+#include "QPS/Optimizer.h"
+#include "QPS/Query.h"
 #include "catch.hpp"
 #include "logging.h"
 

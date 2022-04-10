@@ -41,6 +41,9 @@ enum class StmtRefType {
     WILDCARD
 };
 
+/**
+* Struct used to store information on a Declaration
+*/
 struct Declaration {
     std::string synonym;
     DesignEntity type{};
@@ -64,6 +67,9 @@ enum class AttrName {
     STMTNUM
 };
 
+/**
+* Struct used to store information on an AttrRef
+*/
 struct AttrRef {
     AttrRef() {}
     AttrRef(AttrName an, Declaration d) : attrName(an), declaration(std::move(d)) {}
@@ -90,6 +96,9 @@ enum class ElemType {
     DECLARATION
 };
 
+/**
+* Struct used to store information on an Elem
+*/
 struct Elem {
     static Elem ofDeclaration(Declaration d);
     static Elem ofAttrRef(AttrRef ar);
@@ -117,6 +126,9 @@ private:
     ElemType type = ElemType::NOT_INITIALIZED;
 };
 
+/**
+* Struct used to store information on the ResultCl
+*/
 struct ResultCl {
     static ResultCl ofBoolean();
     static ResultCl ofTuple(std::vector<Elem> tuple);
@@ -299,17 +311,45 @@ struct RelRef {
 
     virtual RelRefType getType() const { return type; }
 
-    virtual void checkFirstArg() {}
-    virtual void checkSecondArg() {}
+    /**
+    * Applies Semantic checks on first argument of RelRef
+    */
+    virtual void validateFirstArg() {}
+
+    /**
+     * Applies Semantic checks on second argument of RelRef
+     */
+    virtual void validateSecondArg() {}
 
     virtual bool equalTo(const RelRef& r) const = 0;
 
     bool operator==(const RelRef& r) const { return equalTo(r); }
 
+    /**
+      * Pure virtual function that returns the RelRef member attributes
+      * as PKBFields
+      * 
+      * @returns a vector of PKBFields
+      */
     virtual std::vector<PKBField> getField() = 0;
+
+    /**
+      * Pure virtual function that returns the RelRef member attributes
+      * as Declarations
+      *
+      * @returns a vector of Declarations
+      */
     virtual std::vector<Declaration> getDecs() = 0;
 
 protected:
+    /**
+    * Returns a vector of PKBFields after transforming the RelRef subclass 
+    * members to the respective PKBFields
+    * @param *f1 memory address of class member
+    * @param *f2 memory address of class member
+    *
+    * @return a vector of PKBField
+    */
     template <typename T, typename F1, typename F2>
     std::vector<PKBField> getFieldHelper(const F1 T::*f1, const F2 T::*f2) {
         const auto derivedPtr = static_cast<T*>(this);
@@ -331,6 +371,15 @@ protected:
         return std::vector<PKBField>{field1, field2};
     }
 
+    /**
+    * Returns a vector of Declaration from the RelRef subclass 
+    * member attributes
+    * 
+    * @param *f1 memory address of class member
+    * @param *f2 memory address of class member
+    *
+    * @return a vector of Declaration
+    */
     template <typename T, typename F1, typename F2>
     std::vector<Declaration> getDecsHelper(const F1 T::*f1, const F2 T::*f2) {
         std::vector<Declaration> synonyms;
@@ -346,6 +395,14 @@ protected:
         return synonyms;
     }
 
+    /**
+    * Returns True if a RelRef subclass is = to one aonother
+    
+    * @param *f1 memory address of class member
+    * @param *f2 memory address of class member
+    *
+    * @return boolean result whethere a subclass is equal to one another
+    */
     template <typename T, typename F1, typename F2>
     bool equalityCheckHelper(const F1 T::*f1, const F2 T::*f2, const RelRef* r) const {
         const auto derivedPtr1 = static_cast<const T*>(this);
@@ -370,8 +427,8 @@ struct ModifiesS : RelRef {
     bool equalTo(const RelRef& r) const override;
     size_t getHash() const override;
 
-    void checkFirstArg() override;
-    void checkSecondArg() override;
+    void validateFirstArg() override;
+    void validateSecondArg() override;
 };
 
 /**
@@ -389,8 +446,8 @@ struct ModifiesP : RelRef {
     bool equalTo(const RelRef& r) const override;
     size_t getHash() const override;
 
-    void checkFirstArg() override;
-    void checkSecondArg() override;
+    void validateFirstArg() override;
+    void validateSecondArg() override;
 };
 
 /**
@@ -408,10 +465,11 @@ struct UsesS : RelRef {
     bool equalTo(const RelRef& r) const override;
     size_t getHash() const override;
 
-    void checkFirstArg() override;
-    void checkSecondArg() override;
+    void validateFirstArg() override;
+    void validateSecondArg() override;
 };
-/**override
+
+/**
 * Struct used to represent a UsesP RelRef
 */
 struct UsesP : RelRef {
@@ -427,10 +485,13 @@ struct UsesP : RelRef {
 
     size_t getHash() const override;
 
-    void checkFirstArg() override;
-    void checkSecondArg() override;
+    void validateFirstArg() override;
+    void validateSecondArg() override;
 };
 
+/**
+* Struct used to represent a Follows RelRef
+*/
 struct Follows : RelRef {
     Follows() : RelRef(RelRefType::FOLLOWS) {}
 
@@ -444,6 +505,9 @@ struct Follows : RelRef {
     size_t getHash() const override;
 };
 
+/**
+* Struct used to represent a Follows* RelRef
+*/
 struct FollowsT : RelRef {
     FollowsT() : RelRef(RelRefType::FOLLOWST) {}
 
@@ -458,6 +522,9 @@ struct FollowsT : RelRef {
     size_t getHash() const override;
 };
 
+/**
+* Struct used to represent a Parent RelRef
+*/
 struct Parent : RelRef {
     Parent() : RelRef(RelRefType::PARENT) {}
 
@@ -472,6 +539,9 @@ struct Parent : RelRef {
     size_t getHash() const override;
 };
 
+/**
+* Struct used to represent a Parent* RelRef
+*/
 struct ParentT : RelRef {
     ParentT() : RelRef(RelRefType::PARENTT) {}
 
@@ -486,6 +556,9 @@ struct ParentT : RelRef {
     size_t getHash() const override;
 };
 
+/**
+* Struct used to represent a Calls RelRef
+*/
 struct Calls : RelRef {
     Calls() : RelRef(RelRefType::CALLS) {}
 
@@ -497,12 +570,15 @@ struct Calls : RelRef {
 
     bool equalTo(const RelRef& r) const override;
 
-    void checkFirstArg() override;
-    void checkSecondArg() override;
+    void validateFirstArg() override;
+    void validateSecondArg() override;
 
     size_t getHash() const override;
 };
 
+/**
+* Struct used to represent a Calls* RelRef
+*/
 struct CallsT : RelRef {
     CallsT() : RelRef(RelRefType::CALLST) {}
 
@@ -514,12 +590,15 @@ struct CallsT : RelRef {
 
     bool equalTo(const RelRef& r) const override;
 
-    void checkFirstArg() override;
-    void checkSecondArg() override;
+    void validateFirstArg() override;
+    void validateSecondArg() override;
 
     size_t getHash() const override;
 };
 
+/**
+* Struct used to represent a Next RelRef
+*/
 struct Next : RelRef {
     Next() : RelRef(RelRefType::NEXT) {}
 
@@ -534,6 +613,9 @@ struct Next : RelRef {
     size_t getHash() const override;
 };
 
+/**
+* Struct used to represent a Next* RelRef
+*/
 struct NextT : RelRef {
     NextT() : RelRef(RelRefType::NEXTT) {}
 
@@ -548,6 +630,9 @@ struct NextT : RelRef {
     size_t getHash() const override;
 };
 
+/**
+* Struct used to represent a Affects RelRef
+*/
 struct Affects : RelRef {
     Affects() : RelRef(RelRefType::AFFECTS) {}
 
@@ -559,12 +644,15 @@ struct Affects : RelRef {
 
     bool equalTo(const RelRef& r) const override;
 
-    void checkFirstArg() override;
-    void checkSecondArg() override;
+    void validateFirstArg() override;
+    void validateSecondArg() override;
 
     size_t getHash() const override;
 };
 
+/**
+* Struct used to represent a Affects* RelRef
+*/
 struct AffectsT : RelRef {
     AffectsT() : RelRef(RelRefType::AFFECTST) {}
 
@@ -576,8 +664,8 @@ struct AffectsT : RelRef {
 
     bool equalTo(const RelRef& r) const override;
 
-    void checkFirstArg() override;
-    void checkSecondArg() override;
+    void validateFirstArg() override;
+    void validateSecondArg() override;
 
     size_t getHash() const override;
 };
@@ -588,8 +676,23 @@ struct AffectsT : RelRef {
 struct ExpSpec {
     ExpSpec() {}
 
+    /**
+    * Returns a ExpSpec of type wildcard
+    *
+    * @return ExpSpec of type wildcard
+    */
     static ExpSpec ofWildcard();
+    /**
+    * Returns a ExpSpec of type partial match
+    * @param str the pattern used in the partial match
+    * @return ExpSpec of type partial match
+    */
     static ExpSpec ofPartialMatch(std::string str);
+    /**
+    * Returns a ExpSpec of type full match
+    * @param str the pattern used in the full match
+    * @return ExpSpec of type full match
+    */
     static ExpSpec ofFullMatch(std::string str);
 
     bool isPartialMatch() const;
@@ -615,8 +718,34 @@ private:
 * Struct used to represent a Pattern
 */
 struct Pattern {
+    /**
+    * Returns a Pattern which is of type Assign
+    *
+    * @param synonym the synonym of the declaration for the assign pattern
+    * @param er the lhs of the assign pattern
+    * @param exp the ExpSpec of the assign pattern
+    *
+    * @return Pattern which has declaartion type of assign
+    */
     static Pattern ofAssignPattern(std::string synonym, EntRef er, ExpSpec exp);
+    /**
+    * Returns a Pattern which is of type If
+    *
+    * @param synonym the synonym of the declaration for the If pattern
+    * @param er the lhs of the If pattern
+    *
+    * @return Pattern which has declaration type of If
+    */
     static Pattern ofIfPattern(std::string synonym, EntRef er);
+    /**
+    * Returns a Pattern which is of type While
+    *
+    * @param synonym the synonym of the declaration for the while pattern
+    * @param er the lhs of the while pattern
+    * @param exp the ExpSpec of the while pattern
+    *
+    * @return Pattern which has declaration type of while
+    */
     static Pattern ofWhilePattern(std::string synonym, EntRef er);
 
     std::string getSynonym() const { return declaration.getSynonym(); }
@@ -640,6 +769,9 @@ private:
 
 enum class AttrCompareRefType { NOT_INITIALIZED, NUMBER, STRING, ATTRREF };
 
+/**
+* Struct used to represent an AttrCompareRef (ref of a with clause)
+*/
 struct AttrCompareRef {
 private:
     AttrRef ar {};
@@ -648,8 +780,26 @@ private:
     int number = -1;
 
 public:
+    /**
+    * Returns a AttrCompareRef of type string
+    *
+    * @param str the string represented by AttrCompareRef
+    * @return AttrCompareRef of type string
+    */
     static AttrCompareRef ofString(std::string str);
+    /**
+    * Returns a AttrCompareRef of type number
+    *
+    * @param num the number represented by AttrCompareRef
+    * @return AttrCompareRef of type number
+    */
     static AttrCompareRef ofNumber(int num);
+    /**
+    * Returns a AttrCompareRef of type AttrRef
+    *
+    * @param ar the attrRrf represented by AttrComareRef
+    * @return AttrCompareRef of type attrref
+    */
     static AttrCompareRef ofAttrRef(AttrRef ar);
 
     std::string getString() const { return str_value; }
@@ -673,6 +823,9 @@ public:
     }
 };
 
+/**
+* Struct used to represent an AttrCompare (with clause)
+*/
 struct AttrCompare {
     AttrCompareRef lhs;
     AttrCompareRef rhs;
@@ -689,7 +842,7 @@ struct AttrCompare {
 };
 
 /**
-* Struct used to represent a query that has been parsed
+* Struct used to represent a PQL query that has been parsed
 */
 class Query {
 private:

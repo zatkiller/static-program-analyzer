@@ -1,4 +1,4 @@
-#include "pql/query.h"
+#include "QPS/Query.h"
 #include "catch.hpp"
 
 #include "exceptions.h"

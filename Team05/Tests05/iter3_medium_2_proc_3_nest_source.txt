@@ -1,0 +1,36 @@
+procedure p1 {
+    while (v1 > 1) {
+        print v7;
+        read v9;
+        while (v9 > v7) {
+            if (v8 < v5) then {
+                call p2;
+            } else {
+                v9 = v3;
+            }
+            v1 = v5 + v2 + v3;
+        }
+    }
+}
+
+procedure p2 {
+    while (v1 > v2) {
+        read v2;
+        while (v3 > v2) {
+            v3 = v1 + v2 + v4;
+            if (v5 < v4) then {
+                v5 = v1 + v4 + v2;
+            } else {
+                v5 = v3 + v2 + v4;
+            }
+            v2 = v1 + v2 + v5;
+        }
+    }
+    if (v4 > v5) then {
+        read v1;
+        print v1;
+    } else {
+        read v2;
+        print v2;
+    }
+}

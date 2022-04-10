@@ -1,5 +1,5 @@
 
-#include "pkbtypematcher.h"
+#include "PKBTypeMatcher.h"
 
 namespace qps::evaluator {
     using query::RelRefType;

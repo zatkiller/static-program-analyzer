@@ -1,5 +1,5 @@
 #include "PKB/PKBCommons.h"
-#include "query.h"
+#include "Query.h"
 
 namespace qps::evaluator {
 class PKBTypeMatcher {
