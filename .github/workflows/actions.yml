@@ -1,4 +1,4 @@
-name: CI for Cmake Project - Linux
+# name: CI for Cmake Project - Linux
 
 # on:
 #   push:
@@ -10,47 +10,45 @@ name: CI for Cmake Project - Linux
 # If you are doing triggering your workflow from pushes or merging more than twice a day on average,
 # please execute your workflow on a schedule instead.
 # Comment the above 7 lines, and uncomment the following 3 lines
-on:
-  schedule:
-    - cron: "0 09,23 * * *"
+# on:
+#   schedule:
+#     - cron: "0 09,23 * * *"
 
-env:
-    BUILD_TYPE: Release
+# env:
+#     BUILD_TYPE: Release
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 3
-    strategy:
-      fail-fast: true
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 3
+#     strategy:
+#       fail-fast: true
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build in docker
-        working-directory: ${{runner.workspace}}
-        shell: bash
-        run: docker build -t cs3203t05 ${{github.workspace}}
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Build in docker
+#         working-directory: ${{runner.workspace}}
+#         shell: bash
+#         run: docker build -t cs3203t05 ${{github.workspace}}
 
+#       - name: Run Unit Tests
+#         working-directory: ${{runner.workspace}}
+#         shell: bash
+#         run: docker run cs3203t05 unit_testing
 
-      - name: Run Unit Tests
-        working-directory: ${{runner.workspace}}
-        shell: bash
-        run: docker run cs3203t05 unit_testing
+#       - name: Run Integration Tests
+#         working-directory: ${{runner.workspace}}
+#         shell: bash
+#         run: docker run cs3203t05 integration_testing
 
-
-      - name: Run Integration Tests
-        working-directory: ${{runner.workspace}}
-        shell: bash
-        run: docker run cs3203t05 integration_testing
-
-  lint:
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-    strategy:
-      fail-fast: true
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - run: pip install cpplint
-      - name: Linting the Code
-        run: cpplint --recursive Team05/Code05/src/spa Team05/Code05/src/unit_testing Team05/Code05/src/integration_testing
+#   lint:
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 1
+#     strategy:
+#       fail-fast: true
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: actions/setup-python@v2
+#       - run: pip install cpplint
+#       - name: Linting the Code
+#         run: cpplint --recursive Team05/Code05/src/spa Team05/Code05/src/unit_testing Team05/Code05/src/integration_testing
